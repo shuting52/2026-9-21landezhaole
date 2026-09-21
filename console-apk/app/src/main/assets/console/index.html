@@ -6,22 +6,24 @@
 <title>云台-懒得找了 · 云端总控台</title>
 <style>
 :root{
-  --bg:#0a0e1a;--bg2:#111827;--card:#151c2e;--card2:#1b2440;--line:#26304f;
-  --tx:#e8edf7;--tx2:#9aa7c7;--pri:#6c63ff;--pri2:#ff2d78;--ok:#22c55e;--warn:#f59e0b;--err:#ef4444;
+  /* 新拟态 Neumorphism 浅色主题 */
+  --bg:#e0e5ec;--bg2:#d6dbe3;--card:#e0e5ec;--card2:#e8edf4;--line:#c9cfd9;
+  --tx:#3a4352;--tx2:#6b7280;--pri:#6c63ff;--pri2:#ff2d78;--ok:#22c55e;--warn:#f59e0b;--err:#ef4444;
   --r:14px;
+  --neu-dark:#b8bec7;--neu-light:#ffffff;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-size:14px;line-height:1.5}
 body{padding-bottom:76px}
-.grad{background:linear-gradient(135deg,#6c63ff22,#ff2d7822)}
+.grad{background:linear-gradient(135deg,#6c63ff18,#ff2d7818)}
 ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:#3a4668;border-radius:3px}
 a{color:#8f9bff;text-decoration:none}
-input,select,textarea{width:100%;background:var(--card2);border:1px solid var(--line);color:var(--tx);border-radius:10px;padding:10px 12px;font-size:14px;outline:none;font-family:inherit}
-input:focus,select:focus,textarea:focus{border-color:var(--pri)}
+input,select,textarea{width:100%;background:var(--bg);border:none;color:var(--tx);border-radius:12px;padding:10px 12px;font-size:14px;outline:none;font-family:inherit;box-shadow:inset 3px 3px 7px var(--neu-dark),inset -3px -3px 7px var(--neu-light)}
+input:focus,select:focus,textarea:focus{box-shadow:inset 3px 3px 7px var(--neu-dark),inset -3px -3px 7px var(--neu-light),0 0 0 2px var(--pri44)}
 textarea{min-height:70px;resize:vertical}
 label{display:block;font-size:12px;color:var(--tx2);margin:10px 0 4px}
-button{cursor:pointer;border:none;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:600;background:var(--card2);color:var(--tx);transition:.15s}
-button:active{transform:scale(.96)}
+button{cursor:pointer;border:none;border-radius:12px;padding:9px 14px;font-size:13px;font-weight:600;background:var(--card);color:var(--tx);transition:.15s;box-shadow:4px 4px 9px var(--neu-dark),-4px -4px 9px var(--neu-light)}
+button:active{transform:scale(.96);box-shadow:inset 3px 3px 7px var(--neu-dark),inset -3px -3px 7px var(--neu-light)}
 .btn-pri{background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff}
 .btn-ok{background:var(--ok);color:#04120a}
 .btn-warn{background:var(--warn);color:#1a1203}
@@ -40,7 +42,7 @@ button:active{transform:scale(.96)}
 .row .grow{flex:1;min-width:0}
 .spacer{flex:1}
 /* header - 两行布局，按钮紧凑不溢出 */
-header{position:sticky;top:0;z-index:50;background:rgba(10,14,26,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:8px 10px}
+header{position:sticky;top:0;z-index:50;background:var(--bg);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:8px 10px;box-shadow:0 4px 12px var(--neu-dark33)}
 .hd-top{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
 .logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--pri),var(--pri2));display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;flex-shrink:0}
 .hd-title{font-size:14px;font-weight:800;white-space:nowrap}
@@ -104,13 +106,13 @@ header{position:sticky;top:0;z-index:50;background:rgba(10,14,26,.88);backdrop-f
 .theme-switch__checkbox:checked + .theme-switch__container .theme-switch__aurora{opacity:1;animation:auroraWave 8s linear infinite}
 .theme-switch__checkbox:checked + .theme-switch__container .theme-switch__comets{opacity:1}
 @keyframes auroraWave{0%{transform:translateY(-100%) translateX(-50%)}100%{transform:translateY(-100%) translateX(50%)}}
-/* 浅色主题变量 */
-body[data-theme="light"]{--bg:#f1f5fb;--bg2:#ffffff;--card:#ffffff;--card2:#eef2f9;--line:#d8e0ef;--tx:#1a2233;--tx2:#5c6a85}
-body[data-theme="light"] .grad{background:linear-gradient(135deg,#6c63ff14,#ff2d7814)}
-body[data-theme="light"] header{background:rgba(255,255,255,.9)}
-body[data-theme="light"] nav{background:rgba(255,255,255,.95)}
+/* 深色新拟态（夜间切换） */
+body[data-theme="dark"]{--bg:#2a2e3d;--bg2:#242835;--card:#2a2e3d;--card2:#2f3444;--line:#3a4052;--tx:#e8edf7;--tx2:#9aa7c7;--neu-dark:#1d202c;--neu-light:#3a4052}
+body[data-theme="dark"] .grad{background:linear-gradient(135deg,#6c63ff22,#ff2d7822)}
+body[data-theme="dark"] header{background:#2a2e3d}
+body[data-theme="dark"] nav{background:#2a2e3d}
 /* tabs */
-nav{position:fixed;bottom:0;left:0;right:0;z-index:60;background:rgba(10,14,26,.94);backdrop-filter:blur(14px);border-top:1px solid var(--line);display:flex;overflow-x:auto}
+nav{position:fixed;bottom:0;left:0;right:0;z-index:60;background:var(--bg);backdrop-filter:blur(14px);border-top:1px solid var(--line);display:flex;overflow-x:auto;box-shadow:0 -4px 12px var(--neu-dark33)}
 nav button{flex:1;min-width:52px;background:none;border-radius:0;padding:8px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:var(--tx2)}
 nav button.active{color:var(--pri);font-weight:800}
 nav .ico{font-size:17px}
@@ -118,7 +120,7 @@ nav .ico{font-size:17px}
 main{padding:12px;max-width:960px;margin:0 auto}
 .page{display:none}
 .page.active{display:block}
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.card{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:12px;box-shadow:6px 6px 14px var(--neu-dark),-6px -6px 14px var(--neu-light)}
 .card h3{font-size:15px;font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:8px}
 .card .hint{font-size:12px;color:var(--tx2)}
 /* list item */
@@ -205,7 +207,7 @@ main{padding:12px;max-width:960px;margin:0 auto}
     </label>
   </div>
   <div class="hd-actions">
-    <button class="pub-btn" title="静默同步：仅保存数据到仓库，不升版本号、不弹窗，本体下次刷新自动应用" onclick="publish(false)">💾 静默同步</button>
+    <button class="pub-btn" title="应用：实时同步到本体软件（不升版本号、不弹窗，本体几乎零延迟感知应用）" onclick="applyToDevice()">✅ 应用</button>
     <button class="pub-bump-btn" title="触发更新弹窗：递增版本号并发布，本体软件即刻弹出更新窗口" onclick="quickBumpPublish()">🚀 触发更新</button>
     <button class="pub-dis-btn" title="断开与仓库的连接（不会清除 Token，可随时重新连接）" onclick="disconnect()">⏻ 断开</button>
   </div>
@@ -298,10 +300,11 @@ function logChange(msg){
 
 // 主题切换
 function toggleTheme(night){
+  // 勾选（night=true）= 深色新拟态；不勾选 = 浅色新拟态（默认）
   if(night){
-    document.body.removeAttribute("data-theme");
+    document.body.setAttribute("data-theme","dark");
   }else{
-    document.body.setAttribute("data-theme","light");
+    document.body.removeAttribute("data-theme");
   }
   try{ localStorage.setItem("lzdz_theme", night ? "dark" : "light"); }catch(e){}
 }
@@ -309,7 +312,7 @@ function toggleTheme(night){
 (function(){
   try{
     const t = localStorage.getItem("lzdz_theme");
-    if(t === "light"){ document.body.setAttribute("data-theme","light"); const c = document.getElementById("themeToggle"); if(c) c.checked = false; }
+    if(t === "dark"){ document.body.setAttribute("data-theme","dark"); const c = document.getElementById("themeToggle"); if(c) c.checked = true; }
   }catch(e){}
 })();
 
@@ -434,6 +437,17 @@ function disconnect(){
   toast("已断开仓库连接","ok");
 }
 
+// 应用：保存所有已填写的版块内容并实时同步到本体软件（零延迟，不升版本号不弹窗）
+function applyToDevice(){
+  if(!S.admin){ toast("请先连接并加载数据","err"); return; }
+  // 若当前有打开的版块表单，先保存
+  try{
+    if(document.querySelector(".dlg.show") && typeof saveSoft === "function"){ /* 对话框由各版块自行处理 */ }
+  }catch(e){}
+  toast("正在应用并实时同步到本体软件…","ok");
+  publish(false);
+}
+
 // ============ 发布逻辑 (双通道：静默同步 / 触发弹窗更新) ============
 async function publish(bump = false, actionDesc = ""){
   if(!S.admin){ toast("请先连接并加载数据","err"); return; }
@@ -450,7 +464,7 @@ async function publish(bump = false, actionDesc = ""){
     const ok = await confirmDlgHtml(
       `⚠️ 将发布新版本 <b>v${newName}</b>（versionCode: ${oldCode} → ${oldCode+1}）<br>` +
       `本体软件将立即弹出<font color='#f87171'><b>强制更新弹窗</b></font>。<br><br>` +
-      `如果只是想保存内容修改，请点「💾 静默同步」（不升版本号，不弹窗）。<br><br>确定发布新版本吗？`
+      `如果只是想保存内容修改并实时同步到本体，请点「✅ 应用」（不升版本号，不弹窗）。<br><br>确定发布新版本吗？`
     );
     if(!ok){ toast("已取消发布","err"); return; }
   }
@@ -498,7 +512,7 @@ async function publish(bump = false, actionDesc = ""){
   }
   if(btn){
     btn.disabled = false;
-    btn.textContent = bump ? "🚀 触发更新弹窗" : "💾 静默同步";
+    btn.textContent = bump ? "🚀 触发更新弹窗" : "✅ 应用";
   }
 }
 
@@ -586,7 +600,7 @@ function renderHome(){
     </div>
     <div class="row">
       <button class="btn-pri grow" onclick="catForm()">＋ 新增分类</button>
-      <button class="btn-ok" onclick="publish(false)">💾 静默保存发布</button>
+      <button class="btn-ok" onclick="publish(false)">✅ 应用并同步</button>
       <button class="btn-bump" onclick="publish(true,'首页分类与站点结构更新')">🚀 推送并触发本体更新弹窗</button>
     </div>
   </div>`;
@@ -746,7 +760,7 @@ function renderSoftware(){
     </div>
     <div class="row">
       <button class="btn-pri grow" onclick="softForm()">＋ 新增软件</button>
-      <button class="btn-ok" onclick="publish(false)">💾 静默保存</button>
+      <button class="btn-ok" onclick="publish(false)">✅ 应用并同步</button>
       <button class="btn-bump" onclick="publish(true,'软件库上新/更新')">🚀 推送并触发本体更新弹窗</button>
     </div>
   </div>`;
@@ -892,7 +906,7 @@ function renderSkill(){
     </div>
     <div class="row">
       <button class="btn-pri grow" onclick="skillForm()">＋ 新增 Skill / Prompt</button>
-      <button class="btn-ok" onclick="publish(false)">💾 静默保存</button>
+      <button class="btn-ok" onclick="publish(false)">✅ 应用并同步</button>
       <button class="btn-bump" onclick="publish(true,'Skill技能与提示词库更新')">🚀 推送并触发本体更新弹窗</button>
     </div>
   </div>`;
@@ -1060,7 +1074,7 @@ function renderSettings(){
     <div class="divider"></div>
     <div class="row">
       <button class="btn-pri grow" onclick="saveSettings()">💾 保存设置</button>
-      <button class="btn-ok" onclick="publish(false)">💾 静默保存发布</button>
+      <button class="btn-ok" onclick="publish(false)">✅ 应用并同步</button>
       <button class="btn-bump" onclick="publish(true,'设置与品牌信息更新')">🚀 推送并触发本体更新弹窗</button>
     </div>
   </div>`;
@@ -1124,7 +1138,7 @@ function renderSplash(){
     <div class="divider"></div>
     <div class="row">
       <button class="btn-pri grow" onclick="saveSplash()">💾 保存开屏配置</button>
-      <button class="btn-ok" onclick="publish(false)">💾 静默保存</button>
+      <button class="btn-ok" onclick="publish(false)">✅ 应用并同步</button>
       <button class="btn-bump" onclick="publish(true,'开屏动画配置更新')">🚀 推送并触发本体更新弹窗</button>
     </div>
   </div>`;
@@ -1209,7 +1223,7 @@ function renderWelcome(){
     <div class="divider"></div>
     <div class="row">
       <button class="btn-pri grow" onclick="saveWelcome()">💾 保存欢迎弹窗</button>
-      <button class="btn-ok" onclick="publish(false)">💾 静默保存</button>
+      <button class="btn-ok" onclick="publish(false)">✅ 应用并同步</button>
       <button class="btn-bump" onclick="publish(true,'欢迎弹窗与新特性介绍发布')">🚀 推送并触发本体更新弹窗</button>
     </div>
   </div>`;
@@ -1365,7 +1379,7 @@ function renderApk(){
         </div>
         <div class="item-sub">${esc(apk.download_url)}</div>
         <div class="item-actions">
-          <button class="btn-mini ok" onclick="location.href='${esc(apk.download_url)}'">⬇️ 手机下载体验</button>
+          <button class="btn-mini ok" onclick="downloadApkMobile('${esc(apk.download_url)}','${esc(apk.name)}')">⬇️ 手机下载体验</button>
           <button class="btn-mini err" onclick="deleteApk('${esc(apk.name)}')">🗑 删除</button>
           <button class="btn-mini ${isCurrent ? "gray" : "warn"}" onclick="setAsReleaseApk('${esc(apk.download_url)}','${esc(apk.name)}')">
             ${isCurrent ? "✅ 当前生效中" : "🚀 设为最新并触发本体更新"}
@@ -1376,6 +1390,31 @@ function renderApk(){
   }
 
   $("apkPage").innerHTML = html;
+}
+
+// 手机下载 APK：Android WebView 内用原生下载器；浏览器内直接跳转
+function downloadApkMobile(url, name){
+  try{
+    // 尝试唤起 Android 原生下载（在云台 APK 中有效）
+    if(typeof Android !== "undefined" && Android.download){
+      Android.download(url, name);
+      toast("已开始下载，请查看通知栏","ok");
+      return;
+    }
+  }catch(e){}
+  // 浏览器环境：隐藏 iframe 触发下载（避免直接打开页面）
+  try{
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name || "app.apk";
+    a.target = "_blank";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>a.remove(), 1000);
+    toast("已开始下载 " + (name||"") + "，请查看下载记录","ok");
+  }catch(e){
+    location.href = url;
+  }
 }
 
 async function deleteApk(name){

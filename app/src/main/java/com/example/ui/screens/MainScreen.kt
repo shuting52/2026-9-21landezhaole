@@ -261,32 +261,8 @@ fun MainScreen(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
-
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .background(Color(0xFF00C853).copy(alpha = 0.12f))
-                                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(5.dp)
-                                            .clip(CircleShape)
-                                            .background(Color(0xFF00C853))
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = "新站点置顶呈现",
-                                        fontSize = 10.5.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF00A844)
-                                    )
-                                }
                             }
                         }
-
-                        // 7. Navigation Resource Cards
                         itemsIndexed(filteredCards, key = { index, card -> "${card.id}_${card.url}_$index" }) { _, card ->
                             ResourceCard(
                                 card = card,
@@ -331,13 +307,10 @@ fun MainScreen(
                 }
                 AppBottomTab.SOFTWARE -> {
                     UploadHubScreen(
-                        title = "软件库 · 作者上传",
-                        subtitle = "汇聚开发者与作者分享的优质软件、工具神器",
+                        title = "软件库 · 云端同步",
+                        subtitle = "由云台控制台实时同步，支持 APK/ZIP/MD 文件直接下载",
                         resourceType = "software",
                         resources = uploadedSoftware,
-                        onUpload = { title, desc, url, author, tags ->
-                            viewModel.uploadResource("software", title, desc, url, author, tags)
-                        },
                         onDelete = { id -> viewModel.deleteUploadedResource(id) },
                         modifier = Modifier.padding(paddingValues)
                     )
@@ -386,13 +359,10 @@ fun MainScreen(
                             PromptHubSubView(modifier = Modifier.fillMaxSize())
                         } else {
                             UploadHubScreen(
-                                title = "SKill · 技能提示库",
-                                subtitle = "AI特化Skill、系统架构指令与开发技能经验",
+                                title = "SKill · 技能库",
+                                subtitle = "由云台控制台实时同步，支持 ZIP/MD 文件直接下载",
                                 resourceType = "skill",
                                 resources = uploadedSkills,
-                                onUpload = { title, desc, url, author, tags ->
-                                    viewModel.uploadResource("skill", title, desc, url, author, tags)
-                                },
                                 onDelete = { id -> viewModel.deleteUploadedResource(id) },
                                 modifier = Modifier.fillMaxSize()
                             )

@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -86,6 +87,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.screens.toolbox.AgeCalculatorSection
+import com.example.ui.screens.toolbox.AppCloneSection
 import com.example.ui.screens.toolbox.ConstellationSection
 import com.example.ui.screens.toolbox.MouthpieceSection
 import com.example.ui.screens.toolbox.OfflineTreasureSection
@@ -166,6 +168,12 @@ enum class ToolboxTab(
         shortLabel = "文本统计",
         icon = Icons.Filled.TextFormat,
         desc = "中文字数、英文单词、数字字符、无空格纯字数与行数统计"
+    ),
+    APP_CLONE(
+        title = "应用分身多开",
+        shortLabel = "分身多开",
+        icon = Icons.Filled.Apps,
+        desc = "独立会话网页应用多开容器 · 支持同时开启多个分身互不干扰"
     )
 }
 
@@ -303,44 +311,48 @@ fun ToolboxScreen(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // 子功能选择滑动胶囊标签 (Scrollable Filter Chips)
-                LazyRow(
+                // 10 项工具独立网格呈现（2列×5行，全部可见，无需滑动）
+                androidx.compose.foundation.lazy.grid.LazyVerticalGrid(
+                    columns = androidx.compose.foundation.lazy.grid.GridCells.Fixed(2),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(62.dp * ((ToolboxTab.entries.size + 1) / 2))
                 ) {
-                    items(ToolboxTab.entries) { tab ->
+                    gridItems(ToolboxTab.entries) { tab ->
                         val isSelected = selectedTab == tab
-                        FilterChip(
-                            selected = isSelected,
+                        Surface(
                             onClick = { selectedTab = tab },
-                            leadingIcon = {
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (isSelected) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.6f),
+                            border = BorderStroke(
+                                1.dp,
+                                if (isSelected) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.8f)
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 9.dp)
+                            ) {
                                 Icon(
                                     imageVector = tab.icon,
                                     contentDescription = null,
-                                    modifier = Modifier.size(15.dp)
+                                    tint = if (isSelected) Color.White else MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(17.dp)
                                 )
-                            },
-                            label = {
+                                Spacer(modifier = Modifier.width(7.dp))
                                 Text(
                                     text = tab.shortLabel,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                    fontSize = 12.sp
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    fontSize = 12.5.sp,
+                                    maxLines = 1,
+                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                    color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
                                 )
-                            },
-                            colors = FilterChipDefaults.filterChipColors(
-                                containerColor = Color.White.copy(alpha = 0.45f),
-                                selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                labelColor = MaterialTheme.colorScheme.onSurface,
-                                selectedLabelColor = Color.White,
-                                iconColor = MaterialTheme.colorScheme.primary,
-                                selectedLeadingIconColor = Color.White
-                            ),
-                            border = BorderStroke(
-                                1.dp,
-                                if (isSelected) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.7f)
-                            ),
-                            shape = RoundedCornerShape(10.dp)
-                        )
+                            }
+                        }
                     }
                 }
             }
@@ -385,6 +397,9 @@ fun ToolboxScreen(
                 }
                 ToolboxTab.TEXT_STATS -> {
                     TextStatsScreenView(context = context)
+                }
+                ToolboxTab.APP_CLONE -> {
+                    AppCloneSection()
                 }
             }
         }

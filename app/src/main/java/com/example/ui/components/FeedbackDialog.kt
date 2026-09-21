@@ -128,56 +128,25 @@ fun FeedbackDialog(
     val sendDirectFeedback = {
         if (feedbackContent.isBlank()) {
             Toast.makeText(context, "请先填写反馈内容", Toast.LENGTH_SHORT).show()
-        } else if (!isSending) {
-            isSending = true
-            coroutineScope.launch {
+        } else {
+            try {
+                // 通过系统邮件客户端真实发送到开发者邮箱（307779523@qq.com）
                 val fullReport = buildFullReport()
-                val isSuccess = withContext(Dispatchers.IO) {
-                    try {
-                        val client = OkHttpClient.Builder()
-                            .connectTimeout(10, TimeUnit.SECONDS)
-                            .readTimeout(10, TimeUnit.SECONDS)
-                            .build()
-
-                        // 渠道1：通过开放实时推送中枢直达开发者
-                        val ntfyRequest = Request.Builder()
-                            .url("https://ntfy.sh/landezhao_feedback_hub")
-                            .post(fullReport.toRequestBody("text/plain; charset=utf-8".toMediaType()))
-                            .header("Title", "【懒得找了·软件反馈】${selectedCategory.title}")
-                            .header("Priority", "high")
-                            .header("Tags", "incoming_envelope,feedback")
-                            .build()
-
-                        val resp = client.newCall(ntfyRequest).execute()
-                        val networkSuccess = resp.isSuccessful
-                        resp.close()
-
-                        // 本地持久化留底存证
-                        val sp = context.getSharedPreferences("feedback_records", Context.MODE_PRIVATE)
-                        val prev = sp.getString("history", "") ?: ""
-                        sp.edit().putString("history", "$fullReport\n---\n$prev").apply()
-
-                        networkSuccess
-                    } catch (e: Exception) {
-                        // 离线状态下本地存证保底
-                        try {
-                            val sp = context.getSharedPreferences("feedback_records", Context.MODE_PRIVATE)
-                            val prev = sp.getString("history", "") ?: ""
-                            sp.edit().putString("history", "$fullReport\n---\n$prev").apply()
-                        } catch (_: Exception) {}
-                        false
-                    }
-                }
-
-                isSending = false
-                if (isSuccess) {
-                    Toast.makeText(context, "✅ 反馈已直接发送成功！开发者已收到您的建议，感谢支持！", Toast.LENGTH_LONG).show()
-                    onDismiss()
-                } else {
-                    // 若网络受限，也已本地安全存储，提示用户已妥善记录
-                    Toast.makeText(context, "✅ 反馈信息已成功保存并提交后台队列！感谢您的宝贵建议！", Toast.LENGTH_LONG).show()
-                    onDismiss()
-                }
+                val subject = Uri.encode("【懒得找了·软件反馈】${selectedCategory.title}")
+                val body = Uri.encode(fullReport)
+                val mailto = "mailto:307779523@qq.com?subject=$subject&body=$body"
+                val intent = Intent(Intent.ACTION_SENDTO, Uri.parse(mailto))
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+                // 本地留底
+                try {
+                    val sp = context.getSharedPreferences("feedback_records", Context.MODE_PRIVATE)
+                    val prev = sp.getString("history", "") ?: ""
+                    sp.edit().putString("history", "$fullReport\n---\n$prev").apply()
+                } catch (_: Exception) {}
+                Toast.makeText(context, "已打开邮件客户端，确认后即可发送给开发者", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Toast.makeText(context, "未找到邮件应用，请安装邮箱客户端后重试", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -433,7 +402,7 @@ fun FeedbackDialog(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // 官方QQ群
+                // 反馈直达提示（不显示 QQ，直接邮件联系开发者）
                 Surface(
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
                     shape = RoundedCornerShape(8.dp),
@@ -444,24 +413,15 @@ fun FeedbackDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 10.dp, vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Filled.Group, contentDescription = null, tint = Color(0xFF1976D2), modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "官方QQ群：439211347",
-                                fontSize = 11.5.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        TextButton(
-                            onClick = { openQqGroup(context) },
-                            modifier = Modifier.height(30.dp)
-                        ) {
-                            Text("加群交流", fontSize = 11.5.sp, color = Color(0xFF1976D2))
-                        }
+                        Icon(Icons.Filled.Send, contentDescription = null, tint = FlameRed, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "点击「直接发送」将通过邮件直达开发者，感谢您的宝贵建议！",
+                            fontSize = 11.5.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
             }
