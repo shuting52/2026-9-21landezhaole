@@ -1,18 +1,18 @@
 {
   "version": {
-    "code": 46,
-    "name": "1.5.2",
+    "code": 47,
+    "name": "1.5.3",
     "changelog": [
-      "【v1.5.2】修复三排布局站点名称看不见",
-      "【v1.5.2】修复立即更新下载失败（多下载源自动切换）",
-      "【v1.5.2】控制台软件/Skill 增删改实时同步本体",
-      "【v1.5.2】控制台新增断开功能、发布二次确认、APK仓库手机下载与清理",
-      "【v1.5.2】修复官方群跳转",
+      "【v1.5.3】设置检查更新优化：进度条可视化、Logo获取动画、去除版本号括号",
+      "【v1.5.3】控制台更新日志自动同步变更内容",
+      "【v1.5.3】控制台断开不重置Token、静默同步/弹窗说明标注",
+      "【v1.5.3】开屏视频实时同步本体、欢迎文字、联系作者图片本地上传",
+      "【v1.5.3】控制台更名云台-懒得找了（包名 com.yuntai）+ Uiverse主题切换",
       "点击「立即更新」直接下载安装新版本"
     ],
     "force": true,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.5.2-1789973940.apk",
-    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.5.2-1789973940.apk"
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.5.3-1789975974.apk",
+    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.5.3-1789975974.apk"
   },
   "home": {
     "categories": [
