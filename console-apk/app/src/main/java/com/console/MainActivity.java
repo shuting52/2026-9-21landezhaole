@@ -1,10 +1,14 @@
 package com.yuntai;
 
 import android.app.Activity;
+import android.app.DownloadManager;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -18,6 +22,9 @@ import android.webkit.WebViewClient;
  *
  * 关键：必须实现 WebChromeClient.onShowFileChooser，
  * 否则页面里的 <input type="file"> 无法打开系统文件选择器（本地上传没反应）。
+ *
+ * AndroidBridge：页面调用 window.AndroidBridge.download(url, name) 时
+ * 走系统 DownloadManager 真下载（通知栏可见进度），修复手机端 APK/ZIP/MD 无法下载的问题。
  */
 public class MainActivity extends Activity {
 
@@ -25,6 +32,42 @@ public class MainActivity extends Activity {
 
     private WebView webView;
     private ValueCallback<Uri[]> uploadMessage;
+
+    /** 原生下载桥：供页面 JS 调用，走系统 DownloadManager */
+    public class AndroidBridge {
+        @JavascriptInterface
+        public void download(String url, String name) {
+            if (url == null || url.isEmpty()) return;
+            try {
+                String fileName = (name == null || name.trim().isEmpty())
+                        ? "landezhao-download"
+                        : name.trim();
+                if (!fileName.contains(".")) {
+                    String ext = "apk";
+                    String low = url.toLowerCase();
+                    if (low.contains(".zip")) ext = "zip";
+                    else if (low.contains(".md")) ext = "md";
+                    fileName = fileName + "." + ext;
+                }
+                DownloadManager dm = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+                DownloadManager.Request req = new DownloadManager.Request(Uri.parse(url))
+                        .setTitle(fileName)
+                        .setDescription("懒得找了 · 云端仓库文件")
+                        .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                        .setAllowedOverMetered(true)
+                        .setAllowedOverRoaming(true);
+                if (fileName.toLowerCase().endsWith(".apk")) {
+                    req.setMimeType("application/vnd.android.package-archive");
+                } else if (fileName.toLowerCase().endsWith(".zip")) {
+                    req.setMimeType("application/zip");
+                } else if (fileName.toLowerCase().endsWith(".md")) {
+                    req.setMimeType("text/markdown");
+                }
+                req.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
+                dm.enqueue(req);
+            } catch (Exception ignored) { }
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +84,9 @@ public class MainActivity extends Activity {
         s.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         s.setLoadWithOverviewMode(true);
         s.setUseWideViewPort(true);
+
+        // 原生下载桥：修复手机端 APK / ZIP / MD 下载
+        webView.addJavascriptInterface(new AndroidBridge(), "AndroidBridge");
 
         webView.setWebViewClient(new WebViewClient());
 

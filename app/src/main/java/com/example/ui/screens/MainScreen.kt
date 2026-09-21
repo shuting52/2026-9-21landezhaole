@@ -169,6 +169,7 @@ fun MainScreen(
     val uploadedSoftware by viewModel.uploadedSoftware.collectAsStateWithLifecycle()
     val uploadedSkills by viewModel.uploadedSkills.collectAsStateWithLifecycle()
     val customSites by viewModel.customSites.collectAsStateWithLifecycle()
+    val clones by viewModel.clones.collectAsStateWithLifecycle()
 
     val totalResourceCount = remember(uiState.categories, customSites) {
         uiState.categories.sumOf { it.cards.size } + customSites.size
@@ -261,28 +262,6 @@ fun MainScreen(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
-
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .background(Color(0xFF00C853).copy(alpha = 0.12f))
-                                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(5.dp)
-                                            .clip(CircleShape)
-                                            .background(Color(0xFF00C853))
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = "新站点置顶呈现",
-                                        fontSize = 10.5.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF00A844)
-                                    )
-                                }
                             }
                         }
 
@@ -331,14 +310,10 @@ fun MainScreen(
                 }
                 AppBottomTab.SOFTWARE -> {
                     UploadHubScreen(
-                        title = "软件库 · 作者上传",
-                        subtitle = "汇聚开发者与作者分享的优质软件、工具神器",
+                        title = "软件库",
+                        subtitle = "站长精选与作者分享的优质软件、工具神器（云端同步）",
                         resourceType = "software",
                         resources = uploadedSoftware,
-                        onUpload = { title, desc, url, author, tags ->
-                            viewModel.uploadResource("software", title, desc, url, author, tags)
-                        },
-                        onDelete = { id -> viewModel.deleteUploadedResource(id) },
                         modifier = Modifier.padding(paddingValues)
                     )
                 }
@@ -386,14 +361,10 @@ fun MainScreen(
                             PromptHubSubView(modifier = Modifier.fillMaxSize())
                         } else {
                             UploadHubScreen(
-                                title = "SKill · 技能提示库",
-                                subtitle = "AI特化Skill、系统架构指令与开发技能经验",
+                                title = "SKill · 技能库",
+                                subtitle = "AI特化Skill、系统架构指令与开发技能经验（云端同步）",
                                 resourceType = "skill",
                                 resources = uploadedSkills,
-                                onUpload = { title, desc, url, author, tags ->
-                                    viewModel.uploadResource("skill", title, desc, url, author, tags)
-                                },
-                                onDelete = { id -> viewModel.deleteUploadedResource(id) },
                                 modifier = Modifier.fillMaxSize()
                             )
                         }
@@ -401,6 +372,10 @@ fun MainScreen(
                 }
                 AppBottomTab.TOOLBOX -> {
                     ToolboxScreen(
+                        clones = clones,
+                        onCreateClone = { pkg, name -> viewModel.createClone(pkg, name) },
+                        onDeleteClone = { id -> viewModel.deleteClone(id) },
+                        onRenameClone = { id, newName -> viewModel.renameClone(id, newName) },
                         modifier = Modifier.padding(paddingValues)
                     )
                 }
@@ -410,6 +385,7 @@ fun MainScreen(
                         onOpenThemeSwitcher = { viewModel.setThemeDialogVisible(true) },
                         cloudUpdate = uiState.cloudUpdate,
                         cloudVersion = uiState.cloudVersion,
+                        cloudSettings = uiState.cloudSettings,
                         onCheckUpdate = { viewModel.refreshRemoteConfig() },
                         modifier = Modifier.padding(paddingValues)
                     )
