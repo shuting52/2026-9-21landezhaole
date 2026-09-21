@@ -6015,7 +6015,21 @@
     ]
   },
   "software": [],
-  "skills": [],
+  "skills": [
+    {
+      "id": "sk_muau849rt7t1",
+      "type": "skill",
+      "title": "夏林果真人IP封面",
+      "desc": "夏林果真人IP封面 技能资源包（ZIP）已上传云端",
+      "prompt": "",
+      "url": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1789970497488______IP__.zip",
+      "author": "懒得找了",
+      "badge": "",
+      "tags": "技能 资源包 ZIP",
+      "previewUrl": "",
+      "mediaUrl": ""
+    }
+  ],
   "settings": {
     "appName": "懒得找了",
     "slogan": "精选AI工具导航、Prompt效果图预览与手机应用无限多开分身百宝箱",
