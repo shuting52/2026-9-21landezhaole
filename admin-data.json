@@ -6067,7 +6067,7 @@
     "bgColor": "#0B0B1A"
   },
   "welcome": {
-    "enabled": false,
+    "enabled": true,
     "title": "欢迎使用懒得找了",
     "content": "",
     "imageUrl": "",
