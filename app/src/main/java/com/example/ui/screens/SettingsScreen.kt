@@ -260,7 +260,7 @@ fun SettingsScreen(
                     },
                     subtitle = when {
                         isCheckingUpdate -> "连接云端同步中…"
-                        hasNewCloudVersion -> "当前版本 v${com.example.BuildConfig.VERSION_NAME} → 有新版本可更新，点击查看下载"
+                        hasNewCloudVersion -> "有新版本~请及时更新"
                         else -> "当前版本 v${com.example.BuildConfig.VERSION_NAME} (code:${com.example.BuildConfig.VERSION_CODE})"
                     },
                     icon = Icons.Filled.RocketLaunch,
@@ -274,10 +274,11 @@ fun SettingsScreen(
                                 val (hasNew, ver) = onCheckUpdate()
                                 isCheckingUpdate = false
                                 if (hasNew) {
+                                    // 有新版本：弹出更新弹窗，可立即更新下载 APK 或跳转官方群
+                                    Toast.makeText(context, "发现新版本 v${ver?.name ?: ""}~请及时更新", Toast.LENGTH_SHORT).show()
                                     activeDialogType = "update"
                                 } else {
-                                    Toast.makeText(context, "当前已是最新版本 (v${ver?.name ?: com.example.BuildConfig.VERSION_NAME})！", Toast.LENGTH_SHORT).show()
-                                    activeDialogType = "update"
+                                    Toast.makeText(context, "该版本已是最新版本~无需更新", Toast.LENGTH_SHORT).show()
                                 }
                             }
                         } else {
