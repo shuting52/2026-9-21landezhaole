@@ -470,6 +470,14 @@ fun MainScreen(
                 },
                 text = {
                     Column {
+                        if (cloudWelcome.welcomeText.isNotBlank()) {
+                            Text(
+                                text = cloudWelcome.welcomeText,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                        }
                         if (cloudWelcome.imageUrl.isNotBlank()) {
                             coil.compose.AsyncImage(
                                 model = cloudWelcome.imageUrl,

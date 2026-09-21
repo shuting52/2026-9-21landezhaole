@@ -111,6 +111,7 @@ data class WelcomeDto(
     val enabled: Boolean = false,
     val title: String = "欢迎使用",
     val content: String = "",
+    val welcomeText: String = "",
     val imageUrl: String = "",
     val buttonText: String = "开始使用"
 )

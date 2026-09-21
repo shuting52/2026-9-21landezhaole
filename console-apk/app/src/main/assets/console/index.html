@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>懒得找了 · 云端总控台</title>
+<title>云台-懒得找了 · 云端总控台</title>
 <style>
 :root{
   --bg:#0a0e1a;--bg2:#111827;--card:#151c2e;--card2:#1b2440;--line:#26304f;
@@ -45,6 +45,65 @@ header{position:sticky;top:0;z-index:50;background:rgba(10,14,26,.88);backdrop-f
 .pub-btn{background:linear-gradient(135deg,#22c55e,#0ea5e9);color:#04120a;padding:8px 14px;font-size:13px;border-radius:10px;font-weight:800;box-shadow:0 4px 16px #22c55e44}
 .pub-bump-btn{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;padding:8px 14px;font-size:13px;border-radius:10px;font-weight:800;box-shadow:0 4px 16px #ef444444}
 .pub-dis-btn{background:linear-gradient(135deg,#64748b,#334155);color:#fff;padding:8px 14px;font-size:13px;border-radius:10px;font-weight:800}
+/* From Uiverse.io by mamyapro123 - 主题切换开关 */
+.theme-switch{--toggle-size:14px;--container-width:4.4em;--container-height:2.1em;--container-radius:.38em;--container-light-bg:#5caad4;--container-night-bg:#1b1e36;--circle-container-diameter:2.6em;--sun-moon-diameter:1.7em;--sun-bg:#f5c518;--moon-bg:#d8d4c0;--spot-color:#9b9787;--circle-container-offset:calc((var(--circle-container-diameter) - var(--container-height)) / 2 * -1);--stars-color:#fff8e1;--clouds-color:#f4f4f4;--back-clouds-color:#bacfe0;--transition:.5s cubic-bezier(0,-.02,.4,1.25);--circle-transition:.3s cubic-bezier(0,-.02,.35,1.17);display:inline-block;flex-shrink:0}
+.theme-switch,.theme-switch *,.theme-switch *::before,.theme-switch *::after{box-sizing:border-box;margin:0;padding:0;font-size:var(--toggle-size)}
+.theme-switch__container{width:var(--container-width);height:var(--container-height);background-color:var(--container-light-bg);border-radius:var(--container-radius);overflow:hidden;cursor:pointer;position:relative;background-image:linear-gradient(to bottom,var(--container-light-bg) 0%,#4a92bd 100%);transition:all var(--transition);box-shadow:0 0 0 2.5px #1a1a1a,3px 4px 0 2.5px rgba(26,26,26,.22);transform:rotate(-.7deg)}
+.theme-switch__container::before{content:"";position:absolute;z-index:1;inset:0;background-image:repeating-linear-gradient(-50deg,transparent,transparent 7px,rgba(255,255,255,.04) 7px,rgba(255,255,255,.04) 8px);border-radius:inherit;pointer-events:none}
+.theme-switch__checkbox{display:none}
+.theme-switch__circle-container{width:var(--circle-container-diameter);height:var(--circle-container-diameter);background-color:rgba(255,255,255,.1);position:absolute;left:var(--circle-container-offset);top:var(--circle-container-offset);border-radius:var(--container-radius);box-shadow:inset 0 0 0 3.375em rgba(255,255,255,.1),inset 0 0 0 3.375em rgba(255,255,255,.1),0 0 0 .625em rgba(255,255,255,.1),0 0 0 1.25em rgba(255,255,255,.1);display:flex;transition:var(--circle-transition);pointer-events:none}
+.theme-switch__circle-container::before{content:"";position:absolute;width:calc(var(--circle-container-diameter) + 1.5em);height:calc(var(--circle-container-diameter) + 1.5em);left:-.75em;top:-.75em;border-radius:50%;background:conic-gradient(transparent 0deg,transparent 8deg,rgba(245,197,24,.52) 8deg,rgba(245,197,24,.52) 22deg,transparent 22deg,transparent 53deg,rgba(245,197,24,.52) 53deg,rgba(245,197,24,.52) 67deg,transparent 67deg,transparent 98deg,rgba(245,197,24,.52) 98deg,rgba(245,197,24,.52) 112deg,transparent 112deg,transparent 143deg,rgba(245,197,24,.52) 143deg,rgba(245,197,24,.52) 157deg,transparent 157deg,transparent 188deg,rgba(245,197,24,.52) 188deg,rgba(245,197,24,.52) 202deg,transparent 202deg,transparent 233deg,rgba(245,197,24,.52) 233deg,rgba(245,197,24,.52) 247deg,transparent 247deg,transparent 278deg,rgba(245,197,24,.52) 278deg,rgba(245,197,24,.52) 292deg,transparent 292deg,transparent 323deg,rgba(245,197,24,.52) 323deg,rgba(245,197,24,.52) 337deg,transparent 337deg,transparent 360deg);animation:rotateSunRays 14s linear infinite;opacity:1;transition:opacity var(--transition);pointer-events:none}
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__circle-container::before{opacity:0}
+@keyframes rotateSunRays{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.theme-switch__sun-moon-container{pointer-events:auto;position:relative;z-index:2;width:var(--sun-moon-diameter);height:var(--sun-moon-diameter);margin:auto;border-radius:var(--container-radius);background-color:var(--sun-bg);box-shadow:.062em .062em .062em 0 rgba(254,255,239,.61) inset,0 -.062em .062em 0 #a1872a inset,.1em .13em 0 .04em #1a1a1a;filter:drop-shadow(.062em .125em .125em rgba(0,0,0,.25));overflow:hidden;transition:var(--transition);transform:scale(1)}
+.theme-switch__sun-moon-container:hover{transform:scale(1.1) rotate(5deg)}
+.theme-switch__moon{transform:translateX(100%);width:100%;height:100%;background-color:var(--moon-bg);border-radius:inherit;box-shadow:.062em .062em .062em 0 rgba(254,255,239,.61) inset,0 -.062em .062em 0 #969696 inset;transition:all var(--transition),transform .3s ease;position:relative}
+.theme-switch__moon:hover{transform:rotate(15deg)}
+.theme-switch__spot{position:absolute;top:.75em;left:.312em;width:.75em;height:.75em;border-radius:var(--container-radius);background-color:var(--spot-color);box-shadow:0 .0312em .062em rgba(0,0,0,.25) inset;transition:background-color .3s ease}
+.theme-switch__spot:nth-of-type(2){width:.375em;height:.375em;top:.937em;left:1.375em}
+.theme-switch__spot:nth-last-of-type(3){width:.25em;height:.25em;top:.312em;left:.812em}
+.theme-switch__moon:hover .theme-switch__spot{background-color:#7a7f8c}
+.theme-switch__clouds{width:1.25em;height:1.25em;background-color:var(--clouds-color);border-radius:var(--container-radius);position:absolute;bottom:-.625em;left:.312em;box-shadow:.937em .312em var(--clouds-color),-.312em -.312em var(--back-clouds-color),1.437em .375em var(--clouds-color),.5em -.125em var(--back-clouds-color),2.187em 0 var(--clouds-color),1.25em -.062em var(--back-clouds-color),2.937em .312em var(--clouds-color),2em -.312em var(--back-clouds-color),3.625em -.062em var(--clouds-color),2.625em 0 var(--back-clouds-color),4.5em -.312em var(--clouds-color),3.375em -.437em var(--back-clouds-color),4.625em -1.75em 0 .437em var(--clouds-color),4em -.625em var(--back-clouds-color),4.125em -2.125em 0 .437em var(--back-clouds-color);transition:.5s cubic-bezier(0,-.02,.4,1.25)}
+.theme-switch__stars-container{position:absolute;color:var(--stars-color);top:-100%;left:.312em;width:2.75em;height:auto;transition:var(--transition)}
+.theme-switch__checkbox:checked + .theme-switch__container{background-color:var(--container-night-bg);background-image:linear-gradient(to bottom,var(--container-night-bg) 0%,#252a4a 100%)}
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__circle-container{left:calc(100% - var(--circle-container-offset) - var(--circle-container-diameter))}
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__circle-container:hover{left:calc(100% - var(--circle-container-offset) - var(--circle-container-diameter) - .187em)}
+.theme-switch__circle-container:hover{left:calc(var(--circle-container-offset) + .187em)}
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__moon{transform:translate(0)}
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__clouds{bottom:-4.062em}
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__stars-container{top:50%;transform:translateY(-50%)}
+.theme-switch__container:hover .theme-switch__clouds{transform:translateX(15px) scale(1.02)}
+.theme-switch__shooting-star{position:absolute;width:2px;height:2px;background:#fff;top:20%;left:-10%;opacity:0;transition:opacity .3s ease}
+.theme-switch__shooting-star-2{position:absolute;width:1px;height:1px;background:#fff;top:35%;left:-10%;opacity:0;transition:opacity .3s ease}
+.theme-switch__meteor{position:absolute;width:3px;height:3px;background:#ffd700;border-radius:50%;top:-10%;left:50%;opacity:0;filter:blur(1px);transition:opacity .3s ease}
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__shooting-star{animation:shootingStar 2s linear infinite;opacity:1}
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__shooting-star-2{animation:shootingStar 3s linear infinite 1s;opacity:1}
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__meteor{animation:meteor 4s linear infinite 2s;opacity:1}
+@keyframes shootingStar{0%{transform:translateX(0) translateY(0) rotate(45deg);opacity:1}100%{transform:translateX(150px) translateY(150px) rotate(45deg);opacity:0}}
+@keyframes meteor{0%{transform:translateY(0) scale(1);opacity:1}100%{transform:translateY(150px) scale(.3);opacity:0}}
+.theme-switch__stars-cluster{position:absolute;inset:0;opacity:0;transition:opacity .3s ease}
+.theme-switch__stars-cluster .star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;box-shadow:0 0 4px 1px #fff}
+.theme-switch__stars-cluster .star:nth-child(1){top:20%;left:20%;animation:twinkle 1s infinite ease-in-out}
+.theme-switch__stars-cluster .star:nth-child(2){top:30%;left:55%;animation:twinkle 1s infinite ease-in-out .3s}
+.theme-switch__stars-cluster .star:nth-child(3){top:40%;left:80%;animation:twinkle 1s infinite ease-in-out .6s}
+.theme-switch__stars-cluster .star:nth-child(4){top:60%;left:30%;animation:twinkle 1s infinite ease-in-out .9s}
+.theme-switch__stars-cluster .star:nth-child(5){top:70%;left:65%;animation:twinkle 1s infinite ease-in-out 1.2s}
+.theme-switch__aurora{position:absolute;top:0;left:0;right:0;height:20px;background:linear-gradient(90deg,rgba(0,255,255,0) 0%,rgba(0,255,255,.2) 25%,rgba(128,0,255,.2) 50%,rgba(0,255,255,.2) 75%,rgba(0,255,255,0) 100%);opacity:0;filter:blur(4px);transform:translateY(-100%);transition:opacity .3s ease}
+.theme-switch__comets{position:absolute;inset:0;overflow:hidden;opacity:0;transition:opacity .3s ease}
+.theme-switch__comets .comet{position:absolute;width:2px;height:2px;background:linear-gradient(90deg,#fff 0%,transparent 90%);border-radius:50%;filter:blur(1px)}
+.theme-switch__comets .comet:nth-child(1){top:30%;left:-10%;animation:cometMove 4s linear infinite}
+.theme-switch__comets .comet:nth-child(2){top:50%;left:-10%;animation:cometMove 6s linear infinite 2s}
+@keyframes twinkle{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:1;transform:scale(1.2)}}
+@keyframes cometMove{0%{transform:translateX(0) translateY(0) rotate(-45deg) scale(1);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateX(200px) translateY(200px) rotate(-45deg) scale(.2);opacity:0}}
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__stars-cluster{opacity:1}
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__aurora{opacity:1;animation:auroraWave 8s linear infinite}
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__comets{opacity:1}
+@keyframes auroraWave{0%{transform:translateY(-100%) translateX(-50%)}100%{transform:translateY(-100%) translateX(50%)}}
+/* 浅色主题变量 */
+body[data-theme="light"]{--bg:#f1f5fb;--bg2:#ffffff;--card:#ffffff;--card2:#eef2f9;--line:#d8e0ef;--tx:#1a2233;--tx2:#5c6a85}
+body[data-theme="light"] .grad{background:linear-gradient(135deg,#6c63ff14,#ff2d7814)}
+body[data-theme="light"] header{background:rgba(255,255,255,.9)}
+body[data-theme="light"] nav{background:rgba(255,255,255,.95)}
 /* tabs */
 nav{position:fixed;bottom:0;left:0;right:0;z-index:60;background:rgba(10,14,26,.94);backdrop-filter:blur(14px);border-top:1px solid var(--line);display:flex;overflow-x:auto}
 nav button{flex:1;min-width:52px;background:none;border-radius:0;padding:8px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:var(--tx2)}
@@ -109,12 +168,39 @@ main{padding:12px;max-width:960px;margin:0 auto}
   <div class="hd-top">
     <div class="logo">懒</div>
     <div class="grow">
-      <div class="hd-title">懒得找了 · 云端总控台</div>
+      <div class="hd-title">云台-懒得找了</div>
       <div class="hd-sub" id="hdSub">正在自动连接云端仓库…</div>
     </div>
-    <button class="pub-btn" onclick="publish(false)">💾 静默同步</button>
-    <button class="pub-bump-btn" onclick="quickBumpPublish()">🚀 触发更新弹窗</button>
-    <button class="pub-dis-btn" onclick="disconnect()">⏻ 断开</button>
+    <label class="theme-switch" title="浅色/深色主题切换">
+      <input type="checkbox" class="theme-switch__checkbox" id="themeToggle" onchange="toggleTheme(this.checked)">
+      <div class="theme-switch__container">
+        <div class="theme-switch__circle-container">
+          <div class="theme-switch__sun-moon-container">
+            <div class="theme-switch__moon">
+              <div class="theme-switch__spot"></div>
+              <div class="theme-switch__spot"></div>
+              <div class="theme-switch__spot"></div>
+            </div>
+          </div>
+          <div class="theme-switch__clouds"></div>
+          <div class="theme-switch__stars-container">
+            <div class="theme-switch__stars-cluster">
+              <span class="star"></span><span class="star"></span><span class="star"></span><span class="star"></span><span class="star"></span>
+            </div>
+            <div class="theme-switch__aurora"></div>
+            <div class="theme-switch__comets">
+              <span class="comet"></span><span class="comet"></span>
+            </div>
+            <span class="theme-switch__shooting-star"></span>
+            <span class="theme-switch__shooting-star-2"></span>
+            <span class="theme-switch__meteor"></span>
+          </div>
+        </div>
+      </div>
+    </label>
+    <button class="pub-btn" title="静默同步：仅保存数据到仓库，不升版本号、不弹窗，本体下次刷新自动应用" onclick="publish(false)">💾 静默同步</button>
+    <button class="pub-bump-btn" title="触发更新弹窗：递增版本号并发布，本体软件即刻弹出更新窗口" onclick="quickBumpPublish()">🚀 触发更新弹窗</button>
+    <button class="pub-dis-btn" title="断开与仓库的连接（不会清除 Token，可随时重新连接）" onclick="disconnect()">⏻ 断开</button>
   </div>
 </header>
 
@@ -188,8 +274,37 @@ const S = {
   sha:   "",
   loaded: false,
   dirty:  false,
-  apks:   []
+  apks:   [],
+  // 记录本次操作变更，发布新版本时自动写入更新日志
+  changeLog: []
 };
+
+// 记录一条变更到待发布日志
+function logChange(msg){
+  S.changeLog = S.changeLog || [];
+  var now = new Date();
+  var hh = ("0"+now.getHours()).slice(-2);
+  var mm = ("0"+now.getMinutes()).slice(-2);
+  S.changeLog.unshift("【"+hh+":"+mm+"】"+msg);
+  if(S.changeLog.length > 20) S.changeLog.length = 20;
+}
+
+// 主题切换
+function toggleTheme(night){
+  if(night){
+    document.body.removeAttribute("data-theme");
+  }else{
+    document.body.setAttribute("data-theme","light");
+  }
+  try{ localStorage.setItem("lzdz_theme", night ? "dark" : "light"); }catch(e){}
+}
+// 恢复上次主题
+(function(){
+  try{
+    const t = localStorage.getItem("lzdz_theme");
+    if(t === "light"){ document.body.setAttribute("data-theme","light"); const c = document.getElementById("themeToggle"); if(c) c.checked = false; }
+  }catch(e){}
+})();
 
 const $ = id => document.getElementById(id);
 
@@ -304,10 +419,11 @@ function setSub(t){ $("hdSub").textContent = t; }
  * 断开与仓库的连接：清空内存中的云端数据与凭据状态（不删除本地保存的配置）
  */
 function disconnect(){
-  S.admin = null; S.sha = ""; S.loaded = false; S.dirty = false; S.apks = [];
+  // 仅断开与仓库的联系，不重置 Token、不改变配置
+  S.admin = null; S.sha = ""; S.loaded = false; S.dirty = false; S.apks = []; S.changeLog = [];
   renderAll();
-  setSub("已断开仓库连接");
-  $("connInfo").innerHTML = '<span class="status-dot idle"></span>已断开与仓库的连接，可修改 Token/仓库后重新连接';
+  setSub("已断开仓库连接（Token 保留）");
+  $("connInfo").innerHTML = '<span class="status-dot idle"></span>已断开与仓库的连接，Token 已保留，可直接点「连接并加载云端数据」重新连接';
   toast("已断开仓库连接","ok");
 }
 
@@ -349,8 +465,14 @@ async function publish(bump = false, actionDesc = ""){
       const note = actionDesc ? `【控制台推送】${actionDesc}` : "系统功能与站点资源同步更新";
       if(!S.admin.version.changelog) S.admin.version.changelog = [];
       S.admin.version.changelog.unshift(note);
+      // 自动同步本次变更记录到更新日志（新增/删除站点、软件、Skill、设置、开屏、欢迎等）
+      const changes = (S.changeLog && S.changeLog.length) ? S.changeLog : [];
+      changes.forEach(c => {
+        S.admin.version.changelog.unshift(c);
+      });
       S.admin.updateDialog = S.admin.updateDialog || { title:"发现新版本", changelog:[], confirmText:"立即更新", cancelText:"稍后再说" };
-      S.admin.updateDialog.changelog = [note, ...(S.admin.updateDialog.changelog || [])].slice(0, 8);
+      S.admin.updateDialog.changelog = [note, ...changes, ...(S.admin.updateDialog.changelog || [])].slice(0, 12);
+      S.changeLog = [];
     }
     const msg = bump 
       ? `console: [发布新版本 v${S.admin.version.name} code:${S.admin.version.code}] ${actionDesc || "更新"}`
@@ -741,11 +863,12 @@ function saveSoft(si){
   };
   if(si >= 0) S.admin.software[si] = obj; else S.admin.software.push(obj);
   closeDlg(); renderSoftware(); toast("软件已保存","ok");
+  logChange((si>=0?"更新软件「":"新增软件「")+obj.title+"」");
 }
 
 function removeSoft(si){
   confirmDlg(`删除软件「${S.admin.software[si].title}」？`).then(ok=>{
-    if(!ok) return; S.admin.software.splice(si,1); renderSoftware(); toast("已删除软件","ok");
+    if(!ok) return; var t = S.admin.software[si].title; S.admin.software.splice(si,1); renderSoftware(); toast("已删除软件","ok"); logChange("删除软件「"+t+"」");
   });
 }
 
@@ -893,11 +1016,12 @@ function saveSkill(si){
   };
   if(si >= 0) S.admin.skills[si] = obj; else S.admin.skills.push(obj);
   closeDlg(); renderSkill(); toast("Skill 已保存","ok");
+  logChange((si>=0?"更新Skill「":"新增Skill「")+obj.title+"」");
 }
 
 function removeSkill(si){
   confirmDlg(`删除 Skill「${S.admin.skills[si].title}」？`).then(ok=>{
-    if(!ok) return; S.admin.skills.splice(si,1); renderSkill(); toast("已删除 Skill","ok");
+    if(!ok) return; var t = S.admin.skills[si].title; S.admin.skills.splice(si,1); renderSkill(); toast("已删除 Skill","ok"); logChange("删除Skill「"+t+"」");
   });
 }
 
@@ -916,10 +1040,16 @@ function renderSettings(){
     <label>软件副标题 / Slogan</label><input id="fSetSlogan" value="${esc(s.slogan||"聚合实用导航与效率利器")}">
     <label>关于我们描述文本</label><textarea id="fSetAbout" style="min-height:90px">${esc(s.aboutText||"")}</textarea>
     <div class="two-col">
-      <div><label>官方 QQ 群 / 联系二维码 URL</label><input id="fSetQQ" value="${esc(s.contactQQ||"")}" placeholder="https://..."></div>
-      <div><label>微信联系二维码 URL</label><input id="fSetWx" value="${esc(s.contactWechat||"")}" placeholder="https://..."></div>
+      <div><label>官方 QQ 群 / 联系二维码 URL</label><input id="fSetQQ" value="${esc(s.contactQQ||"")}" placeholder="https://...">
+        <div class="upload-box" onclick="document.getElementById('fSetQQFile').click()">🖼️ 本地上传 QQ 二维码</div>
+        <input type="file" id="fSetQQFile" accept="image/*" style="display:none" onchange="uploadContactImg(event,'fSetQQ')"></div>
+      <div><label>微信联系二维码 URL</label><input id="fSetWx" value="${esc(s.contactWechat||"")}" placeholder="https://...">
+        <div class="upload-box" onclick="document.getElementById('fSetWxFile').click()">🖼️ 本地上传微信二维码</div>
+        <input type="file" id="fSetWxFile" accept="image/*" style="display:none" onchange="uploadContactImg(event,'fSetWx')"></div>
     </div>
     <label>赞赏二维码图片 URL</label><input id="fSetAli" value="${esc(s.contactAlipay||"")}" placeholder="https://...">
+    <div class="upload-box" onclick="document.getElementById('fSetAliFile').click()">🖼️ 本地上传支付宝/赞赏码</div>
+    <input type="file" id="fSetAliFile" accept="image/*" style="display:none" onchange="uploadContactImg(event,'fSetAli')">
     <div class="divider"></div>
     <div class="row">
       <button class="btn-pri grow" onclick="saveSettings()">💾 保存设置</button>
@@ -927,6 +1057,15 @@ function renderSettings(){
       <button class="btn-bump" onclick="publish(true,'设置与品牌信息更新')">🚀 推送并触发本体更新弹窗</button>
     </div>
   </div>`;
+}
+
+async function uploadContactImg(ev, targetId){
+  const f = ev.target.files[0]; if(!f) return;
+  try{
+    const url = await uploadFile(f, "dist/uploads");
+    $(targetId).value = url;
+    toast("联系作者图片已上传并填入链接","ok");
+  }catch(e){ toast("上传失败："+e.message,"err"); }
 }
 
 function saveSettings(){
@@ -939,6 +1078,7 @@ function saveSettings(){
     contactAlipay: $("fSetAli").value.trim()
   };
   toast("设置已保存，记得点发布","ok");
+  logChange("更新设置版块（App名称/Slogan/联系作者）");
 }
 
 // ==========================================
@@ -1010,6 +1150,13 @@ async function uploadSplashMedia(ev){
       ? `<video class="preview-video" src="${esc(url)}" controls></video>`
       : `<img class="preview-img" src="${esc(url)}">`;
     toast("开屏媒体上传成功","ok");
+    // 实时同步到本体：保存开屏配置并静默发布，本体软件 20 秒内自动应用
+    S.admin.splash = S.admin.splash || { type: "media", customHtml: "", mediaUrl: "", durationSeconds: 3, bgColor: "#0B0B1A" };
+    S.admin.splash.type = "media";
+    S.admin.splash.mediaUrl = url;
+    logChange("上传开屏媒体："+f.name);
+    await publish(false);
+    toast("已实时同步到本体软件开屏","ok");
   }catch(e){ toast("上传失败："+e.message,"err"); }
 }
 
@@ -1022,6 +1169,7 @@ function saveSplash(){
     bgColor: $("fSpBg").value
   };
   toast("开屏动画配置已保存","ok");
+  logChange("更新开屏动画配置（"+($("fSpType").value==="media"?"媒体":"默认/自定义")+"模式）");
 }
 
 // ==========================================
@@ -1041,6 +1189,8 @@ function renderWelcome(){
       <option value="false" ${!w.enabled?"selected":""}>🚫 停用欢迎弹窗</option>
     </select>
     <label>弹窗主标题</label><input id="fWlTitle" value="${esc(w.title)}" placeholder="如 欢迎体验全新版本">
+    <label>欢迎文字（简短问候语，展示在功能列表上方）</label>
+    <input id="fWlText" value="${esc(w.welcomeText||"")}" placeholder="如：欢迎使用「懒得找了」，愿你在这里发现更多宝藏！">
     <label>新功能说明列表（每行一条）</label>
     <textarea id="fWlContent" style="min-height:120px" placeholder="1. 新增【嘴强嘴替】与年龄计算器&#10;2. 全新 3 排舒适导航网格布局&#10;3. 权威高精度 IP 实时监控引擎">${esc(w.content)}</textarea>
     <label>欢迎配图（本地上传）</label>
@@ -1073,10 +1223,12 @@ function saveWelcome(){
     enabled: $("fWlEnabled").value === "true",
     title: $("fWlTitle").value.trim(),
     content: $("fWlContent").value,
+    welcomeText: $("fWlText") ? $("fWlText").value.trim() : "",
     imageUrl: $("fWlImgUrl").value.trim(),
     buttonText: $("fWlBtn").value.trim() || "开始体验"
   };
   toast("欢迎弹窗已保存","ok");
+  logChange("更新欢迎弹窗与欢迎文字");
 }
 
 // ==========================================

@@ -1,4 +1,4 @@
-package com.console.lzdz;
+package com.yuntai;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;

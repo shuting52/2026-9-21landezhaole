@@ -20,9 +20,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.ChildCare
+import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Info
@@ -49,6 +56,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
@@ -66,6 +74,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -252,40 +261,116 @@ fun SettingsScreen(
         ) {
             Column(modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp)) {
                 // 检查更新（云端自动检测，有新版本时展示提示并一键直达更新下载）
-                SettingsClickableItem(
-                    title = when {
-                        isCheckingUpdate -> "正在检测云端新版本…"
-                        hasNewCloudVersion -> "发现新版本 v${cloudVersion?.name ?: ""}"
-                        else -> "检查更新"
-                    },
-                    subtitle = when {
-                        isCheckingUpdate -> "连接云端同步中…"
-                        hasNewCloudVersion -> "有新版本~请及时更新"
-                        else -> "当前版本 v${com.example.BuildConfig.VERSION_NAME} (code:${com.example.BuildConfig.VERSION_CODE})"
-                    },
-                    icon = Icons.Filled.RocketLaunch,
-                    iconColor = if (hasNewCloudVersion) Color(0xFF34C759) else Color(0xFF6C63FF),
-                    onClick = {
-                        if (isCheckingUpdate) return@SettingsClickableItem
-                        if (onCheckUpdate != null) {
-                            coroutineScope.launch {
-                                isCheckingUpdate = true
-                                Toast.makeText(context, "正在连接云端仓库检测最新版本…", Toast.LENGTH_SHORT).show()
-                                val (hasNew, ver) = onCheckUpdate()
-                                isCheckingUpdate = false
-                                if (hasNew) {
-                                    // 有新版本：弹出更新弹窗，可立即更新下载 APK 或跳转官方群
-                                    Toast.makeText(context, "发现新版本 v${ver?.name ?: ""}~请及时更新", Toast.LENGTH_SHORT).show()
-                                    activeDialogType = "update"
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                if (isCheckingUpdate) return@clickable
+                                if (onCheckUpdate != null) {
+                                    coroutineScope.launch {
+                                        isCheckingUpdate = true
+                                        val (hasNew, ver) = onCheckUpdate()
+                                        isCheckingUpdate = false
+                                        if (hasNew) {
+                                            Toast.makeText(context, "发现新版本 v${ver?.name ?: ""}~请及时更新", Toast.LENGTH_SHORT).show()
+                                            activeDialogType = "update"
+                                        } else {
+                                            Toast.makeText(context, "该版本已是最新版本~无需更新", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
                                 } else {
-                                    Toast.makeText(context, "该版本已是最新版本~无需更新", Toast.LENGTH_SHORT).show()
+                                    activeDialogType = "update"
                                 }
                             }
+                            .padding(horizontal = 14.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // 检查中显示云端获取 Logo 动画，否则显示常规图标
+                        if (isCheckingUpdate) {
+                            val infinite = rememberInfiniteTransition(label = "check_update_loading")
+                            val angle by infinite.animateFloat(
+                                initialValue = 0f,
+                                targetValue = 360f,
+                                animationSpec = infiniteRepeatable(
+                                    animation = tween(1200, easing = LinearEasing),
+                                    repeatMode = RepeatMode.Restart
+                                ),
+                                label = "check_angle"
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .size(26.dp)
+                                    .graphicsLayer { rotationZ = angle }
+                                    .clip(CircleShape)
+                                    .background(
+                                        Brush.linearGradient(listOf(Color(0xFF6366F1), Color(0xFF22C55E)))
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.CloudDownload,
+                                    contentDescription = "正在获取",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(15.dp)
+                                )
+                            }
                         } else {
-                            activeDialogType = "update"
+                            Icon(
+                                imageVector = Icons.Filled.RocketLaunch,
+                                contentDescription = null,
+                                tint = if (hasNewCloudVersion) Color(0xFF34C759) else Color(0xFF6C63FF),
+                                modifier = Modifier.size(22.dp)
+                            )
                         }
+                        Spacer(modifier = Modifier.width(14.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = when {
+                                    isCheckingUpdate -> "正在获取中..."
+                                    hasNewCloudVersion -> "发现新版本 v${cloudVersion?.name ?: ""}"
+                                    else -> "检查更新"
+                                },
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp
+                            )
+                            if (isCheckingUpdate) {
+                                // 可视化进度条读取状态
+                                Spacer(modifier = Modifier.height(6.dp))
+                                LinearProgressIndicator(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(4.dp)
+                                        .clip(RoundedCornerShape(2.dp)),
+                                    color = Color(0xFF6366F1),
+                                    trackColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "正在获取云端最新状态…",
+                                    fontSize = 10.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            } else {
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = when {
+                                        hasNewCloudVersion -> "有新版本~请及时更新"
+                                        else -> "当前版本 v${com.example.BuildConfig.VERSION_NAME}"
+                                    },
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                            modifier = Modifier.size(14.dp)
+                        )
                     }
-                )
+                }
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
 
