@@ -1,8 +1,10 @@
 {
   "version": {
-    "code": 30,
-    "name": "1.5.11",
+    "code": 32,
+    "name": "1.5.12",
     "changelog": [
+      "【控制台推送】新版本 APK 制作入库 (landezhao-com.landezhaole-1789969754.apk)",
+      "新版本 APK 制作入库 (landezhao-com.landezhaole-1789969754.apk)",
       "【控制台推送】管理后台全局版本发布",
       "【控制台推送】管理后台全局版本发布",
       "【控制台推送】管理后台全局版本发布",
@@ -22,8 +24,8 @@
       "点击「立即更新」直接下载安装新版本"
     ],
     "force": true,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.5.1-1789968785.apk",
-    "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.5.1-1789968785.apk"
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-com.landezhaole-1789969754.apk",
+    "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-com.landezhaole-1789969754.apk"
   },
   "home": {
     "categories": [
@@ -6061,14 +6063,14 @@
   "updateDialog": {
     "title": "发现新版本",
     "changelog": [
+      "【控制台推送】新版本 APK 制作入库 (landezhao-com.landezhaole-1789969754.apk)",
+      "新版本 APK 制作入库 (landezhao-com.landezhaole-1789969754.apk)",
       "【控制台推送】管理后台全局版本发布",
       "【控制台推送】管理后台全局版本发布",
       "【控制台推送】管理后台全局版本发布",
       "【控制台推送】管理后台全局版本发布",
       "【控制台推送】新版本 APK 制作入库 (landezhao-v1.5.1-1789968785.apk)",
-      "新版本 APK 制作入库 (landezhao-v1.5.1-1789968785.apk)",
-      "【控制台推送】管理后台全局版本发布",
-      "【控制台推送】新版本 APK 制作入库 (landezhao-v1.5-1789963779.apk)"
+      "新版本 APK 制作入库 (landezhao-v1.5.1-1789968785.apk)"
     ],
     "confirmText": "立即更新",
     "cancelText": "稍后再说",
