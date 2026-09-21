@@ -27,7 +27,7 @@ class RemoteConfigRepository(private val context: Context) {
     private val adapter = moshi.adapter(AdminData::class.java)
 
     // 云端配置中枢地址（由控制台程序 publish 发布）
-    private val configUrl = "https://raw.githubusercontent.com/shuting52/16-47-2026-09-20/main/admin-data.json"
+    private val configUrl = "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/admin-data.json"
 
     suspend fun fetchAdminData(): AdminData? = withContext(Dispatchers.IO) {
         try {
