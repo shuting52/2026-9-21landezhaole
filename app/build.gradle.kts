@@ -17,7 +17,7 @@ android {
     applicationId = "com.aistudio.lazynav.hqpt"
     minSdk = 24
     targetSdk = 36
-    versionCode = 8
+    versionCode = 11
     versionName = "1.5.1"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
