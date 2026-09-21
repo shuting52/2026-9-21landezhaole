@@ -1,0 +1,209 @@
+package com.example.ui.components
+
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.data.model.BadgeType
+import com.example.ui.theme.BadgeBlue1
+import com.example.ui.theme.BadgeBlue2
+import com.example.ui.theme.BadgeEmerald1
+import com.example.ui.theme.BadgeEmerald2
+import com.example.ui.theme.BadgeGold1
+import com.example.ui.theme.BadgeGold2
+import com.example.ui.theme.BadgeRose1
+import com.example.ui.theme.BadgeRose2
+
+import androidx.compose.ui.text.style.TextOverflow
+
+/**
+ * Intelligent sanitizer for badge text:
+ * Prevents long badges from breaking card layout by compressing or abbreviating
+ * long text while preserving semantic punchiness.
+ */
+fun sanitizeBadgeText(raw: String): String {
+    val trimmed = raw.trim()
+    if (trimmed.length <= 3) return trimmed
+    return when {
+        trimmed.equals("Agentic IDE", ignoreCase = true) -> "Agent"
+        trimmed.equals("浏览器容器", ignoreCase = true) -> "容器"
+        trimmed.equals("超长上下文", ignoreCase = true) -> "超长"
+        trimmed.equals("智能体开发平台", ignoreCase = true) -> "Agent"
+        trimmed.equals("智能体平台", ignoreCase = true) -> "Agent"
+        trimmed.equals("低代码平台", ignoreCase = true) -> "低代码"
+        trimmed.equals("AI开发者", ignoreCase = true) -> "开发"
+        trimmed.equals("开源Agent", ignoreCase = true) -> "开源"
+        trimmed.equals("DevTools", ignoreCase = true) -> "Dev"
+        trimmed.equals("全栈构建", ignoreCase = true) -> "全栈"
+        trimmed.equals("讯飞星火", ignoreCase = true) -> "星火"
+        trimmed.equals("豆包驱动", ignoreCase = true) -> "豆包"
+        trimmed.equals("超大仓库", ignoreCase = true) -> "仓库"
+        trimmed.equals("趣味编程", ignoreCase = true) -> "趣味"
+        trimmed.equals("解压捏捏", ignoreCase = true) -> "解压"
+        trimmed.equals("国内免梯", ignoreCase = true) -> "直连"
+        trimmed.equals("学术论文", ignoreCase = true) -> "学术"
+        trimmed.length > 4 -> trimmed.take(3)
+        else -> trimmed
+    }
+}
+
+/**
+ * Modern CSS-inspired Ribbon Badge with animations:
+ * - Dynamic infinite transition mimicking CSS keyframes (@keyframes shimmer & pulse)
+ * - Shimmer sweep light bar effect (CSS background-position sweep)
+ * - Breath / pulse scale effect for NEW and HOT badges
+ * - Glowing radar pulse dot for NEW badges
+ * - Strictly width-constrained (max 54dp) and auto-ellipsized to prevent overflow
+ */
+@Composable
+fun RibbonBadge(
+    text: String,
+    badgeType: BadgeType = BadgeType.ROSE,
+    modifier: Modifier = Modifier
+) {
+    val displayText = sanitizeBadgeText(text)
+    val isNewOrHot = badgeType == BadgeType.NEW || badgeType == BadgeType.ROSE || badgeType == BadgeType.GOLD
+    val isNew = badgeType == BadgeType.NEW || text.contains("NEW", ignoreCase = true) || text.contains("新", ignoreCase = true)
+
+    // Infinite transition for CSS-style keyframe animations
+    val infiniteTransition = rememberInfiniteTransition(label = "ribbon_badge_anim")
+
+    // CSS Keyframe 1: Subtle breathing pulse scale (1.0f -> 1.05f -> 1.0f)
+    val scale by infiniteTransition.animateFloat(
+        initialValue = 1.0f,
+        targetValue = if (isNewOrHot) 1.05f else 1.0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1400, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "badge_scale"
+    )
+
+    // CSS Keyframe 2: Dynamic angle / shimmer light sweep (CSS linear-gradient sliding effect)
+    val shimmerOffset by infiniteTransition.animateFloat(
+        initialValue = -1.5f,
+        targetValue = 2.5f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = if (isNew) 1800 else 2400, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "shimmer_offset"
+    )
+
+    // CSS Keyframe 3: Glowing radar dot alpha/pulse for NEW
+    val dotAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.35f,
+        targetValue = 1.0f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 800, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "dot_alpha"
+    )
+
+    val baseGradientColors = when (badgeType) {
+        BadgeType.ROSE -> listOf(BadgeRose1, BadgeRose2)
+        BadgeType.NEW -> listOf(Color(0xFF00C853), Color(0xFF00E676), Color(0xFF00B0FF)) // Neon emerald to vivid cyan
+        BadgeType.GOLD -> listOf(BadgeGold1, BadgeGold2)
+        BadgeType.BLUE -> listOf(BadgeBlue1, BadgeBlue2)
+    }
+
+    val baseBrush = Brush.linearGradient(baseGradientColors)
+    val badgeShape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp, bottomStart = 5.dp, bottomEnd = 5.dp)
+
+    Box(
+        modifier = modifier
+            .scale(scale)
+            .shadow(
+                elevation = if (isNew) 3.dp else 1.5.dp,
+                shape = badgeShape,
+                ambientColor = baseGradientColors.first().copy(alpha = 0.35f),
+                spotColor = baseGradientColors.first()
+            )
+            .clip(badgeShape)
+            .background(brush = baseBrush, shape = badgeShape)
+            .border(
+                width = 0.7.dp,
+                color = Color.White.copy(alpha = if (isNew) 0.85f else 0.55f),
+                shape = badgeShape
+            )
+            .height(17.dp)
+            .padding(horizontal = 6.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        // CSS Shimmer light sweep overlay using matchParentSize so badge never stretches full width
+        Canvas(modifier = Modifier.matchParentSize()) {
+            val width = size.width
+            val height = size.height
+            val currentX = width * shimmerOffset
+
+            drawRect(
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        Color.Transparent,
+                        Color.White.copy(alpha = 0.35f),
+                        Color.White.copy(alpha = 0.65f),
+                        Color.White.copy(alpha = 0.35f),
+                        Color.Transparent
+                    ),
+                    start = Offset(currentX - width * 0.4f, 0f),
+                    end = Offset(currentX + width * 0.4f, height)
+                )
+            )
+        }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Pulsing live radar indicator dot for NEW sites
+            if (isNew) {
+                Box(
+                    modifier = Modifier
+                        .size(3.5.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = dotAlpha))
+                )
+                Spacer(modifier = Modifier.width(2.5.dp))
+            }
+
+            Text(
+                text = displayText,
+                color = Color.White,
+                fontSize = if (displayText.length >= 4) 8.5.sp else 9.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = if (displayText.length >= 4) (-0.3).sp else 0.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}

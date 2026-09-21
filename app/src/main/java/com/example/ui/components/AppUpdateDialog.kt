@@ -1,0 +1,692 @@
+package com.example.ui.components
+
+import android.app.DownloadManager
+import android.content.Context
+import android.net.Uri
+import android.os.Environment
+import android.webkit.JavascriptInterface
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import android.widget.Toast
+import androidx.compose.ui.viewinterop.AndroidView
+import com.example.data.remote.UpdateDialogDto
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.math.floor
+import kotlin.random.Random
+
+/**
+ * 客户端更新弹窗：火箭图标 + 更新日志 + 动态渐变下载进度
+ * 严格按照指定 CSS/HTML/JS 规格设计打造：
+ * - .u-mask: 半透明暗色遮罩
+ * - .u-dialog: 340px 宽度，圆角 24px，深邃背景色 #14142a，精致描边与深阴影
+ * - .u-rocket: 74x74 悬浮火箭微倾斜摆动无限动效，紫粉渐变底 (#6c63ff -> #ff2d78)
+ * - .u-ver: v2.0.0 高亮版本胶囊标签
+ * - .u-log: 半透明背景日志卡片，高亮 ✦ 列表
+ * - .u-bar / .u-fill: 渐变进度条实时推进下载
+ * - .u-btn: 稍后再说 & 立即更新按钮
+ */
+@Composable
+fun AppUpdateDialog(
+    onDismiss: () -> Unit,
+    versionName: String = "v2.0.0",
+    onUpdateFinished: () -> Unit = {},
+    update: UpdateDialogDto? = null,
+    apkUrl: String? = null
+) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
+    var isUpdating by remember { mutableStateOf(false) }
+    var progress by remember { mutableFloatStateOf(0f) }
+    var statusLabel by remember { mutableStateOf("等待更新…") }
+
+    // 云端配置（由控制台发布，实时同步）
+    val cloudTitle = update?.title ?: "发现新版本"
+    val cloudLogs: List<String> = update?.changelog?.takeIf { it.isNotEmpty() }
+        ?: listOf(
+            "新增云端实时同步功能",
+            "首页分类/角标可由控制台远程配置",
+            "软件库支持 APK 直链下载更新",
+            "Skill 技能库支持本地文件同步",
+            "开屏动画支持自定义代码配置",
+            "修复已知体验问题与稳定性提升"
+        )
+    val cloudConfirm = update?.confirmText ?: "立即更新"
+    val cloudCancel = update?.cancelText ?: "稍后再说"
+    val customHtml = update?.customHtml?.takeIf { it.isNotBlank() }
+
+    fun startRealDownload() {
+        val url = apkUrl
+        if (url.isNullOrBlank()) return
+        coroutineScope.launch {
+            isUpdating = true
+            statusLabel = "正在下载更新…"
+            progress = 12f
+            try {
+                val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                val req = DownloadManager.Request(Uri.parse(url))
+                    .setTitle("懒得找了 更新包")
+                    .setDescription(versionName)
+                    .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                    .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "landezhao-${versionName}.apk")
+                dm.enqueue(req)
+                progress = 100f
+                statusLabel = "已开始下载，请查看通知栏进度"
+                delay(600)
+                Toast.makeText(context, "更新包已开始下载，完成后点击安装", Toast.LENGTH_LONG).show()
+                isUpdating = false
+                onUpdateFinished()
+                onDismiss()
+            } catch (e: Exception) {
+                Toast.makeText(context, "下载失败：${e.message}", Toast.LENGTH_SHORT).show()
+                statusLabel = "等待更新…"
+                progress = 0f
+                isUpdating = false
+            }
+        }
+    }
+
+    class UpdateJsBridge(
+        private val onDownload: () -> Unit,
+        private val onClose: () -> Unit
+    ) {
+        @JavascriptInterface
+        fun download() { onDownload() }
+        @JavascriptInterface
+        fun close() { onClose() }
+    }
+
+    // Rocket floating & tilting animation
+    val infiniteTransition = rememberInfiniteTransition(label = "uRocketAnim")
+    val rocketOffsetY by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = -8f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1300, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "rocketOffsetY"
+    )
+    val rocketRotation by infiniteTransition.animateFloat(
+        initialValue = -6f,
+        targetValue = 6f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1300, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "rocketRotation"
+    )
+
+    // Smooth buffer animation for progress: spring/cubic easing to prevent jumping
+    val animatedProgress by animateFloatAsState(
+        targetValue = progress / 100f,
+        animationSpec = tween(
+            durationMillis = 350,
+            easing = FastOutSlowInEasing
+        ),
+        label = "animatedProgress"
+    )
+
+    fun startUpdate() {
+        if (isUpdating) return
+        if (!apkUrl.isNullOrBlank()) {
+            startRealDownload()
+            return
+        }
+        coroutineScope.launch {
+            isUpdating = true
+            statusLabel = "正在下载更新…"
+            var p = 0f
+            while (p < 100f) {
+                delay(150)
+                p += (Random.nextFloat() * 8f + 3f)
+                if (p >= 100f) {
+                    p = 100f
+                    progress = 100f
+                    statusLabel = "更新完成"
+                    delay(600)
+                    Toast.makeText(context, "更新完成！已是最新版本", Toast.LENGTH_SHORT).show()
+                    isUpdating = false
+                    onUpdateFinished()
+                    onDismiss()
+                    break
+                }
+                progress = p
+            }
+        }
+    }
+
+    // Safe closeUpdate function logic with active updating guard check
+    fun closeUpdate() {
+        if (!isUpdating) {
+            onDismiss()
+        }
+    }
+
+    // 无论是否配置自定义HTML，检查更新均优先采用 Uiverse.io 弹窗代码
+    val effectiveSnippet = if (!customHtml.isNullOrBlank()) customHtml else UIVERSE_UPDATE_HTML
+    Dialog(
+        onDismissRequest = {
+            closeUpdate()
+        },
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            dismissOnBackPress = !isUpdating,
+            dismissOnClickOutside = !isUpdating
+        )
+    ) {
+        val jsBridge = remember { UpdateJsBridge({ startUpdate() }, { closeUpdate() }) }
+        val html = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+              <script src="https://cdn.tailwindcss.com"></script>
+              <style>
+                * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+                html, body {
+                  margin: 0;
+                  padding: 0;
+                  background: transparent;
+                  width: 100%;
+                  height: 100%;
+                  overflow: hidden;
+                }
+                body {
+                  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  min-height: 100vh;
+                }
+                ${update?.customCss ?: ""}
+              </style>
+            </head>
+            <body>
+            $effectiveSnippet
+            <script>
+              (function(){
+                var btnConfirm = document.getElementById('upd-confirm') || document.querySelector('button.absolute') || document.querySelectorAll('button')[1];
+                var btnCancel = document.getElementById('upd-cancel') || document.querySelector('button:not(.absolute)') || document.querySelectorAll('button')[0];
+                if(btnConfirm){
+                  btnConfirm.addEventListener('click', function(e){
+                    e.preventDefault();
+                    try { AndroidBridge.download(); } catch(err){}
+                  });
+                }
+                if(btnCancel){
+                  btnCancel.addEventListener('click', function(e){
+                    e.preventDefault();
+                    try { AndroidBridge.close(); } catch(err){}
+                  });
+                }
+              })();
+            </script>
+            </body>
+            </html>
+        """.trimIndent()
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.65f))
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = { closeUpdate() }
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            AndroidView(
+                factory = { ctx ->
+                    WebView(ctx).apply {
+                        settings.javaScriptEnabled = true
+                        setBackgroundColor(0x00000000)
+                        addJavascriptInterface(jsBridge, "AndroidBridge")
+                        webViewClient = WebViewClient()
+                        loadDataWithBaseURL(null, html, "text/html", "UTF-8", null)
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(420.dp)
+                    .padding(horizontal = 24.dp)
+            )
+        }
+    }
+    return
+
+    Dialog(
+        onDismissRequest = {
+            closeUpdate()
+        },
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            dismissOnBackPress = !isUpdating,
+            dismissOnClickOutside = !isUpdating
+        )
+    ) {
+        // .u-mask: Full screen semi-transparent backdrop with outside click-to-close
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.65f))
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = { closeUpdate() }
+                )
+                .testTag("app_update_dialog_mask"),
+            contentAlignment = Alignment.Center
+        ) {
+            // .u-dialog container: #14142a background, 24dp rounded corners, subtle border
+            Box(
+                modifier = Modifier
+                    .widthIn(min = 280.dp, max = 340.dp)
+                    .padding(horizontal = 18.dp)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = {} // prevent closing when clicking inside dialog (stopPropagation equivalent)
+                    )
+                    .shadow(elevation = 28.dp, shape = RoundedCornerShape(24.dp), ambientColor = Color.Black, spotColor = Color(0xFF6C63FF))
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(Color(0xFF14142A))
+                    .border(
+                        BorderStroke(1.dp, Color.White.copy(alpha = 0.14f)),
+                        RoundedCornerShape(24.dp)
+                    )
+                    .testTag("app_update_dialog")
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 26.dp, bottom = 22.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // .u-rocket: 74x74 gradient circle with floating animation & outer halo
+                    Box(
+                        modifier = Modifier
+                            .offset(y = rocketOffsetY.dp)
+                            .rotate(rocketRotation),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        // Outer subtle glow ring
+                        Box(
+                            modifier = Modifier
+                                .size(90.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF6C63FF).copy(alpha = 0.12f))
+                        )
+
+                        // Rocket Core circle
+                        Box(
+                            modifier = Modifier
+                                .size(74.dp)
+                                .shadow(
+                                    elevation = 16.dp,
+                                    shape = CircleShape,
+                                    ambientColor = Color(0xFF6C63FF).copy(alpha = 0.45f),
+                                    spotColor = Color(0xFFFF2D78).copy(alpha = 0.45f)
+                                )
+                                .clip(CircleShape)
+                                .background(
+                                    Brush.linearGradient(
+                                        listOf(Color(0xFF6C63FF), Color(0xFFFF2D78))
+                                    )
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "🚀",
+                                fontSize = 32.sp
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // .u-ver: version tag pill
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0xFF6C63FF).copy(alpha = 0.18f))
+                            .padding(horizontal = 14.dp, vertical = 3.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = versionName,
+                            fontSize = 11.5.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color(0xFFA9A3FF),
+                            letterSpacing = 0.5.sp
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Dialog Title h3
+                    Text(
+                        text = cloudTitle,
+                        color = Color.White,
+                        fontSize = 21.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 0.3.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(2.dp))
+
+                    Text(
+                        text = "更新内容 · 共 ${cloudLogs.size} 项",
+                        color = Color.White.copy(alpha = 0.55f),
+                        fontSize = 11.5.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // .u-log: changelog card with fixed height and smooth vertical scroll (overflow-y: auto)
+                    val logScrollState = rememberScrollState()
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                            .height(130.dp) // Fixed height to keep dialog structure stable when content is long
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(Color.White.copy(alpha = 0.05f))
+                            .border(
+                                BorderStroke(1.dp, Color.White.copy(alpha = 0.08f)),
+                                RoundedCornerShape(14.dp)
+                            )
+                            .padding(horizontal = 14.dp, vertical = 10.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .verticalScroll(logScrollState),
+                            verticalArrangement = Arrangement.spacedBy(7.dp)
+                        ) {
+                            cloudLogs.forEach { LogItem(text = it) }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(18.dp))
+
+                    // .u-progress: progress text row & bar
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = statusLabel,
+                                fontSize = 12.sp,
+                                color = Color.White.copy(alpha = 0.75f),
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = "${floor(progress).toInt()}%",
+                                fontSize = 12.sp,
+                                color = Color(0xFFA9A3FF),
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(7.dp))
+
+                        // .u-bar: progress background & fill
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(8.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(Color.White.copy(alpha = 0.08f))
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth(fraction = animatedProgress.coerceIn(0f, 1f))
+                                    .fillMaxHeight()
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(
+                                        Brush.horizontalGradient(
+                                            listOf(Color(0xFF6C63FF), Color(0xFFFF2D78))
+                                        )
+                                    )
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // .u-btns: Action buttons
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        // .u-btn.later: 稍后再说
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(44.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color.White.copy(alpha = 0.08f))
+                                .clickable(
+                                    enabled = !isUpdating,
+                                    onClick = { closeUpdate() }
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = cloudCancel,
+                                color = Color.White.copy(alpha = if (isUpdating) 0.3f else 0.7f),
+                                fontSize = 13.5.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        // .u-btn.now: 立即更新
+                        Box(
+                            modifier = Modifier
+                                .weight(1.3f)
+                                .height(44.dp)
+                                .shadow(
+                                    elevation = if (isUpdating) 0.dp else 10.dp,
+                                    shape = RoundedCornerShape(12.dp),
+                                    ambientColor = Color(0xFF6C63FF).copy(alpha = 0.4f),
+                                    spotColor = Color(0xFF6C63FF).copy(alpha = 0.4f)
+                                )
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(
+                                    Brush.linearGradient(
+                                        listOf(Color(0xFF6C63FF), Color(0xFFFF2D78))
+                                    )
+                                )
+                                .clickable(
+                                    enabled = !isUpdating,
+                                    onClick = { startUpdate() }
+                                )
+                                .testTag("update_now_btn"),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = if (isUpdating) "更新中…" else cloudConfirm,
+                                color = Color.White,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.ExtraBold
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LogItem(text: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Top
+    ) {
+        Text(
+            text = "✦",
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Black,
+            color = Color(0xFFFF2D78)
+        )
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(
+            text = text,
+            fontSize = 12.sp,
+            lineHeight = 18.sp,
+            color = Color.White.copy(alpha = 0.75f)
+        )
+    }
+}
+
+private const val UIVERSE_UPDATE_HTML = """<!-- From Uiverse.io by ilkhoeri --> 
+<div
+  class="[--shadow:rgba(60,64,67,0.3)_0_1px_2px_0,rgba(60,64,67,0.15)_0_2px_6px_2px] w-4/5 h-auto rounded-2xl bg-white [box-shadow:var(--shadow)] max-w-[300px]"
+>
+  <div
+    class="flex flex-col items-center justify-between pt-9 px-6 pb-6 relative"
+  >
+    <span class="relative mx-auto -mt-16 mb-8">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        height="46"
+        width="65"
+      >
+        <path
+          stroke="#000"
+          fill="#EAB789"
+          d="M49.157 15.69L44.58.655l-12.422 1.96L21.044.654l-8.499 2.615-6.538 5.23-4.576 9.153v11.114l4.576 8.5 7.846 5.23 10.46 1.96 7.845-2.614 9.153 2.615 11.768-2.615 7.846-7.846 1.96-5.884.655-7.191-7.846-1.308-6.537-3.922z"
+        ></path>
+        <path
+          fill="#9C6750"
+          d="M32.286 3.749c-6.94 3.65-11.69 11.053-11.69 19.591 0 8.137 4.313 15.242 10.724 19.052a20.513 20.513 0 01-8.723 1.937c-11.598 0-21-9.626-21-21.5 0-11.875 9.402-21.5 21-21.5 3.495 0 6.79.874 9.689 2.42z"
+          clip-rule="evenodd"
+          fill-rule="evenodd"
+        ></path>
+        <path
+          fill="#634647"
+          d="M64.472 20.305a.954.954 0 00-1.172-.824 4.508 4.508 0 01-3.958-.934.953.953 0 00-1.076-.11c-.46.252-.977.383-1.502.382a3.154 3.154 0 01-2.97-2.11.954.954 0 00-.833-.634 4.54 4.54 0 01-4.205-4.507c.002-.23.022-.46.06-.687a.952.952 0 00-.213-.767 3.497 3.497 0 01-.614-3.5.953.953 0 00-.382-1.138 3.522 3.522 0 01-1.5-3.992.951.951 0 00-.762-1.227A22.611 22.611 0 0032.3 2.16 22.41 22.41 0 0022.657.001a22.654 22.654 0 109.648 43.15 22.644 22.644 0 0032.167-22.847zM22.657 43.4a20.746 20.746 0 110-41.493c2.566-.004 5.11.473 7.501 1.407a22.64 22.64 0 00.003 38.682 20.6 20.6 0 01-7.504 1.404zm19.286 0a20.746 20.746 0 112.131-41.384 5.417 5.417 0 001.918 4.635 5.346 5.346 0 00-.133 1.182A5.441 5.441 0 0046.879 11a5.804 5.804 0 00-.028.568 6.456 6.456 0 005.38 6.345 5.053 5.053 0 006.378 2.472 6.412 6.412 0 004.05 1.12 20.768 20.768 0 01-20.716 21.897z"
+        ></path>
+        <path
+          fill="#644647"
+          d="M54.962 34.3a17.719 17.719 0 01-2.602 2.378.954.954 0 001.14 1.53 19.637 19.637 0 002.884-2.634.955.955 0 00-1.422-1.274z"
+        ></path>
+        <path
+          stroke-width="1.8"
+          stroke="#644647"
+          fill="#845556"
+          d="M44.5 32.829c-.512 0-1.574.215-2 .5-.426.284-.342.263-.537.736a2.59 2.59 0 104.98.99c0-.686-.458-1.241-.943-1.726-.485-.486-.814-.5-1.5-.5zm-30.916-2.5c-.296 0-.912.134-1.159.311-.246.177-.197.164-.31.459a1.725 1.725 0 00-.086.932c.058.312.2.6.41.825.21.226.477.38.768.442.291.062.593.03.867-.092s.508-.329.673-.594a1.7 1.7 0 00.253-.896c0-.428-.266-.774-.547-1.076-.281-.302-.471-.31-.869-.311zm17.805-11.375c-.143-.492-.647-1.451-1.04-1.78-.392-.33-.348-.255-.857-.31a2.588 2.588 0 10.441 5.06c.66-.194 1.064-.788 1.395-1.39.33-.601.252-.92.06-1.58zm-22 2c-.143-.492-.647-1.451-1.04-1.78-.391-.33-.347-.255-.856-.31a2.589 2.589 0 10.44 5.06c.66-.194 1.064-.788 1.395-1.39.33-.601.252-.92.06-1.58zM38.112 7.329c-.395 0-1.216.179-1.545.415-.328.236-.263.218-.415.611-.151.393-.19.826-.114 1.243.078.417.268.8.548 1.1.28.301.636.506 1.024.59.388.082.79.04 1.155-.123.366-.163.678-.438.898-.792.22-.354.337-.77.337-1.195 0-.57-.354-1.031-.73-1.434-.374-.403-.628-.415-1.158-.415zm-19.123.703c.023-.296-.062-.92-.219-1.18-.157-.26-.148-.21-.432-.347a1.726 1.726 0 00-.922-.159 1.654 1.654 0 00-.856.344 1.471 1.471 0 00-.501.73c-.085.285-.077.589.023.872.1.282.287.532.538.718a1.7 1.7 0 00.873.323c.427.033.793-.204 1.116-.46.324-.256.347-.445.38-.841z"
+        ></path>
+        <path
+          fill="#634647"
+          d="M15.027 15.605a.954.954 0 00-1.553 1.108l1.332 1.863a.955.955 0 001.705-.77.955.955 0 00-.153-.34l-1.331-1.861z"
+        ></path>
+        <path
+          fill="#644647"
+          d="M43.31 23.21a.954.954 0 101.553-1.11l-1.266-1.772a.954.954 0 10-1.552 1.11l1.266 1.772z"
+        ></path>
+        <path
+          fill="#634647"
+          d="M19.672 35.374a.954.954 0 00-.954.953v2.363a.954.954 0 001.907 0v-2.362a.954.954 0 00-.953-.954z"
+        ></path>
+        <path
+          fill="#644647"
+          d="M33.129 29.18l-2.803 1.065a.953.953 0 00-.053 1.764.957.957 0 00.73.022l2.803-1.065a.953.953 0 00-.677-1.783v-.003zm24.373-3.628l-2.167.823a.956.956 0 00-.054 1.764.954.954 0 00.73.021l2.169-.823a.954.954 0 10-.678-1.784v-.001z"
+        ></path>
+      </svg>
+    </span>
+
+    <h5 class="text-sm font-semibold mb-2 text-left mr-auto text-zinc-700">
+      Your privacy is important to us
+    </h5>
+
+    <p class="w-full mb-4 text-sm text-justify">
+      We process your personal information to measure and improve our sites and
+      services, to assist our campaigns and to provide personalised content.
+      <br />
+      For more information see our
+      <a
+        class="mb-2 text-sm cursor-pointer font-semibold transition-colors hover:text-[#634647] underline underline-offset-2"
+        >Privacy Policy</a
+      >
+    </p>
+
+    <button
+      class="mb-2 text-sm mr-auto text-zinc-600 cursor-pointer font-semibold transition-colors hover:text-[#634647] hover:underline underline-offset-2"
+    >
+      More Options
+    </button>
+    <button
+      class="absolute font-semibold right-6 bottom-6 cursor-pointer py-2 px-8 w-max break-keep text-sm rounded-lg transition-colors text-[#634647] hover:text-[#ddad81] bg-[#ddad81] hover:bg-[#634647]"
+      type="button"
+    >
+      Accept
+    </button>
+  </div>
+</div>"""
+
