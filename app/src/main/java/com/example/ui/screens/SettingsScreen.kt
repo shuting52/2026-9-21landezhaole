@@ -55,6 +55,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -112,6 +113,14 @@ fun SettingsScreen(
     val coroutineScope = rememberCoroutineScope()
     var activeDialogType by remember { mutableStateOf<String?>(null) }
     var isCheckingUpdate by remember { mutableStateOf(false) }
+
+    // 云端新版本检测：云端 versionCode 大于本地时视为有新版本
+    val hasNewCloudVersion = (cloudVersion?.code ?: 0) > com.example.BuildConfig.VERSION_CODE
+
+    // 自动检测：进入设置页无需手动点击，自动获取云端仓库最新版本状态并实时刷新
+    LaunchedEffect(Unit) {
+        onCheckUpdate?.invoke()
+    }
 
     Column(
         modifier = modifier
@@ -242,12 +251,20 @@ fun SettingsScreen(
             border = CardDefaults.outlinedCardBorder()
         ) {
             Column(modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp)) {
-                // 检查更新
+                // 检查更新（云端自动检测，有新版本时展示提示并一键直达更新下载）
                 SettingsClickableItem(
-                    title = if (isCheckingUpdate) "正在检测云端新版本…" else "检查更新",
-                    subtitle = if (isCheckingUpdate) "连接云端同步中…" else "当前版本 v${com.example.BuildConfig.VERSION_NAME} (code:${com.example.BuildConfig.VERSION_CODE})",
+                    title = when {
+                        isCheckingUpdate -> "正在检测云端新版本…"
+                        hasNewCloudVersion -> "发现新版本 v${cloudVersion?.name ?: ""}"
+                        else -> "检查更新"
+                    },
+                    subtitle = when {
+                        isCheckingUpdate -> "连接云端同步中…"
+                        hasNewCloudVersion -> "当前版本 v${com.example.BuildConfig.VERSION_NAME} → 有新版本可更新，点击查看下载"
+                        else -> "当前版本 v${com.example.BuildConfig.VERSION_NAME} (code:${com.example.BuildConfig.VERSION_CODE})"
+                    },
                     icon = Icons.Filled.RocketLaunch,
-                    iconColor = Color(0xFF6C63FF),
+                    iconColor = if (hasNewCloudVersion) Color(0xFF34C759) else Color(0xFF6C63FF),
                     onClick = {
                         if (isCheckingUpdate) return@SettingsClickableItem
                         if (onCheckUpdate != null) {
