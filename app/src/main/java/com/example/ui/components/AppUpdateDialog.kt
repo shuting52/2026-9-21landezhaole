@@ -2,6 +2,7 @@ package com.example.ui.components
 
 import android.app.DownloadManager
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Environment
 import android.view.View
@@ -61,10 +62,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.content.FileProvider
+import java.io.File
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.floor
 import kotlin.random.Random
+
+/**
+ * 官方 QQ 群链接（与设置页一致）
+ */
+const val OFFICIAL_QQ_GROUP_URL =
+    "https://qun.qq.com/universal-share/share?ac=1&authKey=gtnBoTi8HEzXQAF9x40Y5GYQtubkWu4pGDJg7OuNQte9oz3sXiFonGqZaUXxjffu&busi_data=eyJncm91cENvZGUiOiI0MzkyMTEzNDciLCJ0b2tlbiI6IkVxeXJDb0tyVjM3Y0VIRmhZQ3M5eDg4VW5MYWU0RW4ybVlSRlBlS2ozQXRxanB5V2ZtNzNHMlRIa2ZRd0VTQnUiLCJ1aW4iOiIzMDc3Nzk1MjMifQ%3D%3D&data=QnUzn164u21Cu1dG7vAVYJqU_4hw0COArsGrrBOIc0vxu7ES6gOJcYyrpu2JgkVs-y3X0ZUGZb_nPBJsBTRccQ&svctype=4&tempid=h5_group_info"
 
 /**
  * 客户端更新弹窗：火箭图标 + 更新日志 + 动态渐变下载进度
@@ -75,7 +85,7 @@ import kotlin.random.Random
  * - .u-ver: v2.0.0 高亮版本胶囊标签
  * - .u-log: 半透明背景日志卡片，高亮 ✦ 列表
  * - .u-bar / .u-fill: 渐变进度条实时推进下载
- * - .u-btn: 稍后再说 & 立即更新按钮
+ * - .u-btn: 官方群 & 立即更新按钮（强制更新时不可关闭弹窗，立即更新自动下载并安装 APK）
  */
 @Composable
 fun AppUpdateDialog(
@@ -83,7 +93,8 @@ fun AppUpdateDialog(
     versionName: String = "v2.0.0",
     onUpdateFinished: () -> Unit = {},
     update: UpdateDialogDto? = null,
-    apkUrl: String? = null
+    apkUrl: String? = null,
+    forceUpdate: Boolean = false
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -107,6 +118,33 @@ fun AppUpdateDialog(
     val cloudCancel = update?.cancelText ?: "稍后再说"
     val customHtml = update?.customHtml?.takeIf { it.isNotBlank() }
 
+    /** 通过系统安装器安装 APK（FileProvider 共享文件） */
+    fun installApk(file: File) {
+        try {
+            val uri = FileProvider.getUriForFile(context, context.packageName + ".fileprovider", file)
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, "application/vnd.android.package-archive")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+            onUpdateFinished()
+        } catch (e: Exception) {
+            Toast.makeText(context, "自动安装被拦截，请到系统设置允许安装未知应用后重试", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    /** 跳转官方 QQ 群 */
+    fun openOfficialGroup() {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(OFFICIAL_QQ_GROUP_URL))
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(context, "打开 QQ 群失败，请手动搜索群号：439211347", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     fun startRealDownload() {
         val url = apkUrl
         if (url.isNullOrBlank()) return
@@ -115,28 +153,48 @@ fun AppUpdateDialog(
             statusLabel = "正在下载更新…"
             progress = 12f
             try {
-                val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-                val req = DownloadManager.Request(Uri.parse(url))
-                    .setTitle("懒得找了 更新包")
-                    .setDescription(versionName)
-                    .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                    .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "landezhao-${versionName}.apk")
-                dm.enqueue(req)
-                progress = 100f
-                statusLabel = "已开始下载，请查看通知栏进度"
-                delay(600)
-                Toast.makeText(context, "更新包已开始下载，完成后点击安装", Toast.LENGTH_LONG).show()
-                isUpdating = false
-                onUpdateFinished()
-                onDismiss()
+                // 直接下载 APK 到应用缓存目录（不走系统下载器，下载完自动安装）
+                val client = okhttp3.OkHttpClient.Builder()
+                    .connectTimeout(15, TimeUnit.SECONDS)
+                    .readTimeout(60, TimeUnit.SECONDS)
+                    .build()
+                val request = okhttp3.Request.Builder().url(url).build()
+                client.newCall(request).execute().use { resp ->
+                    if (!resp.isSuccessful) throw Exception("下载失败 HTTP ${resp.code}")
+                    val body = resp.body ?: throw Exception("下载失败")
+                    val total = body.contentLength()
+                    val file = File(context.cacheDir, "update/latest.apk")
+                    file.parentFile?.mkdirs()
+                    body.byteStream().use { input ->
+                        file.outputStream().use { output ->
+                            val buf = ByteArray(8192)
+                            var downloaded = 0L
+                            while (true) {
+                                val n = input.read(buf)
+                                if (n <= 0) break
+                                output.write(buf, 0, n)
+                                downloaded += n
+                                if (total > 0) {
+                                    progress = (downloaded * 100f / total).coerceIn(0f, 100f)
+                                    statusLabel = "下载中… ${progress.toInt()}%"
+                                }
+                            }
+                            output.flush()
+                        }
+                    }
+                    progress = 100f
+                    statusLabel = "下载完成，准备安装…"
+                    delay(300)
+                    installApk(file)
+                }
             } catch (e: Exception) {
-                Toast.makeText(context, "下载失败：${e.message}", Toast.LENGTH_SHORT).show()
-                statusLabel = "等待更新…"
-                progress = 0f
-                isUpdating = false
+                    Toast.makeText(context, "下载失败：${e.message}", Toast.LENGTH_SHORT).show()
+                    statusLabel = "等待更新…"
+                    progress = 0f
+                    isUpdating = false
+                }
             }
         }
-    }
 
     class UpdateJsBridge(
         private val onDownload: () -> Unit,
@@ -177,9 +235,10 @@ fun AppUpdateDialog(
         }
     }
 
-    // Safe closeUpdate function logic with active updating guard check
+    // Safe closeUpdate function logic with active updating guard check.
+    // 强制更新（forceUpdate）时不允许关闭弹窗
     fun closeUpdate() {
-        if (!isUpdating) {
+        if (!isUpdating && !forceUpdate) {
             onDismiss()
         }
     }
@@ -284,8 +343,8 @@ fun AppUpdateDialog(
         onDismissRequest = { closeUpdate() },
         properties = DialogProperties(
             usePlatformDefaultWidth = false,
-            dismissOnBackPress = !isUpdating,
-            dismissOnClickOutside = !isUpdating
+            dismissOnBackPress = !isUpdating && !forceUpdate,
+            dismissOnClickOutside = !isUpdating && !forceUpdate
         )
     ) {
         Box(
@@ -443,14 +502,14 @@ fun AppUpdateDialog(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // "More Options" / 稍后再说
+                            // 「官方群」按钮（点击跳转 QQ 群；强制更新时也不关闭弹窗）
                             Text(
-                                text = cloudCancel.ifBlank { "More Options" },
+                                text = "官方群",
                                 fontSize = 13.5.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF71717A),
                                 modifier = Modifier
-                                    .clickable(enabled = !isUpdating) { closeUpdate() }
+                                    .clickable(enabled = !isUpdating) { openOfficialGroup() }
                                     .padding(vertical = 6.dp)
                                     .testTag("uiverse_more_options")
                             )

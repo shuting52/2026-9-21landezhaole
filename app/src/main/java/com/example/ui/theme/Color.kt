@@ -9,3 +9,22 @@ val Pink80 = Color(0xFFEFB8C8)
 val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
+
+// Custom Brand & Status Colors
+val FlameRed = Color(0xFFFF3B30)
+val SunsetOrange = Color(0xFFFF9500)
+val JadeGreen = Color(0xFF34C759)
+val AmberGold = Color(0xFFFFCC00)
+val ElectricCyan = Color(0xFF00E5FF)
+val NeonPurple = Color(0xFF7C4DFF)
+
+// Badge Gradient Colors
+val BadgeRose1 = Color(0xFFFF416C)
+val BadgeRose2 = Color(0xFFFF4B2B)
+val BadgeEmerald1 = Color(0xFF00B09B)
+val BadgeEmerald2 = Color(0xFF96C93D)
+val BadgeGold1 = Color(0xFFF7971E)
+val BadgeGold2 = Color(0xFFFFD200)
+val BadgeBlue1 = Color(0xFF2193B0)
+val BadgeBlue2 = Color(0xFF6DD5ED)
+

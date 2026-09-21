@@ -343,7 +343,8 @@ fun SettingsScreen(
                     Toast.makeText(context, "已成功升级至最新版本 v${cloudVersion?.name ?: "2.0.0"}！", Toast.LENGTH_SHORT).show()
                 },
                 update = cloudUpdate,
-                apkUrl = cloudVersion?.apkUrl?.ifBlank { null }
+                apkUrl = cloudVersion?.apkUrl?.ifBlank { null },
+                forceUpdate = cloudVersion?.force == true
             )
         }
         "official_website" -> {
