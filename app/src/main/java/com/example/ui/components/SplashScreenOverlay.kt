@@ -60,7 +60,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import android.media.MediaPlayer
 import android.net.Uri
+import android.view.View
 import android.view.ViewGroup
+import android.webkit.RenderProcessGoneDetail
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.VideoView
@@ -394,9 +396,14 @@ private fun CloudSplashContent(
                 AndroidView(
                     factory = { ctx ->
                         WebView(ctx).apply {
+                            setLayerType(View.LAYER_TYPE_SOFTWARE, null)
                             settings.javaScriptEnabled = true
                             setBackgroundColor(0x00000000)
-                            webViewClient = WebViewClient()
+                            webViewClient = object : WebViewClient() {
+                                override fun onRenderProcessGone(view: WebView?, detail: RenderProcessGoneDetail?): Boolean {
+                                    return true
+                                }
+                            }
                             loadDataWithBaseURL(null, splash.customHtml, "text/html", "UTF-8", null)
                         }
                     },
