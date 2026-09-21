@@ -25,12 +25,12 @@ import time
 import argparse
 from urllib import request, error
 
-DEFAULT_TOKEN = os.environ.get(
-    "GITHUB_TOKEN",
-    base64.b64decode("Z2hwX1VAbXFhUGFMSEl1bGFPZjVQVlJhcTA2ZG56ZW1ybjB6cVNJTw==").decode("utf-8")
-)
+# 安全修复：不再内置 Token（旧 Token 已泄露）。
+# 请通过环境变量 GITHUB_TOKEN 传入你自己的 Token：
+#   export GITHUB_TOKEN=你的token   （Windows: set GITHUB_TOKEN=你的token）
+DEFAULT_TOKEN = os.environ.get("GITHUB_TOKEN", "")
 DEFAULT_OWNER = "shuting52"
-DEFAULT_REPO  = "16-47-2026-09-20"
+DEFAULT_REPO  = "2026-9-21landezhaole"
 CONFIG_PATH   = "admin-data.json"
 API_BASE      = "https://api.github.com"
 

@@ -119,9 +119,9 @@ main{padding:12px;max-width:960px;margin:0 auto}
 <main>
   <div class="cfg">
     <div class="field">
-      <input id="cfgToken" type="password" placeholder="GitHub Token" autocomplete="off">
+      <input id="cfgToken" type="password" placeholder="GitHub Token（必填，创建方法见使用手册）" autocomplete="off">
       <input id="cfgOwner" placeholder="Owner" value="shuting52">
-      <input id="cfgRepo" placeholder="仓库名" value="16-47-2026-09-20">
+      <input id="cfgRepo" placeholder="仓库名" value="2026-9-21landezhaole">
     </div>
     <div class="row">
       <button class="btn-pri grow" onclick="connect()">🔌 连接并加载云端数据</button>
@@ -171,9 +171,10 @@ main{padding:12px;max-width:960px;margin:0 auto}
 "use strict";
 
 // ============ 预置凭据与仓库 ============
-const DEFAULT_TOKEN = atob("Z2hwX1VAbXFhUGFMSEl1bGFPZjVQVlJhcTA2ZG56ZW1ybjB6cVNJTw==");
+// 安全修复：不再内置 Token（旧 Token 已泄露），请在页面输入框粘贴你自己的 GitHub Token
+const DEFAULT_TOKEN = "";
 const DEFAULT_OWNER = "shuting52";
-const DEFAULT_REPO  = "16-47-2026-09-20";
+const DEFAULT_REPO  = "2026-9-21landezhaole";
 const CONFIG_PATH   = "admin-data.json";
 
 const S = {
