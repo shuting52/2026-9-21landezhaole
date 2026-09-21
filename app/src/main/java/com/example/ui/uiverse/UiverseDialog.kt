@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
@@ -136,7 +137,20 @@ fun UiverseDialog(
                         Toast.makeText(context, "已恢复系统默认主题", Toast.LENGTH_SHORT).show()
                         onClose()
                     },
-                    onClose = onClose
+                    onClose = onClose,
+                    onOpenWebsite = {
+                        // 支持直接访问 uiverse.io 官网挑选主题
+                        try {
+                            val intent = android.content.Intent(
+                                android.content.Intent.ACTION_VIEW,
+                                android.net.Uri.parse("https://uiverse.io/")
+                            )
+                            intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "无法打开 uiverse.io，请手动在浏览器访问", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 )
 
                 // Top Category Navigation (Horizontal scrollable pill list mirroring the screenshot)
@@ -221,7 +235,8 @@ fun UiverseDialog(
 private fun UiverseHeader(
     activeKit: UiKitPreset,
     onResetDefault: () -> Unit,
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    onOpenWebsite: () -> Unit = {}
 ) {
     Row(
         modifier = Modifier
@@ -283,6 +298,23 @@ private fun UiverseHeader(
         }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
+            // 访问 uiverse.io 官网：支持直接访问并挑选主题
+            OutlinedButton(
+                onClick = onOpenWebsite,
+                modifier = Modifier.height(32.dp),
+                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Language,
+                    contentDescription = null,
+                    tint = Color(0xFF6366F1),
+                    modifier = Modifier.size(14.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("uiverse.io", fontSize = 11.sp, color = Color(0xFF6366F1))
+            }
+            Spacer(modifier = Modifier.width(6.dp))
             OutlinedButton(
                 onClick = onResetDefault,
                 modifier = Modifier.height(32.dp),

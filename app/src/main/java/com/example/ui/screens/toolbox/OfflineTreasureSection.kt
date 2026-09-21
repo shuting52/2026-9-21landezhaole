@@ -197,7 +197,7 @@ fun OfflineTreasureSection(modifier: Modifier = Modifier) {
 @Composable
 private fun LedBannerTool() {
     val context = LocalContext.current
-    var bannerText by remember { mutableStateOf("接机 / 演唱会应援 / 懒得找了") }
+    var bannerText by remember { mutableStateOf("懒得找了软件白嫖资源软件√307779523") }
     var selectedColorIndex by remember { mutableIntStateOf(0) }
     var isFullscreen by remember { mutableStateOf(false) }
     var scrollSpeed by remember { mutableIntStateOf(2) } // 1: 慢, 2: 中, 3: 快

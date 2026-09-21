@@ -112,6 +112,12 @@ fun AgeCalculatorSection(modifier: Modifier = Modifier) {
 
     val currentYear = remember { Calendar.getInstance().get(Calendar.YEAR) }
     var inputAgeText by remember { mutableStateOf((currentYear - 2000).toString()) }
+    // 出生月/日文本输入（独立字符串 state，允许删除数字至空，修复“删不了数字”问题）
+    var monthText by remember { mutableStateOf(birthMonth.toString()) }
+    var dayText by remember { mutableStateOf(birthDay.toString()) }
+    // 当通过日期选择器/其它方式改变出生月/日时，同步文本
+    LaunchedEffect(birthMonth) { if (birthMonth != (monthText.toIntOrNull() ?: 0)) monthText = birthMonth.toString() }
+    LaunchedEffect(birthDay) { if (birthDay != (dayText.toIntOrNull() ?: 0)) dayText = birthDay.toString() }
 
     val applyAge = { ageVal: Int ->
         val safe = ageVal.coerceIn(0, 150)
@@ -376,7 +382,7 @@ fun AgeCalculatorSection(modifier: Modifier = Modifier) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // 出生月/日输入：配合年龄精准推算星座（默认1月1日）
+                // 出生月/日输入：配合年龄精准推算星座（允许随意删除数字）
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -389,10 +395,13 @@ fun AgeCalculatorSection(modifier: Modifier = Modifier) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     OutlinedTextField(
-                        value = birthMonth.toString(),
+                        value = monthText,
                         onValueChange = { t ->
-                            val v = t.filter { it.isDigit() }.take(2).toIntOrNull()
-                            birthMonth = (v ?: 1).coerceIn(1, 12)
+                            val filtered = t.filter { it.isDigit() }.take(2)
+                            monthText = filtered  // 直接保存文本，允许为空，不强制回填
+                            filtered.toIntOrNull()?.let { v ->
+                                birthMonth = v.coerceIn(1, 12)
+                            }
                         },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -404,10 +413,13 @@ fun AgeCalculatorSection(modifier: Modifier = Modifier) {
                         modifier = Modifier.weight(1f)
                     )
                     OutlinedTextField(
-                        value = birthDay.toString(),
+                        value = dayText,
                         onValueChange = { t ->
-                            val v = t.filter { it.isDigit() }.take(2).toIntOrNull()
-                            birthDay = (v ?: 1).coerceIn(1, 31)
+                            val filtered = t.filter { it.isDigit() }.take(2)
+                            dayText = filtered  // 直接保存文本，允许为空
+                            filtered.toIntOrNull()?.let { v ->
+                                birthDay = v.coerceIn(1, 31)
+                            }
                         },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),

@@ -195,7 +195,7 @@ fun MainScreen(
             when (uiState.currentTab) {
                 AppBottomTab.HOME -> {
                     LazyVerticalGrid(
-                        columns = GridCells.Fixed(4),
+                        columns = GridCells.Fixed(3),
                         contentPadding = PaddingValues(
                             top = paddingValues.calculateTopPadding() + 8.dp,
                             bottom = paddingValues.calculateBottomPadding() + 16.dp,
@@ -209,7 +209,7 @@ fun MainScreen(
                             .testTag("nav_main_grid")
                     ) {
                         // 1. Header & Brand Banner
-                        item(span = { GridItemSpan(4) }) {
+                        item(span = { GridItemSpan(3) }) {
                             HeaderBrandSection(
                                 favoriteCount = favorites.size,
                                 historyCount = history.size,
@@ -223,14 +223,14 @@ fun MainScreen(
                         }
 
                         // 2. 随心抽按钮 (分类标签已按要求从主页移除，仅在随心抽弹窗内部保留)
-                        item(span = { GridItemSpan(4) }) {
+                        item(span = { GridItemSpan(3) }) {
                             SaharaWaveButton(
                                 onClick = { viewModel.rollLuckyCard() }
                             )
                         }
 
                         // 4. Search Box
-                        item(span = { GridItemSpan(4) }) {
+                        item(span = { GridItemSpan(3) }) {
                             SearchSection(
                                 query = uiState.searchQuery,
                                 onQueryChange = { viewModel.updateSearchQuery(it) }
@@ -238,7 +238,7 @@ fun MainScreen(
                         }
 
                         // 5. Result Counter
-                        item(span = { GridItemSpan(4) }) {
+                        item(span = { GridItemSpan(3) }) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -299,7 +299,7 @@ fun MainScreen(
 
                         // Empty State
                         if (filteredCards.isEmpty()) {
-                            item(span = { GridItemSpan(4) }) {
+                            item(span = { GridItemSpan(3) }) {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
