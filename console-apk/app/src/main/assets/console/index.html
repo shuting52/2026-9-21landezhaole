@@ -44,6 +44,7 @@ header{position:sticky;top:0;z-index:50;background:rgba(10,14,26,.88);backdrop-f
 .hd-sub{font-size:11px;color:var(--tx2)}
 .pub-btn{background:linear-gradient(135deg,#22c55e,#0ea5e9);color:#04120a;padding:8px 14px;font-size:13px;border-radius:10px;font-weight:800;box-shadow:0 4px 16px #22c55e44}
 .pub-bump-btn{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;padding:8px 14px;font-size:13px;border-radius:10px;font-weight:800;box-shadow:0 4px 16px #ef444444}
+.pub-dis-btn{background:linear-gradient(135deg,#64748b,#334155);color:#fff;padding:8px 14px;font-size:13px;border-radius:10px;font-weight:800}
 /* tabs */
 nav{position:fixed;bottom:0;left:0;right:0;z-index:60;background:rgba(10,14,26,.94);backdrop-filter:blur(14px);border-top:1px solid var(--line);display:flex;overflow-x:auto}
 nav button{flex:1;min-width:52px;background:none;border-radius:0;padding:8px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:var(--tx2)}
@@ -113,6 +114,7 @@ main{padding:12px;max-width:960px;margin:0 auto}
     </div>
     <button class="pub-btn" onclick="publish(false)">💾 静默同步</button>
     <button class="pub-bump-btn" onclick="quickBumpPublish()">🚀 触发更新弹窗</button>
+    <button class="pub-dis-btn" onclick="disconnect()">⏻ 断开</button>
   </div>
 </header>
 
@@ -128,6 +130,7 @@ main{padding:12px;max-width:960px;margin:0 auto}
       <button onclick="saveCfg()">💾 保存配置</button>
       <button onclick="exportJson()">⬇️ 导出备份</button>
       <button onclick="document.getElementById('importFile').click()">⬆️ 导入备份</button>
+      <button class="btn-err" onclick="disconnect()">⏻ 断开仓库</button>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJson(event)">
     </div>
     <div style="margin-top:8px;font-size:12px;color:var(--tx2)" id="connInfo"></div>
@@ -297,9 +300,37 @@ async function connect(){
 
 function setSub(t){ $("hdSub").textContent = t; }
 
+/**
+ * 断开与仓库的连接：清空内存中的云端数据与凭据状态（不删除本地保存的配置）
+ */
+function disconnect(){
+  S.admin = null; S.sha = ""; S.loaded = false; S.dirty = false; S.apks = [];
+  renderAll();
+  setSub("已断开仓库连接");
+  $("connInfo").innerHTML = '<span class="status-dot idle"></span>已断开与仓库的连接，可修改 Token/仓库后重新连接';
+  toast("已断开仓库连接","ok");
+}
+
 // ============ 发布逻辑 (双通道：静默同步 / 触发弹窗更新) ============
 async function publish(bump = false, actionDesc = ""){
   if(!S.admin){ toast("请先连接并加载数据","err"); return; }
+  // 发布新版本前二次确认：防止误操作导致版本号暴涨（如 1.5.1 连续点到 1.5.11）
+  if(bump){
+    const oldCode = parseInt(S.admin.version?.code) || 1;
+    const base = S.admin.version?.name || "1.0";
+    const parts = base.split(".");
+    let newName = base;
+    if(parts.length > 1){
+      parts[parts.length - 1] = String(Number(parts[parts.length - 1] || 0) + 1);
+      newName = parts.join(".");
+    }
+    const ok = await confirmDlgHtml(
+      `⚠️ 将发布新版本 <b>v${newName}</b>（versionCode: ${oldCode} → ${oldCode+1}）<br>` +
+      `本体软件将立即弹出<font color='#f87171'><b>强制更新弹窗</b></font>。<br><br>` +
+      `如果只是想保存内容修改，请点「💾 静默同步」（不升版本号，不弹窗）。<br><br>确定发布新版本吗？`
+    );
+    if(!ok){ toast("已取消发布","err"); return; }
+  }
   const btn = document.querySelector(bump ? ".pub-bump-btn" : ".pub-btn");
   if(btn){ btn.disabled = true; btn.textContent = "⏳ 推送中…"; }
   try{
@@ -376,6 +407,16 @@ function closeDlg(){ $("dlgMask").classList.remove("show"); }
 function confirmDlg(msg){
   return new Promise(res=>{
     openDlg(`<div class="dlg-title">确认操作</div><div style="color:var(--tx2);margin:12px 0 16px">${esc(msg)}</div><div class="dlg-actions"><button class="btn-err" onclick="closeDlg();window.__cf=false">取消</button><button class="btn-ok" onclick="closeDlg();window.__cf=true">确认执行</button></div>`);
+    const iv = setInterval(()=>{
+      if(window.__cf !== undefined){ clearInterval(iv); const v = window.__cf; window.__cf = undefined; res(v); }
+    }, 80);
+  });
+}
+
+// 支持 HTML 内容的确认弹窗（用于版本发布前提醒，可展示粗体/颜色）
+function confirmDlgHtml(html){
+  return new Promise(res=>{
+    openDlg(`<div class="dlg-title">确认操作</div><div style="color:var(--tx2);margin:12px 0 16px;line-height:1.7">${html}</div><div class="dlg-actions"><button class="btn-err" onclick="closeDlg();window.__cf=false">取消</button><button class="btn-ok" onclick="closeDlg();window.__cf=true">确认发布</button></div>`);
     const iv = setInterval(()=>{
       if(window.__cf !== undefined){ clearInterval(iv); const v = window.__cf; window.__cf = undefined; res(v); }
     }, 80);
@@ -1165,7 +1206,8 @@ function renderApk(){
         </div>
         <div class="item-sub">${esc(apk.download_url)}</div>
         <div class="item-actions">
-          <button class="btn-mini ok" onclick="window.open('${esc(apk.download_url)}')">⬇️ 下载体验</button>
+          <button class="btn-mini ok" onclick="location.href='${esc(apk.download_url)}'">⬇️ 手机下载体验</button>
+          <button class="btn-mini err" onclick="deleteApk('${esc(apk.name)}')">🗑 删除</button>
           <button class="btn-mini ${isCurrent ? "gray" : "warn"}" onclick="setAsReleaseApk('${esc(apk.download_url)}','${esc(apk.name)}')">
             ${isCurrent ? "✅ 当前生效中" : "🚀 设为最新并触发本体更新"}
           </button>
@@ -1175,6 +1217,25 @@ function renderApk(){
   }
 
   $("apkPage").innerHTML = html;
+}
+
+async function deleteApk(name){
+  const ok = await confirmDlg(`删除仓库中的 APK「${name}」？\n（删除后不可恢复，建议保留当前生效版本）`);
+  if(!ok) return;
+  try{
+    const meta = await ghGet("dist/apk/" + name);
+    const url = `${API}/repos/${S.owner}/${S.repo}/contents/dist/apk/${name}`;
+    const r = await fetch(url, {
+      method: "DELETE",
+      headers: ghHeaders(true),
+      body: JSON.stringify({ message: "console: 删除 APK " + name, sha: meta.sha })
+    });
+    if(!r.ok) throw new Error("删除失败 HTTP " + r.status);
+    toast("APK 已删除","ok");
+    await fetchRepoApks(false);
+  }catch(e){
+    toast("删除失败："+e.message,"err");
+  }
 }
 
 async function fetchRepoApks(showToast = true){
