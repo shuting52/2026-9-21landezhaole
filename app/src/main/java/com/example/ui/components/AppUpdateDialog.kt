@@ -233,11 +233,39 @@ fun AppUpdateDialog(
                     throw lastError ?: Exception("所有下载源均失败")
                 }
             } catch (e: Exception) {
-                val msg = e.message?.isNullOrBlank()?.let { "下载失败，请检查网络或到官方群反馈" } ?: "下载失败：${e.message}"
-                Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
-                statusLabel = "等待更新…"
-                progress = 0f
-                isUpdating = false
+                // ⚠️ 自动下载失败 → 兜底1：系统 DownloadManager（通知栏下载，最可靠）
+                try {
+                    val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                    val req = DownloadManager.Request(Uri.parse(url))
+                        .setTitle("懒得找了 更新包 v${versionName}")
+                        .setDescription("正在下载新版本，完成后点击通知安装")
+                        .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                        .setMimeType("application/vnd.android.package-archive")
+                        .setAllowedOverMetered(true)
+                        .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "landezhao-${versionName}.apk")
+                    dm.enqueue(req)
+                    Toast.makeText(context, "已转用系统下载器下载，完成后点击通知安装", Toast.LENGTH_LONG).show()
+                    isUpdating = false
+                    onUpdateFinished()
+                    onDismiss()
+                    return@launch
+                } catch (e2: Exception) {
+                    // ⚠️ 兜底2：浏览器 URL 链接跳转下载（用户自行点击下载安装）
+                    try {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        context.startActivity(intent)
+                        Toast.makeText(context, "已打开浏览器下载新版本，下载完成后手动安装", Toast.LENGTH_LONG).show()
+                        isUpdating = false
+                        onDismiss()
+                        return@launch
+                    } catch (e3: Exception) {
+                        Toast.makeText(context, "自动下载失败，请到官方群获取安装包（群号 439211347）", Toast.LENGTH_LONG).show()
+                        statusLabel = "等待更新…"
+                        progress = 0f
+                        isUpdating = false
+                    }
+                }
             }
         }
     }
