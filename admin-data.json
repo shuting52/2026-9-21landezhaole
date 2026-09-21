@@ -1,17 +1,20 @@
 {
   "version": {
-    "code": 48,
-    "name": "1.5.4",
+    "code": 49,
+    "name": "1.6.0",
     "changelog": [
-      "【v1.5.4】修复「立即更新」下载失败问题",
-      "【v1.5.4】下载增强：多源下载失败自动切换系统下载器（通知栏下载）",
-      "【v1.5.4】终极兜底：浏览器 URL 链接跳转下载",
-      "【v1.5.4】控制台 APK 仓库一键同步最新版本到本体",
+      "【v1.6.0】控制台静默同步改为「应用」，点击实时零延迟同步本体",
+      "【v1.6.0】APK仓库手机下载修复 + 设置实时应用同步",
+      "【v1.6.0】Skill/软件改文件形式（ZIP/APK/MD）同步本体下载",
+      "【v1.6.0】控制台新拟态主题",
+      "【v1.6.0】首页删除新站点置顶文字 + 软件/Skill取消本地上传改文件下载",
+      "【v1.6.0】工具箱10工具独立呈现 + 新增应用分身多开",
+      "【v1.6.0】反馈邮件直达开发者 + 分享去官方网址",
       "点击「立即更新」直接下载安装新版本"
     ],
     "force": true,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.5.4-1789979496.apk",
-    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.5.4-1789979496.apk"
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.6.0-1790011889.apk",
+    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.6.0-1790011889.apk"
   },
   "home": {
     "categories": [
