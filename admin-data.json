@@ -1,16 +1,16 @@
 {
   "version": {
-    "code": 5,
-    "name": "1.4",
+    "code": 6,
+    "name": "1.5",
     "changelog": [
-      "【控制台推送】管理后台全局版本发布",
-      "【控制台推送】新版本 APK 更新发布",
-      "【控制台推送】新版本 APK 更新发布",
-      "测试内容试试鲜果"
+      "【1.5 优化版】跑马灯按时间段实时播报问候",
+      "【1.5 优化版】设置页自动检测云端新版本",
+      "【1.5 优化版】移除公告弹窗，界面更简洁",
+      "点击立即更新即可下载安装新版本"
     ],
     "force": true,
-    "apkUrl": "",
-    "apkUrlRaw": ""
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.5-1789963779.apk",
+    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.5-1789963779.apk"
   },
   "home": {
     "categories": [
