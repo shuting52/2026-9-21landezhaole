@@ -29,7 +29,6 @@ import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -60,7 +59,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.ui.screens.openQqGroup
 import com.example.ui.theme.FlameRed
 import com.example.ui.theme.JadeGreen
 import com.example.ui.theme.SunsetOrange
@@ -72,10 +70,97 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
+import java.io.BufferedReader
+import java.io.BufferedWriter
+import java.io.InputStreamReader
+import java.io.OutputStreamWriter
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
+import javax.net.ssl.SSLSocket
+import javax.net.ssl.SSLSocketFactory
+
+/**
+ * 真实邮件直发：通过 QQ 邮箱 SMTP（SSL 465）把反馈发送到站长邮箱。
+ * 需在「QQ邮箱 → 设置 → 账户 → 开启SMTP服务」获取授权码后填入 SMTP_AUTH_CODE。
+ * 未配置或发送失败时自动回退到系统邮件客户端（收件人已预填）。
+ */
+object FeedbackMailer {
+    // 收件人邮箱（站长）
+    const val TO_EMAIL = "307779523@qq.com"
+    // 发件配置：请把 SMTP_AUTH_CODE 换成你自己的 QQ 邮箱授权码（不含空格）
+    const val SMTP_HOST = "smtp.qq.com"
+    const val SMTP_PORT = 465
+    const val FROM_EMAIL = "307779523@qq.com"
+    const val SMTP_AUTH_CODE = "" // TODO: QQ邮箱设置->账户->开启SMTP服务后，填入生成的16位授权码
+
+    /** 通过 SMTP 直发邮件；返回是否成功 */
+    fun send(subject: String, body: String): Boolean {
+        val authCode = SMTP_AUTH_CODE.trim()
+        if (authCode.isEmpty()) return false
+        var socket: SSLSocket? = null
+        return try {
+            val factory: SSLSocketFactory = SSLSocketFactory.getDefault()
+            socket = factory.createSocket(SMTP_HOST, SMTP_PORT) as SSLSocket
+            socket.soTimeout = 15000
+            val reader = BufferedReader(InputStreamReader(socket.getInputStream(), Charsets.UTF_8))
+            val writer = BufferedWriter(OutputStreamWriter(socket.getOutputStream(), Charsets.UTF_8))
+
+            fun readResponse(): String = reader.readLine() ?: ""
+            fun cmd(line: String): String {
+                writer.write(line + "\r\n")
+                writer.flush()
+                return readResponse()
+            }
+
+            val welcome = readResponse()
+            if (!welcome.startsWith("220")) return false
+
+            // EHLO（QQ 邮箱需要读取多行响应直到以 250 结尾）
+            writer.write("EHLO landezhaole\r\n")
+            writer.flush()
+            var ehlo = readResponse()
+            while (ehlo.startsWith("250-")) ehlo = readResponse()
+            if (!ehlo.startsWith("250")) return false
+
+            // AUTH LOGIN
+            val authReq = cmd("AUTH LOGIN")
+            if (!authReq.startsWith("334")) return false
+            val userResp = cmd(android.util.Base64.encodeToString(FROM_EMAIL.toByteArray(Charsets.UTF_8), android.util.Base64.NO_WRAP))
+            if (!userResp.startsWith("334")) return false
+            val passResp = cmd(android.util.Base64.encodeToString(authCode.toByteArray(Charsets.UTF_8), android.util.Base64.NO_WRAP))
+            if (!passResp.startsWith("235")) return false
+
+            val mailFrom = cmd("MAIL FROM:<$FROM_EMAIL>")
+            if (!mailFrom.startsWith("250")) return false
+            val rcptTo = cmd("RCPT TO:<$TO_EMAIL>")
+            if (!rcptTo.startsWith("250")) return false
+
+            val dataCmd = cmd("DATA")
+            if (!dataCmd.startsWith("354")) return false
+            val message = buildString {
+                append("From: <$FROM_EMAIL>\n")
+                append("To: <$TO_EMAIL>\n")
+                append("Subject: =?UTF-8?B?" + android.util.Base64.encodeToString(subject.toByteArray(Charsets.UTF_8), android.util.Base64.NO_WRAP) + "?=\n")
+                append("MIME-Version: 1.0\n")
+                append("Content-Type: text/plain; charset=UTF-8\n")
+                append("Content-Transfer-Encoding: 8bit\n")
+                append("\n")
+                append(body)
+            }
+            // 统一转换为 SMTP 要求的 CRLF 行结束符
+            val finalResp = cmd(message.replace("\r\n", "\n").replace("\n", "\r\n") + "\r\n.")
+            val ok = finalResp.startsWith("250")
+            runCatching { cmd("QUIT") }
+            ok
+        } catch (e: Exception) {
+            false
+        } finally {
+            runCatching { socket?.close() }
+        }
+    }
+}
 
 private data class FeedbackCategoryItem(
     val title: String,
@@ -134,32 +219,18 @@ fun FeedbackDialog(
                 val fullReport = buildFullReport()
                 val isSuccess = withContext(Dispatchers.IO) {
                     try {
-                        val client = OkHttpClient.Builder()
-                            .connectTimeout(10, TimeUnit.SECONDS)
-                            .readTimeout(10, TimeUnit.SECONDS)
-                            .build()
-
-                        // 渠道1：通过开放实时推送中枢直达开发者
-                        val ntfyRequest = Request.Builder()
-                            .url("https://ntfy.sh/landezhao_feedback_hub")
-                            .post(fullReport.toRequestBody("text/plain; charset=utf-8".toMediaType()))
-                            .header("Title", "【懒得找了·软件反馈】${selectedCategory.title}")
-                            .header("Priority", "high")
-                            .header("Tags", "incoming_envelope,feedback")
-                            .build()
-
-                        val resp = client.newCall(ntfyRequest).execute()
-                        val networkSuccess = resp.isSuccessful
-                        resp.close()
+                        // 真实邮件直发：SMTP 发送到站长邮箱 307779523@qq.com
+                        val mailSubject = "【懒得找了·软件反馈】${selectedCategory.title}"
+                        val smtpOk = FeedbackMailer.send(mailSubject, fullReport)
 
                         // 本地持久化留底存证
                         val sp = context.getSharedPreferences("feedback_records", Context.MODE_PRIVATE)
                         val prev = sp.getString("history", "") ?: ""
                         sp.edit().putString("history", "$fullReport\n---\n$prev").apply()
 
-                        networkSuccess
+                        smtpOk
                     } catch (e: Exception) {
-                        // 离线状态下本地存证保底
+                        // 离线/异常时本地存证保底
                         try {
                             val sp = context.getSharedPreferences("feedback_records", Context.MODE_PRIVATE)
                             val prev = sp.getString("history", "") ?: ""
@@ -171,11 +242,11 @@ fun FeedbackDialog(
 
                 isSending = false
                 if (isSuccess) {
-                    Toast.makeText(context, "✅ 反馈已直接发送成功！开发者已收到您的建议，感谢支持！", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, "✅ 反馈已通过邮件发送至站长邮箱，感谢支持！", Toast.LENGTH_LONG).show()
                     onDismiss()
                 } else {
-                    // 若网络受限，也已本地安全存储，提示用户已妥善记录
-                    Toast.makeText(context, "✅ 反馈信息已成功保存并提交后台队列！感谢您的宝贵建议！", Toast.LENGTH_LONG).show()
+                    // 邮件直发失败（未配置 SMTP 授权码或网络受限）→ 打开系统邮件客户端，收件人已预填
+                    openMailComposer(context, fullReport, selectedCategory.title)
                     onDismiss()
                 }
             }
@@ -433,37 +504,11 @@ fun FeedbackDialog(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // 官方QQ群
-                Surface(
-                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
-                    shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 10.dp, vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Filled.Group, contentDescription = null, tint = Color(0xFF1976D2), modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "官方QQ群：439211347",
-                                fontSize = 11.5.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        TextButton(
-                            onClick = { openQqGroup(context) },
-                            modifier = Modifier.height(30.dp)
-                        ) {
-                            Text("加群交流", fontSize = 11.5.sp, color = Color(0xFF1976D2))
-                        }
-                    }
-                }
+                Text(
+                    text = "发送后可直接到达站长邮箱，感谢您的宝贵建议！",
+                    fontSize = 10.5.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                )
             }
         },
         confirmButton = {
@@ -505,4 +550,30 @@ fun FeedbackDialog(
             }
         }
     )
+}
+
+/**
+ * 兜底通道：SMTP 直发失败时，唤起系统邮件客户端并预填收件人与正文，
+ * 确保反馈一定能够送达站长邮箱（307779523@qq.com）。
+ */
+private fun openMailComposer(context: Context, report: String, category: String) {
+    try {
+        val subject = "【懒得找了·软件反馈】$category"
+        val uri = Uri.parse("mailto:${FeedbackMailer.TO_EMAIL}")
+        val intent = Intent(Intent.ACTION_SENDTO, uri).apply {
+            putExtra(Intent.EXTRA_EMAIL, arrayOf(FeedbackMailer.TO_EMAIL))
+            putExtra(Intent.EXTRA_SUBJECT, subject)
+            putExtra(Intent.EXTRA_TEXT, report)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        context.startActivity(intent)
+        Toast.makeText(context, "已唤起邮件客户端，收件人已填好，点发送即可送达站长邮箱", Toast.LENGTH_LONG).show()
+    } catch (e: Exception) {
+        // 未安装邮件客户端：复制到剪贴板供手动发送
+        try {
+            val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            cm.setPrimaryClip(ClipData.newPlainText("反馈信息", report))
+            Toast.makeText(context, "未找到邮件客户端，反馈内容已复制，可粘贴到任意邮箱发送至 ${FeedbackMailer.TO_EMAIL}", Toast.LENGTH_LONG).show()
+        } catch (_: Exception) {}
+    }
 }

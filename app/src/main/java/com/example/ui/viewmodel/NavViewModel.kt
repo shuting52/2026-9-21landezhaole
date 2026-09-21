@@ -15,6 +15,7 @@ import com.example.data.model.SearchEngine
 import com.example.data.remote.AdminData
 import com.example.data.remote.CategoryDto
 import com.example.data.remote.RemoteConfigRepository
+import com.example.data.remote.SettingsDto
 import com.example.data.remote.SplashDto
 import com.example.data.remote.UpdateDialogDto
 import com.example.data.remote.VersionDto
@@ -32,6 +33,7 @@ import kotlinx.coroutines.launch
 import java.net.URLEncoder
 
 import com.example.data.local.db.UploadedResourceEntity
+import com.example.data.local.db.CloneAppEntity
 import com.example.ui.theme.AtmosphereEffect
 import com.example.ui.theme.ThemePreset
 import com.example.ui.theme.ThemePresetsRepository
@@ -73,6 +75,7 @@ data class NavUiState(
     val isSplashVisible: Boolean = true,
     val isCloudReady: Boolean = false,
     val cloudVersion: VersionDto? = null,
+    val cloudSettings: SettingsDto? = null,
     val cloudSplash: SplashDto? = null,
     val cloudWelcome: WelcomeDto? = null,
     val cloudUpdate: UpdateDialogDto? = null
@@ -101,6 +104,9 @@ class NavViewModel(
     val customSites: StateFlow<List<UploadedResourceEntity>> = repository.getCustomSites()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val clones: StateFlow<List<CloneAppEntity>> = repository.getAllClones()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     init {
         // Pre-seed some popular initial software and skills if empty
         viewModelScope.launch {
@@ -110,10 +116,10 @@ class NavViewModel(
         viewModelScope.launch {
             refreshRemoteConfig()
         }
-        // 定期后台检测云端更新（每 20 秒轮询一次），确保控制台推送新内容/新版本后本体软件能即刻感知并触发更新弹窗
+        // 定期后台检测云端更新（每 6 秒轮询一次）：控制台点击「应用」后，本体软件数秒内即可实时感知并同步生效，接近零延迟
         viewModelScope.launch {
             while (isActive) {
-                kotlinx.coroutines.delay(20_000L)
+                kotlinx.coroutines.delay(6_000L)
                 refreshRemoteConfig()
             }
         }
@@ -171,6 +177,7 @@ class NavViewModel(
             selectedCategoryId = if (validSelectedId) current.selectedCategoryId else (newCats.firstOrNull()?.id ?: "all"),
             isCloudReady = true,
             cloudVersion = data.version,
+            cloudSettings = data.settings,
             cloudSplash = data.splash,
             cloudWelcome = data.welcome,
             cloudUpdate = data.updateDialog
@@ -183,7 +190,7 @@ class NavViewModel(
 
     /**
      * 将控制台发布的 software / skills 数组同步到本地数据库：
-     * - 云端有的条目 upsert（新增/更新）
+     * - 云端有的条目 upsert（新增/更新），含文件下载资源（APK / ZIP / MD）
      * - 控制台来源（id 以 sw_/sk_ 开头）但云端已删除的条目从本地删除
      */
     private suspend fun syncCloudResources(data: AdminData) {
@@ -192,6 +199,7 @@ class NavViewModel(
             val cloudSkills = data.skills
 
             cloudSoftwares.forEach { sw ->
+                val (dlUrl, dlType) = resolveDownload(sw.apkUrl, sw.fileUrl)
                 repository.saveUploadedResource(
                     UploadedResourceEntity(
                         id = sw.id,
@@ -201,11 +209,14 @@ class NavViewModel(
                         url = sw.url,
                         author = sw.author,
                         badge = sw.badge.ifBlank { "站长推荐" },
-                        tags = sw.tags
+                        tags = sw.tags,
+                        fileUrl = dlUrl,
+                        fileType = dlType
                     )
                 )
             }
             cloudSkills.forEach { sk ->
+                val (dlUrl, dlType) = resolveDownload("", sk.fileUrl)
                 repository.saveUploadedResource(
                     UploadedResourceEntity(
                         id = sk.id,
@@ -215,7 +226,9 @@ class NavViewModel(
                         url = sk.url,
                         author = sk.author,
                         badge = sk.badge.ifBlank { "站长推荐" },
-                        tags = sk.tags
+                        tags = sk.tags,
+                        fileUrl = dlUrl,
+                        fileType = dlType
                     )
                 )
             }
@@ -239,6 +252,19 @@ class NavViewModel(
             }
         } catch (e: Exception) {
             // 同步失败不阻断主流程
+        }
+    }
+
+    /** 解析下载资源与类型：优先 APK，其次 ZIP/MD */
+    private fun resolveDownload(apkUrl: String, fileUrl: String): Pair<String, String> {
+        if (apkUrl.isNotBlank()) return apkUrl to "APK"
+        val f = fileUrl.trim()
+        if (f.isBlank()) return "" to ""
+        val low = f.lowercase()
+        return when {
+            low.endsWith(".zip") -> f to "ZIP"
+            low.endsWith(".md") -> f to "MD"
+            else -> f to "文件"
         }
     }
 
@@ -477,6 +503,46 @@ class NavViewModel(
     fun deleteUploadedResource(id: String) {
         viewModelScope.launch {
             repository.deleteUploadedResource(id)
+        }
+    }
+
+    // ================= 分身多开 =================
+    /** 创建分身（桌面快捷入口 + 本地记录）；返回分身名 */
+    fun createClone(
+        packageName: String,
+        originalAppName: String,
+        onResult: (Boolean) -> Unit = {}
+    ) {
+        viewModelScope.launch {
+            val maxIndex = repository.getMaxCloneIndex(packageName) ?: 0
+            val nextIndex = maxIndex + 1
+            val cloneName = when (nextIndex) {
+                1 -> originalAppName + "分身"
+                2 -> originalAppName + "分身二"
+                3 -> originalAppName + "分身三"
+                else -> originalAppName + "分身" + nextIndex
+            }
+            val entity = CloneAppEntity(
+                id = "${packageName}_$nextIndex",
+                originalAppName = originalAppName,
+                packageName = packageName,
+                cloneName = cloneName,
+                cloneIndex = nextIndex
+            )
+            repository.saveClone(entity)
+            onResult(true)
+        }
+    }
+
+    fun deleteClone(id: String) {
+        viewModelScope.launch {
+            repository.deleteClone(id)
+        }
+    }
+
+    fun renameClone(id: String, newName: String) {
+        viewModelScope.launch {
+            repository.renameClone(id, newName)
         }
     }
 
