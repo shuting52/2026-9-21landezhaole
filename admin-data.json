@@ -1,9 +1,14 @@
 {
   "version": {
-    "code": 1,
-    "name": "1.0",
-    "changelog": [],
-    "force": false,
+    "code": 5,
+    "name": "1.4",
+    "changelog": [
+      "【控制台推送】管理后台全局版本发布",
+      "【控制台推送】新版本 APK 更新发布",
+      "【控制台推送】新版本 APK 更新发布",
+      "测试内容试试鲜果"
+    ],
+    "force": true,
     "apkUrl": "",
     "apkUrlRaw": ""
   },
@@ -6002,44 +6007,7 @@
       }
     ]
   },
-  "software": [
-    {
-      "id": "init-sw-1",
-      "type": "software",
-      "title": "Geek Uninstaller",
-      "desc": "极简高效的Windows彻底卸载清理神器，免安装单文件，强制剔除注册表残留。",
-      "url": "https://geekuninstaller.com/",
-      "author": "Thomas",
-      "badge": "站长自用",
-      "tags": "Windows / 清理",
-      "apkUrl": "",
-      "previewUrl": ""
-    },
-    {
-      "id": "init-sw-2",
-      "type": "software",
-      "title": "PotPlayer 64bit 绿色优化版",
-      "desc": "全球极佳的高清影音播放器，内置无缝解码器，支持4K HDR与杜比视界蓝光直出。",
-      "url": "https://potplayer.daum.net/",
-      "author": "Daum",
-      "badge": "装机必备",
-      "tags": "影音播放 / 4K",
-      "apkUrl": "",
-      "previewUrl": ""
-    },
-    {
-      "id": "init-sw-3",
-      "type": "software",
-      "title": "Everything 极速搜盘",
-      "desc": "1秒内秒搜百万本地文件的搜索神器，毫秒级响应，几乎零内存占用。",
-      "url": "https://www.voidtools.com/",
-      "author": "Voidtools",
-      "badge": "神器",
-      "tags": "生产力 / 搜索",
-      "apkUrl": "",
-      "previewUrl": ""
-    }
-  ],
+  "software": [],
   "skills": [
     {
       "id": "init-sk-1",
@@ -6105,7 +6073,13 @@
   },
   "updateDialog": {
     "title": "发现新版本",
-    "changelog": [],
+    "changelog": [
+      "【控制台推送】管理后台全局版本发布",
+      "【控制台推送】管理后台全局版本发布",
+      "【控制台推送】新版本 APK 更新发布",
+      "【控制台推送】新版本 APK 更新发布",
+      "测试内容试试鲜果"
+    ],
     "confirmText": "立即更新",
     "cancelText": "稍后再说",
     "customCss": "",
