@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -130,6 +131,39 @@ fun RibbonBadge(
         label = "dot_alpha"
     )
 
+    // CSS Keyframe 4: 渐变方向 360° 旋转 (linear-gradient angle 动画)
+    val gradAngle by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = if (isNew) 2600 else 5000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "grad_angle"
+    )
+
+    // CSS Keyframe 5: 外层光晕呼吸 (glow pulse)
+    val glowAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.25f,
+        targetValue = if (isNew) 0.9f else 0.55f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1100, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "glow_alpha"
+    )
+
+    // CSS Keyframe 6: 弹跳摇摆 (bounce wobble)
+    val wobble by infiniteTransition.animateFloat(
+        initialValue = -4f,
+        targetValue = 4f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 900, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "wobble"
+    )
+
     val baseGradientColors = when (badgeType) {
         BadgeType.ROSE -> listOf(BadgeRose1, BadgeRose2)
         BadgeType.NEW -> listOf(Color(0xFF00C853), Color(0xFF00E676), Color(0xFF00B0FF)) // Neon emerald to vivid cyan
@@ -143,14 +177,14 @@ fun RibbonBadge(
     Box(
         modifier = modifier
             .scale(scale)
+            .graphicsLayer { rotationZ = if (isNewOrHot) wobble else 0f }
             .shadow(
                 elevation = if (isNew) 3.dp else 1.5.dp,
                 shape = badgeShape,
-                ambientColor = baseGradientColors.first().copy(alpha = 0.35f),
-                spotColor = baseGradientColors.first()
+                ambientColor = baseGradientColors.first().copy(alpha = glowAlpha),
+                spotColor = baseGradientColors.first().copy(alpha = glowAlpha)
             )
             .clip(badgeShape)
-            .background(brush = baseBrush, shape = badgeShape)
             .border(
                 width = 0.7.dp,
                 color = Color.White.copy(alpha = if (isNew) 0.85f else 0.55f),
@@ -160,23 +194,50 @@ fun RibbonBadge(
             .padding(horizontal = 6.dp),
         contentAlignment = Alignment.Center
     ) {
-        // CSS Shimmer light sweep overlay using matchParentSize so badge never stretches full width
+        // CSS 动态角度渐变背景 + 流光扫描（Canvas 全背景绘制）
         Canvas(modifier = Modifier.matchParentSize()) {
-            val width = size.width
-            val height = size.height
-            val currentX = width * shimmerOffset
+            val w = size.width
+            val h = size.height
+            val cX = w / 2f
+            val cY = h / 2f
+            val len = kotlin.math.hypot(w.toDouble(), h.toDouble()).toFloat() / 2f
+            val rad = Math.toRadians(gradAngle.toDouble())
+            val cosA = kotlin.math.cos(rad).toFloat()
+            val sinA = kotlin.math.sin(rad).toFloat()
 
+            // 1) 动态旋转渐变背景（CSS linear-gradient angle）
+            drawRect(
+                brush = Brush.linearGradient(
+                    colors = baseGradientColors,
+                    start = Offset(cX - cosA * len, cY - sinA * len),
+                    end = Offset(cX + cosA * len, cY + sinA * len)
+                )
+            )
+
+            // 2) 流光扫过（shimmer sweep）
+            val currentX = w * shimmerOffset
             drawRect(
                 brush = Brush.linearGradient(
                     colors = listOf(
                         Color.Transparent,
-                        Color.White.copy(alpha = 0.35f),
+                        Color.White.copy(alpha = 0.30f),
                         Color.White.copy(alpha = 0.65f),
-                        Color.White.copy(alpha = 0.35f),
+                        Color.White.copy(alpha = 0.30f),
                         Color.Transparent
                     ),
-                    start = Offset(currentX - width * 0.4f, 0f),
-                    end = Offset(currentX + width * 0.4f, height)
+                    start = Offset(currentX - w * 0.5f, 0f),
+                    end = Offset(currentX + w * 0.5f, h)
+                )
+            )
+
+            // 3) 上下边缘高光描边
+            drawRect(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = if (isNew) 0.75f else 0.4f),
+                        Color.Transparent,
+                        Color.Black.copy(alpha = 0.18f)
+                    )
                 )
             )
         }

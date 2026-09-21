@@ -195,7 +195,7 @@ fun MainScreen(
             when (uiState.currentTab) {
                 AppBottomTab.HOME -> {
                     LazyVerticalGrid(
-                        columns = GridCells.Fixed(3),
+                        columns = GridCells.Fixed(4),
                         contentPadding = PaddingValues(
                             top = paddingValues.calculateTopPadding() + 8.dp,
                             bottom = paddingValues.calculateBottomPadding() + 16.dp,
@@ -209,7 +209,7 @@ fun MainScreen(
                             .testTag("nav_main_grid")
                     ) {
                         // 1. Header & Brand Banner
-                        item(span = { GridItemSpan(3) }) {
+                        item(span = { GridItemSpan(4) }) {
                             HeaderBrandSection(
                                 favoriteCount = favorites.size,
                                 historyCount = history.size,
@@ -223,14 +223,14 @@ fun MainScreen(
                         }
 
                         // 2. 随心抽按钮 (分类标签已按要求从主页移除，仅在随心抽弹窗内部保留)
-                        item(span = { GridItemSpan(3) }) {
+                        item(span = { GridItemSpan(4) }) {
                             SaharaWaveButton(
                                 onClick = { viewModel.rollLuckyCard() }
                             )
                         }
 
                         // 4. Search Box
-                        item(span = { GridItemSpan(3) }) {
+                        item(span = { GridItemSpan(4) }) {
                             SearchSection(
                                 query = uiState.searchQuery,
                                 onQueryChange = { viewModel.updateSearchQuery(it) }
@@ -238,7 +238,7 @@ fun MainScreen(
                         }
 
                         // 5. Result Counter
-                        item(span = { GridItemSpan(3) }) {
+                        item(span = { GridItemSpan(4) }) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -299,7 +299,7 @@ fun MainScreen(
 
                         // Empty State
                         if (filteredCards.isEmpty()) {
-                            item(span = { GridItemSpan(3) }) {
+                            item(span = { GridItemSpan(4) }) {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -425,14 +425,19 @@ fun MainScreen(
             splash = uiState.cloudSplash
         )
 
-        // 云端实时更新弹窗：控制台发布新版本后，本体启动自动弹出更新提醒
+        // 云端实时更新弹窗：控制台发布新版本后，本体启动自动弹出更新提醒。
+        // 已展示过的版本号持久化记录，避免重复弹窗；新版本安装后（本地code==云端code）不再提示。
         val cloudVersion = uiState.cloudVersion
         val cloudUpdate = uiState.cloudUpdate
+        val prefs = remember { context.getSharedPreferences("lzdz_update_prefs", Context.MODE_PRIVATE) }
         LaunchedEffect(uiState.isCloudReady, cloudVersion?.code) {
             val localCode = com.example.BuildConfig.VERSION_CODE
             val cloudCode = cloudVersion?.code ?: 0
-            if (uiState.isCloudReady && cloudCode > localCode && !updateDialogDismissed) {
+            val shownCode = prefs.getInt("last_shown_version_code", -1)
+            // 仅当：云端有更新 && 用户还没看过这个版本 && 本地版本低于云端 时弹窗
+            if (uiState.isCloudReady && cloudCode > localCode && cloudCode > shownCode && !updateDialogDismissed) {
                 showCloudUpdateDialog = true
+                prefs.edit().putInt("last_shown_version_code", cloudCode).apply()
             }
         }
         if (showCloudUpdateDialog && cloudUpdate != null && cloudVersion != null) {
@@ -447,7 +452,8 @@ fun MainScreen(
                     updateDialogDismissed = true
                 },
                 update = cloudUpdate,
-                apkUrl = cloudVersion.apkUrl.ifBlank { null }
+                apkUrl = cloudVersion.apkUrl.ifBlank { null },
+                forceUpdate = cloudVersion.force
             )
         }
 

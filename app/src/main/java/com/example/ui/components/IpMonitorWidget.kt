@@ -186,28 +186,7 @@ fun MarqueeNoticeWidget(
 
             Spacer(modifier = Modifier.width(6.dp))
 
-            // 24h 轮播中动态指示灯
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(3.dp),
-                modifier = Modifier
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(primaryColor.copy(alpha = 0.1f))
-                    .padding(horizontal = 4.dp, vertical = 2.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(5.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFF10B981))
-                )
-                Text(
-                    text = "24h轮播",
-                    color = primaryColor,
-                    fontSize = 8.5.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+            Spacer(modifier = Modifier.width(6.dp))
         }
     }
 }
