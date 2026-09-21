@@ -1,8 +1,10 @@
 {
   "version": {
-    "code": 47,
-    "name": "1.5.3",
+    "code": 48,
+    "name": "1.5.4",
     "changelog": [
+      "【16:21】更新设置版块（App名称/Slogan/联系作者）",
+      "【控制台推送】设置与品牌信息更新",
       "【v1.5.3】设置检查更新优化：进度条可视化、Logo获取动画、去除版本号括号",
       "【v1.5.3】控制台更新日志自动同步变更内容",
       "【v1.5.3】控制台断开不重置Token、静默同步/弹窗说明标注",
@@ -6029,9 +6031,9 @@
     "appName": "懒得找了",
     "slogan": "精选AI工具导航、Prompt效果图预览与手机应用无限多开分身百宝箱",
     "aboutText": "「懒得找了」致力于打造一个纯净、聚合、高效的资源与工具导航平台。让大家不用再到处求资源、不用忍受满屏广告垃圾，一键直达互联网精品！",
-    "contactQQ": "",
-    "contactWechat": "",
-    "contactAlipay": ""
+    "contactQQ": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1789978873367_qr_friend_qq.jpg",
+    "contactWechat": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1789978883487_qr_friend_wechat.jpg",
+    "contactAlipay": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1789978892386_qr_feed_alipay.jpg"
   },
   "splash": {
     "type": "default",
@@ -6050,6 +6052,8 @@
   "updateDialog": {
     "title": "发现新版本",
     "changelog": [
+      "【控制台推送】设置与品牌信息更新",
+      "【16:21】更新设置版块（App名称/Slogan/联系作者）",
       "【控制台推送】管理后台全局版本发布",
       "【控制台推送】新版本 APK 制作入库 (landezhao-com.landezhaole-1789969754.apk)",
       "新版本 APK 制作入库 (landezhao-com.landezhaole-1789969754.apk)",
