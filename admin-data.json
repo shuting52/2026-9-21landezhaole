@@ -6070,11 +6070,11 @@
     "bgColor": "#0B0B1A"
   },
   "welcome": {
-    "enabled": true,
+    "enabled": false,
     "title": "欢迎使用懒得找了",
     "content": "",
     "imageUrl": "",
-    "buttonText": "开始使用"
+    "buttonText": "开始体验"
   },
   "updateDialog": {
     "title": "发现新版本",
