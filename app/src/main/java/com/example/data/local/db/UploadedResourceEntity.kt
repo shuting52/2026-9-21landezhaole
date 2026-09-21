@@ -14,5 +14,8 @@ data class UploadedResourceEntity(
     val author: String,
     val badge: String = "用户上传",
     val tags: String = "",
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    // 控制台以文件方式发布的下载资源（APK / ZIP / MD），本体软件可直接下载
+    val fileUrl: String = "",
+    val fileType: String = "" // 文件类型：APK / ZIP / MD
 )
