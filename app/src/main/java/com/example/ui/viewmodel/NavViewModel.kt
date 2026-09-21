@@ -110,10 +110,10 @@ class NavViewModel(
         viewModelScope.launch {
             refreshRemoteConfig()
         }
-        // 定期后台检测云端更新（每 20 秒轮询一次），确保控制台推送新内容/新版本后本体软件能即刻感知并触发更新弹窗
+        // 定期后台检测云端更新（每 5 秒轮询一次 GitHub API 直读），控制台点击「应用」后本体几乎零延迟感知并触发更新弹窗
         viewModelScope.launch {
             while (isActive) {
-                kotlinx.coroutines.delay(20_000L)
+                kotlinx.coroutines.delay(5_000L)
                 refreshRemoteConfig()
             }
         }
