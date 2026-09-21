@@ -1,8 +1,9 @@
 {
   "version": {
-    "code": 33,
-    "name": "1.5.13",
+    "code": 34,
+    "name": "1.5.14",
     "changelog": [
+      "【控制台推送】管理后台全局版本发布",
       "【控制台推送】开屏动画配置更新",
       "【控制台推送】新版本 APK 制作入库 (landezhao-com.landezhaole-1789969754.apk)",
       "新版本 APK 制作入库 (landezhao-com.landezhaole-1789969754.apk)",
@@ -6064,14 +6065,14 @@
   "updateDialog": {
     "title": "发现新版本",
     "changelog": [
+      "【控制台推送】管理后台全局版本发布",
       "【控制台推送】开屏动画配置更新",
       "【控制台推送】新版本 APK 制作入库 (landezhao-com.landezhaole-1789969754.apk)",
       "新版本 APK 制作入库 (landezhao-com.landezhaole-1789969754.apk)",
       "【控制台推送】管理后台全局版本发布",
       "【控制台推送】管理后台全局版本发布",
       "【控制台推送】管理后台全局版本发布",
-      "【控制台推送】管理后台全局版本发布",
-      "【控制台推送】新版本 APK 制作入库 (landezhao-v1.5.1-1789968785.apk)"
+      "【控制台推送】管理后台全局版本发布"
     ],
     "confirmText": "立即更新",
     "cancelText": "稍后再说",
