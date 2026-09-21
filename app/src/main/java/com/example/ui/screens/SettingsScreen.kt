@@ -42,6 +42,7 @@ import androidx.compose.material.icons.filled.RocketLaunch
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
+import com.example.data.remote.SettingsDto
 import com.example.data.remote.UpdateDialogDto
 import com.example.data.remote.VersionDto
 import androidx.compose.runtime.rememberCoroutineScope
@@ -115,6 +116,7 @@ fun SettingsScreen(
     onOpenThemeSwitcher: () -> Unit,
     cloudUpdate: UpdateDialogDto? = null,
     cloudVersion: VersionDto? = null,
+    cloudSettings: SettingsDto? = null,
     onCheckUpdate: (suspend () -> Pair<Boolean, VersionDto?>)? = null,
     modifier: Modifier = Modifier
 ) {
@@ -581,6 +583,7 @@ fun SettingsScreen(
         "contact_author" -> {
             ContactAuthorDialog(
                 context = context,
+                cloudSettings = cloudSettings,
                 onDismiss = { activeDialogType = null },
                 onOpenFeedback = { activeDialogType = "feedback_bug" }
             )
@@ -683,7 +686,8 @@ private fun copyText(context: Context, label: String, text: String) {
 private fun ContactAuthorDialog(
     context: Context,
     onDismiss: () -> Unit,
-    onOpenFeedback: () -> Unit = {}
+    onOpenFeedback: () -> Unit = {},
+    cloudSettings: SettingsDto? = null
 ) {
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("支付宝", "QQ", "微信")
@@ -813,14 +817,7 @@ private fun ContactAuthorDialog(
                                         .padding(10.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.img_contact_alipay),
-                                        contentDescription = "支付宝扫码",
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .clip(RoundedCornerShape(12.dp)),
-                                        contentScale = ContentScale.Fit
-                                    )
+                                    ContactQrImage(url = cloudSettings?.contactAlipay ?: "", fallbackRes = R.drawable.img_contact_alipay, contentDescription = "支付宝扫码")
                                 }
                             }
 
@@ -873,14 +870,7 @@ private fun ContactAuthorDialog(
                                         .padding(10.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.img_contact_qq),
-                                        contentDescription = "QQ扫码",
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .clip(RoundedCornerShape(12.dp)),
-                                        contentScale = ContentScale.Fit
-                                    )
+                                    ContactQrImage(url = cloudSettings?.contactQQ ?: "", fallbackRes = R.drawable.img_contact_qq, contentDescription = "QQ扫码")
                                 }
                             }
 
@@ -933,14 +923,7 @@ private fun ContactAuthorDialog(
                                         .padding(10.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.img_contact_wechat),
-                                        contentDescription = "微信扫码",
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .clip(RoundedCornerShape(12.dp)),
-                                        contentScale = ContentScale.Fit
-                                    )
+                                    ContactQrImage(url = cloudSettings?.contactWechat ?: "", fallbackRes = R.drawable.img_contact_wechat, contentDescription = "微信扫码")
                                 }
                             }
 
@@ -1001,4 +984,45 @@ private fun ContactAuthorDialog(
             }
         }
     )
+}
+
+/**
+ * 联系二维码：优先展示控制台实时同步的云端二维码，加载失败或未配置时回退到内置图片。
+ */
+@Composable
+private fun ContactQrImage(
+    url: String,
+    fallbackRes: Int,
+    contentDescription: String
+) {
+    if (url.isNotBlank()) {
+        coil.compose.AsyncImage(
+            model = url,
+            contentDescription = contentDescription,
+            contentScale = ContentScale.Fit,
+            onError = {
+                // 云端图片加载失败时回退到内置二维码
+                Image(
+                    painter = painterResource(id = fallbackRes),
+                    contentDescription = contentDescription,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(12.dp)),
+                    contentScale = ContentScale.Fit
+                )
+            },
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(RoundedCornerShape(12.dp))
+        )
+    } else {
+        Image(
+            painter = painterResource(id = fallbackRes),
+            contentDescription = contentDescription,
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(RoundedCornerShape(12.dp)),
+            contentScale = ContentScale.Fit
+        )
+    }
 }
