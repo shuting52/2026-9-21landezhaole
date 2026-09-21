@@ -195,18 +195,18 @@ fun ResourceCard(
                     title = card.title,
                     fallbackText = card.fallbackText,
                     iconUrl = card.icon,
-                    size = 28.dp
+                    size = 24.dp
                 )
 
-                Spacer(modifier = Modifier.width(6.dp))
+                Spacer(modifier = Modifier.width(4.dp))
 
-                // Title and description
+                // Title and description（三排布局下保证站点名称完整可见）
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = card.title,
                         style = MaterialTheme.typography.titleSmall.copy(
                             fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp
+                            fontSize = 11.sp
                         ),
                         color = titleColor,
                         maxLines = 1,
@@ -217,7 +217,7 @@ fun ResourceCard(
                         Text(
                             text = card.desc,
                             style = MaterialTheme.typography.bodySmall.copy(
-                                fontSize = 9.5.sp,
+                                fontSize = 8.5.sp,
                                 color = descColor
                             ),
                             maxLines = 1,
@@ -230,14 +230,14 @@ fun ResourceCard(
                 IconButton(
                     onClick = { onFavoriteToggle(card) },
                     modifier = Modifier
-                        .size(22.dp)
+                        .size(20.dp)
                         .testTag("favorite_button_${card.id}")
                 ) {
                     Icon(
                         imageVector = if (isFavorite) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
                         contentDescription = if (isFavorite) "已收藏" else "加入收藏",
                         tint = if (isFavorite) MaterialTheme.colorScheme.primary else descColor.copy(alpha = 0.5f),
-                        modifier = Modifier.size(14.dp)
+                        modifier = Modifier.size(13.dp)
                     )
                 }
             }

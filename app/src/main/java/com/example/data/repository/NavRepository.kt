@@ -18,6 +18,7 @@ class NavRepository(
     fun getUploadedSoftware(): Flow<List<UploadedResourceEntity>> = uploadDao.getResourcesByType("software")
     fun getUploadedSkills(): Flow<List<UploadedResourceEntity>> = uploadDao.getResourcesByType("skill")
     fun getCustomSites(): Flow<List<UploadedResourceEntity>> = uploadDao.getResourcesByType("custom_site")
+    suspend fun getAllUploadedResources(): List<UploadedResourceEntity> = uploadDao.getAllResourcesOnce()
 
     suspend fun saveUploadedResource(resource: UploadedResourceEntity) {
         uploadDao.insertResource(resource)

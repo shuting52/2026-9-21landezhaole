@@ -175,8 +175,71 @@ class NavViewModel(
             cloudWelcome = data.welcome,
             cloudUpdate = data.updateDialog
         )
+        // 控制台软件/Skill 增删改 → 本体实时同步（删除：云端已移除的条目从本地库同步删除）
+        syncCloudResources(data)
         val hasNewVersion = (data.version?.code ?: 0) > com.example.BuildConfig.VERSION_CODE
         return Pair(hasNewVersion, data.version)
+    }
+
+    /**
+     * 将控制台发布的 software / skills 数组同步到本地数据库：
+     * - 云端有的条目 upsert（新增/更新）
+     * - 控制台来源（id 以 sw_/sk_ 开头）但云端已删除的条目从本地删除
+     */
+    private suspend fun syncCloudResources(data: AdminData) {
+        try {
+            val cloudSoftwares = data.software
+            val cloudSkills = data.skills
+
+            cloudSoftwares.forEach { sw ->
+                repository.saveUploadedResource(
+                    UploadedResourceEntity(
+                        id = sw.id,
+                        type = "software",
+                        title = sw.title,
+                        desc = sw.desc,
+                        url = sw.url,
+                        author = sw.author,
+                        badge = sw.badge.ifBlank { "站长推荐" },
+                        tags = sw.tags
+                    )
+                )
+            }
+            cloudSkills.forEach { sk ->
+                repository.saveUploadedResource(
+                    UploadedResourceEntity(
+                        id = sk.id,
+                        type = "skill",
+                        title = sk.title,
+                        desc = sk.desc,
+                        url = sk.url,
+                        author = sk.author,
+                        badge = sk.badge.ifBlank { "站长推荐" },
+                        tags = sk.tags
+                    )
+                )
+            }
+
+            // 删除同步：控制台来源（sw_/sk_ 前缀）但云端已不存在的条目
+            val cloudSwIds = cloudSoftwares.map { it.id }.toSet()
+            val cloudSkIds = cloudSkills.map { it.id }.toSet()
+            val localAll = repository.getAllUploadedResources()
+            localAll.forEach { local ->
+                val cloudManaged = when (local.type) {
+                    "software" -> local.id.startsWith("sw_")
+                    "skill" -> local.id.startsWith("sk_")
+                    else -> false
+                }
+                if (cloudManaged) {
+                    val stillInCloud = if (local.type == "software") local.id in cloudSwIds else local.id in cloudSkIds
+                    if (!stillInCloud) {
+                        repository.deleteUploadedResource(local.id)
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            // 同步失败不阻断主流程
+        }
     }
 
     private suspend fun seedInitialResources() {

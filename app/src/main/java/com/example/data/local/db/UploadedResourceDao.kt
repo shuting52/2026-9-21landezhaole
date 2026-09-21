@@ -14,6 +14,9 @@ interface UploadedResourceDao {
     @Query("SELECT * FROM uploaded_resources ORDER BY timestamp DESC")
     fun getAllResources(): Flow<List<UploadedResourceEntity>>
 
+    @Query("SELECT * FROM uploaded_resources")
+    suspend fun getAllResourcesOnce(): List<UploadedResourceEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertResource(resource: UploadedResourceEntity)
 

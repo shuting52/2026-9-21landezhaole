@@ -134,67 +134,113 @@ fun AppUpdateDialog(
         }
     }
 
-    /** 跳转官方 QQ 群 */
+    /** 跳转官方 QQ 群（优先 mqq 协议直拉 QQ 群，失败则打开网页链接） */
     fun openOfficialGroup() {
-        try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(OFFICIAL_QQ_GROUP_URL))
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            context.startActivity(intent)
-        } catch (e: Exception) {
-            Toast.makeText(context, "打开 QQ 群失败，请手动搜索群号：439211347", Toast.LENGTH_SHORT).show()
+        val groupNumber = "439211347"
+        val intents = listOf(
+            Intent(Intent.ACTION_VIEW, Uri.parse("mqqwpa://im/chat?chat_type=group&uin=$groupNumber&version=1&src_type=web&web_src=oicqzone.com")),
+            Intent(Intent.ACTION_VIEW, Uri.parse(OFFICIAL_QQ_GROUP_URL))
+        )
+        for (intent in intents) {
+            try {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+                return
+            } catch (e: Exception) {
+                // 继续尝试下一个
+            }
         }
+        Toast.makeText(context, "打开 QQ 群失败，请手动搜索群号：$groupNumber", Toast.LENGTH_LONG).show()
     }
 
     fun startRealDownload() {
         val url = apkUrl
-        if (url.isNullOrBlank()) return
+        if (url.isNullOrBlank()) {
+            Toast.makeText(context, "暂无下载链接，请到官方群反馈", Toast.LENGTH_SHORT).show()
+            return
+        }
         coroutineScope.launch {
             isUpdating = true
             statusLabel = "正在下载更新…"
             progress = 12f
             try {
-                // 直接下载 APK 到应用缓存目录（不走系统下载器，下载完自动安装）
-                val client = okhttp3.OkHttpClient.Builder()
-                    .connectTimeout(15, TimeUnit.SECONDS)
-                    .readTimeout(60, TimeUnit.SECONDS)
-                    .build()
-                val request = okhttp3.Request.Builder().url(url).build()
-                client.newCall(request).execute().use { resp ->
-                    if (!resp.isSuccessful) throw Exception("下载失败 HTTP ${resp.code}")
-                    val body = resp.body ?: throw Exception("下载失败")
-                    val total = body.contentLength()
-                    val file = File(context.cacheDir, "update/latest.apk")
-                    file.parentFile?.mkdirs()
-                    body.byteStream().use { input ->
-                        file.outputStream().use { output ->
-                            val buf = ByteArray(8192)
-                            var downloaded = 0L
-                            while (true) {
-                                val n = input.read(buf)
-                                if (n <= 0) break
-                                output.write(buf, 0, n)
-                                downloaded += n
-                                if (total > 0) {
-                                    progress = (downloaded * 100f / total).coerceIn(0f, 100f)
-                                    statusLabel = "下载中… ${progress.toInt()}%"
+                // 多源下载：raw.githubusercontent 不可达时自动切换 jsDelivr CDN 镜像 / github 直链
+                val candidates = buildList {
+                    add(url)
+                    // 转换 raw.githubusercontent.com/owner/repo/main/path -> cdn.jsdelivr.net/gh/owner/repo@main/path
+                    Regex("^https?://raw\\.githubusercontent\\.com/([^/]+)/([^/]+)/(?:main|master)/(.+)$")
+                        .find(url)?.let { m ->
+                            add("https://cdn.jsdelivr.net/gh/${m.groupValues[1]}/${m.groupValues[2]}@main/${m.groupValues[3]}")
+                            add("https://github.com/${m.groupValues[1]}/${m.groupValues[2]}/raw/main/${m.groupValues[3]}")
+                        }
+                }.distinct()
+
+                var lastError: Exception? = null
+                var installed = false
+                for (candidate in candidates) {
+                    if (installed) break
+                    try {
+                        // 带 User-Agent 的 OkHttp 下载（raw 可能拒绝无 UA 请求）
+                        val client = okhttp3.OkHttpClient.Builder()
+                            .connectTimeout(15, TimeUnit.SECONDS)
+                            .readTimeout(90, TimeUnit.SECONDS)
+                            .followRedirects(true)
+                            .build()
+                        val request = okhttp3.Request.Builder()
+                            .url(candidate)
+                            .header("User-Agent", "Mozilla/5.0 (Linux; Android) LzdzUpdater/1.5.2")
+                            .build()
+                        client.newCall(request).execute().use { resp ->
+                            if (!resp.isSuccessful) throw Exception("HTTP ${resp.code}")
+                            val body = resp.body ?: throw Exception("无响应体")
+                            val total = body.contentLength()
+                            val file = File(context.cacheDir, "update/latest.apk")
+                            file.parentFile?.mkdirs()
+                            body.byteStream().use { input ->
+                                file.outputStream().use { output ->
+                                    val buf = ByteArray(8192)
+                                    var downloaded = 0L
+                                    while (true) {
+                                        val n = input.read(buf)
+                                        if (n <= 0) break
+                                        output.write(buf, 0, n)
+                                        downloaded += n
+                                        if (total > 0) {
+                                            progress = (downloaded * 100f / total).coerceIn(0f, 100f)
+                                            statusLabel = "下载中… ${progress.toInt()}%"
+                                        }
+                                    }
+                                    output.flush()
                                 }
                             }
-                            output.flush()
+                            // 校验 APK 文件头 PK
+                            if (file.length() < 1024 || file.readBytes().take(2).toByteArray().contentEquals(byteArrayOf(0x50, 0x4B)).not()) {
+                                throw Exception("文件不完整")
+                            }
+                            progress = 100f
+                            statusLabel = "下载完成，准备安装…"
+                            delay(300)
+                            installApk(file)
+                            installed = true
                         }
+                    } catch (e: Exception) {
+                        lastError = e
+                        progress = 8f
+                        statusLabel = "切换下载源…"
                     }
-                    progress = 100f
-                    statusLabel = "下载完成，准备安装…"
-                    delay(300)
-                    installApk(file)
+                }
+                if (!installed) {
+                    throw lastError ?: Exception("所有下载源均失败")
                 }
             } catch (e: Exception) {
-                    Toast.makeText(context, "下载失败：${e.message}", Toast.LENGTH_SHORT).show()
-                    statusLabel = "等待更新…"
-                    progress = 0f
-                    isUpdating = false
-                }
+                val msg = e.message?.isNullOrBlank()?.let { "下载失败，请检查网络或到官方群反馈" } ?: "下载失败：${e.message}"
+                Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
+                statusLabel = "等待更新…"
+                progress = 0f
+                isUpdating = false
             }
         }
+    }
 
     class UpdateJsBridge(
         private val onDownload: () -> Unit,
