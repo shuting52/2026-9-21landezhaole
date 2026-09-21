@@ -1,24 +1,17 @@
 {
   "version": {
-    "code": 17,
-    "name": "1.5.6",
+    "code": 18,
+    "name": "1.5.1",
     "changelog": [
-      "【控制台推送】开屏动画配置更新",
-      "【控制台推送】管理后台全局版本发布",
-      "【控制台推送】欢迎弹窗与新特性介绍发布",
-      "【控制台推送】管理后台全局版本发布",
-      "【控制台推送】新版本 APK 制作入库 (landezhao-v1.5-1789963779.apk)",
-      "新版本 APK 制作入库 (landezhao-v1.5-1789963779.apk)",
-      "【v1.5.1】首页四排改三排呈现",
-      "【v1.5.1】年龄推算出生月/日输入修复（支持随意删除数字）",
-      "【v1.5.1】离线百宝弹幕大字更新",
-      "【v1.5.1】检查更新优化：最新提示无需更新、有新版本标签提示",
-      "【v1.5.1】主题切换支持访问 uiverse.io 一键应用",
+      "【v1.5.1】应用包名升级为 com.landezhaole",
+      "【v1.5.1】控制台本地上传修复：Skill/软件文件上传正常",
+      "【v1.5.1】首页三排呈现、年龄月日输入修复、弹幕大字更新",
+      "【v1.5.1】检查更新优化、主题切换支持 uiverse.io",
       "点击「立即更新」直接下载安装新版本"
     ],
     "force": true,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.5-1789963779.apk",
-    "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.5-1789963779.apk"
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-com.landezhaole-1789969754.apk",
+    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-com.landezhaole-1789969754.apk"
   },
   "home": {
     "categories": [
