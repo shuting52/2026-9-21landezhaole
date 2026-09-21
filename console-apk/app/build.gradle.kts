@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = "com.console.lzdz"
+    namespace = "com.yuntai"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.console.lzdz"
+        applicationId = "com.yuntai"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
