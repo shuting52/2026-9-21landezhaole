@@ -1,14 +1,23 @@
 {
   "version": {
-    "code": 10,
-    "name": "1.5.3",
+    "code": 16,
+    "name": "1.5.5",
     "changelog": [
-      "【控制台推送】新版本 APK 更新发布",
-      "测试内容试试鲜果"
+      "【控制台推送】管理后台全局版本发布",
+      "【控制台推送】欢迎弹窗与新特性介绍发布",
+      "【控制台推送】管理后台全局版本发布",
+      "【控制台推送】新版本 APK 制作入库 (landezhao-v1.5-1789963779.apk)",
+      "新版本 APK 制作入库 (landezhao-v1.5-1789963779.apk)",
+      "【v1.5.1】首页四排改三排呈现",
+      "【v1.5.1】年龄推算出生月/日输入修复（支持随意删除数字）",
+      "【v1.5.1】离线百宝弹幕大字更新",
+      "【v1.5.1】检查更新优化：最新提示无需更新、有新版本标签提示",
+      "【v1.5.1】主题切换支持访问 uiverse.io 一键应用",
+      "点击「立即更新」直接下载安装新版本"
     ],
-    "force": false,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.5-opt-1789966563.apk",
-    "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.5-opt-1789966563.apk"
+    "force": true,
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.5-1789963779.apk",
+    "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.5-1789963779.apk"
   },
   "home": {
     "categories": [
@@ -6063,15 +6072,20 @@
     "bgColor": "#0B0B1A"
   },
   "welcome": {
-    "enabled": true,
+    "enabled": false,
     "title": "欢迎使用懒得找了",
     "content": "",
     "imageUrl": "",
-    "buttonText": "开始使用"
+    "buttonText": "开始体验"
   },
   "updateDialog": {
     "title": "发现新版本",
     "changelog": [
+      "【控制台推送】管理后台全局版本发布",
+      "【控制台推送】欢迎弹窗与新特性介绍发布",
+      "【控制台推送】管理后台全局版本发布",
+      "【控制台推送】新版本 APK 制作入库 (landezhao-v1.5-1789963779.apk)",
+      "新版本 APK 制作入库 (landezhao-v1.5-1789963779.apk)",
       "【控制台推送】新版本 APK 更新发布",
       "【控制台推送】新版本 APK 更新发布",
       "测试内容试试鲜果"
