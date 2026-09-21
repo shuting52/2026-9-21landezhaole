@@ -1,16 +1,18 @@
 {
   "version": {
-    "code": 6,
+    "code": 7,
     "name": "1.5",
     "changelog": [
-      "【1.5 优化版】跑马灯按时间段实时播报问候",
-      "【1.5 优化版】设置页自动检测云端新版本",
-      "【1.5 优化版】移除公告弹窗，界面更简洁",
-      "点击立即更新即可下载安装新版本"
+      "【v1.5 大版本优化】新版本安装后不再重复提示更新",
+      "【v1.5 大版本优化】年龄工具新增星座精准判断",
+      "【v1.5 大版本优化】首页四列布局 + 炫酷角标动画 + 新站点置顶",
+      "【v1.5 大版本优化】跑马灯更简洁、控制台支持MD/ZIP上传",
+      "【v1.5 大版本优化】强制更新，立即更新自动下载安装",
+      "点击「立即更新」直接下载安装新版本"
     ],
     "force": true,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.5-1789963779.apk",
-    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.5-1789963779.apk"
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.5-opt-1789966067.apk",
+    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.5-opt-1789966067.apk"
   },
   "home": {
     "categories": [
