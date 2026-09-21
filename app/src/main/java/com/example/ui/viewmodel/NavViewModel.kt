@@ -152,8 +152,22 @@ class NavViewModel(
         }
         val current = _uiState.value
         val validSelectedId = newCats.any { it.id == current.selectedCategoryId }
+        // 新站点自动置顶：带 NEW/新 角标的卡片排到每个分类最前，让最新更新第一时间呈现在首页
+        val sortedCats = newCats.map { cat ->
+            cat.copy(
+                cards = cat.cards.sortedByDescending { card ->
+                    val badge = card.badge ?: ""
+                    when {
+                        badge.contains("NEW", ignoreCase = true) -> 3
+                        badge.contains("新") -> 2
+                        badge.equals("HOT", ignoreCase = true) -> 1
+                        else -> 0
+                    }
+                }
+            )
+        }
         _uiState.value = current.copy(
-            categories = newCats,
+            categories = sortedCats,
             selectedCategoryId = if (validSelectedId) current.selectedCategoryId else (newCats.firstOrNull()?.id ?: "all"),
             isCloudReady = true,
             cloudVersion = data.version,

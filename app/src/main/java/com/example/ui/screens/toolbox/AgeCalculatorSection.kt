@@ -82,6 +82,26 @@ private val CHINESE_ZODIAC = arrayOf("鼠", "牛", "虎", "兔", "龙", "蛇", "
 private val HEAVENLY_STEMS = arrayOf("甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸")
 private val EARTHLY_BRANCHES = arrayOf("子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥")
 
+/** 根据出生月/日精准判断西方星座 */
+fun getWesternZodiac(month: Int, day: Int): String {
+    val m = month.coerceIn(1, 12)
+    val d = day.coerceIn(1, 31)
+    return when {
+        (m == 1 && d >= 20) || (m == 2 && d <= 18) -> "♒ 水瓶座"
+        (m == 2 && d >= 19) || (m == 3 && d <= 20) -> "♓ 双鱼座"
+        (m == 3 && d >= 21) || (m == 4 && d <= 19) -> "♈ 白羊座"
+        (m == 4 && d >= 20) || (m == 5 && d <= 20) -> "♉ 金牛座"
+        (m == 5 && d >= 21) || (m == 6 && d <= 21) -> "♊ 双子座"
+        (m == 6 && d >= 22) || (m == 7 && d <= 22) -> "♋ 巨蟹座"
+        (m == 7 && d >= 23) || (m == 8 && d <= 22) -> "♌ 狮子座"
+        (m == 8 && d >= 23) || (m == 9 && d <= 22) -> "♍ 处女座"
+        (m == 9 && d >= 23) || (m == 10 && d <= 23) -> "♎ 天秤座"
+        (m == 10 && d >= 24) || (m == 11 && d <= 22) -> "♏ 天蝎座"
+        (m == 11 && d >= 23) || (m == 12 && d <= 21) -> "♐ 射手座"
+        else -> "♑ 摩羯座"
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AgeCalculatorSection(modifier: Modifier = Modifier) {
@@ -97,8 +117,11 @@ fun AgeCalculatorSection(modifier: Modifier = Modifier) {
         val safe = ageVal.coerceIn(0, 150)
         inputAgeText = safe.toString()
         birthYear = Calendar.getInstance().get(Calendar.YEAR) - safe
-        birthMonth = 1
-        birthDay = 1
+    }
+
+    // 星座（由出生月/日精准判断）
+    val zodiacSign = remember(birthMonth, birthDay) {
+        getWesternZodiac(birthMonth, birthDay)
     }
 
     var currentMillis by remember { mutableLongStateOf(System.currentTimeMillis()) }
@@ -353,7 +376,57 @@ fun AgeCalculatorSection(modifier: Modifier = Modifier) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // 常用预设年龄快捷标签
+                // 出生月/日输入：配合年龄精准推算星座（默认1月1日）
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "出生",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    OutlinedTextField(
+                        value = birthMonth.toString(),
+                        onValueChange = { t ->
+                            val v = t.filter { it.isDigit() }.take(2).toIntOrNull()
+                            birthMonth = (v ?: 1).coerceIn(1, 12)
+                        },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        label = { Text("月份", fontSize = 10.sp) },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = SunsetOrange,
+                            cursorColor = SunsetOrange
+                        ),
+                        modifier = Modifier.weight(1f)
+                    )
+                    OutlinedTextField(
+                        value = birthDay.toString(),
+                        onValueChange = { t ->
+                            val v = t.filter { it.isDigit() }.take(2).toIntOrNull()
+                            birthDay = (v ?: 1).coerceIn(1, 31)
+                        },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        label = { Text("日期", fontSize = 10.sp) },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = SunsetOrange,
+                            cursorColor = SunsetOrange
+                        ),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = "→ $zodiacSign",
+                        fontSize = 12.5.sp,
+                        fontWeight = FontWeight.Black,
+                        color = NeonPurple
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "快捷设定：",
                     fontSize = 11.sp,
@@ -412,6 +485,26 @@ fun AgeCalculatorSection(modifier: Modifier = Modifier) {
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                         )
                     }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // 星座 + 生肖 + 干支精准档案
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    MetricBox(
+                        title = "星座",
+                        value = zodiacSign,
+                        isHighlight = true,
+                        modifier = Modifier.weight(1f)
+                    )
+                    MetricBox(
+                        title = "生肖",
+                        value = "$zodiac 年生（${stemBranch}）",
+                        modifier = Modifier.weight(1f)
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
