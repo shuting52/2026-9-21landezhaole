@@ -6009,47 +6009,7 @@
     ]
   },
   "software": [],
-  "skills": [
-    {
-      "id": "init-sk-1",
-      "type": "skill",
-      "title": "Clean Architecture 架构设计指南",
-      "desc": "指导编写符合MVVM高内聚低耦合的现代Android Kotlin架构与依赖注入规范。",
-      "prompt": "你是一位资深Android架构师，请遵循Clean Architecture与MVVM模式指导项目分层与依赖设计。",
-      "url": "https://developer.android.com/topic/architecture",
-      "author": "Android Team",
-      "badge": "架构Skill",
-      "tags": "Kotlin / M3",
-      "previewUrl": "",
-      "mediaUrl": ""
-    },
-    {
-      "id": "init-sk-2",
-      "type": "skill",
-      "title": "Gemini 顶级 Prompt 提示词工程",
-      "desc": "让大模型思考更深度、代码生成更严谨的结构化提示词设计模式与角色设定方案。",
-      "prompt": "你是Prompt工程专家，请基于CRISPE框架为以下需求设计结构化提示词。",
-      "url": "https://ai.google.dev/",
-      "author": "DeepMind Lab",
-      "badge": "AI特化",
-      "tags": "Prompt / LLM",
-      "previewUrl": "",
-      "mediaUrl": ""
-    },
-    {
-      "id": "init-sk-3",
-      "type": "skill",
-      "title": "Robolectric 极速本地无头单元测试",
-      "desc": "无须真机与模拟器即可在JVM上瞬间执行Android UI与逻辑测试的高效方案。",
-      "prompt": "你是Android测试专家，请指导如何使用Robolectric编写无头单元测试。",
-      "url": "https://robolectric.org/",
-      "author": "Google OpenSource",
-      "badge": "测试Skill",
-      "tags": "CI/CD / JVM",
-      "previewUrl": "",
-      "mediaUrl": ""
-    }
-  ],
+  "skills": [],
   "settings": {
     "appName": "懒得找了",
     "slogan": "精选AI工具导航、Prompt效果图预览与手机应用无限多开分身百宝箱",
