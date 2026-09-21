@@ -34,17 +34,22 @@ button:active{transform:scale(.96)}
 .btn-mini.pri{background:#262251;color:#a5b4fc}
 .btn-mini.gray{background:#232c47;color:#aab6d8}
 .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row.cfg-actions{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}
+.row.cfg-actions::-webkit-scrollbar{display:none}
+.row.cfg-actions button{flex:0 0 auto;padding:7px 12px;font-size:12px;white-space:nowrap}
 .row .grow{flex:1;min-width:0}
 .spacer{flex:1}
-/* header */
-header{position:sticky;top:0;z-index:50;background:rgba(10,14,26,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:10px 14px}
-.hd-top{display:flex;align-items:center;gap:10px}
-.logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--pri),var(--pri2));display:flex;align-items:center;justify-content:center;font-weight:900;font-size:17px;flex-shrink:0}
-.hd-title{font-size:15px;font-weight:800}
-.hd-sub{font-size:11px;color:var(--tx2)}
-.pub-btn{background:linear-gradient(135deg,#22c55e,#0ea5e9);color:#04120a;padding:8px 14px;font-size:13px;border-radius:10px;font-weight:800;box-shadow:0 4px 16px #22c55e44}
-.pub-bump-btn{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;padding:8px 14px;font-size:13px;border-radius:10px;font-weight:800;box-shadow:0 4px 16px #ef444444}
-.pub-dis-btn{background:linear-gradient(135deg,#64748b,#334155);color:#fff;padding:8px 14px;font-size:13px;border-radius:10px;font-weight:800}
+/* header - 两行布局，按钮紧凑不溢出 */
+header{position:sticky;top:0;z-index:50;background:rgba(10,14,26,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:8px 10px}
+.hd-top{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
+.logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--pri),var(--pri2));display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;flex-shrink:0}
+.hd-title{font-size:14px;font-weight:800;white-space:nowrap}
+.hd-sub{font-size:10px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hd-actions{display:flex;gap:6px;margin-top:8px;align-items:center}
+.hd-actions button{flex:1;min-width:0;padding:7px 6px;font-size:12px;border-radius:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pub-btn{background:linear-gradient(135deg,#22c55e,#0ea5e9);color:#04120a;font-weight:800;box-shadow:0 4px 16px #22c55e44}
+.pub-bump-btn{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;font-weight:800;box-shadow:0 4px 16px #ef444444}
+.pub-dis-btn{background:linear-gradient(135deg,#64748b,#334155);color:#fff;font-weight:800}
 /* From Uiverse.io by mamyapro123 - 主题切换开关 */
 .theme-switch{--toggle-size:14px;--container-width:4.4em;--container-height:2.1em;--container-radius:.38em;--container-light-bg:#5caad4;--container-night-bg:#1b1e36;--circle-container-diameter:2.6em;--sun-moon-diameter:1.7em;--sun-bg:#f5c518;--moon-bg:#d8d4c0;--spot-color:#9b9787;--circle-container-offset:calc((var(--circle-container-diameter) - var(--container-height)) / 2 * -1);--stars-color:#fff8e1;--clouds-color:#f4f4f4;--back-clouds-color:#bacfe0;--transition:.5s cubic-bezier(0,-.02,.4,1.25);--circle-transition:.3s cubic-bezier(0,-.02,.35,1.17);display:inline-block;flex-shrink:0}
 .theme-switch,.theme-switch *,.theme-switch *::before,.theme-switch *::after{box-sizing:border-box;margin:0;padding:0;font-size:var(--toggle-size)}
@@ -167,7 +172,7 @@ main{padding:12px;max-width:960px;margin:0 auto}
 <header>
   <div class="hd-top">
     <div class="logo">懒</div>
-    <div class="grow">
+    <div class="grow" style="min-width:0">
       <div class="hd-title">云台-懒得找了</div>
       <div class="hd-sub" id="hdSub">正在自动连接云端仓库…</div>
     </div>
@@ -198,8 +203,10 @@ main{padding:12px;max-width:960px;margin:0 auto}
         </div>
       </div>
     </label>
+  </div>
+  <div class="hd-actions">
     <button class="pub-btn" title="静默同步：仅保存数据到仓库，不升版本号、不弹窗，本体下次刷新自动应用" onclick="publish(false)">💾 静默同步</button>
-    <button class="pub-bump-btn" title="触发更新弹窗：递增版本号并发布，本体软件即刻弹出更新窗口" onclick="quickBumpPublish()">🚀 触发更新弹窗</button>
+    <button class="pub-bump-btn" title="触发更新弹窗：递增版本号并发布，本体软件即刻弹出更新窗口" onclick="quickBumpPublish()">🚀 触发更新</button>
     <button class="pub-dis-btn" title="断开与仓库的连接（不会清除 Token，可随时重新连接）" onclick="disconnect()">⏻ 断开</button>
   </div>
 </header>
@@ -211,12 +218,12 @@ main{padding:12px;max-width:960px;margin:0 auto}
       <input id="cfgOwner" placeholder="Owner" value="shuting52">
       <input id="cfgRepo" placeholder="仓库名" value="2026-9-21landezhaole">
     </div>
-    <div class="row">
-      <button class="btn-pri grow" onclick="connect()">🔌 连接并加载云端数据</button>
-      <button onclick="saveCfg()">💾 保存配置</button>
-      <button onclick="exportJson()">⬇️ 导出备份</button>
-      <button onclick="document.getElementById('importFile').click()">⬆️ 导入备份</button>
-      <button class="btn-err" onclick="disconnect()">⏻ 断开仓库</button>
+    <div class="row cfg-actions">
+      <button class="btn-pri grow" onclick="connect()">🔌 连接</button>
+      <button onclick="saveCfg()">💾 保存</button>
+      <button onclick="exportJson()">⬇️ 备份</button>
+      <button onclick="document.getElementById('importFile').click()">⬆️ 导入</button>
+      <button class="btn-err" onclick="disconnect()">⏻ 断开</button>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJson(event)">
     </div>
     <div style="margin-top:8px;font-size:12px;color:var(--tx2)" id="connInfo"></div>
