@@ -73,6 +73,7 @@ data class SoftwareDto(
     val badge: String = "",
     val tags: String = "",
     val apkUrl: String = "",
+    val fileUrl: String = "",
     val previewUrl: String = ""
 )
 
@@ -87,7 +88,8 @@ data class SkillDto(
     val badge: String = "",
     val tags: String = "",
     val previewUrl: String = "",
-    val mediaUrl: String = ""
+    val mediaUrl: String = "",
+    val fileUrl: String = ""
 )
 
 data class SettingsDto(

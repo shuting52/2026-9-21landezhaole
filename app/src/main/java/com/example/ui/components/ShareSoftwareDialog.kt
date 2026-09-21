@@ -55,7 +55,7 @@ import com.example.ui.theme.SunsetOrange
 const val APP_SHARE_TEXT = """【宝藏神器推荐】《懒得找了》极简综合资源导航
 🚀 聚合海量AI大模型、无限画布设计、开发者工具、影视影视直达
 ✨ 纯净无广，无需注册，开箱即用，拒绝无效搜索！
-🌐 官方主页：https://landezhaole.com
+📱 应用市场/安装包分享，可直接安装体验
 👥 官方QQ交流群：439211347
 推荐给你，找资源不求人！"""
 
@@ -163,7 +163,7 @@ fun ShareSoftwareDialog(
                         Spacer(modifier = Modifier.height(10.dp))
 
                         Text(
-                            text = "官方QQ群：439211347\n官方网址：https://landezhaole.com",
+                            text = "官方QQ交流群：439211347",
                             fontSize = 11.5.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             lineHeight = 16.sp

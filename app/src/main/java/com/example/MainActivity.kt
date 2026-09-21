@@ -24,7 +24,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         val database = AppDatabase.getDatabase(applicationContext)
-        val repository = NavRepository(database.itemRecordDao(), database.uploadedResourceDao())
+        val repository = NavRepository(database.itemRecordDao(), database.uploadedResourceDao(), database.cloneAppDao())
         val remoteConfigRepository = RemoteConfigRepository(applicationContext)
         val factory = NavViewModelFactory(repository, remoteConfigRepository)
         val viewModel = ViewModelProvider(this, factory)[NavViewModel::class.java]

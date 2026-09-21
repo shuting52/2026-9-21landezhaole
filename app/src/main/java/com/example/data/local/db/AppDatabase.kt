@@ -4,10 +4,12 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [UserItemRecord::class, UploadedResourceEntity::class, CloneAppEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -16,6 +18,14 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun cloneAppDao(): CloneAppDao
 
     companion object {
+        // v3 -> v4：为 uploaded_resources 增加 fileUrl / fileType 列（保留用户收藏与历史数据）
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE uploaded_resources ADD COLUMN fileUrl TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE uploaded_resources ADD COLUMN fileType TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
@@ -26,6 +36,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "lazy_nav_database"
                 )
+                    .addMigrations(MIGRATION_3_4)
                     .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance

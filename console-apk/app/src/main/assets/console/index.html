@@ -164,6 +164,147 @@ main{padding:12px;max-width:960px;margin:0 auto}
 .action-banner{background:linear-gradient(135deg,#1b2440,#201438);border:1px solid #3d4a75;border-radius:12px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .action-banner b{color:#a5b4fc}
 .code-box{background:#090d16;border:1px solid #232c47;border-radius:8px;padding:10px 12px;font-family:monospace;font-size:12px;color:#93c5fd;overflow-x:auto;margin:6px 0}
+/* ============================================================
+   新拟态 (Neumorphism) 主题 —— 覆盖以上旧样式
+   默认浅色拟态；body[data-theme="dark"] 深色拟态
+   ============================================================ */
+:root{
+  --n-bg:#dfe4ee;            /* 页面底色 */
+  --n-card:#e6ebf5;          /* 卡片色（与底色接近以塑造拟态） */
+  --n-ht:#ffffff;            /* 高光阴影 */
+  --n-dk:#b9c0cf;            /* 暗部阴影 */
+  --n-ht-soft:#ffffff;       /* 柔和高光 */
+  --n-dk-soft:#c2c9d8;       /* 柔和暗部 */
+  --n-tx:#4a5263;            /* 主文字 */
+  --n-tx2:#7d8698;           /* 次要文字 */
+  --n-pri:#6c63ff;           /* 主色 */
+  --n-pri2:#8b7bff;
+  --n-ok:#22c55e;
+  --n-warn:#f59e0b;
+  --n-err:#ef4444;
+  --n-r:18px;
+}
+body[data-theme="dark"]{
+  --n-bg:#2b2e36;
+  --n-card:#30343e;
+  --n-ht:#3b4050;
+  --n-dk:#1e2128;
+  --n-ht-soft:#393e4d;
+  --n-dk-soft:#23262e;
+  --n-tx:#e6e9f0;
+  --n-tx2:#9aa3b5;
+}
+/* 全局底色 */
+html,body{background:var(--n-bg);color:var(--n-tx);transition:background .3s,color .3s}
+.grad{background:radial-gradient(circle at 15% 8%,rgba(108,99,255,.10),transparent 42%),radial-gradient(circle at 85% 90%,rgba(255,45,120,.08),transparent 40%)}
+::-webkit-scrollbar-thumb{background:#b9c0cf;border-radius:6px}
+/* 卡片通用拟态 */
+.card,.item,.cfg,.action-banner,.dlg,#toast{
+  background:var(--n-card);
+  border:none;
+  border-radius:var(--n-r);
+  box-shadow:8px 8px 18px var(--n-dk-soft), -8px -8px 18px var(--n-ht-soft);
+  transition:box-shadow .2s,background .3s;
+}
+.card:active,.item:active{box-shadow:inset 5px 5px 12px var(--n-dk-soft), inset -5px -5px 12px var(--n-ht-soft)}
+/* 输入框：内凹拟态 */
+input,select,textarea{
+  background:var(--n-card);
+  border:none;
+  border-radius:14px;
+  color:var(--n-tx);
+  box-shadow:inset 4px 4px 9px var(--n-dk-soft), inset -4px -4px 9px var(--n-ht-soft);
+  padding:11px 14px;
+}
+input:focus,select:focus,textarea:focus{box-shadow:inset 4px 4px 9px var(--n-dk-soft), inset -4px -4px 9px var(--n-ht-soft), 0 0 0 2px var(--n-pri)}
+label{color:var(--n-tx2)}
+/* 按钮：凸起拟态 */
+button{
+  background:var(--n-card);
+  color:var(--n-tx);
+  border-radius:14px;
+  box-shadow:5px 5px 12px var(--n-dk-soft), -5px -5px 12px var(--n-ht-soft);
+  font-weight:700;
+}
+button:active{transform:translateY(1px) scale(.98);box-shadow:inset 4px 4px 9px var(--n-dk-soft), inset -4px -4px 9px var(--n-ht-soft)}
+.btn-pri{background:linear-gradient(145deg,var(--n-pri2),var(--n-pri));color:#fff;box-shadow:5px 5px 12px rgba(108,99,255,.35), -5px -5px 12px var(--n-ht-soft)}
+.btn-ok{background:linear-gradient(145deg,#34d399,#16a34a);color:#fff;box-shadow:5px 5px 12px rgba(34,197,94,.32), -5px -5px 12px var(--n-ht-soft)}
+.btn-warn{background:linear-gradient(145deg,#fbbf24,#f59e0b);color:#422006}
+.btn-err{background:linear-gradient(145deg,#f87171,#dc2626);color:#fff;box-shadow:5px 5px 12px rgba(239,68,68,.30), -5px -5px 12px var(--n-ht-soft)}
+.btn-bump{background:linear-gradient(145deg,#fbbf24,#ef4444);color:#fff;font-weight:900;box-shadow:5px 5px 14px rgba(239,68,68,.35), -5px -5px 12px var(--n-ht-soft)}
+.btn-mini{border-radius:10px;box-shadow:3px 3px 8px var(--n-dk-soft), -3px -3px 8px var(--n-ht-soft)}
+.btn-mini.ok{background:#e4f7ea;color:#15803d}
+.btn-mini.warn{background:#fdf0d7;color:#b45309}
+.btn-mini.err{background:#fde8e8;color:#dc2626}
+.btn-mini.pri{background:#eceaff;color:#5b52e0}
+.btn-mini.gray{background:#eef1f7;color:#5c6677}
+body[data-theme="dark"] .btn-mini.ok{background:#173a26;color:#4ade80}
+body[data-theme="dark"] .btn-mini.warn{background:#3a2a0e;color:#fbbf24}
+body[data-theme="dark"] .btn-mini.err{background:#3a1518;color:#f87171}
+body[data-theme="dark"] .btn-mini.pri{background:#2b2a52;color:#a5b4fc}
+body[data-theme="dark"] .btn-mini.gray{background:#2b303b;color:#aab6d8}
+/* 顶栏 */
+header{
+  background:rgba(223,228,238,.82);
+  backdrop-filter:blur(16px);
+  border-bottom:none;
+  box-shadow:0 6px 18px rgba(163,172,189,.25);
+  transition:background .3s;
+}
+body[data-theme="dark"] header{background:rgba(43,46,54,.86);box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.logo{box-shadow:5px 5px 12px rgba(108,99,255,.4), -4px -4px 10px var(--n-ht-soft)}
+.hd-actions button{border-radius:12px}
+.pub-btn{background:linear-gradient(145deg,#34d399,#0ea5e9);color:#fff;box-shadow:5px 5px 12px rgba(14,165,233,.35), -5px -5px 10px var(--n-ht-soft)}
+.pub-bump-btn{background:linear-gradient(145deg,#fbbf24,#ef4444);color:#fff;box-shadow:5px 5px 12px rgba(239,68,68,.35), -5px -5px 10px var(--n-ht-soft)}
+.pub-dis-btn{background:linear-gradient(145deg,#94a3b8,#64748b);color:#fff}
+/* 底部导航 */
+nav{
+  background:rgba(223,228,238,.92);
+  backdrop-filter:blur(16px);
+  border-top:none;
+  box-shadow:0 -6px 18px rgba(163,172,189,.22);
+  border-radius:20px 20px 0 0;
+  margin:0 10px;
+}
+body[data-theme="dark"] nav{background:rgba(43,46,54,.94);box-shadow:0 -6px 18px rgba(0,0,0,.35)}
+nav button{background:transparent;box-shadow:none;border-radius:14px}
+nav button.active{color:var(--n-pri);text-shadow:0 0 14px rgba(108,99,255,.45)}
+/* 列表项 */
+.item-title{color:var(--n-tx)}
+.item-sub{color:var(--n-tx2)}
+.badge.ROSE{background:#ffe4ef;color:#e83e8c}.badge.NEW{background:#dcfce7;color:#16a34a}.badge.GOLD{background:#fef3c7;color:#d97706}.badge.BLUE{background:#dbeafe;color:#2563eb}
+body[data-theme="dark"] .badge.ROSE{background:#3d1f2e;color:#ff6ba6}body[data-theme="dark"] .badge.NEW{background:#14351f;color:#4ade80}body[data-theme="dark"] .badge.GOLD{background:#3a2a0e;color:#fbbf24}body[data-theme="dark"] .badge.BLUE{background:#1d2c47;color:#60a5fa}
+/* 配置条 */
+.cfg{background:var(--n-card)}
+/* 弹窗 */
+.mask{background:rgba(90,100,120,.35);backdrop-filter:blur(4px)}
+.dlg{background:var(--n-card);border-radius:24px 24px 0 0}
+.dlg-title{color:var(--n-tx)}
+/* toast */
+#toast{color:var(--n-tx);border-radius:14px;box-shadow:8px 8px 20px var(--n-dk-soft), -8px -8px 20px var(--n-ht-soft)}
+/* 上传框：内凹虚线 */
+.upload-box{
+  background:var(--n-card);
+  border:1.5px dashed #c2c9d8;
+  border-radius:14px;
+  color:var(--n-tx2);
+  box-shadow:inset 4px 4px 9px var(--n-dk-soft), inset -4px -4px 9px var(--n-ht-soft);
+}
+body[data-theme="dark"] .upload-box{border-color:#4b5162}
+/* 徽标 chip */
+.chip{background:var(--n-card);border:none;box-shadow:3px 3px 8px var(--n-dk-soft), -3px -3px 8px var(--n-ht-soft);color:var(--n-tx2)}
+/* 代码块 */
+.code-box{background:#edeff5;border:none;color:#4338ca;box-shadow:inset 3px 3px 8px var(--n-dk-soft), inset -3px -3px 8px var(--n-ht-soft)}
+body[data-theme="dark"] .code-box{background:#22242c;color:#a5b4fc}
+.divider{background:rgba(150,160,180,.25)}
+/* 状态圆点 */
+.status-dot.loaded{background:var(--n-ok)}.status-dot.fail{background:var(--n-err)}.status-dot.idle{background:var(--n-tx2)}
+.empty{color:var(--n-tx2)}
+.hint{color:var(--n-tx2)}
+.action-banner b{color:var(--n-pri)}
+.arrow{color:var(--n-tx2)}
+#connInfo{color:var(--n-tx2)}
+.preview-img,.preview-video{border-radius:12px;box-shadow:4px 4px 10px var(--n-dk-soft), -4px -4px 10px var(--n-ht-soft)}
 </style>
 </head>
 <body>
@@ -205,7 +346,7 @@ main{padding:12px;max-width:960px;margin:0 auto}
     </label>
   </div>
   <div class="hd-actions">
-    <button class="pub-btn" title="静默同步：仅保存数据到仓库，不升版本号、不弹窗，本体下次刷新自动应用" onclick="publish(false)">💾 静默同步</button>
+    <button class="pub-btn" title="应用：把当前所有修改实时保存到云端并同步到本体软件（不弹更新窗，零延迟生效）" onclick="publish(false)">⚡ 应用</button>
     <button class="pub-bump-btn" title="触发更新弹窗：递增版本号并发布，本体软件即刻弹出更新窗口" onclick="quickBumpPublish()">🚀 触发更新</button>
     <button class="pub-dis-btn" title="断开与仓库的连接（不会清除 Token，可随时重新连接）" onclick="disconnect()">⏻ 断开</button>
   </div>
@@ -296,12 +437,12 @@ function logChange(msg){
   if(S.changeLog.length > 20) S.changeLog.length = 20;
 }
 
-// 主题切换
+// 主题切换（新拟态：默认浅色，勾选后切换为深色拟态）
 function toggleTheme(night){
   if(night){
-    document.body.removeAttribute("data-theme");
+    document.body.setAttribute("data-theme","dark");
   }else{
-    document.body.setAttribute("data-theme","light");
+    document.body.removeAttribute("data-theme");
   }
   try{ localStorage.setItem("lzdz_theme", night ? "dark" : "light"); }catch(e){}
 }
@@ -309,7 +450,7 @@ function toggleTheme(night){
 (function(){
   try{
     const t = localStorage.getItem("lzdz_theme");
-    if(t === "light"){ document.body.setAttribute("data-theme","light"); const c = document.getElementById("themeToggle"); if(c) c.checked = false; }
+    if(t === "dark"){ document.body.setAttribute("data-theme","dark"); const c = document.getElementById("themeToggle"); if(c) c.checked = true; }
   }catch(e){}
 })();
 
@@ -450,7 +591,7 @@ async function publish(bump = false, actionDesc = ""){
     const ok = await confirmDlgHtml(
       `⚠️ 将发布新版本 <b>v${newName}</b>（versionCode: ${oldCode} → ${oldCode+1}）<br>` +
       `本体软件将立即弹出<font color='#f87171'><b>强制更新弹窗</b></font>。<br><br>` +
-      `如果只是想保存内容修改，请点「💾 静默同步」（不升版本号，不弹窗）。<br><br>确定发布新版本吗？`
+      `如果只是想保存内容修改，请点「⚡ 应用」（不升版本号，不弹窗，实时同步到本体）。<br><br>确定发布新版本吗？`
     );
     if(!ok){ toast("已取消发布","err"); return; }
   }
@@ -490,7 +631,7 @@ async function publish(bump = false, actionDesc = ""){
     if(bump){
       toast(`🚀 新版本发布成功 (v${S.admin.version.name})！本体软件将即刻弹出更新弹窗`,"ok");
     }else{
-      toast("💾 数据静默同步成功！本体软件将在下次刷新时无感应用","ok");
+      toast("⚡ 已应用！内容已实时同步到本体软件，零延迟生效","ok");
     }
     renderAll();
   }catch(e){
@@ -498,7 +639,7 @@ async function publish(bump = false, actionDesc = ""){
   }
   if(btn){
     btn.disabled = false;
-    btn.textContent = bump ? "🚀 触发更新弹窗" : "💾 静默同步";
+    btn.textContent = bump ? "🚀 触发更新弹窗" : "⚡ 应用";
   }
 }
 
@@ -525,6 +666,44 @@ async function uploadFile(file, folder){
   const p = `${folder}/${Date.now()}_${safe}`;
   await ghPutBin(p, b64, "console: 上传 " + file.name);
   return rawUrl(p);
+}
+
+/**
+ * 文件下载（修复手机端 APK / ZIP / MD 无法下载问题）：
+ * 1) 控制台 APK（WebView 壳）内通过 AndroidBridge 调用系统 DownloadManager 真下载（通知栏可见）；
+ * 2) 浏览器环境回退为 <a download> 触发浏览器下载。
+ */
+function downloadFile(url, filename){
+  if(!url) return;
+  // 若在控制台 APK WebView 中，走原生下载通道
+  if(window.AndroidBridge && typeof window.AndroidBridge.download === "function"){
+    window.AndroidBridge.download(url, filename || "");
+    toast("⬇️ 已加入系统下载队列，请留意通知栏进度","ok");
+    return;
+  }
+  // 浏览器回退：创建临时 <a> 触发下载
+  try{
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename || "";
+    a.rel = "noopener";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>document.body.removeChild(a), 400);
+    toast("⬇️ 已开始下载，请在下载管理中查看","ok");
+  }catch(e){
+    window.open(url, "_blank");
+  }
+}
+
+// 从文件 URL 中提取文件名 / 扩展名
+function fileName(url){
+  try{ return decodeURIComponent((url||"").split("?")[0].split("/").pop()||""); }catch(e){ return (url||"").split("/").pop()||""; }
+}
+function fileExt(url){
+  const n = fileName(url);
+  const i = n.lastIndexOf(".");
+  return i > 0 ? n.slice(i+1).toUpperCase() : "文件";
 }
 
 // ============ 通用工具 ============
@@ -586,7 +765,7 @@ function renderHome(){
     </div>
     <div class="row">
       <button class="btn-pri grow" onclick="catForm()">＋ 新增分类</button>
-      <button class="btn-ok" onclick="publish(false)">💾 静默保存发布</button>
+      <button class="btn-ok" onclick="publish(false)">⚡ 应用</button>
       <button class="btn-bump" onclick="publish(true,'首页分类与站点结构更新')">🚀 推送并触发本体更新弹窗</button>
     </div>
   </div>`;
@@ -746,7 +925,7 @@ function renderSoftware(){
     </div>
     <div class="row">
       <button class="btn-pri grow" onclick="softForm()">＋ 新增软件</button>
-      <button class="btn-ok" onclick="publish(false)">💾 静默保存</button>
+      <button class="btn-ok" onclick="publish(false)">⚡ 应用</button>
       <button class="btn-bump" onclick="publish(true,'软件库上新/更新')">🚀 推送并触发本体更新弹窗</button>
     </div>
   </div>`;
@@ -763,12 +942,15 @@ function renderSoftware(){
       <div class="row" style="margin-top:6px;flex-wrap:wrap">
         <span class="chip">作者：${esc(s.author||"-")}</span>
         <span class="chip">标签：${esc(s.tags||"-")}</span>
-        ${s.apkUrl ? `<span class="chip" style="background:#14351f;color:#4ade80">✅ APK 已就绪</span>` : `<span class="chip" style="background:#3a1518;color:#f87171">❌ 暂无 APK</span>`}
+        ${s.apkUrl ? `<span class="chip" style="background:#e4f7ea;color:#16a34a">✅ APK 安装包</span>` : ""}
+        ${s.fileUrl ? `<span class="chip" style="background:#e8ecff;color:#5b52e0">📦 ${esc(fileExt(s.fileUrl))} 文件</span>` : ""}
+        ${(!s.apkUrl && !s.fileUrl) ? `<span class="chip" style="background:#fde8e8;color:#dc2626">❌ 暂无可下载文件</span>` : ""}
       </div>
       ${s.previewUrl ? `<img class="preview-img" src="${esc(s.previewUrl)}" onerror="this.style.display='none'">` : ""}
       <div class="item-actions">
         <button class="btn-mini pri" onclick="softForm(${si})">📝 编辑</button>
-        ${s.apkUrl ? `<button class="btn-mini ok" onclick="window.open('${esc(s.apkUrl)}')">⬇️ 下载 APK</button>` : ""}
+        ${s.apkUrl ? `<button class="btn-mini ok" onclick="downloadFile('${esc(s.apkUrl)}','${esc(fileName(s.apkUrl))}')">⬇️ 下载 APK</button>` : ""}
+        ${s.fileUrl ? `<button class="btn-mini pri" onclick="downloadFile('${esc(s.fileUrl)}','${esc(fileName(s.fileUrl))}')">⬇️ 下载 ${esc(fileExt(s.fileUrl))}</button>` : ""}
       </div>
     </div>`;
   });
@@ -776,27 +958,27 @@ function renderSoftware(){
 }
 
 function softForm(si){
-  const s = si != null ? S.admin.software[si] : { id: uid("sw"), type: "software", title: "", desc: "", url: "", author: "", badge: "", tags: "", apkUrl: "", previewUrl: "" };
+  const s = si != null ? S.admin.software[si] : { id: uid("sw"), type: "software", title: "", desc: "", url: "", author: "", badge: "", tags: "", apkUrl: "", fileUrl: "", previewUrl: "" };
   openDlg(`<div class="dlg-title">${si!=null?"编辑软件":"新增软件"}</div>
   <label>软件名称 *</label><input id="fSwTitle" value="${esc(s.title)}" placeholder="软件名称">
   <label>功能简述</label><textarea id="fSwDesc">${esc(s.desc)}</textarea>
-  <label>官网 / 详情 URL</label><input id="fSwUrl" value="${esc(s.url)}" placeholder="https://...">
   <div class="two-col">
     <div><label>作者</label><input id="fSwAuthor" value="${esc(s.author)}"></div>
     <div><label>角标</label><input id="fSwBadge" value="${esc(s.badge)}" placeholder="如 站长推荐 / 最新版"></div>
   </div>
   <label>标签（空格分隔）</label><input id="fSwTags" value="${esc(s.tags)}" placeholder="如 工具 效率 实用">
-  <label>本地上传 APK 文件（直接上传至云端仓库）</label>
-  <div class="upload-box" onclick="document.getElementById('fSwApk').click()">📁 点击选择本地 APK 文件${s.apkUrl ? "<br><b style='color:#4ade80'>已关联："+esc(s.apkUrl.split("/").pop())+"</b>" : ""}</div>
+  <label>本地上传 APK 安装包（直接上传至云端仓库，本体软件一键下载安装）</label>
+  <div class="upload-box" onclick="document.getElementById('fSwApk').click()">📁 点击选择本地 APK 文件${s.apkUrl ? "<br><b style='color:#16a34a'>已上传："+esc(s.apkUrl.split("/").pop())+"</b>" : ""}</div>
   <input type="file" id="fSwApk" accept=".apk,application/vnd.android.package-archive" onchange="uploadSoftApk(event)">
-  <label>本地上传 MD / ZIP 说明文件（自动补全标题/描述/标签）</label>
-  <div class="upload-box" onclick="document.getElementById('fSwDoc').click()">📄 点击选择 .md 或 .zip 文件（自动解析并补全软件信息）</div>
+  <label>本地上传 ZIP / MD 说明文件（同步到本体软件直接下载）</label>
+  <div class="upload-box" onclick="document.getElementById('fSwDoc').click()">📄 点击选择 .zip / .md 文件（自动补全标题/描述/标签）${s.fileUrl ? "<br><b style='color:#16a34a'>已上传："+esc(s.fileUrl.split("/").pop())+"</b>" : ""}</div>
   <input type="file" id="fSwDoc" accept=".md,.zip,text/markdown,application/zip" onchange="uploadSoftDoc(event)">
-  <label>或直接填写 APK 下载直链</label><input id="fSwApkUrl" value="${esc(s.apkUrl)}" placeholder="https://...">
   <label>预览图（本地上传）</label>
-  <div class="upload-box" onclick="document.getElementById('fSwImg').click()">🖼️ 点击选择预览图</div>
+  <div class="upload-box" onclick="document.getElementById('fSwImg').click()">🖼️ 点击选择预览图${s.previewUrl ? "<br><b style='color:#16a34a'>已上传："+esc(s.previewUrl.split("/").pop())+"</b>" : ""}</div>
   <input type="file" id="fSwImg" accept="image/*" onchange="uploadSoftPreview(event)">
-  <label>或直接填写预览图 URL</label><input id="fSwImgUrl" value="${esc(s.previewUrl)}" placeholder="https://...">
+  <input type="hidden" id="fSwApkUrl" value="${esc(s.apkUrl)}">
+  <input type="hidden" id="fSwFileUrl" value="${esc(s.fileUrl)}">
+  <input type="hidden" id="fSwImgUrl" value="${esc(s.previewUrl)}">
   <div class="dlg-actions"><button onclick="closeDlg()">取消</button><button class="btn-pri" onclick="saveSoft(${si==null?-1:si})">保存</button></div>`);
 }
 
@@ -815,25 +997,28 @@ async function uploadSoftApk(ev){
   }
 }
 
-// 软件：上传 MD / ZIP 说明文件并自动补全信息
+// 软件：上传 MD / ZIP 说明文件并自动补全信息 + 文件本体上传（本体软件可直接下载）
 async function uploadSoftDoc(ev){
   const f = ev.target.files[0]; if(!f) return;
   const name = (f.name||"").replace(/\.[^.]+$/,"");
   const box = ev.target.previousElementSibling;
   try{
-    if(/\.md$/i.test(f.name)){
+    if(/^\.md$/i.test(f.name) || f.name.toLowerCase().endsWith(".md")){
       const text = await f.text();
       const firstLine = (text.split(/\r?\n/).find(l=>l.trim())||"").replace(/^#+\s*/,"").trim();
       if(!$("fSwTitle").value) $("fSwTitle").value = firstLine || name;
       if(!$("fSwDesc").value) $("fSwDesc").value = text.replace(/[#*`>\[\]]/g,"").replace(/\s+/g," ").trim().slice(0,120) || "MD 文档自动导入";
       if(!$("fSwTags").value) $("fSwTags").value = "软件 文档 说明";
-      if(box) box.innerHTML = `✅ MD 已导入：${esc(f.name)}`;
-      toast("MD 文件已导入并自动补全信息","ok");
-    }else if(/\.zip$/i.test(f.name)){
+      // MD 文件本体上传到仓库，本体软件可直接下载
+      const url = await uploadFile(f, "dist/uploads");
+      $("fSwFileUrl").value = url;
+      if(box) box.innerHTML = `✅ MD 已上传：${esc(f.name)}`;
+      toast("MD 文件已上传并自动补全信息","ok");
+    }else if(/^\.zip$/i.test(f.name) || f.name.toLowerCase().endsWith(".zip")){
       if(box) box.innerHTML = `⏳ 正在上传 ZIP (${Math.round(f.size/1048576*10)/10}MB)…`;
       const url = await uploadFile(f, "dist/uploads");
+      $("fSwFileUrl").value = url;
       if(!$("fSwTitle").value) $("fSwTitle").value = name;
-      if(!$("fSwUrl").value) $("fSwUrl").value = url;
       if(!$("fSwDesc").value) $("fSwDesc").value = `${name} 资源包（ZIP）已上传云端`;
       if(!$("fSwTags").value) $("fSwTags").value = "软件 资源包 ZIP";
       if(box) box.innerHTML = `✅ ZIP 已上传：${esc(f.name)}`;
@@ -861,11 +1046,12 @@ function saveSoft(si){
     type: "software",
     title,
     desc: $("fSwDesc").value.trim(),
-    url: $("fSwUrl").value.trim(),
+    url: "",
     author: $("fSwAuthor").value.trim(),
     badge: $("fSwBadge").value.trim() || "",
     tags: $("fSwTags").value.trim(),
     apkUrl: $("fSwApkUrl").value.trim(),
+    fileUrl: $("fSwFileUrl").value.trim(),
     previewUrl: $("fSwImgUrl").value.trim()
   };
   if(si >= 0) S.admin.software[si] = obj; else S.admin.software.push(obj);
@@ -892,7 +1078,7 @@ function renderSkill(){
     </div>
     <div class="row">
       <button class="btn-pri grow" onclick="skillForm()">＋ 新增 Skill / Prompt</button>
-      <button class="btn-ok" onclick="publish(false)">💾 静默保存</button>
+      <button class="btn-ok" onclick="publish(false)">⚡ 应用</button>
       <button class="btn-bump" onclick="publish(true,'Skill技能与提示词库更新')">🚀 推送并触发本体更新弹窗</button>
     </div>
   </div>`;
@@ -910,12 +1096,14 @@ function renderSkill(){
       <div class="row" style="margin-top:6px;flex-wrap:wrap">
         <span class="chip">作者：${esc(s.author||"-")}</span>
         <span class="chip">标签：${esc(s.tags||"-")}</span>
-        ${s.mediaUrl ? `<span class="chip" style="background:#1e1b4b;color:#a5b4fc">🎬 含视频演示</span>` : ""}
+        ${s.fileUrl ? `<span class="chip" style="background:#e8ecff;color:#5b52e0">📦 ${esc(fileExt(s.fileUrl))} 技能文件</span>` : ""}
+        ${s.mediaUrl ? `<span class="chip" style="background:#ece9ff;color:#7c3aed">🎬 含视频演示</span>` : ""}
       </div>
       ${s.previewUrl ? `<img class="preview-img" src="${esc(s.previewUrl)}" onerror="this.style.display='none'">` : ""}
       ${s.mediaUrl ? `<video class="preview-video" src="${esc(s.mediaUrl)}" controls onerror="this.style.display='none'"></video>` : ""}
       <div class="item-actions">
         <button class="btn-mini pri" onclick="skillForm(${si})">📝 编辑 Prompt 与内容</button>
+        ${s.fileUrl ? `<button class="btn-mini ok" onclick="downloadFile('${esc(s.fileUrl)}','${esc(fileName(s.fileUrl))}')">⬇️ 下载 ${esc(fileExt(s.fileUrl))}</button>` : ""}
       </div>
     </div>`;
   });
@@ -923,7 +1111,7 @@ function renderSkill(){
 }
 
 function skillForm(si){
-  const s = si != null ? S.admin.skills[si] : { id: uid("sk"), type: "skill", title: "", desc: "", prompt: "", url: "", author: "", badge: "", tags: "", previewUrl: "", mediaUrl: "" };
+  const s = si != null ? S.admin.skills[si] : { id: uid("sk"), type: "skill", title: "", desc: "", prompt: "", url: "", author: "", badge: "", tags: "", previewUrl: "", mediaUrl: "", fileUrl: "" };
   openDlg(`<div class="dlg-title">${si!=null?"编辑 Skill / Prompt":"新增 Skill / Prompt"}</div>
   <label>Skill 标题 *</label><input id="fSkTitle" value="${esc(s.title)}" placeholder="如 爆款短视频文案生成器">
   <label>简介描述</label><textarea id="fSkDesc">${esc(s.desc)}</textarea>
@@ -934,18 +1122,18 @@ function skillForm(si){
     <div><label>角标</label><input id="fSkBadge" value="${esc(s.badge)}" placeholder="如 爆款推荐 / 免费开源"></div>
   </div>
   <label>标签（空格分隔）</label><input id="fSkTags" value="${esc(s.tags)}" placeholder="如 写作 营销 视频Prompt">
-  <label>参考链接</label><input id="fSkUrl" value="${esc(s.url)}" placeholder="https://...">
   <label>本地上传预览图 / 图片</label>
-  <div class="upload-box" onclick="document.getElementById('fSkImg').click()">🖼️ 点击选择预览图</div>
+  <div class="upload-box" onclick="document.getElementById('fSkImg').click()">🖼️ 点击选择预览图${s.previewUrl ? "<br><b style='color:#16a34a'>已上传："+esc(s.previewUrl.split("/").pop())+"</b>" : ""}</div>
   <input type="file" id="fSkImg" accept="image/*" onchange="uploadSkillImg(event)">
-  <label>或填写图片 URL</label><input id="fSkImgUrl" value="${esc(s.previewUrl)}" placeholder="https://...">
-  <label>本地上传 MD / ZIP 技能文件（自动补全标题/Prompt/描述/标签）</label>
-  <div class="upload-box" onclick="document.getElementById('fSkDoc').click()">📄 点击选择 .md 或 .zip 文件（自动解析 Prompt 并补全信息）</div>
+  <label>本地上传 ZIP / MD 技能文件（同步到本体软件直接下载）</label>
+  <div class="upload-box" onclick="document.getElementById('fSkDoc').click()">📄 点击选择 .zip / .md 技能文件（自动解析 Prompt 并补全信息）${s.fileUrl ? "<br><b style='color:#16a34a'>已上传："+esc(s.fileUrl.split("/").pop())+"</b>" : ""}</div>
   <input type="file" id="fSkDoc" accept=".md,.zip,text/markdown,application/zip" onchange="uploadSkillDoc(event)">
   <label>本地上传演示视频（支持 mp4 / webm / mov）</label>
-  <div class="upload-box" onclick="document.getElementById('fSkMedia').click()">🎬 点击选择视频演示</div>
+  <div class="upload-box" onclick="document.getElementById('fSkMedia').click()">🎬 点击选择视频演示${s.mediaUrl ? "<br><b style='color:#16a34a'>已上传："+esc(s.mediaUrl.split("/").pop())+"</b>" : ""}</div>
   <input type="file" id="fSkMedia" accept="video/*" onchange="uploadSkillMedia(event)">
-  <label>或填写视频 URL</label><input id="fSkMediaUrl" value="${esc(s.mediaUrl)}" placeholder="https://...">
+  <input type="hidden" id="fSkImgUrl" value="${esc(s.previewUrl)}">
+  <input type="hidden" id="fSkFileUrl" value="${esc(s.fileUrl)}">
+  <input type="hidden" id="fSkMediaUrl" value="${esc(s.mediaUrl)}">
   <div class="dlg-actions"><button onclick="closeDlg()">取消</button><button class="btn-pri" onclick="saveSkill(${si==null?-1:si})">保存</button></div>`);
 }
 
@@ -958,13 +1146,13 @@ async function uploadSkillImg(ev){
   }catch(e){ toast("上传失败："+e.message,"err"); }
 }
 
-// Skill：上传 MD / ZIP 文件并自动补全所有信息
+// Skill：上传 MD / ZIP 文件并自动补全所有信息 + 文件本体上传（本体软件可直接下载）
 async function uploadSkillDoc(ev){
   const f = ev.target.files[0]; if(!f) return;
   const name = (f.name||"").replace(/\.[^.]+$/,"");
   const box = ev.target.previousElementSibling;
   try{
-    if(/\.md$/i.test(f.name)){
+    if(/^\.md$/i.test(f.name) || f.name.toLowerCase().endsWith(".md")){
       const text = await f.text();
       const firstLine = (text.split(/\r?\n/).find(l=>l.trim())||"").replace(/^#+\s*/,"").trim();
       if(!$("fSkTitle").value) $("fSkTitle").value = firstLine || name;
@@ -972,13 +1160,16 @@ async function uploadSkillDoc(ev){
       if(!$("fSkDesc").value) $("fSkDesc").value = text.replace(/[#*`>\[\]]/g,"").replace(/\s+/g," ").trim().slice(0,120) || "MD 文档自动导入";
       if(!$("fSkTags").value) $("fSkTags").value = "技能 文档 Prompt";
       if(!$("fSkAuthor").value) $("fSkAuthor").value = "懒得找了";
-      if(box) box.innerHTML = `✅ MD 已导入：${esc(f.name)}`;
-      toast("MD 文件已导入并自动补全信息","ok");
-    }else if(/\.zip$/i.test(f.name)){
+      // MD 文件本体上传到仓库，本体软件可直接下载
+      const url = await uploadFile(f, "dist/uploads");
+      $("fSkFileUrl").value = url;
+      if(box) box.innerHTML = `✅ MD 已上传：${esc(f.name)}`;
+      toast("MD 文件已上传并自动补全信息","ok");
+    }else if(/^\.zip$/i.test(f.name) || f.name.toLowerCase().endsWith(".zip")){
       if(box) box.innerHTML = `⏳ 正在上传 ZIP (${Math.round(f.size/1048576*10)/10}MB)…`;
       const url = await uploadFile(f, "dist/uploads");
+      $("fSkFileUrl").value = url;
       if(!$("fSkTitle").value) $("fSkTitle").value = name;
-      if(!$("fSkUrl").value) $("fSkUrl").value = url;
       if(!$("fSkDesc").value) $("fSkDesc").value = `${name} 技能资源包（ZIP）已上传云端`;
       if(!$("fSkTags").value) $("fSkTags").value = "技能 资源包 ZIP";
       if(!$("fSkAuthor").value) $("fSkAuthor").value = "懒得找了";
@@ -1014,12 +1205,13 @@ function saveSkill(si){
     title,
     desc: $("fSkDesc").value.trim(),
     prompt: $("fSkPrompt").value,
-    url: $("fSkUrl").value.trim(),
+    url: "",
     author: $("fSkAuthor").value.trim(),
     badge: $("fSkBadge").value.trim() || "",
     tags: $("fSkTags").value.trim(),
     previewUrl: $("fSkImgUrl").value.trim(),
-    mediaUrl: $("fSkMediaUrl").value.trim()
+    mediaUrl: $("fSkMediaUrl").value.trim(),
+    fileUrl: $("fSkFileUrl").value.trim()
   };
   if(si >= 0) S.admin.skills[si] = obj; else S.admin.skills.push(obj);
   closeDlg(); renderSkill(); toast("Skill 已保存","ok");
@@ -1059,8 +1251,7 @@ function renderSettings(){
     <input type="file" id="fSetAliFile" accept="image/*" style="display:none" onchange="uploadContactImg(event,'fSetAli')">
     <div class="divider"></div>
     <div class="row">
-      <button class="btn-pri grow" onclick="saveSettings()">💾 保存设置</button>
-      <button class="btn-ok" onclick="publish(false)">💾 静默保存发布</button>
+      <button class="btn-pri grow" onclick="applySettings()">⚡ 应用设置并实时同步</button>
       <button class="btn-bump" onclick="publish(true,'设置与品牌信息更新')">🚀 推送并触发本体更新弹窗</button>
     </div>
   </div>`;
@@ -1084,8 +1275,15 @@ function saveSettings(){
     contactWechat: $("fSetWx").value.trim(),
     contactAlipay: $("fSetAli").value.trim()
   };
-  toast("设置已保存，记得点发布","ok");
+  toast("设置已保存，记得点「应用」实时同步","ok");
   logChange("更新设置版块（App名称/Slogan/联系作者）");
+}
+
+// 设置：保存后立即应用，实时同步到本体软件（微信/QQ/支付宝二维码等配置零延迟生效）
+async function applySettings(){
+  saveSettings();
+  await publish(false);
+  toast("⚡ 设置已应用！微信/QQ/支付宝等配置已实时同步到本体软件","ok");
 }
 
 // ==========================================
@@ -1124,7 +1322,7 @@ function renderSplash(){
     <div class="divider"></div>
     <div class="row">
       <button class="btn-pri grow" onclick="saveSplash()">💾 保存开屏配置</button>
-      <button class="btn-ok" onclick="publish(false)">💾 静默保存</button>
+      <button class="btn-ok" onclick="publish(false)">⚡ 应用</button>
       <button class="btn-bump" onclick="publish(true,'开屏动画配置更新')">🚀 推送并触发本体更新弹窗</button>
     </div>
   </div>`;
@@ -1157,7 +1355,7 @@ async function uploadSplashMedia(ev){
       ? `<video class="preview-video" src="${esc(url)}" controls></video>`
       : `<img class="preview-img" src="${esc(url)}">`;
     toast("开屏媒体上传成功","ok");
-    // 实时同步到本体：保存开屏配置并静默发布，本体软件 20 秒内自动应用
+    // 实时同步到本体：保存开屏配置并应用发布，本体软件数秒内自动应用
     S.admin.splash = S.admin.splash || { type: "media", customHtml: "", mediaUrl: "", durationSeconds: 3, bgColor: "#0B0B1A" };
     S.admin.splash.type = "media";
     S.admin.splash.mediaUrl = url;
@@ -1209,7 +1407,7 @@ function renderWelcome(){
     <div class="divider"></div>
     <div class="row">
       <button class="btn-pri grow" onclick="saveWelcome()">💾 保存欢迎弹窗</button>
-      <button class="btn-ok" onclick="publish(false)">💾 静默保存</button>
+      <button class="btn-ok" onclick="publish(false)">⚡ 应用</button>
       <button class="btn-bump" onclick="publish(true,'欢迎弹窗与新特性介绍发布')">🚀 推送并触发本体更新弹窗</button>
     </div>
   </div>`;
@@ -1365,7 +1563,7 @@ function renderApk(){
         </div>
         <div class="item-sub">${esc(apk.download_url)}</div>
         <div class="item-actions">
-          <button class="btn-mini ok" onclick="location.href='${esc(apk.download_url)}'">⬇️ 手机下载体验</button>
+          <button class="btn-mini ok" onclick="downloadFile('${esc(apk.download_url)}','${esc(apk.name)}')">⬇️ 手机下载体验</button>
           <button class="btn-mini err" onclick="deleteApk('${esc(apk.name)}')">🗑 删除</button>
           <button class="btn-mini ${isCurrent ? "gray" : "warn"}" onclick="setAsReleaseApk('${esc(apk.download_url)}','${esc(apk.name)}')">
             ${isCurrent ? "✅ 当前生效中" : "🚀 设为最新并触发本体更新"}

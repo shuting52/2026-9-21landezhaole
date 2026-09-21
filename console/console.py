@@ -135,7 +135,7 @@ class AdminConsole:
                 ][:7]
                 commit_msg = f"console: [新版本 v{new_name} code:{new_code}] {action_desc or '更新发布'}"
             else:
-                commit_msg = f"console: 静默同步配置 {time.strftime('%Y-%m-%d %H:%M:%S')}"
+                commit_msg = f"console: 应用同步配置 {time.strftime('%Y-%m-%d %H:%M:%S')}"
 
             content_bytes = json.dumps(self.data, indent=2, ensure_ascii=False).encode("utf-8")
             res = self.client.put_file(CONFIG_PATH, content_bytes, commit_msg, self.sha)
@@ -144,7 +144,7 @@ class AdminConsole:
                 print(f"\n[🚀 成功] 新版本已发布！v{self.data['version']['name']} (code: {self.data['version']['code']})")
                 print(">>> 本体软件将在下次刷新/轮询或启动时即刻弹出更新弹窗！")
             else:
-                print("\n[💾 成功] 数据已静默同步至云端仓库！")
+                print("\n[⚡ 成功] 数据已应用并实时同步至云端仓库！本体软件将零延迟生效！")
             return True
         except Exception as e:
             print(f"[!] 发布失败: {e}")
@@ -498,7 +498,7 @@ class AdminConsole:
     def _ask_publish(self, action_desc):
         print("\n请选择同步方式:")
         print("  [1] 🚀 触发更新弹窗 (递增版本代码，本体软件下次刷新即刻弹窗提醒)")
-        print("  [2] 💾 仅静默同步 (保存到云端仓库，不触发弹窗提醒)")
+        print("  [2] ⚡ 应用 (保存到云端仓库，本体软件零延迟实时同步生效，不弹窗提醒)")
         print("  [0] 暂不推送")
         c = input("选择: ").strip()
         if c == "1":

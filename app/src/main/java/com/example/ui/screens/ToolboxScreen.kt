@@ -25,11 +25,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Chat
@@ -83,12 +86,15 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.screens.toolbox.AgeCalculatorSection
 import com.example.ui.screens.toolbox.ConstellationSection
 import com.example.ui.screens.toolbox.MouthpieceSection
+import com.example.ui.screens.toolbox.MultiOpenScreenView
 import com.example.ui.screens.toolbox.OfflineTreasureSection
+import com.example.data.local.db.CloneAppEntity
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.security.MessageDigest
@@ -166,227 +172,172 @@ enum class ToolboxTab(
         shortLabel = "文本统计",
         icon = Icons.Filled.TextFormat,
         desc = "中文字数、英文单词、数字字符、无空格纯字数与行数统计"
+    ),
+    MULTI_OPEN(
+        title = "分身多开",
+        shortLabel = "分身多开",
+        icon = Icons.Filled.Apps,
+        desc = "应用分身多开助手 · 一键调用系统双开/分身能力，轻松同时登录多个账号"
     )
 }
 
 @Composable
 fun ToolboxScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    clones: List<CloneAppEntity> = emptyList(),
+    onCreateClone: (packageName: String, appName: String) -> Unit = { _, _ -> },
+    onDeleteClone: (id: String) -> Unit = {},
+    onRenameClone: (id: String, newName: String) -> Unit = { _, _ -> }
 ) {
     val context = LocalContext.current
-    var selectedTab by remember { mutableStateOf(ToolboxTab.MOUTHPIECE) }
+    // 当前选中的工具：null 表示停留在「工具网格」总览页
+    var selectedTab by remember { mutableStateOf<ToolboxTab?>(null) }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-    ) {
-        // 顶部功能导航区：清晰展示子功能选择器，点击直达专属界面
+    val currentTool = selectedTab
+    if (currentTool == null) {
+        // ============ 工具总览：全部工具以独立网格呈现（不再横向滑动） ============
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(3),
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = modifier
+                .fillMaxSize()
+                .testTag("toolbox_grid")
+        ) {
+            item(span = { GridItemSpan(3) }) {
+                Column(modifier = Modifier.padding(horizontal = 2.dp, vertical = 4.dp)) {
+                    Text(
+                        text = "极客百宝箱 · 实用工具专区",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Black,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "${ToolboxTab.entries.size} 项独立工具 · 本地纯离线运算 · 零网络请求",
+                        fontSize = 11.5.sp,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                    )
+                }
+            }
+            items(ToolboxTab.entries) { tab ->
+                ToolGridTile(tab = tab, onClick = { selectedTab = tab })
+            }
+        }
+        return
+    }
+
+    // ============ 单个工具独立全屏界面（带返回总览） ============
+    Column(modifier = modifier.fillMaxSize()) {
         Surface(
             color = Color.White.copy(alpha = 0.50f),
             border = BorderStroke(1.dp, Color.White.copy(alpha = 0.65f)),
             shape = RoundedCornerShape(bottomStart = 18.dp, bottomEnd = 18.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Column(
-                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 8.dp)
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            text = "极客百宝箱 · 实用工具专区",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Black,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = "单功能专属界面 · 本地纯离线运算 · 零网络请求",
-                            fontSize = 11.5.sp,
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-                        )
-                    }
-
-                    Surface(
-                        shape = RoundedCornerShape(10.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
-                    ) {
-                        Text(
-                            text = "${ToolboxTab.entries.size} 项工具",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                    }
+                IconButton(onClick = { selectedTab = null }) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回工具列表", tint = MaterialTheme.colorScheme.primary)
                 }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // 常用特色工具快速直达 (最强嘴替 / 年龄推算)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    val isMouthpieceSelected = selectedTab == ToolboxTab.MOUTHPIECE
-                    val isAgeSelected = selectedTab == ToolboxTab.AGE_CALC
-
-                    Surface(
-                        onClick = { selectedTab = ToolboxTab.MOUTHPIECE },
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (isMouthpieceSelected) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.65f),
-                        border = BorderStroke(
-                            1.dp,
-                            if (isMouthpieceSelected) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.8f)
-                        ),
-                        modifier = Modifier
-                            .weight(1f)
-                            .testTag("tab_mouthpiece_flagship")
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier.padding(vertical = 9.dp, horizontal = 8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Chat,
-                                contentDescription = null,
-                                tint = if (isMouthpieceSelected) Color.White else MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "最强嘴替",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp,
-                                color = if (isMouthpieceSelected) Color.White else MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-
-                    Surface(
-                        onClick = { selectedTab = ToolboxTab.AGE_CALC },
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (isAgeSelected) Color(0xFFFF5722) else Color.White.copy(alpha = 0.65f),
-                        border = BorderStroke(
-                            1.dp,
-                            if (isAgeSelected) Color(0xFFFF5722) else Color.White.copy(alpha = 0.8f)
-                        ),
-                        modifier = Modifier
-                            .weight(1f)
-                            .testTag("tab_age_calc_flagship")
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier.padding(vertical = 9.dp, horizontal = 8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.DateRange,
-                                contentDescription = null,
-                                tint = if (isAgeSelected) Color.White else Color(0xFFFF5722),
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "年龄推算",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp,
-                                color = if (isAgeSelected) Color.White else MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // 子功能选择滑动胶囊标签 (Scrollable Filter Chips)
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    items(ToolboxTab.entries) { tab ->
-                        val isSelected = selectedTab == tab
-                        FilterChip(
-                            selected = isSelected,
-                            onClick = { selectedTab = tab },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = tab.icon,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(15.dp)
-                                )
-                            },
-                            label = {
-                                Text(
-                                    text = tab.shortLabel,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                    fontSize = 12.sp
-                                )
-                            },
-                            colors = FilterChipDefaults.filterChipColors(
-                                containerColor = Color.White.copy(alpha = 0.45f),
-                                selectedContainerColor = MaterialTheme.colorScheme.primary,
-                                labelColor = MaterialTheme.colorScheme.onSurface,
-                                selectedLabelColor = Color.White,
-                                iconColor = MaterialTheme.colorScheme.primary,
-                                selectedLeadingIconColor = Color.White
-                            ),
-                            border = BorderStroke(
-                                1.dp,
-                                if (isSelected) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.7f)
-                            ),
-                            shape = RoundedCornerShape(10.dp)
-                        )
-                    }
+                Spacer(modifier = Modifier.width(2.dp))
+                Icon(
+                    imageVector = currentTool.icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = currentTool.title,
+                        fontWeight = FontWeight.Black,
+                        fontSize = 15.sp,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Text(
+                        text = "独立工具 · 返回总览可切换",
+                        fontSize = 10.5.sp,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                    )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // 各功能专属界面内容区 (带平滑淡入切换效果)
         AnimatedContent(
-            targetState = selectedTab,
+            targetState = currentTool,
             transitionSpec = { fadeIn() togetherWith fadeOut() },
             label = "ToolboxScreenAnimation",
             modifier = Modifier.weight(1f)
-        ) { currentTab ->
-            when (currentTab) {
-                ToolboxTab.MOUTHPIECE -> {
-                    MouthpieceScreenView()
-                }
-                ToolboxTab.AGE_CALC -> {
-                    AgeCalculatorScreenView()
-                }
-                ToolboxTab.CONSTELLATION -> {
-                    ConstellationScreenView()
-                }
-                ToolboxTab.OFFLINE_TREASURE -> {
-                    OfflineTreasureScreenView()
-                }
-                ToolboxTab.BASE64 -> {
-                    Base64ScreenView(context = context)
-                }
-                ToolboxTab.HASH_MD5 -> {
-                    HashCalculatorScreenView(context = context)
-                }
-                ToolboxTab.URL_CODEC -> {
-                    UrlCodecScreenView(context = context)
-                }
-                ToolboxTab.TIMESTAMP -> {
-                    TimestampScreenView(context = context)
-                }
-                ToolboxTab.UUID_GEN -> {
-                    UuidGeneratorScreenView(context = context)
-                }
-                ToolboxTab.TEXT_STATS -> {
-                    TextStatsScreenView(context = context)
-                }
+        ) { tool ->
+            when (tool) {
+                ToolboxTab.MOUTHPIECE -> MouthpieceScreenView()
+                ToolboxTab.AGE_CALC -> AgeCalculatorScreenView()
+                ToolboxTab.CONSTELLATION -> ConstellationScreenView()
+                ToolboxTab.OFFLINE_TREASURE -> OfflineTreasureScreenView()
+                ToolboxTab.BASE64 -> Base64ScreenView(context = context)
+                ToolboxTab.HASH_MD5 -> HashCalculatorScreenView(context = context)
+                ToolboxTab.URL_CODEC -> UrlCodecScreenView(context = context)
+                ToolboxTab.TIMESTAMP -> TimestampScreenView(context = context)
+                ToolboxTab.UUID_GEN -> UuidGeneratorScreenView(context = context)
+                ToolboxTab.TEXT_STATS -> TextStatsScreenView(context = context)
+                ToolboxTab.MULTI_OPEN -> MultiOpenScreenView(
+                    context = context,
+                    clones = clones,
+                    onCreateClone = onCreateClone,
+                    onDeleteClone = onDeleteClone,
+                    onRenameClone = onRenameClone
+                )
             }
+        }
+    }
+}
+
+@Composable
+private fun ToolGridTile(tab: ToolboxTab, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(16.dp),
+        color = Color.White.copy(alpha = 0.60f),
+        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.75f)),
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("tool_tile_${tab.name}")
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 6.dp, vertical = 12.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = tab.icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(7.dp))
+            Text(
+                text = tab.shortLabel,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }

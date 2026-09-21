@@ -1,5 +1,7 @@
 package com.example.data.repository
 
+import com.example.data.local.db.CloneAppDao
+import com.example.data.local.db.CloneAppEntity
 import com.example.data.local.db.ItemRecordDao
 import com.example.data.local.db.UploadedResourceDao
 import com.example.data.local.db.UploadedResourceEntity
@@ -9,7 +11,8 @@ import kotlinx.coroutines.flow.Flow
 
 class NavRepository(
     private val dao: ItemRecordDao,
-    private val uploadDao: UploadedResourceDao
+    private val uploadDao: UploadedResourceDao,
+    private val cloneAppDao: CloneAppDao
 ) {
 
     val favorites: Flow<List<UserItemRecord>> = dao.getFavorites()
@@ -27,6 +30,16 @@ class NavRepository(
     suspend fun deleteUploadedResource(id: String) {
         uploadDao.deleteResource(id)
     }
+
+    // ============ 分身多开 ============
+    fun getAllClones(): Flow<List<CloneAppEntity>> = cloneAppDao.getAllClones()
+    fun getClonesForPackage(packageName: String): Flow<List<CloneAppEntity>> = cloneAppDao.getClonesForPackage(packageName)
+    suspend fun getMaxCloneIndex(packageName: String): Int? = cloneAppDao.getMaxCloneIndex(packageName)
+    suspend fun getCloneCount(packageName: String): Int = cloneAppDao.getCloneCount(packageName)
+    suspend fun saveClone(clone: CloneAppEntity) = cloneAppDao.insertClone(clone)
+    suspend fun deleteClone(id: String) = cloneAppDao.deleteCloneById(id)
+    suspend fun renameClone(id: String, newName: String) = cloneAppDao.renameClone(id, newName)
+    suspend fun recordCloneLaunch(id: String) = cloneAppDao.recordLaunch(id)
 
     suspend fun recordVisit(card: NavCard) {
         val existing = dao.getByUrl(card.url)
