@@ -4,42 +4,42 @@ import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
 import android.os.Environment
+import android.view.View
 import android.webkit.JavascriptInterface
+import android.webkit.RenderProcessGoneDetail
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.viewinterop.AndroidView
+import com.example.R
 import com.example.data.remote.UpdateDialogDto
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -51,13 +51,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -149,37 +148,6 @@ fun AppUpdateDialog(
         fun close() { onClose() }
     }
 
-    // Rocket floating & tilting animation
-    val infiniteTransition = rememberInfiniteTransition(label = "uRocketAnim")
-    val rocketOffsetY by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = -8f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1300, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "rocketOffsetY"
-    )
-    val rocketRotation by infiniteTransition.animateFloat(
-        initialValue = -6f,
-        targetValue = 6f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1300, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "rocketRotation"
-    )
-
-    // Smooth buffer animation for progress: spring/cubic easing to prevent jumping
-    val animatedProgress by animateFloatAsState(
-        targetValue = progress / 100f,
-        animationSpec = tween(
-            durationMillis = 350,
-            easing = FastOutSlowInEasing
-        ),
-        label = "animatedProgress"
-    )
-
     fun startUpdate() {
         if (isUpdating) return
         if (!apkUrl.isNullOrBlank()) {
@@ -216,110 +184,110 @@ fun AppUpdateDialog(
         }
     }
 
-    // 无论是否配置自定义HTML，检查更新均优先采用 Uiverse.io 弹窗代码
-    val effectiveSnippet = if (!customHtml.isNullOrBlank()) customHtml else UIVERSE_UPDATE_HTML
-    Dialog(
-        onDismissRequest = {
-            closeUpdate()
-        },
-        properties = DialogProperties(
-            usePlatformDefaultWidth = false,
-            dismissOnBackPress = !isUpdating,
-            dismissOnClickOutside = !isUpdating
-        )
-    ) {
-        val jsBridge = remember { UpdateJsBridge({ startUpdate() }, { closeUpdate() }) }
-        val html = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <meta charset="utf-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-              <script src="https://cdn.tailwindcss.com"></script>
-              <style>
-                * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-                html, body {
-                  margin: 0;
-                  padding: 0;
-                  background: transparent;
-                  width: 100%;
-                  height: 100%;
-                  overflow: hidden;
-                }
-                body {
-                  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  min-height: 100vh;
-                }
-                ${update?.customCss ?: ""}
-              </style>
-            </head>
-            <body>
-            $effectiveSnippet
-            <script>
-              (function(){
-                var btnConfirm = document.getElementById('upd-confirm') || document.querySelector('button.absolute') || document.querySelectorAll('button')[1];
-                var btnCancel = document.getElementById('upd-cancel') || document.querySelector('button:not(.absolute)') || document.querySelectorAll('button')[0];
-                if(btnConfirm){
-                  btnConfirm.addEventListener('click', function(e){
-                    e.preventDefault();
-                    try { AndroidBridge.download(); } catch(err){}
-                  });
-                }
-                if(btnCancel){
-                  btnCancel.addEventListener('click', function(e){
-                    e.preventDefault();
-                    try { AndroidBridge.close(); } catch(err){}
-                  });
-                }
-              })();
-            </script>
-            </body>
-            </html>
-        """.trimIndent()
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.65f))
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = { closeUpdate() }
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            AndroidView(
-                factory = { ctx ->
-                    WebView(ctx).apply {
-                        settings.javaScriptEnabled = true
-                        setBackgroundColor(0x00000000)
-                        addJavascriptInterface(jsBridge, "AndroidBridge")
-                        webViewClient = WebViewClient()
-                        loadDataWithBaseURL(null, html, "text/html", "UTF-8", null)
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(420.dp)
-                    .padding(horizontal = 24.dp)
+    if (!customHtml.isNullOrBlank()) {
+        Dialog(
+            onDismissRequest = { closeUpdate() },
+            properties = DialogProperties(
+                usePlatformDefaultWidth = false,
+                dismissOnBackPress = !isUpdating,
+                dismissOnClickOutside = !isUpdating
             )
-        }
-    }
-    return
+        ) {
+            val jsBridge = remember { UpdateJsBridge({ startUpdate() }, { closeUpdate() }) }
+            val safeHtml = """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                  <meta charset="utf-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+                  <style>
+                    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+                    html, body {
+                      background: transparent;
+                      width: 100%;
+                      height: 100%;
+                      overflow: hidden;
+                      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                    }
+                    ${update?.customCss ?: ""}
+                  </style>
+                </head>
+                <body>
+                $customHtml
+                <script>
+                  (function(){
+                    var btnConfirm = document.getElementById('upd-confirm') || document.querySelector('button.absolute') || document.querySelectorAll('button')[1];
+                    var btnCancel = document.getElementById('upd-cancel') || document.querySelector('button:not(.absolute)') || document.querySelectorAll('button')[0];
+                    if(btnConfirm){
+                      btnConfirm.addEventListener('click', function(e){
+                        e.preventDefault();
+                        try { AndroidBridge.download(); } catch(err){}
+                      });
+                    }
+                    if(btnCancel){
+                      btnCancel.addEventListener('click', function(e){
+                        e.preventDefault();
+                        try { AndroidBridge.close(); } catch(err){}
+                      });
+                    }
+                  })();
+                </script>
+                </body>
+                </html>
+            """.trimIndent()
 
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.65f))
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = { closeUpdate() }
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                AndroidView(
+                    factory = { ctx ->
+                        WebView(ctx).apply {
+                            setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+                            settings.apply {
+                                javaScriptEnabled = true
+                                domStorageEnabled = true
+                                cacheMode = WebSettings.LOAD_NO_CACHE
+                            }
+                            setBackgroundColor(0x00000000)
+                            addJavascriptInterface(jsBridge, "AndroidBridge")
+                            webViewClient = object : WebViewClient() {
+                                override fun onRenderProcessGone(view: WebView?, detail: RenderProcessGoneDetail?): Boolean {
+                                    return true
+                                }
+                            }
+                            loadDataWithBaseURL(null, safeHtml, "text/html", "UTF-8", null)
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(420.dp)
+                        .padding(horizontal = 24.dp)
+                )
+            }
+        }
+        return
+    }
+
+    // 默认呈现：100% 还原 Uiverse.io 设计，纯 Jetpack Compose 原生渲染，零 WebView 依赖，彻底杜绝崩溃
     Dialog(
-        onDismissRequest = {
-            closeUpdate()
-        },
+        onDismissRequest = { closeUpdate() },
         properties = DialogProperties(
             usePlatformDefaultWidth = false,
             dismissOnBackPress = !isUpdating,
             dismissOnClickOutside = !isUpdating
         )
     ) {
-        // .u-mask: Full screen semi-transparent backdrop with outside click-to-close
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -329,252 +297,201 @@ fun AppUpdateDialog(
                     indication = null,
                     onClick = { closeUpdate() }
                 )
-                .testTag("app_update_dialog_mask"),
+                .testTag("uiverse_dialog_mask"),
             contentAlignment = Alignment.Center
         ) {
-            // .u-dialog container: #14142a background, 24dp rounded corners, subtle border
+            // Uiverse.io Card Container
             Box(
                 modifier = Modifier
-                    .widthIn(min = 280.dp, max = 340.dp)
-                    .padding(horizontal = 18.dp)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = {} // prevent closing when clicking inside dialog (stopPropagation equivalent)
-                    )
-                    .shadow(elevation = 28.dp, shape = RoundedCornerShape(24.dp), ambientColor = Color.Black, spotColor = Color(0xFF6C63FF))
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(Color(0xFF14142A))
-                    .border(
-                        BorderStroke(1.dp, Color.White.copy(alpha = 0.14f)),
-                        RoundedCornerShape(24.dp)
-                    )
-                    .testTag("app_update_dialog")
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                contentAlignment = Alignment.TopCenter
             ) {
-                Column(
+                // White Rounded Card
+                Box(
                     modifier = Modifier
+                        .padding(top = 23.dp)
+                        .widthIn(min = 280.dp, max = 310.dp)
                         .fillMaxWidth()
-                        .padding(top = 26.dp, bottom = 22.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .shadow(
+                            elevation = 10.dp,
+                            shape = RoundedCornerShape(16.dp),
+                            ambientColor = Color(0x4D3C4043),
+                            spotColor = Color(0x263C4043)
+                        )
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color.White)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = {} // Prevent closing when clicking inside dialog
+                        )
+                        .testTag("uiverse_dialog_card")
                 ) {
-                    // .u-rocket: 74x74 gradient circle with floating animation & outer halo
-                    Box(
-                        modifier = Modifier
-                            .offset(y = rocketOffsetY.dp)
-                            .rotate(rocketRotation),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        // Outer subtle glow ring
-                        Box(
-                            modifier = Modifier
-                                .size(90.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFF6C63FF).copy(alpha = 0.12f))
-                        )
-
-                        // Rocket Core circle
-                        Box(
-                            modifier = Modifier
-                                .size(74.dp)
-                                .shadow(
-                                    elevation = 16.dp,
-                                    shape = CircleShape,
-                                    ambientColor = Color(0xFF6C63FF).copy(alpha = 0.45f),
-                                    spotColor = Color(0xFFFF2D78).copy(alpha = 0.45f)
-                                )
-                                .clip(CircleShape)
-                                .background(
-                                    Brush.linearGradient(
-                                        listOf(Color(0xFF6C63FF), Color(0xFFFF2D78))
-                                    )
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "🚀",
-                                fontSize = 32.sp
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    // .u-ver: version tag pill
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFF6C63FF).copy(alpha = 0.18f))
-                            .padding(horizontal = 14.dp, vertical = 3.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = versionName,
-                            fontSize = 11.5.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = Color(0xFFA9A3FF),
-                            letterSpacing = 0.5.sp
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Dialog Title h3
-                    Text(
-                        text = cloudTitle,
-                        color = Color.White,
-                        fontSize = 21.sp,
-                        fontWeight = FontWeight.Black,
-                        letterSpacing = 0.3.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(2.dp))
-
-                    Text(
-                        text = "更新内容 · 共 ${cloudLogs.size} 项",
-                        color = Color.White.copy(alpha = 0.55f),
-                        fontSize = 11.5.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    // .u-log: changelog card with fixed height and smooth vertical scroll (overflow-y: auto)
-                    val logScrollState = rememberScrollState()
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
-                            .height(130.dp) // Fixed height to keep dialog structure stable when content is long
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(Color.White.copy(alpha = 0.05f))
-                            .border(
-                                BorderStroke(1.dp, Color.White.copy(alpha = 0.08f)),
-                                RoundedCornerShape(14.dp)
-                            )
-                            .padding(horizontal = 14.dp, vertical = 10.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .verticalScroll(logScrollState),
-                            verticalArrangement = Arrangement.spacedBy(7.dp)
-                        ) {
-                            cloudLogs.forEach { LogItem(text = it) }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(18.dp))
-
-                    // .u-progress: progress text row & bar
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 20.dp)
+                            .padding(top = 36.dp, start = 24.dp, end = 24.dp, bottom = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        // Title
+                        Text(
+                            text = if (cloudTitle.isNotBlank()) cloudTitle else "Your privacy is important to us",
+                            fontSize = 14.5.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF3F3F46),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("uiverse_title")
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Description / Logs
+                        if (cloudLogs.isNotEmpty()) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                cloudLogs.take(4).forEach { log ->
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.Top
+                                    ) {
+                                        Text("•", fontSize = 12.sp, color = Color(0xFF9C6750), fontWeight = FontWeight.Bold)
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(log, fontSize = 12.sp, color = Color(0xFF52525B), lineHeight = 16.sp)
+                                    }
+                                }
+                            }
+                        } else {
+                            Text(
+                                text = "We process your personal information to measure and improve our sites and services, to assist our campaigns and to provide personalised content.",
+                                fontSize = 12.5.sp,
+                                color = Color(0xFF52525B),
+                                lineHeight = 17.sp,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Row(modifier = Modifier.fillMaxWidth()) {
+                                Text(
+                                    text = "For more information see our ",
+                                    fontSize = 12.5.sp,
+                                    color = Color(0xFF52525B)
+                                )
+                                Text(
+                                    text = "Privacy Policy",
+                                    fontSize = 12.5.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFF634647),
+                                    textDecoration = TextDecoration.Underline
+                                )
+                            }
+                        }
+
+                        // Progress Bar (During download)
+                        if (isUpdating) {
+                            Spacer(modifier = Modifier.height(14.dp))
+                            Column(modifier = Modifier.fillMaxWidth()) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = if (progress < 100f) "正在极速下载..." else "下载完成，准备就绪",
+                                        fontSize = 11.sp,
+                                        color = Color(0xFF71717A)
+                                    )
+                                    Text(
+                                        text = "${progress.toInt()}%",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF634647)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(6.dp)
+                                        .clip(RoundedCornerShape(3.dp))
+                                        .background(Color(0xFFEAB789).copy(alpha = 0.35f))
+                                ) {
+                                    val animProgress by animateFloatAsState(
+                                        targetValue = progress / 100f,
+                                        animationSpec = tween(durationMillis = 200),
+                                        label = "progress"
+                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth(fraction = animProgress.coerceIn(0f, 1f))
+                                            .fillMaxHeight()
+                                            .clip(RoundedCornerShape(3.dp))
+                                            .background(Color(0xFFDDAD81))
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(18.dp))
+
+                        // Action Buttons Row
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
+                            // "More Options" / 稍后再说
                             Text(
-                                text = statusLabel,
-                                fontSize = 12.sp,
-                                color = Color.White.copy(alpha = 0.75f),
-                                fontWeight = FontWeight.Medium
-                            )
-                            Text(
-                                text = "${floor(progress).toInt()}%",
-                                fontSize = 12.sp,
-                                color = Color(0xFFA9A3FF),
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(7.dp))
-
-                        // .u-bar: progress background & fill
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(8.dp)
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(Color.White.copy(alpha = 0.08f))
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth(fraction = animatedProgress.coerceIn(0f, 1f))
-                                    .fillMaxHeight()
-                                    .clip(RoundedCornerShape(4.dp))
-                                    .background(
-                                        Brush.horizontalGradient(
-                                            listOf(Color(0xFF6C63FF), Color(0xFFFF2D78))
-                                        )
-                                    )
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    // .u-btns: Action buttons
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        // .u-btn.later: 稍后再说
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(44.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(Color.White.copy(alpha = 0.08f))
-                                .clickable(
-                                    enabled = !isUpdating,
-                                    onClick = { closeUpdate() }
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = cloudCancel,
-                                color = Color.White.copy(alpha = if (isUpdating) 0.3f else 0.7f),
+                                text = cloudCancel.ifBlank { "More Options" },
                                 fontSize = 13.5.sp,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF71717A),
+                                modifier = Modifier
+                                    .clickable(enabled = !isUpdating) { closeUpdate() }
+                                    .padding(vertical = 6.dp)
+                                    .testTag("uiverse_more_options")
                             )
-                        }
 
-                        // .u-btn.now: 立即更新
-                        Box(
-                            modifier = Modifier
-                                .weight(1.3f)
-                                .height(44.dp)
-                                .shadow(
-                                    elevation = if (isUpdating) 0.dp else 10.dp,
-                                    shape = RoundedCornerShape(12.dp),
-                                    ambientColor = Color(0xFF6C63FF).copy(alpha = 0.4f),
-                                    spotColor = Color(0xFF6C63FF).copy(alpha = 0.4f)
+                            // "Accept" / 立即更新
+                            Button(
+                                onClick = { startUpdate() },
+                                enabled = !isUpdating,
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFDDAD81),
+                                    contentColor = Color(0xFF634647),
+                                    disabledContainerColor = Color(0xFFDDAD81).copy(alpha = 0.6f),
+                                    disabledContentColor = Color(0xFF634647).copy(alpha = 0.6f)
+                                ),
+                                shape = RoundedCornerShape(8.dp),
+                                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 9.dp),
+                                modifier = Modifier.testTag("uiverse_accept_btn")
+                            ) {
+                                Text(
+                                    text = if (isUpdating) "更新中…" else cloudConfirm.ifBlank { "Accept" },
+                                    fontSize = 13.5.sp,
+                                    fontWeight = FontWeight.SemiBold
                                 )
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(
-                                    Brush.linearGradient(
-                                        listOf(Color(0xFF6C63FF), Color(0xFFFF2D78))
-                                    )
-                                )
-                                .clickable(
-                                    enabled = !isUpdating,
-                                    onClick = { startUpdate() }
-                                )
-                                .testTag("update_now_btn"),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = if (isUpdating) "更新中…" else cloudConfirm,
-                                color = Color.White,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.ExtraBold
-                            )
+                            }
                         }
                     }
+                }
+
+                // Protruding Top SVG Cookie Badge from Uiverse.io
+                Box(
+                    modifier = Modifier
+                        .size(65.dp, 46.dp)
+                        .testTag("uiverse_cookie_badge"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_uiverse_cookie),
+                        contentDescription = "Uiverse Cookie",
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(65.dp, 46.dp)
+                    )
                 }
             }
         }

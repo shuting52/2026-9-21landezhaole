@@ -679,111 +679,116 @@ private fun HeaderBrandSection(
                 color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
                 shape = RoundedCornerShape(14.dp)
             )
-            .padding(horizontal = 14.dp, vertical = 12.dp)
+            .padding(horizontal = 14.dp, vertical = 10.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            // Official Brand Logo
-            Image(
-                painter = painterResource(id = R.drawable.ic_app_brand_logo),
-                contentDescription = "软件图标",
-                modifier = Modifier
-                    .size(42.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f), RoundedCornerShape(10.dp)),
-                contentScale = ContentScale.Crop
-            )
-
-            Spacer(modifier = Modifier.width(10.dp))
-
-            Column {
-                AnimatedBrandTitle()
-                Spacer(modifier = Modifier.height(2.dp))
-                DynamicOnlineCountWidget(
-                    totalResourceCount = totalResourceCount,
-                    primaryColor = primaryColor
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // Official Brand Logo
+                Image(
+                    painter = painterResource(id = R.drawable.ic_app_brand_logo),
+                    contentDescription = "软件图标",
+                    modifier = Modifier
+                        .size(42.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f), RoundedCornerShape(10.dp)),
+                    contentScale = ContentScale.Crop
                 )
-                Spacer(modifier = Modifier.height(2.dp))
-                IpMonitorWidget()
-            }
 
-            Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.width(10.dp))
 
-            // Quick actions: History & Favorites
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(
-                    onClick = onOpenHistory,
-                    modifier = Modifier.testTag("open_history_button")
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.History,
-                        contentDescription = "历史记录",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                Column {
+                    AnimatedBrandTitle()
+                    Spacer(modifier = Modifier.height(2.dp))
+                    DynamicOnlineCountWidget(
+                        totalResourceCount = totalResourceCount,
+                        primaryColor = primaryColor
                     )
                 }
 
-                IconButton(
-                    onClick = onOpenFavorites,
-                    modifier = Modifier.testTag("open_favorites_button")
-                ) {
-                    Box {
+                Spacer(modifier = Modifier.weight(1f))
+
+                // Quick actions: History & Favorites
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(
+                        onClick = onOpenHistory,
+                        modifier = Modifier.testTag("open_history_button")
+                    ) {
                         Icon(
-                            imageVector = Icons.Filled.Bookmark,
-                            contentDescription = "我的收藏",
-                            tint = primaryColor
+                            imageVector = Icons.Filled.History,
+                            contentDescription = "历史记录",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        if (favoriteCount > 0) {
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                                    .size(14.dp)
-                                    .clip(CircleShape)
-                                    .background(secondaryColor),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = if (favoriteCount > 99) "99+" else "$favoriteCount",
-                                    color = Color.White,
-                                    fontSize = 8.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
+                    }
+
+                    IconButton(
+                        onClick = onOpenFavorites,
+                        modifier = Modifier.testTag("open_favorites_button")
+                    ) {
+                        Box {
+                            Icon(
+                                imageVector = Icons.Filled.Bookmark,
+                                contentDescription = "我的收藏",
+                                tint = primaryColor
+                            )
+                            if (favoriteCount > 0) {
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .size(14.dp)
+                                        .clip(CircleShape)
+                                        .background(secondaryColor),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = if (favoriteCount > 99) "99+" else "$favoriteCount",
+                                        color = Color.White,
+                                        fontSize = 8.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
                             }
                         }
                     }
-                }
 
-                IconButton(
-                    onClick = onOpenAddSite,
-                    modifier = Modifier.testTag("open_add_site_button")
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.AddCircle,
-                        contentDescription = "新增站点",
-                        tint = primaryColor
-                    )
-                }
+                    IconButton(
+                        onClick = onOpenAddSite,
+                        modifier = Modifier.testTag("open_add_site_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.AddCircle,
+                            contentDescription = "新增站点",
+                            tint = primaryColor
+                        )
+                    }
 
-                IconButton(
-                    onClick = onOpenTheme,
-                    modifier = Modifier.testTag("open_theme_switcher_button")
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.ColorLens,
-                        contentDescription = "皮肤库",
-                        tint = primaryColor
-                    )
-                }
+                    IconButton(
+                        onClick = onOpenTheme,
+                        modifier = Modifier.testTag("open_theme_switcher_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.ColorLens,
+                            contentDescription = "皮肤库",
+                            tint = primaryColor
+                        )
+                    }
 
-                IconButton(onClick = onTriggerSplash) {
-                    Icon(
-                        imageVector = Icons.Filled.AutoAwesome,
-                        contentDescription = "启动特效",
-                        tint = secondaryColor
-                    )
+                    IconButton(onClick = onTriggerSplash) {
+                        Icon(
+                            imageVector = Icons.Filled.AutoAwesome,
+                            contentDescription = "启动特效",
+                            tint = secondaryColor
+                        )
+                    }
                 }
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // 24小时跑马灯公告（由原IP定位系统升级）
+            IpMonitorWidget(modifier = Modifier.fillMaxWidth())
         }
     }
 }
