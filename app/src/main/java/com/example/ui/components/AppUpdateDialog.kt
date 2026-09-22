@@ -102,6 +102,8 @@ fun AppUpdateDialog(
     var isUpdating by remember { mutableStateOf(false) }
     var progress by remember { mutableFloatStateOf(0f) }
     var statusLabel by remember { mutableStateOf("等待更新…") }
+    // 签名冲突标记：检测到旧版本签名不一致时引导先卸载再安装
+    var isSignatureConflict by remember { mutableStateOf(false) }
 
     // 云端配置（由控制台发布，实时同步）
     val cloudTitle = update?.title ?: "发现新版本"
@@ -118,9 +120,35 @@ fun AppUpdateDialog(
     val cloudCancel = update?.cancelText ?: "稍后再说"
     val customHtml = update?.customHtml?.takeIf { it.isNotBlank() }
 
-    /** 通过系统安装器安装 APK（FileProvider 共享文件） */
+    /**
+     * 安装新版本 APK：
+     * 1. 安装前对比「已安装旧版本」与「新 APK」签名：不一致时引导先卸载旧版本，
+     *    避免 INSTALL_FAILED_UPDATE_INCOMPATIBLE 安装失败（旧版本不卸载装不上新包的问题）。
+     * 2. 签名一致 → 走系统安装器覆盖安装（保留数据，无需卸载）。
+     */
     fun installApk(file: File) {
         try {
+            // 读取新 APK 签名证书（SHA-256）
+            val newSig = apkSigningHash(context, file)
+            // 读取已安装本应用的签名证书
+            val installedSig = try {
+                val installed = context.packageManager.getPackageInfo(
+                    context.packageName,
+                    android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES
+                )
+                val certs = installed.signingInfo?.apkContentsSigners
+                certs?.firstOrNull()?.toByteArray()?.let(::sha256Hex)
+            } catch (e: Exception) { null }
+
+            if (installedSig != null && newSig != null && installedSig != newSig) {
+                // 签名不一致：引导先卸载旧版本再安装（自动卸载引导）
+                isSignatureConflict = true
+                statusLabel = "检测到旧版本签名不一致，请先卸载旧版本再安装"
+                Toast.makeText(context, "旧版本签名与新版本不同，需要先卸载旧版本，避免安装失败", Toast.LENGTH_LONG).show()
+                return
+            }
+
+            // 签名一致（或全新安装）：系统安装器覆盖安装
             val uri = FileProvider.getUriForFile(context, context.packageName + ".fileprovider", file)
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 setDataAndType(uri, "application/vnd.android.package-archive")
@@ -588,6 +616,39 @@ fun AppUpdateDialog(
                                     .testTag("uiverse_more_options")
                             )
 
+                            // 签名冲突时：引导先卸载旧版本再安装（解决旧版本未卸载导致安装失败问题）
+                            if (isSignatureConflict) {
+                                Button(
+                                    onClick = {
+                                        // 跳转系统设置-应用详情页，用户可一键卸载旧版本
+                                        try {
+                                            val intent = Intent(
+                                                android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                                Uri.parse("package:" + context.packageName)
+                                            )
+                                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                            context.startActivity(intent)
+                                            Toast.makeText(context, "请在应用详情页点击「卸载」，卸载完成后重新打开软件即可安装新版本", Toast.LENGTH_LONG).show()
+                                        } catch (e: Exception) {
+                                            Toast.makeText(context, "无法打开应用详情页，请到系统设置手动卸载旧版本", Toast.LENGTH_LONG).show()
+                                        }
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFFEF4444),
+                                        contentColor = Color.White
+                                    ),
+                                    shape = RoundedCornerShape(8.dp),
+                                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 9.dp),
+                                    modifier = Modifier.testTag("uiverse_uninstall_btn")
+                                ) {
+                                    Text(
+                                        text = "去卸载旧版本",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+
                             // "Accept" / 立即更新
                             Button(
                                 onClick = { startUpdate() },
@@ -603,7 +664,7 @@ fun AppUpdateDialog(
                                 modifier = Modifier.testTag("uiverse_accept_btn")
                             ) {
                                 Text(
-                                    text = if (isUpdating) "更新中…" else cloudConfirm.ifBlank { "Accept" },
+                                    text = if (isUpdating) "更新中…" else cloudConfirm.ifBlank { "立即更新" },
                                     fontSize = 13.5.sp,
                                     fontWeight = FontWeight.SemiBold
                                 )
@@ -740,3 +801,24 @@ private const val UIVERSE_UPDATE_HTML = """<!-- From Uiverse.io by ilkhoeri -->
   </div>
 </div>"""
 
+
+// ============ 顶层辅助函数（APK 签名对比，供更新弹窗使用） ============
+
+/** 提取 APK 签名证书 SHA-256（十六进制小写） */
+private fun apkSigningHash(context: Context, file: File): String? {
+    return try {
+        val pm = context.packageManager
+        val info = pm.getPackageArchiveInfo(
+            file.absolutePath,
+            android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES
+        ) ?: return null
+        val certs = info.signingInfo?.apkContentsSigners ?: return null
+        certs.firstOrNull()?.toByteArray()?.let(::sha256Hex)
+    } catch (e: Exception) { null }
+}
+
+/** SHA-256 十六进制（用于签名对比） */
+private fun sha256Hex(bytes: ByteArray): String {
+    val md = java.security.MessageDigest.getInstance("SHA-256")
+    return md.digest(bytes).joinToString("") { "%02x".format(it) }
+}

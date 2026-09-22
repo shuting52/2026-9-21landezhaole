@@ -204,8 +204,29 @@ private fun CloudPromptCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column {
-            // 预览图（云端上传）
-            if (prompt.previewUrl.isNotBlank()) {
+            // 可视化预览：视频提示词优先播放演示视频，图片提示词展示预览图
+            if (isVideo && prompt.mediaUrl.isNotBlank()) {
+                // 视频预览（静音循环自动播放，点击暂停/继续）
+                androidx.compose.ui.viewinterop.AndroidView(
+                    factory = { ctx ->
+                        android.widget.VideoView(ctx).apply {
+                            setVideoURI(android.net.Uri.parse(prompt.mediaUrl))
+                            setOnPreparedListener { mp ->
+                                mp.isLooping = true
+                                mp.setVolume(0f, 0f)
+                                mp.start()
+                            }
+                            setOnClickListener {
+                                if (isPlaying) pause() else start()
+                            }
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(170.dp)
+                        .clip(RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp))
+                )
+            } else if (prompt.previewUrl.isNotBlank()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

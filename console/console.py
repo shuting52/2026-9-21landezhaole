@@ -80,6 +80,17 @@ class GitHubClient:
     def raw_url(self, path):
         return f"https://raw.githubusercontent.com/{self.owner}/{self.repo}/main/{path}"
 
+    def delete_file(self, path, sha):
+        url = f"{API_BASE}/repos/{self.owner}/{self.repo}/contents/{path}"
+        payload = {
+            "message": f"console: 清理旧版本文件 {path.split('/')[-1]}",
+            "sha": sha
+        }
+        body = json.dumps(payload).encode("utf-8")
+        req = request.Request(url, data=body, headers=self._headers(True), method="DELETE")
+        with request.urlopen(req, timeout=30) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+
 
 class AdminConsole:
     def __init__(self, client):
@@ -125,8 +136,14 @@ class AdminConsole:
                     self.data["version"]["changelog"] = []
 
                 def meaningful(line):
-                    bad = ["【控制台推送】", "管理后台全局版本发布", "APK 制作入库", "静默同步", "更新设置版块"]
-                    return line and not any(b in line for b in bad)
+                    bad = ["【控制台推送】", "管理后台全局版本发布", "APK 制作入库", "静默同步", "更新设置版块", "控制台", "后台"]
+                    if not line:
+                        return False
+                    if any(b in line for b in bad):
+                        return False
+                    if line.strip().startswith("【v") or line.strip().startswith("【V"):
+                        return False
+                    return True
 
                 self.data["version"]["changelog"] = [note] + [x for x in self.data["version"].get("changelog", []) if meaningful(x)][:11]
                 self.data.setdefault("updateDialog", {
@@ -139,6 +156,11 @@ class AdminConsole:
                     x for x in self.data["updateDialog"].get("changelog", []) if meaningful(x)
                 ][:9]
                 commit_msg = f"console: [新版本 v{new_name} code:{new_code}] {action_desc or '更新发布'}"
+                # 新版本发布后：APK 仓库只保留当前版本与最新版本两个安装包
+                try:
+                    self._cleanup_old_apks()
+                except Exception as e:
+                    print(f"[!] 清理旧版本 APK 失败（可稍后在 APK 仓库手动处理）: {e}")
             else:
                 commit_msg = f"console: 应用并实时同步 {time.strftime('%Y-%m-%d %H:%M:%S')}"
 
@@ -499,6 +521,29 @@ class AdminConsole:
             print("   产物: app/build/outputs/apk/debug/app-debug.apk")
             print("2. 生成 Release 正式包:")
             print("   gradle assembleRelease")
+
+    def _cleanup_old_apks(self):
+        """APK 仓库只保留当前版本与最新版本两个 APK（删除更旧的）"""
+        items = self.client.get_contents("dist/apk")
+        if not isinstance(items, list):
+            return
+        apks = [x for x in items if x.get("name", "").endswith(".apk")]
+        apks.sort(key=lambda x: x.get("name", ""), reverse=True)
+        current_name = (self.data.get("version", {}).get("apkUrl", "") or "").split("/")[-1]
+        keep = set()
+        if current_name:
+            keep.add(current_name)
+        for a in apks:
+            if len(keep) >= 2:
+                break
+            keep.add(a["name"])
+        for a in apks:
+            if a["name"] not in keep:
+                try:
+                    self.client.delete_file(f"dist/apk/{a['name']}", a["sha"])
+                    print(f"[✓] 已清理旧版本 APK: {a['name']}")
+                except Exception as e:
+                    print(f"[!] 清理 {a['name']} 失败: {e}")
 
     def _ask_publish(self, action_desc):
         print("\n请选择同步方式:")

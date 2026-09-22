@@ -93,7 +93,8 @@ fun SplashScreenOverlay(
     splashReady: Boolean = false
 ) {
     var countdownSeconds by remember(splash?.durationSeconds) {
-        mutableIntStateOf(splash?.durationSeconds?.coerceIn(1, 15) ?: 3)
+        // 默认 5 秒；云端控制台配置了展示时长则严格跟随后台设定
+        mutableIntStateOf((splash?.durationSeconds ?: 5).coerceIn(1, 15))
     }
 
     val entryScale = remember { Animatable(0.7f) }

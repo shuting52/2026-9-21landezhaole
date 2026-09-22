@@ -118,7 +118,7 @@ fun OfficialWebsiteDialog(
                         }
                     }
                 } else {
-                    // 未配置：显示待定提示
+                    // 未配置：显示官网还未开发提示（不得私自添加官网 URL）
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(10.dp),
@@ -139,13 +139,13 @@ fun OfficialWebsiteDialog(
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Text(
-                                    text = "官网待配置中",
+                                    text = "官网还未开发",
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFFE65100)
                                 )
                                 Text(
-                                    text = "请在控制台「设置」版块配置官方网站链接",
+                                    text = "官方网站正在筹备中，上线后将在「设置」中提供入口",
                                     fontSize = 11.sp,
                                     color = Color(0xFFBF360C)
                                 )
