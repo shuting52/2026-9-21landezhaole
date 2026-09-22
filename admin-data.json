@@ -6043,6 +6043,21 @@
       "mediaUrl": "",
       "iconUrl": "",
       "mode": "file"
+    },
+    {
+      "id": "sk_mucww1zlo3yh",
+      "type": "skill",
+      "promptType": "prompt_video",
+      "title": "测试",
+      "desc": "被是",
+      "prompt": "测试",
+      "author": "估计",
+      "badge": "干嘛去",
+      "tags": "死了",
+      "previewUrl": "",
+      "mediaUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790095882671_doubao_video_1790088931209.mp4",
+      "url": "",
+      "mode": "file"
     }
   ],
   "settings": {
