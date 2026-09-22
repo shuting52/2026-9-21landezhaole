@@ -20,7 +20,22 @@ data class AdminData(
     val splash: SplashDto? = null,
     val welcome: WelcomeDto? = null,
     val updateDialog: UpdateDialogDto? = null,
-    val marquee: MarqueeDto? = null
+    val marquee: MarqueeDto? = null,
+    val console: ConsoleDto? = null,
+    val ipMonitor: IpMonitorDto? = null
+)
+
+/** 控制台程序自身版本（与本体软件更新完全分离，不参与本体版本判断） */
+data class ConsoleDto(
+    val version: String = "1.0.0",
+    val code: Int = 1,
+    val apkUrl: String = ""
+)
+
+/** 首页置顶实时 IP 定位监控（控制台可开关/配 URL，UI 只显示定位 IP，不显示网站字样） */
+data class IpMonitorDto(
+    val enabled: Boolean = false,
+    val url: String = ""
 )
 
 data class VersionDto(

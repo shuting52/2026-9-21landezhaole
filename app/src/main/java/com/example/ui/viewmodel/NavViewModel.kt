@@ -14,6 +14,7 @@ import com.example.data.model.NavCategory
 import com.example.data.model.SearchEngine
 import com.example.data.remote.AdminData
 import com.example.data.remote.CategoryDto
+import com.example.data.remote.IpMonitorDto
 import com.example.data.remote.MarqueeDto
 import com.example.data.remote.RemoteConfigRepository
 import com.example.data.remote.SettingsDto
@@ -79,7 +80,8 @@ data class NavUiState(
     val cloudWelcome: WelcomeDto? = null,
     val cloudUpdate: UpdateDialogDto? = null,
     val cloudSettings: SettingsDto? = null,
-    val cloudMarquee: MarqueeDto? = null
+    val cloudMarquee: MarqueeDto? = null,
+    val cloudIpMonitor: IpMonitorDto? = null
 )
 
 class NavViewModel(
@@ -185,7 +187,8 @@ class NavViewModel(
             cloudWelcome = data.welcome,
             cloudUpdate = data.updateDialog,
             cloudSettings = data.settings,
-            cloudMarquee = data.marquee
+            cloudMarquee = data.marquee,
+            cloudIpMonitor = data.ipMonitor
         )
         // 控制台软件/Skill 增删改 → 本体实时同步（删除：云端已移除的条目从本地库同步删除）
         syncCloudResources(data)
