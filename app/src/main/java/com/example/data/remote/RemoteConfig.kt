@@ -125,7 +125,18 @@ data class SettingsDto(
     val officialWebsite: String = "",
     val feedbackEmail: String = "",
     val customThemeCss: String = "",
-    val customThemeHtml: String = ""
+    val customThemeHtml: String = "",
+    // 品牌更改：图标 / 包名
+    val logoUrl: String = "",
+    val packageName: String = "",
+    // 安全加固：签名自校验
+    val security: SecurityDto? = null
+)
+
+/** 安全加固配置：开启后运行时校验自身签名，防止二次打包篡改 */
+data class SecurityDto(
+    val enabled: Boolean = false,
+    val expectedSha: String = ""
 )
 
 data class SplashDto(

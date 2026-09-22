@@ -33,13 +33,35 @@ class RemoteConfigRepository(private val context: Context) {
     private val branch = "main"
     private val filePath = "admin-data.json"
 
-    // GitHub API 直读（无 CDN 缓存，最快）
+    // GitHub API 直读（无 CDN 缓存，实时，但匿名限 60 次/小时/IP）
     private val apiUrl = "https://api.github.com/repos/$owner/$repo/contents/$filePath?ref=$branch"
-    // raw 直链兜底（CDN 有缓存但更稳）
+    // jsDelivr CDN（控制台发布后主动 purge，2 秒内生效，实时性强且无限频）
+    private val jsdelivrUrl = "https://cdn.jsdelivr.net/gh/$owner/$repo@$branch/$filePath"
+    // raw 直链兜底（CDN 有缓存延迟）
     private val rawUrl = "https://raw.githubusercontent.com/$owner/$repo/$branch/$filePath"
 
     suspend fun fetchAdminData(): AdminData? = withContext(Dispatchers.IO) {
-        fetchFromApi() ?: fetchFromRaw()
+        // 优先级：API（实时）→ jsDelivr（purge 后实时）→ raw（兜底）
+        fetchFromApi() ?: fetchFromJsdelivr() ?: fetchFromRaw()
+    }
+
+    /** 阻塞版读取（供安全校验等非协程场景使用） */
+    fun fetchAdminDataBlocking(): AdminData? {
+        return fetchFromApi() ?: fetchFromJsdelivr() ?: fetchFromRaw()
+    }
+
+    /** 通过 jsDelivr CDN 读取（控制台 publish 后 purge 立即刷新，本体 5 秒轮询即可拿到最新） */
+    private fun fetchFromJsdelivr(): AdminData? {
+        return try {
+            val request = Request.Builder().url(jsdelivrUrl).build()
+            client.newCall(request).execute().use { resp ->
+                if (!resp.isSuccessful) return null
+                val body = resp.body?.string() ?: return null
+                adapter.fromJson(body)
+            }
+        } catch (e: Exception) {
+            null
+        }
     }
 
     /** 通过 GitHub API 读取（contents API 返回 base64 内容，需解码） */

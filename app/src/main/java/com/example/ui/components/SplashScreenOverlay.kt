@@ -157,13 +157,17 @@ fun SplashScreenOverlay(
                 delay(100)
                 waited += 100
             }
-            // 严格按设定时长倒计时（修复：右上角倒计时数字不跳动的问题——
-            // 之前只递减局部变量，没有更新 countdownSeconds 状态，UI 一直显示初始值）
-            var remaining = countdownSeconds
-            while (remaining > 0) {
-                delay(1000)
-                remaining--
-                countdownSeconds = remaining
+            // 严格按设定时长倒计时（修复：倒计时卡顿/不走的问题——
+            // 用系统时间精确计算，避免 delay(1000) 在主线程繁忙时累积误差）
+            val totalMillis = countdownSeconds * 1000L
+            val startTime = System.currentTimeMillis()
+            while (true) {
+                val elapsed = System.currentTimeMillis() - startTime
+                val remainSec = ((totalMillis - elapsed) / 1000L).coerceAtLeast(0L).toInt()
+                countdownSeconds = remainSec
+                if (elapsed >= totalMillis) break
+                // 以 200ms 为步进更新 UI，倒计时数字平滑跳动，不受主线程卡顿影响
+                delay(200)
             }
             delay(150)
             onDismiss()
