@@ -311,16 +311,17 @@ fun MainScreen(
                 }
                 AppBottomTab.SOFTWARE -> {
                     UploadHubScreen(
-                        title = "软件库 · 云端同步",
-                        subtitle = "由云台控制台实时同步，支持 APK/ZIP/MD 文件直接下载",
+                        title = "懒得找了-软件库",
+                        subtitle = "一些PJ应用来源于网络～如有侵权请联系下架。失效也及时反馈哟",
                         resourceType = "software",
                         resources = uploadedSoftware,
                         onDelete = { id -> viewModel.deleteUploadedResource(id) },
-                        modifier = Modifier.padding(paddingValues)
+                        modifier = Modifier.padding(paddingValues),
+                        showDelete = false
                     )
                 }
                 AppBottomTab.SKILL -> {
-                    var skillSubTabIndex by remember { mutableIntStateOf(0) } // 0: 提示词区 (图片/视频), 1: Skill 技能库
+                    var skillSubTabIndex by remember { mutableIntStateOf(0) } // 0: 提示词区, 1: Skill 技能库
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -341,19 +342,13 @@ fun MainScreen(
                                 FilterChip(
                                     selected = skillSubTabIndex == 0,
                                     onClick = { skillSubTabIndex = 0 },
-                                    label = { Text("✨ 提示词区（图片/视频）", fontWeight = FontWeight.Bold, fontSize = 11.5.sp) },
-                                    leadingIcon = {
-                                        Icon(Icons.Filled.AutoAwesome, contentDescription = null, modifier = Modifier.size(16.dp))
-                                    },
+                                    label = { Text("提示词区", fontWeight = FontWeight.Bold, fontSize = 11.5.sp) },
                                     modifier = Modifier.weight(1f)
                                 )
                                 FilterChip(
                                     selected = skillSubTabIndex == 1,
                                     onClick = { skillSubTabIndex = 1 },
-                                    label = { Text("🛠 Skill 技能库", fontWeight = FontWeight.Bold, fontSize = 11.5.sp) },
-                                    leadingIcon = {
-                                        Icon(Icons.Filled.Psychology, contentDescription = null, modifier = Modifier.size(16.dp))
-                                    },
+                                    label = { Text("Skill 技能库", fontWeight = FontWeight.Bold, fontSize = 11.5.sp) },
                                     modifier = Modifier.weight(1f)
                                 )
                             }

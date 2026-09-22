@@ -93,8 +93,8 @@ fun SplashScreenOverlay(
     splashReady: Boolean = false
 ) {
     var countdownSeconds by remember(splash?.durationSeconds) {
-        // 默认 5 秒；云端控制台配置了展示时长则严格跟随后台设定
-        mutableIntStateOf((splash?.durationSeconds ?: 5).coerceIn(1, 15))
+        // 默认 8 秒；云端控制台配置了展示时长则严格跟随后台设定
+        mutableIntStateOf((splash?.durationSeconds ?: 8).coerceIn(1, 15))
     }
 
     val entryScale = remember { Animatable(0.7f) }
@@ -142,7 +142,7 @@ fun SplashScreenOverlay(
         label = "shimmerOffset"
     )
 
-    LaunchedEffect(isVisible, splashReady, countdownSeconds) {
+    LaunchedEffect(isVisible, splashReady) {
         if (isVisible) {
             launch {
                 entryScale.animateTo(1f, tween(600, easing = FastOutSlowInEasing))
@@ -157,11 +157,13 @@ fun SplashScreenOverlay(
                 delay(100)
                 waited += 100
             }
-            // 严格按云端设定时长倒计时（html/media 模式同样生效）
+            // 严格按设定时长倒计时（修复：右上角倒计时数字不跳动的问题——
+            // 之前只递减局部变量，没有更新 countdownSeconds 状态，UI 一直显示初始值）
             var remaining = countdownSeconds
             while (remaining > 0) {
                 delay(1000)
                 remaining--
+                countdownSeconds = remaining
             }
             delay(150)
             onDismiss()
@@ -338,52 +340,6 @@ fun SplashScreenOverlay(
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(6.dp)
-                            .clip(CircleShape)
-                            .background(SunsetOrange)
-                    )
-                    Text(
-                        text = "全网高品质 AI 生产力与极客导航",
-                        fontSize = 13.5.sp,
-                        fontWeight = FontWeight.Medium,
-                        letterSpacing = 1.sp,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.75f)
-                    )
-                    Box(
-                        modifier = Modifier
-                            .size(6.dp)
-                            .clip(CircleShape)
-                            .background(FlameRed)
-                    )
-                }
-            }
-
-            // 底部版本与标语
-            Row(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 36.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.FlashOn,
-                    contentDescription = null,
-                    tint = SunsetOrange.copy(alpha = 0.8f),
-                    modifier = Modifier.size(14.dp)
-                )
-                Text(
-                    text = "极速启动 · 独立沙箱 · 纯净体验 v2.2.0",
-                    fontSize = 11.5.sp,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.45f)
-                )
             }
         }
         }

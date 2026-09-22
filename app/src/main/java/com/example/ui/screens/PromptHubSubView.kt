@@ -109,8 +109,7 @@ fun PromptHubSubView(
             FilterChip(
                 selected = selectedType == "image",
                 onClick = { selectedType = "image" },
-                label = { Text("🖼 图片提示词 (${imageList.size})", fontSize = 12.sp) },
-                leadingIcon = { Icon(Icons.Filled.Palette, contentDescription = null, modifier = Modifier.size(14.dp)) },
+                label = { Text("图片提示词 (${imageList.size})", fontSize = 12.sp) },
                 colors = FilterChipDefaults.filterChipColors(
                     containerColor = Color.White.copy(alpha = 0.45f),
                     selectedContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f)
@@ -120,8 +119,7 @@ fun PromptHubSubView(
             FilterChip(
                 selected = selectedType == "video",
                 onClick = { selectedType = "video" },
-                label = { Text("🎬 视频提示词 (${videoList.size})", fontSize = 12.sp) },
-                leadingIcon = { Icon(Icons.Filled.Movie, contentDescription = null, modifier = Modifier.size(14.dp)) },
+                label = { Text("视频提示词 (${videoList.size})", fontSize = 12.sp) },
                 colors = FilterChipDefaults.filterChipColors(
                     containerColor = Color.White.copy(alpha = 0.45f),
                     selectedContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f)

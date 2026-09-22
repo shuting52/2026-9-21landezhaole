@@ -44,7 +44,9 @@ import androidx.compose.material.icons.filled.DataObject
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.FormatColorFill
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Key
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Lock
@@ -83,6 +85,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -175,6 +178,12 @@ enum class ToolboxTab(
         icon = Icons.Filled.TextFormat,
         desc = "中文字数、英文单词、数字字符、无空格纯字数与行数统计"
     ),
+    RELATION_KIN(
+        title = "关系认知",
+        shortLabel = "关系认知",
+        icon = Icons.Filled.Groups,
+        desc = "亲戚称呼智能查询 · 覆盖中国56个民族的不同叫法 · 地区选择"
+    ),
 }
 
 @Composable
@@ -214,18 +223,6 @@ fun ToolboxScreen(
                             text = "点击工具卡片 · 弹窗即开即用 · 本地纯离线运算",
                             fontSize = 11.5.sp,
                             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-                        )
-                    }
-                    Surface(
-                        shape = RoundedCornerShape(10.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
-                    ) {
-                        Text(
-                            text = "${ToolboxTab.entries.size} 项工具",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                         )
                     }
                 }
@@ -356,6 +353,7 @@ fun ToolboxScreen(
                                 ToolboxTab.TIMESTAMP -> TimestampScreenView(context = LocalContext.current)
                                 ToolboxTab.UUID_GEN -> UuidGeneratorScreenView(context = LocalContext.current)
                                 ToolboxTab.TEXT_STATS -> TextStatsScreenView(context = LocalContext.current)
+                                ToolboxTab.RELATION_KIN -> RelationKinScreenView(context = LocalContext.current)
                             }
                         }
                     }
@@ -1293,3 +1291,287 @@ private fun copyToClipboard(context: Context, label: String, text: String) {
     Toast.makeText(context, "已复制到剪贴板", Toast.LENGTH_SHORT).show()
 }
 
+
+// ==========================================
+// 关系认知小工具：亲戚称呼智能查询（覆盖中国56个民族，地区可收纳选择）
+// ==========================================
+private data class KinRelation(
+    val ask: String,       // 问题：如"姐姐的弟弟"
+    val common: String,    // 普通话通用称呼
+    val tip: String = ""   // 补充说明
+)
+
+// 常见亲属关系问题（通用普通话称谓）
+private val KIN_RELATIONS = listOf(
+    KinRelation("姐姐的弟弟", "弟弟", "比自己小的叫弟弟，比自己大的叫哥哥"),
+    KinRelation("姐姐的儿子", "外甥", "姐妹的儿子称外甥，兄弟的儿子称侄子"),
+    KinRelation("哥哥的儿子", "侄子", "兄弟的儿子称侄子"),
+    KinRelation("爸爸的哥哥", "伯父（大伯）", "父亲的哥哥称伯父，口语称大伯/大爷"),
+    KinRelation("爸爸的弟弟", "叔叔", "父亲的弟弟称叔叔"),
+    KinRelation("妈妈的兄弟", "舅舅", "母亲的兄弟称舅舅"),
+    KinRelation("爸爸的姐姐", "姑妈（姑姑）", "父亲的姐妹称姑妈/姑姑"),
+    KinRelation("妈妈的姐妹", "姨妈（阿姨）", "母亲的姐妹称姨妈/阿姨"),
+    KinRelation("儿子的儿子", "孙子", "儿子的儿子称孙子"),
+    KinRelation("女儿的女儿", "外孙女", "女儿的女儿称外孙女"),
+    KinRelation("爸爸的爸爸", "爷爷", "父亲的父亲称爷爷（部分地区称爹爹/阿公）"),
+    KinRelation("妈妈的妈妈", "外婆（姥姥）", "母亲的母亲称外婆/姥姥")
+)
+
+// 中国56个民族
+private val CHINA_ETHNIC_GROUPS = listOf(
+    "汉族","蒙古族","回族","藏族","维吾尔族","苗族","彝族","壮族","布依族","朝鲜族",
+    "满族","侗族","瑶族","白族","土家族","哈尼族","哈萨克族","傣族","黎族","傈僳族",
+    "佤族","畲族","高山族","拉祜族","水族","东乡族","纳西族","景颇族","柯尔克孜族","土族",
+    "达斡尔族","仫佬族","羌族","布朗族","撒拉族","毛南族","仡佬族","锡伯族","阿昌族","普米族",
+    "塔吉克族","怒族","乌孜别克族","俄罗斯族","鄂温克族","德昂族","保安族","裕固族","京族","塔塔尔族",
+    "独龙族","鄂伦春族","赫哲族","门巴族","珞巴族","基诺族"
+)
+
+// 部分民族的特色称呼（示例：民族 -> 关系问题 -> 特色叫法）
+private val ETHNIC_KIN_SPECIAL = mapOf(
+    "藏族" to mapOf(
+        "爸爸的哥哥" to "阿古（Aku）",
+        "爸爸的弟弟" to "阿古（Aku）",
+        "妈妈的兄弟" to "阿古（Aku）"
+    ),
+    "维吾尔族" to mapOf(
+        "爸爸的哥哥" to "大爸爸（Chong Dada）",
+        "爸爸的弟弟" to "小爸爸（Kichik Dada）",
+        "妈妈的兄弟" to "舅舅（Taga）"
+    ),
+    "壮族" to mapOf(
+        "爸爸的哥哥" to "伯伯",
+        "爸爸的弟弟" to "叔叔",
+        "妈妈的兄弟" to "舅舅"
+    ),
+    "满族" to mapOf(
+        "爸爸的哥哥" to "大爷（Amba De）",
+        "爸爸的弟弟" to "叔叔（Aja）"
+    ),
+    "苗族" to mapOf(
+        "爸爸的哥哥" to "大伯",
+        "妈妈的兄弟" to "舅舅"
+    ),
+    "彝族" to mapOf(
+        "爸爸的哥哥" to "阿波（Abo）",
+        "爸爸的弟弟" to "阿窝（Awo）"
+    ),
+    "回族" to mapOf(
+        "爸爸的哥哥" to "大大（大伯）",
+        "妈妈的兄弟" to "舅舅"
+    ),
+    "朝鲜族" to mapOf(
+        "爸爸的哥哥" to "大爷（Keun Abeoji）",
+        "爸爸的弟弟" to "叔叔（Jageun Abeoji）",
+        "妈妈的兄弟" to "舅舅（Oesamchon）"
+    )
+)
+
+@Composable
+private fun RelationKinScreenView(context: Context) {
+    var selectedRelation by remember { mutableStateOf(KIN_RELATIONS[0]) }
+    var selectedEthnic by remember { mutableStateOf("汉族") }
+    var regionExpanded by remember { mutableStateOf(false) }
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item {
+            ToolHeaderBanner(
+                title = "关系认知 · 亲戚称呼查询",
+                desc = "姐姐的弟弟叫什么？姐姐的儿子叫什么？覆盖中国56个民族的不同叫法，选择地区看特色称呼。",
+                icon = Icons.Filled.Groups
+            )
+        }
+
+        // 亲属关系选择（chips 横滑）
+        item {
+            Text(
+                text = "选择关系",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                items(KIN_RELATIONS.size) { i ->
+                    val r = KIN_RELATIONS[i]
+                    FilterChip(
+                        selected = selectedRelation == r,
+                        onClick = { selectedRelation = r },
+                        label = { Text(r.ask, fontSize = 11.sp) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                            selectedLabelColor = Color.White
+                        )
+                    )
+                }
+            }
+        }
+
+        // 查询结果卡
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f))
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "「${selectedRelation.ask}」怎么称呼？",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    // 当前民族/地区的叫法
+                    val special = ETHNIC_KIN_SPECIAL[selectedEthnic]?.get(selectedRelation.ask)
+                    val answer = special ?: selectedRelation.common
+                    Text(
+                        text = "【$selectedEthnic】${selectedEthnic}的称呼：",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = answer,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Black,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    if (special == null) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "（该民族通用称谓与普通话一致，具体以当地口语为准）",
+                            fontSize = 10.5.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    if (selectedRelation.tip.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = "提示：${selectedRelation.tip}",
+                            fontSize = 10.5.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+
+        // 地区/民族选择（收纳式进度条：点击展开56个民族）
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.6f)),
+                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.7f))
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    // 收纳式选择头
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .clickable { regionExpanded = !regionExpanded }
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Groups,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "选择地区 / 民族",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "当前：$selectedEthnic",
+                                fontSize = 10.5.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.Filled.KeyboardArrowDown,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier
+                                .size(20.dp)
+                                .rotate(if (regionExpanded) 180f else 0f)
+                        )
+                    }
+
+                    // 展开后的民族收纳列表（进度条式横滑分区）
+                    if (regionExpanded) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        CHINA_ETHNIC_GROUPS.chunked(6).forEachIndexed { groupIdx, group ->
+                            Column(modifier = Modifier.padding(bottom = 4.dp)) {
+                                Text(
+                                    text = "第 ${groupIdx + 1} 区",
+                                    fontSize = 9.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.height(3.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                                ) {
+                                    group.forEach { ethnic ->
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .background(
+                                                    if (selectedEthnic == ethnic) MaterialTheme.colorScheme.primary
+                                                    else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                                )
+                                                .clickable {
+                                                    selectedEthnic = ethnic
+                                                    regionExpanded = false
+                                                }
+                                                .padding(vertical = 7.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = ethnic,
+                                                fontSize = 10.sp,
+                                                fontWeight = if (selectedEthnic == ethnic) FontWeight.Bold else FontWeight.Medium,
+                                                color = if (selectedEthnic == ethnic) Color.White else MaterialTheme.colorScheme.onSurface,
+                                                maxLines = 1
+                                            )
+                                        }
+                                    }
+                                    // 补齐最后一行空位
+                                    repeat(6 - group.size) {
+                                        Spacer(modifier = Modifier.weight(1f))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        item {
+            Text(
+                text = "说明：关系认知工具收录了普通话通用称谓与部分民族的特色叫法，不同地区方言差异较大，以当地长辈口语为准。",
+                fontSize = 10.5.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 4.dp)
+            )
+        }
+    }
+}
