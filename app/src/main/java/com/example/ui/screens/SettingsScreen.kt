@@ -715,6 +715,28 @@ private fun ContactAuthorDialog(
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("支付宝", "QQ", "微信")
 
+    // 联系作者二维码「写死」逻辑：控制台上传后持久化到本地，
+    // 只要不重新上传新的二维码，后续更新都不会回退到内置图或替换为旧图。
+    val qrPrefs = remember { context.getSharedPreferences("lzdz_contact_qr", Context.MODE_PRIVATE) }
+    var qqQr by remember { mutableStateOf(qrPrefs.getString("qr_qq", "") ?: "") }
+    var wxQr by remember { mutableStateOf(qrPrefs.getString("qr_wechat", "") ?: "") }
+    var aliQr by remember { mutableStateOf(qrPrefs.getString("qr_alipay", "") ?: "") }
+    LaunchedEffect(cloudSettings?.contactQQ, cloudSettings?.contactWechat, cloudSettings?.contactAlipay) {
+        // 云端上传了新二维码 → 更新本地缓存（写死）；云端为空 → 保留上次缓存的二维码
+        cloudSettings?.contactQQ?.takeIf { it.isNotBlank() }?.let {
+            qrPrefs.edit().putString("qr_qq", it).apply()
+            qqQr = it
+        }
+        cloudSettings?.contactWechat?.takeIf { it.isNotBlank() }?.let {
+            qrPrefs.edit().putString("qr_wechat", it).apply()
+            wxQr = it
+        }
+        cloudSettings?.contactAlipay?.takeIf { it.isNotBlank() }?.let {
+            qrPrefs.edit().putString("qr_alipay", it).apply()
+            aliQr = it
+        }
+    }
+
     fun openAlipay() {
         try {
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse("alipays://platformapi/startapp?saId=10000007")).apply {
@@ -840,7 +862,7 @@ private fun ContactAuthorDialog(
                                         .padding(10.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    ContactQrImage(url = cloudSettings?.contactAlipay ?: "", fallbackRes = R.drawable.img_contact_alipay, contentDescription = "支付宝扫码")
+                                    ContactQrImage(url = aliQr, fallbackRes = R.drawable.img_contact_alipay, contentDescription = "支付宝扫码")
                                 }
                             }
 
@@ -893,7 +915,7 @@ private fun ContactAuthorDialog(
                                         .padding(10.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    ContactQrImage(url = cloudSettings?.contactQQ ?: "", fallbackRes = R.drawable.img_contact_qq, contentDescription = "QQ扫码")
+                                    ContactQrImage(url = qqQr, fallbackRes = R.drawable.img_contact_qq, contentDescription = "QQ扫码")
                                 }
                             }
 
@@ -946,7 +968,7 @@ private fun ContactAuthorDialog(
                                         .padding(10.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    ContactQrImage(url = cloudSettings?.contactWechat ?: "", fallbackRes = R.drawable.img_contact_wechat, contentDescription = "微信扫码")
+                                    ContactQrImage(url = wxQr, fallbackRes = R.drawable.img_contact_wechat, contentDescription = "微信扫码")
                                 }
                             }
 
@@ -1010,8 +1032,9 @@ private fun ContactAuthorDialog(
 }
 
 /**
- * 联系二维码：优先展示控制台实时同步的云端二维码，加载失败或未配置时回退到内置图片。
- * 实现：底层放内置回退图，上层放云端图（加载成功则覆盖，失败不绘制则回退图可见）。
+ * 联系二维码：控制台上传的二维码「写死」生效——
+ * 一旦存在云端/缓存二维码，仅展示该二维码，不再呈现内置二维码；
+ * 只有从未上传过二维码时才显示内置占位图。
  */
 @Composable
 private fun ContactQrImage(
@@ -1024,20 +1047,21 @@ private fun ContactQrImage(
             .fillMaxSize()
             .clip(RoundedCornerShape(12.dp))
     ) {
-        // 底层：内置回退二维码
-        Image(
-            painter = painterResource(id = fallbackRes),
-            contentDescription = contentDescription,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Fit
-        )
-        // 上层：云端二维码（成功加载则覆盖内置图）
         if (url.isNotBlank()) {
+            // 已有控制台上传二维码：只显示云端图，不叠加内置图
             coil.compose.AsyncImage(
                 model = url,
                 contentDescription = contentDescription,
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.fillMaxSize()
+            )
+        } else {
+            // 从未上传：内置占位图
+            Image(
+                painter = painterResource(id = fallbackRes),
+                contentDescription = contentDescription,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Fit
             )
         }
     }

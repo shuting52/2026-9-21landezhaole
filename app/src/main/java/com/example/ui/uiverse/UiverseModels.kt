@@ -55,7 +55,7 @@ enum class UiKitPreset(
     STYLE_1_TILT_MAGNETIC(
         id = "style_1_tilt_magnetic",
         displayName = "款式1：磁吸卡 3D旋转流光",
-        author = "Uiverse Style 1",
+        author = "磁吸卡工作室",
         desc = "磁吸卡片跟随旋转、conic炫彩外发光环绕、磨砂透光玻璃面板",
         primaryColor = Color(0xFF6C63FF),
         secondaryColor = Color(0xFFFF2D78),
@@ -66,7 +66,7 @@ enum class UiKitPreset(
     STYLE_2_GLASS_LOADER(
         id = "style_2_glass_loader",
         displayName = "款式2：双色旋转环与呼吸核心",
-        author = "Uiverse Style 2",
+        author = "旋转环工作室",
         desc = "双色旋转流光环、呼吸核心光球、5连弹跳玻璃珠、流光渐变按钮与发光输入框",
         primaryColor = Color(0xFF8B84FF),
         secondaryColor = Color(0xFFFF2D78),
@@ -77,7 +77,7 @@ enum class UiKitPreset(
     STYLE_3_THICK_BUTTON(
         id = "style_3_thick_button",
         displayName = "款式3：新野蛮立体厚边阴影",
-        author = "Uiverse Style 3",
+        author = "厚边阴影工作室",
         desc = "4px深蓝厚实描边、.35em立体硬投影位移、高对比度经典按压反馈",
         primaryColor = Color(0xFFFF6B4A),
         secondaryColor = Color(0xFF0A3D63),
@@ -88,7 +88,7 @@ enum class UiKitPreset(
     STYLE_4_BOTTOMBAR_APPBAR(
         id = "style_4_bottombar_appbar",
         displayName = "款式4：极客厚边导航栏与顶栏",
-        author = "Uiverse Style 4",
+        author = "极客导航工作室",
         desc = "4px深蓝描边圆角底部导航、内嵌-6px高光指示条、立体描边顶栏与浮雕字效",
         primaryColor = Color(0xFF0A3D63),
         secondaryColor = Color(0xFF00D2D3),
@@ -99,7 +99,7 @@ enum class UiKitPreset(
     STYLE_5_CAPSULE_SETROW(
         id = "style_5_capsule_setrow",
         displayName = "款式5：厚边设置行与弹跳开关",
-        author = "Uiverse Style 5",
+        author = "设置行工作室",
         desc = "4px描边圆角设置行卡片、橙黄.3em立体投影、弹性触感开关与醒目箭头",
         primaryColor = Color(0xFF0A3D63),
         secondaryColor = Color(0xFFFF9F43),
@@ -109,8 +109,8 @@ enum class UiKitPreset(
     ),
     DEFAULT_CLASSIC(
         id = "default_classic",
-        displayName = "默认经典 (Classic)",
-        author = "Official",
+        displayName = "默认经典",
+        author = "官方团队",
         desc = "系统原生纯净经典红金高定风格，极简优雅温润",
         primaryColor = Color(0xFFD32F2F),
         secondaryColor = Color(0xFFFFD700),
@@ -120,8 +120,8 @@ enum class UiKitPreset(
     ),
     CYBERPUNK_NEON(
         id = "cyberpunk_neon",
-        displayName = "赛博朋克霓虹 (Cyberpunk 2077)",
-        author = "Galahhad",
+        displayName = "赛博朋克霓虹",
+        author = "赛博视觉社",
         desc = "HUD切角科技边框、赛博蓝紫激光霓虹微光、深空终端暗黑质感",
         primaryColor = Color(0xFF00F0FF),
         secondaryColor = Color(0xFFFF003C),
@@ -131,8 +131,8 @@ enum class UiKitPreset(
     ),
     GLASSMORPHISM_AURORA(
         id = "glassmorphism_aurora",
-        displayName = "极光磨砂玻璃 (Glassmorphism)",
-        author = "mrhyddenn",
+        displayName = "极光磨砂玻璃",
+        author = "极光设计组",
         desc = "通透磨砂半透明质感、流光渐变细边框、梦幻悬浮光斑",
         primaryColor = Color(0xFF6366F1),
         secondaryColor = Color(0xFFA855F7),
@@ -142,8 +142,8 @@ enum class UiKitPreset(
     ),
     NEUMORPHISM_CLAY(
         id = "neumorphism_clay",
-        displayName = "新拟物微浮雕 (Neumorphism)",
-        author = "alexmaracinaru",
+        displayName = "新拟物微浮雕",
+        author = "浮雕设计组",
         desc = "双向柔和阴影凸起凹陷、温和轻软陶土质感、按压微回弹反馈",
         primaryColor = Color(0xFF3B82F6),
         secondaryColor = Color(0xFF60A5FA),
@@ -153,8 +153,8 @@ enum class UiKitPreset(
     ),
     NEO_BRUTALISM_POP(
         id = "neo_brutalism_pop",
-        displayName = "新野蛮主义 (Neo-Brutalism)",
-        author = "andrew-demchenk0",
+        displayName = "新野蛮主义",
+        author = "波普设计组",
         desc = "高对比度粗实黑线、4px纯黑硬位移投影、高饱和波普柠檬黄对撞",
         primaryColor = Color(0xFFFFE600),
         secondaryColor = Color(0xFFFF5252),
@@ -164,8 +164,8 @@ enum class UiKitPreset(
     ),
     RETRO_8BIT_ARCADE(
         id = "retro_8bit_arcade",
-        displayName = "8-Bit复古街机 (Retro Pixel)",
-        author = "Pradeepsahu",
+        displayName = "复古街机",
+        author = "街机复古社",
         desc = "阶梯像素切边、CRT扫描线纹理、投币街机黄金按键",
         primaryColor = Color(0xFFFFCC00),
         secondaryColor = Color(0xFF00E5FF),
@@ -175,8 +175,8 @@ enum class UiKitPreset(
     ),
     HOLOGRAPHIC_PRISM(
         id = "holographic_prism",
-        displayName = "全息棱镜 (Holographic Prism)",
-        author = "NelsonTheDeveloper",
+        displayName = "全息棱镜",
+        author = "棱镜工作室",
         desc = "七彩光谱流动渐变、水晶折射薄膜倒影、未来空间科幻",
         primaryColor = Color(0xFF38EF7D),
         secondaryColor = Color(0xFF11998E),
@@ -186,8 +186,8 @@ enum class UiKitPreset(
     ),
     LUXURY_OBSIDIAN_GOLD(
         id = "luxury_obsidian_gold",
-        displayName = "黑曜石金 (Obsidian & Gold)",
-        author = "vinodjangid07",
+        displayName = "黑曜石金",
+        author = "曜石金工坊",
         desc = "哑光玄武岩超黑底蕴、香槟拉丝金微光边框、尊崇质感",
         primaryColor = Color(0xFFD4AF37),
         secondaryColor = Color(0xFFFFDF73),
@@ -197,8 +197,8 @@ enum class UiKitPreset(
     ),
     CUSTOM_CODE(
         id = "custom_code",
-        displayName = "自定义代码驱动 (Custom CSS+HTML)",
-        author = "User Creator",
+        displayName = "自定义代码驱动",
+        author = "用户自定义",
         desc = "由用户输入的自定义 CSS / HTML 代码实时解析生成的独家软件UI",
         primaryColor = Color(0xFF6366F1),
         secondaryColor = Color(0xFFEC4899),
@@ -360,6 +360,56 @@ border: 1.5px solid rgba(255, 255, 255, 0.5);
         var borderColor: Color = Color.Transparent
         var borderWidth: Dp = 0.dp
         var cornerRadius: Dp = 12.dp
+        // 增强识别：任意 hex / rgb / rgba / hsl 颜色都能解析，
+        // 背景渐变 linear-gradient 提取主色，box-shadow 提取发光色，实现全 UI 组件自动识别应用。
+
+        fun parseColorValue(raw: String): Color? {
+            val v = raw.trim().lowercase()
+            // hex: #xxx 或 #xxxxxx
+            Regex("#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})").find(v)?.let { m ->
+                val hex = m.groupValues[1]
+                return when (hex.length) {
+                    3 -> {
+                        val r = hex[0].toString().repeat(2).toInt(16)
+                        val g = hex[1].toString().repeat(2).toInt(16)
+                        val b = hex[2].toString().repeat(2).toInt(16)
+                        Color(r / 255f, g / 255f, b / 255f)
+                    }
+                    6 -> {
+                        val r = hex.substring(0, 2).toInt(16)
+                        val g = hex.substring(2, 4).toInt(16)
+                        val b = hex.substring(4, 6).toInt(16)
+                        Color(r / 255f, g / 255f, b / 255f)
+                    }
+                    else -> {
+                        val r = hex.substring(0, 2).toInt(16)
+                        val g = hex.substring(2, 4).toInt(16)
+                        val b = hex.substring(4, 6).toInt(16)
+                        val a = hex.substring(6, 8).toInt(16)
+                        Color(r / 255f, g / 255f, b / 255f, a / 255f)
+                    }
+                }
+            }
+            // rgb() / rgba()
+            Regex("rgba?\\(\\s*(\\d+)[\\s,]+(\\d+)[\\s,]+(\\d+)(?:[\\s,]+([0-9.]+))?\\s*\\)").find(v)?.let { m ->
+                val r = m.groupValues[1].toIntOrNull()?.coerceIn(0, 255) ?: 0
+                val g = m.groupValues[2].toIntOrNull()?.coerceIn(0, 255) ?: 0
+                val b = m.groupValues[3].toIntOrNull()?.coerceIn(0, 255) ?: 0
+                val a = m.groupValues[4].toFloatOrNull()?.coerceIn(0f, 1f) ?: 1f
+                return Color(r / 255f, g / 255f, b / 255f, a)
+            }
+            // 命名颜色
+            return when (v) {
+                "white" -> Color.White
+                "black" -> Color.Black
+                "transparent" -> Color.Transparent
+                "red" -> Color.Red
+                "blue" -> Color.Blue
+                "green" -> Color.Green
+                "gray", "grey" -> Color.Gray
+                else -> null
+            }
+        }
 
         val lines = css.lines()
         for (line in lines) {
@@ -370,42 +420,45 @@ border: 1.5px solid rgba(255, 255, 255, 0.5);
                 val value = parts.subList(1, parts.size).joinToString(":").trim().lowercase()
                 when (prop) {
                     "background", "background-color" -> {
-                        when {
-                            value.contains("#0f172a") -> bgColor = Color(0xFF0F172A)
-                            value.contains("#ffffff") || value.contains("white") -> bgColor = Color.White
-                            value.contains("#000000") || value.contains("black") -> bgColor = Color.Black
-                            value.contains("#e2e8f0") -> bgColor = Color(0xFFE2E8F0)
-                            value.contains("rgba") -> bgColor = Color(0x33FFFFFF)
-                            else -> bgColor = Color(0xFF1E293B)
+                        if (value.startsWith("linear-gradient") || value.startsWith("radial-gradient")) {
+                            // 渐变：取第一个颜色作为主背景色
+                            val firstColor = parseColorValue(value) ?: continue
+                            bgColor = firstColor
+                        } else {
+                            parseColorValue(value)?.let { bgColor = it }
                         }
                     }
                     "color" -> {
-                        when {
-                            value.contains("#38bdf8") -> textColor = Color(0xFF38BDF8)
-                            value.contains("#ffffff") || value.contains("white") -> textColor = Color.White
-                            value.contains("#000000") || value.contains("black") -> textColor = Color.Black
-                            value.contains("#334155") -> textColor = Color(0xFF334155)
-                            else -> textColor = Color.White
-                        }
+                        parseColorValue(value)?.let { textColor = it }
                     }
                     "border" -> {
+                        // 解析 border: [width] [style] [color]
                         if (value.contains("solid")) {
                             borderWidth = when {
-                                value.contains("3px") -> 3.dp
-                                value.contains("2px") -> 2.dp
+                                value.contains("3px") || value.contains("0.3em") -> 3.dp
+                                value.contains("2px") || value.contains("0.2em") -> 2.dp
+                                value.contains("1.5px") || value.contains("0.15em") -> 2.dp
                                 else -> 1.dp
                             }
-                            borderColor = when {
-                                value.contains("#0284c7") -> Color(0xFF0284C7)
-                                value.contains("#000000") || value.contains("black") -> Color.Black
-                                value.contains("#ffffff") || value.contains("white") -> Color.White
-                                else -> Color(0xFF6366F1)
-                            }
+                            parseColorValue(value)?.let { borderColor = it }
                         }
+                    }
+                    "border-width" -> {
+                        val num = value.filter { it.isDigit() }.toIntOrNull()
+                        if (num != null) borderWidth = num.dp
+                    }
+                    "border-color" -> {
+                        parseColorValue(value)?.let { borderColor = it }
                     }
                     "border-radius" -> {
                         val num = value.filter { it.isDigit() }.toIntOrNull()
                         if (num != null) cornerRadius = num.dp
+                    }
+                    "box-shadow" -> {
+                        // 发光阴影：提取其中的颜色作为辅助描边色（未设置 border 时）
+                        if (borderColor == Color.Transparent) {
+                            parseColorValue(value)?.let { borderColor = it }
+                        }
                     }
                 }
             }

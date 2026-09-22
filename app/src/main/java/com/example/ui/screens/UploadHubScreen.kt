@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import com.example.data.local.db.UploadedResourceEntity
 
 /**
@@ -223,6 +224,57 @@ private fun ResourceFileCard(
                         contentDescription = "删除",
                         tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
                         modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+
+            // 可视化预览：上传的预览图 / 演示视频在本体直接展示（不再以链接文字形式）
+            if (res.previewUrl.isNotBlank() || res.mediaUrl.isNotBlank()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                if (res.mediaUrl.isNotBlank()) {
+                    // 视频预览（静音循环自动播放，点击可全屏/暂停）
+                    AndroidView(
+                        factory = { ctx ->
+                            android.widget.VideoView(ctx).apply {
+                                setVideoURI(Uri.parse(res.mediaUrl))
+                                setOnPreparedListener { mp ->
+                                    mp.isLooping = true
+                                    mp.setVolume(0f, 0f)
+                                    mp.start()
+                                }
+                                setOnClickListener {
+                                    if (isPlaying) pause() else start()
+                                }
+                                layoutParams = android.view.ViewGroup.LayoutParams(
+                                    android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                                    android.view.ViewGroup.LayoutParams.MATCH_PARENT
+                                )
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(160.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                    )
+                } else {
+                    // 预览图可视化
+                    coil.compose.AsyncImage(
+                        model = res.previewUrl,
+                        contentDescription = res.title,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .clickable {
+                                try {
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(res.previewUrl))
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    context.startActivity(intent)
+                                } catch (e: Exception) {
+                                    Toast.makeText(context, "无法打开预览图", Toast.LENGTH_SHORT).show()
+                                }
+                            }
                     )
                 }
             }
