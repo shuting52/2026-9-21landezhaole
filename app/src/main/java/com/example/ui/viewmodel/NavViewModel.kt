@@ -14,7 +14,9 @@ import com.example.data.model.NavCategory
 import com.example.data.model.SearchEngine
 import com.example.data.remote.AdminData
 import com.example.data.remote.CategoryDto
+import com.example.data.remote.MarqueeDto
 import com.example.data.remote.RemoteConfigRepository
+import com.example.data.remote.SettingsDto
 import com.example.data.remote.SplashDto
 import com.example.data.remote.UpdateDialogDto
 import com.example.data.remote.VersionDto
@@ -75,7 +77,9 @@ data class NavUiState(
     val cloudVersion: VersionDto? = null,
     val cloudSplash: SplashDto? = null,
     val cloudWelcome: WelcomeDto? = null,
-    val cloudUpdate: UpdateDialogDto? = null
+    val cloudUpdate: UpdateDialogDto? = null,
+    val cloudSettings: SettingsDto? = null,
+    val cloudMarquee: MarqueeDto? = null
 )
 
 class NavViewModel(
@@ -85,6 +89,9 @@ class NavViewModel(
 
     private val _uiState = MutableStateFlow(NavUiState())
     val uiState: StateFlow<NavUiState> = _uiState
+
+    // 云端全局主题代码是否已应用（避免每 5 秒轮询重复覆盖用户手动修改的主题）
+    private var appliedCloudTheme = false
 
     val favorites: StateFlow<List<UserItemRecord>> = repository.favorites
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -96,6 +103,9 @@ class NavViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val uploadedSkills: StateFlow<List<UploadedResourceEntity>> = repository.getUploadedSkills()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val uploadedPrompts: StateFlow<List<UploadedResourceEntity>> = repository.getUploadedPrompts()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val customSites: StateFlow<List<UploadedResourceEntity>> = repository.getCustomSites()
@@ -173,10 +183,22 @@ class NavViewModel(
             cloudVersion = data.version,
             cloudSplash = data.splash,
             cloudWelcome = data.welcome,
-            cloudUpdate = data.updateDialog
+            cloudUpdate = data.updateDialog,
+            cloudSettings = data.settings,
+            cloudMarquee = data.marquee
         )
         // 控制台软件/Skill 增删改 → 本体实时同步（删除：云端已移除的条目从本地库同步删除）
         syncCloudResources(data)
+        // 云端全局主题自定义代码（控制台「设置-主题切换」配置）：首次加载自动应用全局
+        val cloudCss = data.settings?.customThemeCss?.ifBlank { null }
+        if (cloudCss != null && !appliedCloudTheme) {
+            try {
+                applyUiverseCustomCss(cloudCss, data.settings?.customThemeHtml ?: "")
+                appliedCloudTheme = true
+            } catch (e: Exception) {
+                // 主题代码解析失败不影响主流程
+            }
+        }
         val hasNewVersion = (data.version?.code ?: 0) > com.example.BuildConfig.VERSION_CODE
         return Pair(hasNewVersion, data.version)
     }
@@ -201,7 +223,10 @@ class NavViewModel(
                         url = sw.url,
                         author = sw.author,
                         badge = sw.badge.ifBlank { "站长推荐" },
-                        tags = sw.tags
+                        tags = sw.tags,
+                        fileUrl = sw.fileUrl,
+                        iconUrl = sw.iconUrl,
+                        mode = sw.mode
                     )
                 )
             }
@@ -209,13 +234,19 @@ class NavViewModel(
                 repository.saveUploadedResource(
                     UploadedResourceEntity(
                         id = sk.id,
-                        type = "skill",
+                        type = if (sk.promptType == "prompt_image" || sk.promptType == "prompt_video") sk.promptType else "skill",
                         title = sk.title,
                         desc = sk.desc,
                         url = sk.url,
                         author = sk.author,
                         badge = sk.badge.ifBlank { "站长推荐" },
-                        tags = sk.tags
+                        tags = sk.tags,
+                        fileUrl = sk.fileUrl,
+                        prompt = sk.prompt,
+                        previewUrl = sk.previewUrl,
+                        mediaUrl = sk.mediaUrl,
+                        iconUrl = sk.iconUrl,
+                        mode = sk.mode
                     )
                 )
             }
@@ -227,11 +258,14 @@ class NavViewModel(
             localAll.forEach { local ->
                 val cloudManaged = when (local.type) {
                     "software" -> local.id.startsWith("sw_")
-                    "skill" -> local.id.startsWith("sk_")
+                    "skill", "prompt_image", "prompt_video" -> local.id.startsWith("sk_")
                     else -> false
                 }
                 if (cloudManaged) {
-                    val stillInCloud = if (local.type == "software") local.id in cloudSwIds else local.id in cloudSkIds
+                    val stillInCloud = when (local.type) {
+                        "software" -> local.id in cloudSwIds
+                        else -> local.id in cloudSkIds
+                    }
                     if (!stillInCloud) {
                         repository.deleteUploadedResource(local.id)
                     }

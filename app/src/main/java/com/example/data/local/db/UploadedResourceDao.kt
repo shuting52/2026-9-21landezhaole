@@ -11,6 +11,9 @@ interface UploadedResourceDao {
     @Query("SELECT * FROM uploaded_resources WHERE type = :type ORDER BY timestamp DESC")
     fun getResourcesByType(type: String): Flow<List<UploadedResourceEntity>>
 
+    @Query("SELECT * FROM uploaded_resources WHERE type = 'prompt_image' OR type = 'prompt_video' ORDER BY timestamp DESC")
+    fun getPrompts(): Flow<List<UploadedResourceEntity>>
+
     @Query("SELECT * FROM uploaded_resources ORDER BY timestamp DESC")
     fun getAllResources(): Flow<List<UploadedResourceEntity>>
 

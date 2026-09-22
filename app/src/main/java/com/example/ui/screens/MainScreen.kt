@@ -168,6 +168,7 @@ fun MainScreen(
 
     val uploadedSoftware by viewModel.uploadedSoftware.collectAsStateWithLifecycle()
     val uploadedSkills by viewModel.uploadedSkills.collectAsStateWithLifecycle()
+    val uploadedPrompts by viewModel.uploadedPrompts.collectAsStateWithLifecycle()
     val customSites by viewModel.customSites.collectAsStateWithLifecycle()
 
     val totalResourceCount = remember(uiState.categories, customSites) {
@@ -218,7 +219,8 @@ fun MainScreen(
                                 onOpenHistory = { viewModel.setHistoryModalVisible(true) },
                                 onOpenTheme = { viewModel.setThemeDialogVisible(true) },
                                 onOpenAddSite = { showAddSiteDialog = true },
-                                onTriggerSplash = { viewModel.showSplash() }
+                                onTriggerSplash = { viewModel.showSplash() },
+                                cloudMarquee = uiState.cloudMarquee
                             )
                         }
 
@@ -316,7 +318,7 @@ fun MainScreen(
                     )
                 }
                 AppBottomTab.SKILL -> {
-                    var skillSubTabIndex by remember { mutableIntStateOf(0) } // 0: Prompt 提示词 (预览/复制), 1: 技能开发经验
+                    var skillSubTabIndex by remember { mutableIntStateOf(0) } // 0: 提示词区 (图片/视频), 1: Skill 技能库
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
@@ -337,7 +339,7 @@ fun MainScreen(
                                 FilterChip(
                                     selected = skillSubTabIndex == 0,
                                     onClick = { skillSubTabIndex = 0 },
-                                    label = { Text("✨ Prompt 提示词 (生图/视频复制)", fontWeight = FontWeight.Bold, fontSize = 11.5.sp) },
+                                    label = { Text("✨ 提示词区（图片/视频）", fontWeight = FontWeight.Bold, fontSize = 11.5.sp) },
                                     leadingIcon = {
                                         Icon(Icons.Filled.AutoAwesome, contentDescription = null, modifier = Modifier.size(16.dp))
                                     },
@@ -346,7 +348,7 @@ fun MainScreen(
                                 FilterChip(
                                     selected = skillSubTabIndex == 1,
                                     onClick = { skillSubTabIndex = 1 },
-                                    label = { Text("💡 Skill 技能库", fontWeight = FontWeight.Bold, fontSize = 11.5.sp) },
+                                    label = { Text("🛠 Skill 技能库", fontWeight = FontWeight.Bold, fontSize = 11.5.sp) },
                                     leadingIcon = {
                                         Icon(Icons.Filled.Psychology, contentDescription = null, modifier = Modifier.size(16.dp))
                                     },
@@ -356,11 +358,14 @@ fun MainScreen(
                         }
 
                         if (skillSubTabIndex == 0) {
-                            PromptHubSubView(modifier = Modifier.fillMaxSize())
+                            PromptHubSubView(
+                                prompts = uploadedPrompts,
+                                modifier = Modifier.fillMaxSize()
+                            )
                         } else {
                             UploadHubScreen(
-                                title = "SKill · 技能库",
-                                subtitle = "由云台控制台实时同步，支持 ZIP/MD 文件直接下载",
+                                title = "Skill · 技能库",
+                                subtitle = "由云台控制台实时同步，点击卡片直接下载 ZIP/MD 技能包",
                                 resourceType = "skill",
                                 resources = uploadedSkills,
                                 onDelete = { id -> viewModel.deleteUploadedResource(id) },
@@ -380,6 +385,7 @@ fun MainScreen(
                         onOpenThemeSwitcher = { viewModel.setThemeDialogVisible(true) },
                         cloudUpdate = uiState.cloudUpdate,
                         cloudVersion = uiState.cloudVersion,
+                        cloudSettings = uiState.cloudSettings,
                         onCheckUpdate = { viewModel.refreshRemoteConfig() },
                         modifier = Modifier.padding(paddingValues)
                     )
@@ -392,7 +398,8 @@ fun MainScreen(
         SplashScreenOverlay(
             isVisible = uiState.isSplashVisible,
             onDismiss = { viewModel.dismissSplash() },
-            splash = uiState.cloudSplash
+            splash = uiState.cloudSplash,
+            splashReady = uiState.isCloudReady
         )
 
         // 云端实时更新弹窗：控制台发布新版本后，本体启动自动弹出更新提醒。
@@ -640,7 +647,8 @@ private fun HeaderBrandSection(
     onOpenHistory: () -> Unit,
     onOpenTheme: () -> Unit,
     onOpenAddSite: () -> Unit,
-    onTriggerSplash: () -> Unit
+    onTriggerSplash: () -> Unit,
+    cloudMarquee: com.example.data.remote.MarqueeDto? = null
 ) {
     val primaryColor = MaterialTheme.colorScheme.primary
     val secondaryColor = MaterialTheme.colorScheme.secondary
@@ -771,8 +779,11 @@ private fun HeaderBrandSection(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // 24小时跑马灯公告（由原IP定位系统升级）
-            IpMonitorWidget(modifier = Modifier.fillMaxWidth())
+            // 24小时跑马灯公告（云端控制台可自定义图标与文字）
+            IpMonitorWidget(
+                modifier = Modifier.fillMaxWidth(),
+                cloudMarquee = cloudMarquee
+            )
         }
     }
 }

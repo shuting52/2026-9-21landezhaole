@@ -19,7 +19,8 @@ data class AdminData(
     val settings: SettingsDto? = null,
     val splash: SplashDto? = null,
     val welcome: WelcomeDto? = null,
-    val updateDialog: UpdateDialogDto? = null
+    val updateDialog: UpdateDialogDto? = null,
+    val marquee: MarqueeDto? = null
 )
 
 data class VersionDto(
@@ -74,12 +75,15 @@ data class SoftwareDto(
     val tags: String = "",
     val apkUrl: String = "",
     val fileUrl: String = "",
-    val previewUrl: String = ""
+    val previewUrl: String = "",
+    val iconUrl: String = "",
+    val mode: String = "file" // file=文件下载 / url=URL跳转下载
 )
 
 data class SkillDto(
     val id: String = "",
     val type: String = "skill",
+    val promptType: String = "skill", // skill / prompt_image / prompt_video
     val title: String = "",
     val desc: String = "",
     val prompt: String = "",
@@ -89,7 +93,9 @@ data class SkillDto(
     val tags: String = "",
     val previewUrl: String = "",
     val mediaUrl: String = "",
-    val fileUrl: String = ""
+    val fileUrl: String = "",
+    val iconUrl: String = "",
+    val mode: String = "file" // file=文件下载 / url=URL跳转
 )
 
 data class SettingsDto(
@@ -98,7 +104,13 @@ data class SettingsDto(
     val aboutText: String = "",
     val contactQQ: String = "",
     val contactWechat: String = "",
-    val contactAlipay: String = ""
+    val contactAlipay: String = "",
+    val qqGroupUrl: String = "",
+    val qqGroupUin: String = "",
+    val officialWebsite: String = "",
+    val feedbackEmail: String = "",
+    val customThemeCss: String = "",
+    val customThemeHtml: String = ""
 )
 
 data class SplashDto(
@@ -125,6 +137,22 @@ data class UpdateDialogDto(
     val cancelText: String = "稍后再说",
     val customCss: String = "",
     val customHtml: String = ""
+)
+
+/**
+ * 主页跑马灯公告：支持 24 小时时间段轮播，控制台可改图标与文案。
+ */
+data class MarqueeDto(
+    val enabled: Boolean = true,
+    val icon: String = "📢",
+    val defaultText: String = "欢迎使用懒得找应用软件，这里的资源丰富，很多资源都是可以白嫖的。请自寻探索~~",
+    val segments: List<MarqueeSegmentDto> = emptyList()
+)
+
+data class MarqueeSegmentDto(
+    val start: Int = 0,
+    val end: Int = 23,
+    val text: String = ""
 )
 
 // ---------- 转换函数：云端 DTO -> 本体领域模型 ----------
