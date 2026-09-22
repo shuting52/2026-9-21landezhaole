@@ -112,23 +112,36 @@ fun MarqueeNoticeWidget(
     text: String = MARQUEE_ANNOUNCEMENT_TEXT,
     cloudMarquee: MarqueeDto? = null
 ) {
-    // 后台关闭跑马灯：本体完全不渲染公告内容
-    if (cloudMarquee?.enabled == false) return
+    // 后台关闭跑马灯：本体完全不渲染公告内容（严格修复开关无效问题）
+    if (cloudMarquee != null && cloudMarquee.enabled == false) return
 
-    // 按当前小时动态生成播报文案，每分钟刷新一次（时间与时间段文字实时变化）
-    var displayText by remember { mutableStateOf(getHourlyMarqueeText()) }
-    LaunchedEffect(Unit) {
-        while (true) {
-            displayText = resolveMarqueeText(cloudMarquee)
-            delay(30_000L)
+    // 播放队列：默认公告文字 + 各时段内容（按开始小时排序），顺序循环播放、中间不停顿
+    val defaultText = cloudMarquee?.defaultText?.ifBlank {
+        MARQUEE_ANNOUNCEMENT_TEXT
+    } ?: MARQUEE_ANNOUNCEMENT_TEXT
+    val sortedSegments = (cloudMarquee?.segments.orEmpty())
+        .filter { it.text.isNotBlank() }
+        .sortedBy { it.start }
+        .map { it.text }
+    val playlist = remember(sortedSegments) {
+        buildList {
+            add(defaultText)
+            addAll(sortedSegments)
+            // 无任何时段时，补一条按小时动态文案，保证始终有内容轮播
+            if (size <= 1) add(getHourlyMarqueeText())
         }
     }
-    // 云端配置优先：有云端公告且启用时使用云端文字；否则按小时动态文案；再回退到外部显式文字
-    val effectiveText = when {
-        cloudMarquee?.enabled == true -> resolveMarqueeText(cloudMarquee)
-        text == MARQUEE_ANNOUNCEMENT_TEXT -> displayText
-        else -> text
+
+    var displayText by remember { mutableStateOf(playlist.firstOrNull() ?: defaultText) }
+    LaunchedEffect(playlist) {
+        var index = 0
+        while (true) {
+            displayText = playlist[index % playlist.size]
+            index++
+            delay(8000L) // 每段展示 8 秒，逐条轮播不间歇
+        }
     }
+    val effectiveText = displayText
     // 云端公告图标（默认小喇叭）
     val marqueeIcon = cloudMarquee?.icon?.ifBlank { null } ?: null
 
