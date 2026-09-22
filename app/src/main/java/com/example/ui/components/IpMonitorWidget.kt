@@ -43,6 +43,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.data.remote.MarqueeDto
 import java.util.Calendar
 import kotlinx.coroutines.delay
 
@@ -77,29 +78,38 @@ fun getHourlyMarqueeText(calendar: Calendar = Calendar.getInstance()): String {
 }
 @Composable
 fun IpMonitorWidget(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    cloudMarquee: com.example.data.remote.MarqueeDto? = null
 ) {
-    MarqueeNoticeWidget(modifier = modifier)
+    MarqueeNoticeWidget(modifier = modifier, cloudMarquee = cloudMarquee)
 }
 
 /**
  * 跑马灯公告栏主组件
+ * 支持云端配置：icon（图标）、segments（24小时时间段轮播）、defaultText（默认文字）
  */
 @Composable
 fun MarqueeNoticeWidget(
     modifier: Modifier = Modifier,
-    text: String = MARQUEE_ANNOUNCEMENT_TEXT
+    text: String = MARQUEE_ANNOUNCEMENT_TEXT,
+    cloudMarquee: MarqueeDto? = null
 ) {
     // 按当前小时动态生成播报文案，每分钟刷新一次（时间与时间段文字实时变化）
     var displayText by remember { mutableStateOf(getHourlyMarqueeText()) }
     LaunchedEffect(Unit) {
         while (true) {
-            displayText = getHourlyMarqueeText()
-            delay(60_000L)
+            displayText = resolveMarqueeText(cloudMarquee)
+            delay(30_000L)
         }
     }
-    // 外部显式传入自定义文字时优先使用外部文字，否则使用按小时动态文案
-    val effectiveText = if (text == MARQUEE_ANNOUNCEMENT_TEXT) displayText else text
+    // 云端配置优先：有云端公告且启用时使用云端文字；否则按小时动态文案；再回退到外部显式文字
+    val effectiveText = when {
+        cloudMarquee?.enabled == true -> resolveMarqueeText(cloudMarquee)
+        text == MARQUEE_ANNOUNCEMENT_TEXT -> displayText
+        else -> text
+    }
+    // 云端公告图标（默认小喇叭）
+    val marqueeIcon = cloudMarquee?.icon?.ifBlank { null } ?: null
 
     val infiniteTransition = rememberInfiniteTransition(label = "marquee_horn_pulse")
     val hornScale by infiniteTransition.animateFloat(
@@ -131,7 +141,7 @@ fun MarqueeNoticeWidget(
                 .padding(horizontal = 8.dp, vertical = 5.dp)
                 .fillMaxWidth()
         ) {
-            // 广播小喇叭徽标
+            // 广播喇叭徽标（云端可自定义图标）
             Box(
                 modifier = Modifier
                     .scale(hornScale)
@@ -147,22 +157,30 @@ fun MarqueeNoticeWidget(
                     .padding(horizontal = 5.dp, vertical = 2.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(2.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Campaign,
-                        contentDescription = "公告播报",
-                        tint = Color.White,
-                        modifier = Modifier.size(13.dp)
-                    )
+                if (marqueeIcon != null && marqueeIcon != "📢") {
                     Text(
-                        text = "公告",
-                        color = Color.White,
-                        fontSize = 9.5.sp,
-                        fontWeight = FontWeight.Bold
+                        text = marqueeIcon,
+                        fontSize = 12.sp,
+                        color = Color.White
                     )
+                } else {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Campaign,
+                            contentDescription = "公告播报",
+                            tint = Color.White,
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Text(
+                            text = "公告",
+                            color = Color.White,
+                            fontSize = 9.5.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
 
@@ -189,6 +207,22 @@ fun MarqueeNoticeWidget(
             Spacer(modifier = Modifier.width(6.dp))
         }
     }
+}
+
+/**
+ * 解析跑马灯文字：优先命中云端配置的时间段，否则使用云端默认文字，再回退到按小时动态文案。
+ */
+fun resolveMarqueeText(cloudMarquee: MarqueeDto?): String {
+    if (cloudMarquee?.enabled != true) return getHourlyMarqueeText()
+    val now = Calendar.getInstance()
+    val hour = now.get(Calendar.HOUR_OF_DAY)
+    val segments = cloudMarquee.segments.orEmpty()
+    segments.firstOrNull { seg ->
+        hour >= (seg.start % 24) && hour <= (seg.end % 24)
+    }?.let { seg ->
+        if (seg.text.isNotBlank()) return seg.text
+    }
+    return cloudMarquee.defaultText.ifBlank { getHourlyMarqueeText() }
 }
 
 /**

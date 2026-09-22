@@ -129,24 +129,63 @@ fun FeedbackDialog(
         if (feedbackContent.isBlank()) {
             Toast.makeText(context, "请先填写反馈内容", Toast.LENGTH_SHORT).show()
         } else {
-            try {
-                // 通过系统邮件客户端真实发送到开发者邮箱（307779523@qq.com）
+            isSending = true
+            coroutineScope.launch {
                 val fullReport = buildFullReport()
-                val subject = Uri.encode("【懒得找了·软件反馈】${selectedCategory.title}")
-                val body = Uri.encode(fullReport)
-                val mailto = "mailto:307779523@qq.com?subject=$subject&body=$body"
-                val intent = Intent(Intent.ACTION_SENDTO, Uri.parse(mailto))
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(intent)
-                // 本地留底
-                try {
-                    val sp = context.getSharedPreferences("feedback_records", Context.MODE_PRIVATE)
-                    val prev = sp.getString("history", "") ?: ""
-                    sp.edit().putString("history", "$fullReport\n---\n$prev").apply()
-                } catch (_: Exception) {}
-                Toast.makeText(context, "已打开邮件客户端，确认后即可发送给开发者", Toast.LENGTH_SHORT).show()
-            } catch (e: Exception) {
-                Toast.makeText(context, "未找到邮件应用，请安装邮箱客户端后重试", Toast.LENGTH_SHORT).show()
+                // 优先通过 FormSubmit 邮件服务真实送达开发者邮箱（无需用户安装邮件客户端）
+                val email = "307779523@qq.com"
+                val ok = withContext(Dispatchers.IO) {
+                    try {
+                        val client = OkHttpClient.Builder()
+                            .connectTimeout(10, TimeUnit.SECONDS)
+                            .readTimeout(15, TimeUnit.SECONDS)
+                            .build()
+                        val json = JSONObject().apply {
+                            put("_subject", "【懒得找了·软件反馈】${selectedCategory.title}")
+                            put("_template", "table")
+                            put("_captcha", "false")
+                            put("反馈类型", selectedCategory.title)
+                            put("反馈内容", feedbackContent)
+                            put("联系方式", userContact.ifBlank { "未留" })
+                            put("设备环境", if (includeDeviceInfo) deviceInfoSummary else "未附带")
+                            put("时间", SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date()))
+                        }
+                        val body = json.toString().toRequestBody("application/json".toMediaType())
+                        val request = Request.Builder()
+                            .url("https://formsubmit.co/ajax/$email")
+                            .post(body)
+                            .build()
+                        client.newCall(request).execute().use { resp ->
+                            resp.isSuccessful || resp.code == 200
+                        }
+                    } catch (e: Exception) {
+                        false
+                    }
+                }
+                isSending = false
+                if (ok) {
+                    // 本地留底
+                    try {
+                        val sp = context.getSharedPreferences("feedback_records", Context.MODE_PRIVATE)
+                        val prev = sp.getString("history", "") ?: ""
+                        sp.edit().putString("history", "$fullReport\n---\n$prev").apply()
+                    } catch (_: Exception) {}
+                    Toast.makeText(context, "✅ 反馈已真实送达开发者邮箱！感谢您的宝贵建议", Toast.LENGTH_LONG).show()
+                    onDismiss()
+                } else {
+                    // 失败回退：系统邮件客户端发送
+                    try {
+                        val subject = Uri.encode("【懒得找了·软件反馈】${selectedCategory.title}")
+                        val body = Uri.encode(fullReport)
+                        val mailto = "mailto:$email?subject=$subject&body=$body"
+                        val intent = Intent(Intent.ACTION_SENDTO, Uri.parse(mailto))
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        context.startActivity(intent)
+                        Toast.makeText(context, "网络发送失败，已打开邮件客户端代发（首次使用请在邮箱中点击确认激活）", Toast.LENGTH_LONG).show()
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "发送失败：请检查网络或安装邮箱客户端后重试", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
         }
     }
@@ -402,7 +441,7 @@ fun FeedbackDialog(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // 反馈直达提示（不显示 QQ，直接邮件联系开发者）
+                // 反馈直达提示（真实送达开发者邮箱）
                 Surface(
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
                     shape = RoundedCornerShape(8.dp),
@@ -418,7 +457,7 @@ fun FeedbackDialog(
                         Icon(Icons.Filled.Send, contentDescription = null, tint = FlameRed, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "点击「直接发送」将通过邮件直达开发者，感谢您的宝贵建议！",
+                            text = "点击「直接发送」将真实送达开发者邮箱（307779523@qq.com），感谢您的宝贵建议！",
                             fontSize = 11.5.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

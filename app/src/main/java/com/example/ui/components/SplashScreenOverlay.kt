@@ -81,15 +81,19 @@ import kotlinx.coroutines.launch
  * 2. 多重呼吸脉冲光环 (Breathing Halo)
  * 3. 动态光泽流光标题 "懒得找了" 与副标题渐进呈现
  * 4. 右上角倒计时跳过组件与平滑退出转场
+ *
+ * 时长修复：开屏倒计时严格使用云端控制台设定的 durationSeconds。
+ * splashReady=true（云端配置加载完成）后才开始计时，避免云端未加载完就按默认 2 秒提前进入。
  */
 @Composable
 fun SplashScreenOverlay(
     isVisible: Boolean,
     onDismiss: () -> Unit,
-    splash: SplashDto? = null
+    splash: SplashDto? = null,
+    splashReady: Boolean = false
 ) {
     var countdownSeconds by remember(splash?.durationSeconds) {
-        mutableIntStateOf(splash?.durationSeconds?.coerceIn(1, 15) ?: 2)
+        mutableIntStateOf(splash?.durationSeconds?.coerceIn(1, 15) ?: 3)
     }
 
     val entryScale = remember { Animatable(0.7f) }
@@ -137,7 +141,7 @@ fun SplashScreenOverlay(
         label = "shimmerOffset"
     )
 
-    LaunchedEffect(isVisible) {
+    LaunchedEffect(isVisible, splashReady, countdownSeconds) {
         if (isVisible) {
             launch {
                 entryScale.animateTo(1f, tween(600, easing = FastOutSlowInEasing))
@@ -145,10 +149,18 @@ fun SplashScreenOverlay(
             launch {
                 entryAlpha.animateTo(1f, tween(450))
             }
-            // 倒计时
-            while (countdownSeconds > 0) {
+            // 等待云端开屏配置就绪（最多等 3.5 秒，避免网络异常时一直卡在开屏）
+            // 修复：之前云端未加载完就开始按默认时长倒计时，导致用户设定的时长不生效
+            var waited = 0
+            while (!splashReady && waited < 3500) {
+                delay(100)
+                waited += 100
+            }
+            // 严格按云端设定时长倒计时（html/media 模式同样生效）
+            var remaining = countdownSeconds
+            while (remaining > 0) {
                 delay(1000)
-                countdownSeconds--
+                remaining--
             }
             delay(150)
             onDismiss()

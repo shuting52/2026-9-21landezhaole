@@ -9,7 +9,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [UserItemRecord::class, UploadedResourceEntity::class, CloneAppEntity::class],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -26,6 +26,17 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // v4 -> v5：增加 prompt / previewUrl / iconUrl / mediaUrl / mode 列（提示词区与图标）
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE uploaded_resources ADD COLUMN prompt TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE uploaded_resources ADD COLUMN previewUrl TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE uploaded_resources ADD COLUMN iconUrl TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE uploaded_resources ADD COLUMN mediaUrl TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE uploaded_resources ADD COLUMN mode TEXT NOT NULL DEFAULT 'file'")
+            }
+        }
+
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
@@ -36,7 +47,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "lazy_nav_database"
                 )
-                    .addMigrations(MIGRATION_3_4)
+                    .addMigrations(MIGRATION_3_4, MIGRATION_4_5)
                     .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance

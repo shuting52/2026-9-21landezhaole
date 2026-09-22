@@ -20,12 +20,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.shape.CircleShape
@@ -34,6 +37,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DataObject
@@ -84,10 +88,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.example.ui.screens.toolbox.AgeCalculatorSection
-import com.example.ui.screens.toolbox.AppCloneSection
 import com.example.ui.screens.toolbox.ConstellationSection
 import com.example.ui.screens.toolbox.MouthpieceSection
 import com.example.ui.screens.toolbox.OfflineTreasureSection
@@ -169,55 +175,47 @@ enum class ToolboxTab(
         icon = Icons.Filled.TextFormat,
         desc = "中文字数、英文单词、数字字符、无空格纯字数与行数统计"
     ),
-    APP_CLONE(
-        title = "应用分身多开",
-        shortLabel = "分身多开",
-        icon = Icons.Filled.Apps,
-        desc = "独立会话网页应用多开容器 · 支持同时开启多个分身互不干扰"
-    )
 }
 
 @Composable
 fun ToolboxScreen(
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-    var selectedTab by remember { mutableStateOf(ToolboxTab.MOUTHPIECE) }
+    // 弹窗交互：主界面为工具分类网格，点击任意工具弹出独立交互框
+    var activeTool by remember { mutableStateOf<ToolboxTab?>(null) }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-    ) {
-        // 顶部功能导航区：清晰展示子功能选择器，点击直达专属界面
-        Surface(
-            color = Color.White.copy(alpha = 0.50f),
-            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.65f)),
-            shape = RoundedCornerShape(bottomStart = 18.dp, bottomEnd = 18.dp),
-            modifier = Modifier.fillMaxWidth()
+    Box(modifier = modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp, vertical = 10.dp)
         ) {
-            Column(
-                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
+            // 顶部标题区
+            Surface(
+                color = Color.White.copy(alpha = 0.50f),
+                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.65f)),
+                shape = RoundedCornerShape(14.dp),
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column {
                         Text(
-                            text = "极客百宝箱 · 实用工具专区",
+                            text = "懒得找了小工具",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Black,
                             color = MaterialTheme.colorScheme.onBackground
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "单功能专属界面 · 本地纯离线运算 · 零网络请求",
+                            text = "点击工具卡片 · 弹窗即开即用 · 本地纯离线运算",
                             fontSize = 11.5.sp,
                             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                         )
                     }
-
                     Surface(
                         shape = RoundedCornerShape(10.dp),
                         color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f)
@@ -231,126 +229,60 @@ fun ToolboxScreen(
                         )
                     }
                 }
+            }
 
-                Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-                // 常用特色工具快速直达 (最强嘴替 / 年龄推算)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    val isMouthpieceSelected = selectedTab == ToolboxTab.MOUTHPIECE
-                    val isAgeSelected = selectedTab == ToolboxTab.AGE_CALC
-
+            // 工具分类网格（2列），点击弹出对应工具交互框
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxSize()
+            ) {
+                gridItems(ToolboxTab.entries) { tab ->
                     Surface(
-                        onClick = { selectedTab = ToolboxTab.MOUTHPIECE },
+                        onClick = { activeTool = tab },
                         shape = RoundedCornerShape(12.dp),
-                        color = if (isMouthpieceSelected) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.65f),
+                        color = Color.White.copy(alpha = 0.6f),
                         border = BorderStroke(
                             1.dp,
-                            if (isMouthpieceSelected) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.8f)
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
                         ),
-                        modifier = Modifier
-                            .weight(1f)
-                            .testTag("tab_mouthpiece_flagship")
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier.padding(vertical = 9.dp, horizontal = 8.dp)
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 12.dp)
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.Chat,
+                                imageVector = tab.icon,
                                 contentDescription = null,
-                                tint = if (isMouthpieceSelected) Color.White else MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(18.dp)
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
                             )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "最强嘴替",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp,
-                                color = if (isMouthpieceSelected) Color.White else MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-
-                    Surface(
-                        onClick = { selectedTab = ToolboxTab.AGE_CALC },
-                        shape = RoundedCornerShape(12.dp),
-                        color = if (isAgeSelected) Color(0xFFFF5722) else Color.White.copy(alpha = 0.65f),
-                        border = BorderStroke(
-                            1.dp,
-                            if (isAgeSelected) Color(0xFFFF5722) else Color.White.copy(alpha = 0.8f)
-                        ),
-                        modifier = Modifier
-                            .weight(1f)
-                            .testTag("tab_age_calc_flagship")
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier.padding(vertical = 9.dp, horizontal = 8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.DateRange,
-                                contentDescription = null,
-                                tint = if (isAgeSelected) Color.White else Color(0xFFFF5722),
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "年龄推算",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp,
-                                color = if (isAgeSelected) Color.White else MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // 10 项工具独立网格呈现（2列×5行，全部可见，无需滑动）
-                androidx.compose.foundation.lazy.grid.LazyVerticalGrid(
-                    columns = androidx.compose.foundation.lazy.grid.GridCells.Fixed(2),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(62.dp * ((ToolboxTab.entries.size + 1) / 2))
-                ) {
-                    gridItems(ToolboxTab.entries) { tab ->
-                        val isSelected = selectedTab == tab
-                        Surface(
-                            onClick = { selectedTab = tab },
-                            shape = RoundedCornerShape(12.dp),
-                            color = if (isSelected) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.6f),
-                            border = BorderStroke(
-                                1.dp,
-                                if (isSelected) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.8f)
-                            ),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 9.dp)
-                            ) {
-                                Icon(
-                                    imageVector = tab.icon,
-                                    contentDescription = null,
-                                    tint = if (isSelected) Color.White else MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(17.dp)
-                                )
-                                Spacer(modifier = Modifier.width(7.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = tab.shortLabel,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                    fontSize = 12.5.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 13.sp,
                                     maxLines = 1,
-                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                                    color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
+                                    overflow = TextOverflow.Ellipsis,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
+                                if (tab.desc.isNotBlank()) {
+                                    Spacer(modifier = Modifier.height(1.dp))
+                                    Text(
+                                        text = tab.desc,
+                                        fontSize = 9.5.sp,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
                         }
                     }
@@ -358,57 +290,81 @@ fun ToolboxScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // 各功能专属界面内容区 (带平滑淡入切换效果)
-        AnimatedContent(
-            targetState = selectedTab,
-            transitionSpec = { fadeIn() togetherWith fadeOut() },
-            label = "ToolboxScreenAnimation",
-            modifier = Modifier.weight(1f)
-        ) { currentTab ->
-            when (currentTab) {
-                ToolboxTab.MOUTHPIECE -> {
-                    MouthpieceScreenView()
-                }
-                ToolboxTab.AGE_CALC -> {
-                    AgeCalculatorScreenView()
-                }
-                ToolboxTab.CONSTELLATION -> {
-                    ConstellationScreenView()
-                }
-                ToolboxTab.OFFLINE_TREASURE -> {
-                    OfflineTreasureScreenView()
-                }
-                ToolboxTab.BASE64 -> {
-                    Base64ScreenView(context = context)
-                }
-                ToolboxTab.HASH_MD5 -> {
-                    HashCalculatorScreenView(context = context)
-                }
-                ToolboxTab.URL_CODEC -> {
-                    UrlCodecScreenView(context = context)
-                }
-                ToolboxTab.TIMESTAMP -> {
-                    TimestampScreenView(context = context)
-                }
-                ToolboxTab.UUID_GEN -> {
-                    UuidGeneratorScreenView(context = context)
-                }
-                ToolboxTab.TEXT_STATS -> {
-                    TextStatsScreenView(context = context)
-                }
-                ToolboxTab.APP_CLONE -> {
-                    AppCloneSection()
+        // 弹窗形式展示每个工具（分类多功能交互框）
+        activeTool?.let { tool ->
+            Dialog(
+                onDismissRequest = { activeTool = null },
+                properties = DialogProperties(usePlatformDefaultWidth = false)
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth(0.96f)
+                        .fillMaxHeight(0.92f)
+                        .clip(RoundedCornerShape(20.dp)),
+                    color = MaterialTheme.colorScheme.background,
+                    tonalElevation = 6.dp
+                ) {
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        // 弹窗头部：工具名 + 关闭
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = tool.icon,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(22.dp)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = tool.title,
+                                    fontWeight = FontWeight.Black,
+                                    fontSize = 16.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = tool.desc,
+                                    fontSize = 10.5.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            IconButton(onClick = { activeTool = null }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Close,
+                                    contentDescription = "关闭",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                        androidx.compose.material3.HorizontalDivider(
+                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
+                        )
+                        // 工具内容
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            when (tool) {
+                                ToolboxTab.MOUTHPIECE -> MouthpieceScreenView()
+                                ToolboxTab.AGE_CALC -> AgeCalculatorScreenView()
+                                ToolboxTab.CONSTELLATION -> ConstellationScreenView()
+                                ToolboxTab.OFFLINE_TREASURE -> OfflineTreasureScreenView()
+                                ToolboxTab.BASE64 -> Base64ScreenView(context = LocalContext.current)
+                                ToolboxTab.HASH_MD5 -> HashCalculatorScreenView(context = LocalContext.current)
+                                ToolboxTab.URL_CODEC -> UrlCodecScreenView(context = LocalContext.current)
+                                ToolboxTab.TIMESTAMP -> TimestampScreenView(context = LocalContext.current)
+                                ToolboxTab.UUID_GEN -> UuidGeneratorScreenView(context = LocalContext.current)
+                                ToolboxTab.TEXT_STATS -> TextStatsScreenView(context = LocalContext.current)
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 }
 
-// ==========================================
-// 1. 最强嘴替 专属界面 (MouthpieceScreenView)
-// ==========================================
 @Composable
 private fun MouthpieceScreenView() {
     LazyColumn(

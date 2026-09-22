@@ -35,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -127,8 +128,8 @@ private fun ResourceFileCard(
     onDelete: () -> Unit
 ) {
     val context = LocalContext.current
-    val url = res.url
-    val isFile = url.contains("/dist/uploads/") || url.contains("/dist/apk/")
+    val url = res.url.ifBlank { res.fileUrl }
+    val isFile = url.contains("/dist/uploads/") || url.contains("/dist/apk/") || res.mode != "url"
     val isApk = url.endsWith(".apk", ignoreCase = true)
     val isZip = url.endsWith(".zip", ignoreCase = true)
     val isMd = url.endsWith(".md", ignoreCase = true)
@@ -146,28 +147,54 @@ private fun ResourceFileCard(
         else -> MaterialTheme.colorScheme.primary
     }
 
+    // 点击卡片：文件直接下载 / URL 直接跳转（不再单独放按钮）
+    val onCardClick = {
+        if (url.isNotBlank()) {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+            } catch (e: Exception) {
+                Toast.makeText(context, "无法打开：$url", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Toast.makeText(context, "该资源暂未配置下载链接", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     Card(
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onCardClick() }
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // 文件类型徽标
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(badgeColor.copy(alpha = 0.15f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = badgeText,
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Black,
-                        color = badgeColor
+                // 文件类型徽标 / 软件图标
+                if (res.iconUrl.isNotBlank()) {
+                    AsyncImageCompat(
+                        url = res.iconUrl,
+                        fallbackText = badgeText,
+                        fallbackColor = badgeColor,
+                        modifier = Modifier.size(40.dp)
                     )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(badgeColor.copy(alpha = 0.15f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = badgeText,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Black,
+                            color = badgeColor
+                        )
+                    }
                 }
                 Spacer(modifier = Modifier.width(10.dp))
                 Column(modifier = Modifier.weight(1f)) {
@@ -200,7 +227,7 @@ private fun ResourceFileCard(
                 }
             }
 
-            // 作者 / 标签行 + 操作按钮
+            // 作者 / 标签行 + 下载/跳转提示
             Spacer(modifier = Modifier.height(8.dp))
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -231,72 +258,60 @@ private fun ResourceFileCard(
                     )
                 }
                 Spacer(modifier = Modifier.weight(1f))
-                if (isFile) {
-                    // 下载文件
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFF22C55E).copy(alpha = 0.12f))
-                            .clickable {
-                                try {
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    context.startActivity(intent)
-                                } catch (e: Exception) {
-                                    Toast.makeText(context, "无法打开下载链接", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                            .padding(horizontal = 10.dp, vertical = 6.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Download,
-                            contentDescription = null,
-                            tint = Color(0xFF22C55E),
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "下载文件",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF22C55E)
-                        )
-                    }
-                } else {
-                    // 打开链接
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
-                            .clickable {
-                                try {
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    context.startActivity(intent)
-                                } catch (e: Exception) {
-                                    Toast.makeText(context, "无法打开链接", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                            .padding(horizontal = 10.dp, vertical = 6.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.OpenInNew,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = "打开",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
+                // 直接点击卡片即可下载/跳转的提示
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(if (isFile) Color(0xFF22C55E).copy(alpha = 0.12f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isFile) Icons.Filled.Download else Icons.Filled.OpenInNew,
+                        contentDescription = null,
+                        tint = if (isFile) Color(0xFF22C55E) else MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = if (isFile) "点击卡片直接下载" else "点击卡片直接打开",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isFile) Color(0xFF22C55E) else MaterialTheme.colorScheme.primary
+                    )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun AsyncImageCompat(
+    url: String,
+    fallbackText: String,
+    fallbackColor: Color,
+    modifier: Modifier
+) {
+    // 底层放类型徽标回退，上层放云端图标（加载成功覆盖，失败不绘制则回退可见）
+    Box(modifier = modifier.clip(RoundedCornerShape(10.dp)), contentAlignment = Alignment.Center) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(fallbackColor.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = fallbackText,
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Black,
+                color = fallbackColor
+            )
+        }
+        coil.compose.AsyncImage(
+            model = url,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
     }
 }

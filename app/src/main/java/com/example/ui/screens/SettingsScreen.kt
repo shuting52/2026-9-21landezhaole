@@ -213,22 +213,42 @@ fun SettingsScreen(
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
 
-                // 官方交流群 (已恢复)
+                // 官方交流群 (链接/群号由云端控制台配置)
                 SettingsClickableItem(
                     title = "官方交流群",
                     icon = Icons.Filled.Group,
                     iconColor = Color(0xFF1976D2),
-                    onClick = { openQqGroup(context) }
+                    onClick = {
+                        openQqGroup(
+                            context,
+                            groupUrl = cloudSettings?.qqGroupUrl?.ifBlank { OFFICIAL_QQ_GROUP_URL } ?: OFFICIAL_QQ_GROUP_URL,
+                            groupUin = cloudSettings?.qqGroupUin?.ifBlank { "439211347" } ?: "439211347"
+                        )
+                    }
                 )
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
 
-                // 官方网站 (待定中)
+                // 官方网站 (链接由云端控制台配置)
                 SettingsClickableItem(
                     title = "官方网站",
                     icon = Icons.Filled.Language,
                     iconColor = Color(0xFF00897B),
-                    onClick = { activeDialogType = "official_website" }
+                    onClick = {
+                        val site = cloudSettings?.officialWebsite?.trim()
+                        if (!site.isNullOrBlank()) {
+                            try {
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(site)).apply {
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                context.startActivity(intent)
+                            } catch (e: Exception) {
+                                Toast.makeText(context, "无法打开链接: $site", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            activeDialogType = "official_website"
+                        }
+                    }
                 )
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
@@ -436,7 +456,10 @@ fun SettingsScreen(
             )
         }
         "official_website" -> {
-            OfficialWebsiteDialog(onDismiss = { activeDialogType = null })
+            OfficialWebsiteDialog(
+                onDismiss = { activeDialogType = null },
+                websiteUrl = cloudSettings?.officialWebsite ?: ""
+            )
         }
         "rating" -> {
             AppRatingDialog(onDismiss = { activeDialogType = null })
@@ -841,7 +864,7 @@ private fun ContactAuthorDialog(
 
                                 OutlinedButton(
                                     onClick = {
-                                        copyText(context, "官方交流QQ群", "439211347")
+                                        copyText(context, "官方交流QQ群", cloudSettings?.qqGroupUin?.ifBlank { "439211347" } ?: "439211347")
                                     },
                                     shape = RoundedCornerShape(20.dp)
                                 ) {
@@ -894,7 +917,7 @@ private fun ContactAuthorDialog(
 
                                 OutlinedButton(
                                     onClick = {
-                                        copyText(context, "官方交流QQ群", "439211347")
+                                        copyText(context, "官方交流QQ群", cloudSettings?.qqGroupUin?.ifBlank { "439211347" } ?: "439211347")
                                     },
                                     shape = RoundedCornerShape(20.dp)
                                 ) {
@@ -947,7 +970,7 @@ private fun ContactAuthorDialog(
 
                                 OutlinedButton(
                                     onClick = {
-                                        copyText(context, "官方交流QQ群", "439211347")
+                                        copyText(context, "官方交流QQ群", cloudSettings?.qqGroupUin?.ifBlank { "439211347" } ?: "439211347")
                                     },
                                     shape = RoundedCornerShape(20.dp)
                                 ) {
@@ -988,6 +1011,7 @@ private fun ContactAuthorDialog(
 
 /**
  * 联系二维码：优先展示控制台实时同步的云端二维码，加载失败或未配置时回退到内置图片。
+ * 实现：底层放内置回退图，上层放云端图（加载成功则覆盖，失败不绘制则回退图可见）。
  */
 @Composable
 private fun ContactQrImage(
@@ -995,34 +1019,26 @@ private fun ContactQrImage(
     fallbackRes: Int,
     contentDescription: String
 ) {
-    if (url.isNotBlank()) {
-        coil.compose.AsyncImage(
-            model = url,
-            contentDescription = contentDescription,
-            contentScale = ContentScale.Fit,
-            onError = {
-                // 云端图片加载失败时回退到内置二维码
-                Image(
-                    painter = painterResource(id = fallbackRes),
-                    contentDescription = contentDescription,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(RoundedCornerShape(12.dp)),
-                    contentScale = ContentScale.Fit
-                )
-            },
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(RoundedCornerShape(12.dp))
-        )
-    } else {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .clip(RoundedCornerShape(12.dp))
+    ) {
+        // 底层：内置回退二维码
         Image(
             painter = painterResource(id = fallbackRes),
             contentDescription = contentDescription,
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(RoundedCornerShape(12.dp)),
+            modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Fit
         )
+        // 上层：云端二维码（成功加载则覆盖内置图）
+        if (url.isNotBlank()) {
+            coil.compose.AsyncImage(
+                model = url,
+                contentDescription = contentDescription,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
     }
 }
