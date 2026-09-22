@@ -23,6 +23,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        // 安全加固：异步读取云端签名校验配置，开启时验证自身签名（防止二次打包篡改）
+        SecurityGuard.verifyInBackground(applicationContext)
+
         val database = AppDatabase.getDatabase(applicationContext)
         val repository = NavRepository(database.itemRecordDao(), database.uploadedResourceDao(), database.cloneAppDao())
         val remoteConfigRepository = RemoteConfigRepository(applicationContext)

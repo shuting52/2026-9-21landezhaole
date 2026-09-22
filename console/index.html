@@ -277,7 +277,7 @@ const CONFIG_PATH   = "admin-data.json";
 // 控制台程序当前内置版本（每次发布新控制台 APK 时递增；与本体软件版本完全分离）
 // 注意：必须与仓库 admin-data.json 的 console.code 一致——
 // 已安装最新版本时 code <= CONSOLE_LOCAL_VERSION，不再重复弹出更新提示。
-const CONSOLE_LOCAL_VERSION = 3;
+const CONSOLE_LOCAL_VERSION = 4;
 
 const S = {
   token: DEFAULT_TOKEN,
@@ -513,6 +513,11 @@ async function publish(bump = false, actionDesc = ""){
     const d = await ghPut(CONFIG_PATH, JSON.stringify(S.admin, null, 2), msg, S.sha);
     S.sha = d.content.sha;
     S.dirty = false;
+    // ⚡ 实时同步优化：主动刷新 jsDelivr CDN 缓存，本体端 5 秒轮询即可拿到最新内容（不再等 raw CDN 缓存过期）
+    try{
+      const purge = await fetch("https://purge.jsdelivr.net/gh/" + S.owner + "/" + S.repo + "@main/" + CONFIG_PATH, { method: "GET" });
+      console.log("jsDelivr purge:", purge.status);
+    }catch(e){ console.warn("jsDelivr purge 失败:", e); }
     if(bump){
       toast(`🚀 新版本发布成功 (v${S.admin.version.name})！本体软件已触发更新弹窗`,"ok");
     }else{
@@ -1124,7 +1129,7 @@ function promptCardHtml(s, si){
       ${s.previewUrl ? `<span class="chip" style="background:#1e1b4b;color:#a5b4fc">✅ 已上传预览图</span>` : `<span class="chip" style="background:#3a1518;color:#f87171">❌ 无预览图</span>`}
       ${s.mediaUrl ? `<span class="chip" style="background:#1e1b4b;color:#a5b4fc">🎬 含演示视频</span>` : ""}
     </div>
-    ${s.mediaUrl ? `<video class="preview-video" src="${esc(s.mediaUrl)}" controls preload="metadata" onerror="this.style.display='none'"></video>` : (s.previewUrl ? `<img class="preview-img" src="${esc(s.previewUrl)}" onerror="this.style.display='none'">` : "")}
+    ${s.mediaUrl ? `<video class="preview-video" src="${esc(s.mediaUrl)}" controls preload="auto" playsinline onerror="this.outerHTML='<div class=preview-img style=text-align:center>视频加载失败，请点击下方「下载/编辑」或尝试刷新后再试</div>'"></video>` : (s.previewUrl ? `<img class="preview-img" src="${esc(s.previewUrl)}" onerror="this.style.display='none'">` : "")}
   </div>`;
 }
 
@@ -1340,7 +1345,7 @@ function renderSettings(){
       <input style="width:70px" type="number" min="0" max="23" value="${seg.start}" onchange="mqSeg(${i},'start',this.value)" title="开始小时">
       <span>~</span>
       <input style="width:70px" type="number" min="0" max="23" value="${seg.end}" onchange="mqSeg(${i},'end',this.value)" title="结束小时">
-      <input class="grow" value="${esc(seg.text)}" oninput="mqSeg(${i},'text',this.value)" placeholder="该时间段的公告文字">
+      <div class="grow" style="background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:12px;color:var(--tx2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" onclick="mqSegEdit(${i})" title="点击编辑文字">${esc(seg.text)||"点击编辑该时间段公告文字"} ✏️</div>
       <button class="btn-mini err" onclick="mqSegDel(${i})">✕</button>
     </div>`
   ).join("");
@@ -1405,6 +1410,28 @@ function renderSettings(){
       <div><label>软件反馈接收邮箱（用户反馈真实送达）</label><input id="fSetEmail" value="${esc(s.feedbackEmail||"")}" placeholder="如 you@qq.com"></div>
     </div>
     <div class="divider"></div>
+    <h3>🏷️ 软件品牌更改（名称 / 图标 / 包名）</h3>
+    <div class="two-col">
+      <div><label>软件名称（本体首页/开屏显示）</label><input id="fBrandName" value="${esc(s.appName||"懒得找了")}" placeholder="懒得找了"></div>
+      <div><label>软件包名（标识，改包名需重新签名发布 APK）</label><input id="fBrandPkg" value="${esc(s.packageName||"com.landezhaole")}" placeholder="com.landezhaole"></div>
+    </div>
+    <label>软件图标（本地上传，本体首页品牌图与桌面图标同步替换）</label>
+    <div class="upload-box" onclick="document.getElementById('fBrandLogoFile').click()">🖼️ 点击上传软件图标（PNG/JPG）</div>
+    <input type="file" id="fBrandLogoFile" accept="image/*" style="display:none" onchange="uploadBrandLogo(event)">
+    <label>或填写图标直链 URL</label><input id="fBrandLogo" value="${esc(s.logoUrl||"")}" placeholder="https://.../icon.png">
+    <div id="brandLogoPreview">${s.logoUrl ? `<img class="preview-img" src="${esc(s.logoUrl)}" onerror="this.style.display='none'">` : ""}</div>
+    <div class="hint">说明：名称/图标更改后点击「应用」即实时同步到本体；包名更改需在本地重新构建并签名 APK 后上传新版本。</div>
+    <div class="divider"></div>
+    <h3>🔒 安全加密加固（防止破解二改）</h3>
+    <label>加固开关</label>
+    <select id="fSecEnabled">
+      <option value="false" ${(s.security||{}).enabled?"":"selected"}>未加固（默认）</option>
+      <option value="true" ${(s.security||{}).enabled?"selected":""}>✅ 已开启签名自校验加固</option>
+    </select>
+    <label>内置签名指纹 SHA-256（本体运行时校验自身签名，防止二次打包篡改）</label>
+    <input id="fSecSha" class="mono" value="${esc((s.security||{}).expectedSha||"")}" placeholder="填入正式签名证书 SHA-256（apksigner 可查）">
+    <div class="hint">开启后：若 APK 被他人二次打包/篡改签名，本体启动时检测到签名不一致将提示风险并拒绝运行，有效防止破解二改。</div>
+    <div class="divider"></div>
     <div class="row">
       <button class="btn-pri grow" onclick="saveSettings()">💾 保存设置</button>
       <button class="btn-ok" onclick="applyToDevice()">✅ 应用并实时同步</button>
@@ -1420,6 +1447,26 @@ function mqSeg(i, key, val){
   if(key === "start") S.admin.marquee.segments[i].start = parseInt(val)||0;
   if(key === "end") S.admin.marquee.segments[i].end = parseInt(val)||23;
   if(key === "text") S.admin.marquee.segments[i].text = val;
+}
+
+// 点击该时间段公告文字 → 独立弹出编辑框修改
+function mqSegEdit(i){
+  const seg = S.admin.marquee.segments[i];
+  openDlg(`<div class="dlg-title">✏️ 编辑 ${seg.start}点 ~ ${seg.end}点 公告文字</div>
+  <label>开始小时</label><input id="mqEStart" type="number" min="0" max="23" value="${seg.start}">
+  <label>结束小时</label><input id="mqEEnd" type="number" min="0" max="23" value="${seg.end}">
+  <label>公告文字（可换行，支持多句）</label>
+  <textarea id="mqEText" style="min-height:90px" placeholder="输入该时间段的公告内容…">${esc(seg.text)}</textarea>
+  <div class="dlg-actions"><button onclick="closeDlg()">取消</button><button class="btn-pri" onclick="mqSegSave(${i})">? 保存</button></div>`);
+}
+function mqSegSave(i){
+  const seg = S.admin.marquee.segments[i];
+  seg.start = parseInt($("mqEStart").value)||0;
+  seg.end = parseInt($("mqEEnd").value)||23;
+  seg.text = $("mqEText").value.trim();
+  closeDlg(); renderSettings();
+  toast("时间段公告已修改，点「应用并实时同步」推送到本体","ok");
+  logChange("修改公告时间段文案");
 }
 function mqSegAdd(){
   S.admin.marquee = S.admin.marquee || { enabled: true, icon: "📢", defaultText: "", segments: [] };
@@ -1453,7 +1500,15 @@ function saveSettings(){
     officialWebsite: $("fSetWebsite").value.trim(),
     feedbackEmail: $("fSetEmail").value.trim(),
     customThemeCss: $("fSetThemeCss").value,
-    customThemeHtml: $("fSetThemeHtml").value
+    customThemeHtml: $("fSetThemeHtml").value,
+    // 品牌更改：名称/图标/包名
+    logoUrl: $("fBrandLogo").value.trim(),
+    packageName: $("fBrandPkg").value.trim() || "com.landezhaole",
+    // 安全加固
+    security: {
+      enabled: $("fSecEnabled").value === "true",
+      expectedSha: $("fSecSha").value.trim()
+    }
   };
   // 跑马灯公告
   S.admin.marquee = {
@@ -1462,13 +1517,24 @@ function saveSettings(){
     defaultText: $("fMqDefault").value.trim(),
     segments: S.admin.marquee.segments || []
   };
-  // IP 定位监控
+  // IP 定位监控（默认可靠中文源 ip-api.com http 中文；如需 https 可填其他源）
   S.admin.ipMonitor = {
     enabled: $("fIpEnabled").value === "true",
     url: $("fIpUrl").value.trim()
   };
   toast("设置已保存，点击「应用并实时同步」推送到本体","ok");
-  logChange("更新设置版块（品牌/联系/公告/主题/IP定位）");
+  logChange("更新设置版块（品牌/联系/公告/主题/IP定位/加固）");
+}
+
+// 上传软件品牌图标
+async function uploadBrandLogo(ev){
+  const f = ev.target.files[0]; if(!f) return;
+  try{
+    const url = await uploadFile(f, "dist/uploads");
+    $("fBrandLogo").value = url;
+    $("brandLogoPreview").innerHTML = `<img class="preview-img" src="${esc(url)}">`;
+    toast("品牌图标已上传，点「应用并实时同步」推送本体","ok");
+  }catch(e){ toast("上传失败："+e.message,"err"); }
 }
 
 // ==========================================

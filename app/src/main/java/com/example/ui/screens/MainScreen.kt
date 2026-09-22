@@ -222,7 +222,9 @@ fun MainScreen(
                                 onOpenAddSite = { showAddSiteDialog = true },
                                 onTriggerSplash = { viewModel.showSplash() },
                                 cloudMarquee = uiState.cloudMarquee,
-                                cloudIpMonitor = uiState.cloudIpMonitor
+                                cloudIpMonitor = uiState.cloudIpMonitor,
+                                cloudAppName = uiState.cloudSettings?.appName?.ifBlank { "懒得找了" } ?: "懒得找了",
+                                cloudLogo = uiState.cloudSettings?.logoUrl.orEmpty()
                             )
                         }
 
@@ -646,7 +648,9 @@ private fun HeaderBrandSection(
     onOpenAddSite: () -> Unit,
     onTriggerSplash: () -> Unit,
     cloudMarquee: com.example.data.remote.MarqueeDto? = null,
-    cloudIpMonitor: com.example.data.remote.IpMonitorDto? = null
+    cloudIpMonitor: com.example.data.remote.IpMonitorDto? = null,
+    cloudAppName: String = "懒得找了",
+    cloudLogo: String = ""
 ) {
     val primaryColor = MaterialTheme.colorScheme.primary
     val secondaryColor = MaterialTheme.colorScheme.secondary
@@ -676,21 +680,33 @@ private fun HeaderBrandSection(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Official Brand Logo
-                Image(
-                    painter = painterResource(id = R.drawable.ic_app_brand_logo),
-                    contentDescription = "软件图标",
-                    modifier = Modifier
-                        .size(42.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f), RoundedCornerShape(10.dp)),
-                    contentScale = ContentScale.Crop
-                )
+                // Official Brand Logo（云端可更换软件图标）
+                if (cloudLogo.isNotBlank()) {
+                    coil.compose.AsyncImage(
+                        model = cloudLogo,
+                        contentDescription = "软件图标",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(42.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f), RoundedCornerShape(10.dp))
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_app_brand_logo),
+                        contentDescription = "软件图标",
+                        modifier = Modifier
+                            .size(42.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f), RoundedCornerShape(10.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                }
 
                 Spacer(modifier = Modifier.width(10.dp))
 
                 Column {
-                    AnimatedBrandTitle()
+                    AnimatedBrandTitle(text = cloudAppName)
                     Spacer(modifier = Modifier.height(2.dp))
                     DynamicOnlineCountWidget(
                         totalResourceCount = totalResourceCount,

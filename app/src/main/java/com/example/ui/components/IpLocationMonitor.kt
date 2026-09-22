@@ -64,7 +64,7 @@ fun IpLocationMonitorWidget(
     LaunchedEffect(enabled, url) {
         if (!enabled || url.isBlank()) return@LaunchedEffect
         while (true) {
-            val result = withContext(Dispatchers.IO) { fetchIpInfo(url) }
+            val result = withContext(Dispatchers.IO) { fetchIpInfoRobust() }
             if (result != null) {
                 ipText = result
                 failed = false
@@ -139,8 +139,32 @@ fun IpLocationMonitorWidget(
 }
 
 /**
- * 请求 IP 定位数据源，解析为「IP · 所在地区」中文精准字符串。
- * 优先适配 ip-api.com 中文（?lang=zh-CN），兼容 ipinfo.io / ip.useragentinfo.com 等常见格式。
+ * 多源中文 IP 定位（修复单个数据源失败/403 问题）：
+ * 依次尝试多个免费 HTTPS 中文源，全部失败返回 null。
+ * 数据源一：ip-api.com（http 中文，Android 明文默认关闭 → 用 https 需付费）
+ * 数据源二：ip.useragentinfo.com（https 中文）
+ * 数据源三：qifu-api.baidubce.com（https 中文）
+ * 解析出「IP · 省份 城市」中文精准地址。
+ */
+private fun fetchIpInfoRobust(): String? {
+    val sources = listOf(
+        "https://ip.useragentinfo.com/json",
+        "https://qifu-api.baidubce.com/ip/local/geo/v1/district",
+        "http://ip-api.com/json/?lang=zh-CN"
+    )
+    for (src in sources) {
+        try {
+            val result = fetchIpInfo(src)
+            if (result != null) return result
+        } catch (e: Exception) {
+            // 继续下一个源
+        }
+    }
+    return null
+}
+
+/**
+ * 请求单个 IP 定位数据源，解析为「IP · 所在地区」中文精准字符串。
  */
 private fun fetchIpInfo(url: String): String? {
     return try {
@@ -150,21 +174,22 @@ private fun fetchIpInfo(url: String): String? {
             .build()
         val request = Request.Builder()
             .url(url)
-            .header("User-Agent", "Mozilla/5.0 (Linux; Android) Lzdz/1.6.4")
+            .header("User-Agent", "Mozilla/5.0 (Linux; Android) Lzdz/1.6.5")
+            .header("Referer", "https://www.baidu.com/")
             .build()
         client.newCall(request).execute().use { resp ->
             if (!resp.isSuccessful) return null
             val body = resp.body?.string() ?: return null
             val obj = JSONObject(body)
-            // ip-api.com 中文格式（?lang=zh-CN）：query / city / regionName / country / isp
+            // ip-api.com 中文（?lang=zh-CN）：query / city / regionName / country
             val ip = obj.optString("query").ifBlank { obj.optString("ip") }
-            val city = obj.optString("city")
-            val region = obj.optString("regionName")
-            val province = obj.optString("province") // ip.useragentinfo.com 中文
-            val country = obj.optString("country")
-            // 优先用中文地区信息，去重
-            val loc = listOf(city, region, province, country)
-                .filter { it.isNotBlank() && it != "N/A" && it != "--" }
+            val city = obj.optString("city").ifBlank { obj.optString("city_name") }
+            val region = obj.optString("regionName").ifBlank { obj.optString("province") }
+            val country = obj.optString("country").ifBlank { obj.optString("country_name") }
+            // ip.useragentinfo.com 格式：province/city/country/district
+            val district = obj.optString("district")
+            val loc = listOf(country, region, city, district)
+                .filter { it.isNotBlank() && it != "N/A" && it != "--" && it != "0" }
                 .distinct()
                 .joinToString(" ")
             when {

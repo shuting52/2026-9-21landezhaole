@@ -31,6 +31,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -102,7 +106,7 @@ fun UploadHubScreen(
                             )
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(
-                                text = "暂无资源，等待云端控制台同步…",
+                                text = "还未获取到任何资源哟 请联系作者",
                                 fontSize = 13.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -237,30 +241,63 @@ private fun ResourceFileCard(
             if (res.previewUrl.isNotBlank() || res.mediaUrl.isNotBlank()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 if (res.mediaUrl.isNotBlank()) {
-                    // 视频预览（静音循环自动播放，点击可全屏/暂停）
-                    AndroidView(
-                        factory = { ctx ->
-                            android.widget.VideoView(ctx).apply {
-                                setVideoURI(Uri.parse(res.mediaUrl))
-                                setOnPreparedListener { mp ->
-                                    mp.isLooping = true
-                                    mp.setVolume(0f, 0f)
-                                    mp.start()
+                    // 视频预览（静音循环自动播放，点击可全屏/暂停；失败回退预览图避免黑屏）
+                    var videoFailed by remember { mutableStateOf(false) }
+                    if (!videoFailed) {
+                        AndroidView(
+                            factory = { ctx ->
+                                android.widget.VideoView(ctx).apply {
+                                    setVideoURI(Uri.parse(res.mediaUrl))
+                                    setOnPreparedListener { mp ->
+                                        mp.isLooping = true
+                                        mp.setVolume(0f, 0f)
+                                        mp.start()
+                                    }
+                                    setOnErrorListener { mp, what, extra ->
+                                        videoFailed = true
+                                        true
+                                    }
+                                    setOnClickListener {
+                                        if (isPlaying) pause() else start()
+                                    }
+                                    layoutParams = android.view.ViewGroup.LayoutParams(
+                                        android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                                        android.view.ViewGroup.LayoutParams.MATCH_PARENT
+                                    )
                                 }
-                                setOnClickListener {
-                                    if (isPlaying) pause() else start()
-                                }
-                                layoutParams = android.view.ViewGroup.LayoutParams(
-                                    android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-                                    android.view.ViewGroup.LayoutParams.MATCH_PARENT
-                                )
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(160.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                    )
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(160.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                        )
+                    } else if (res.previewUrl.isNotBlank()) {
+                        coil.compose.AsyncImage(
+                            model = res.previewUrl,
+                            contentDescription = res.title,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(120.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                        )
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(70.dp)
+                                .background(Color(0xFF1E1E24))
+                                .clip(RoundedCornerShape(10.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "视频暂不支持内嵌预览，点击卡片直接下载查看",
+                                fontSize = 11.sp,
+                                color = Color.White.copy(alpha = 0.75f),
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            )
+                        }
+                    }
                 } else {
                     // 预览图可视化
                     coil.compose.AsyncImage(
