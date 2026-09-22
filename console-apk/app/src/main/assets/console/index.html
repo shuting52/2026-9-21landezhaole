@@ -483,8 +483,8 @@ async function publish(bump = false, actionDesc = ""){
       }else{
         S.admin.version.name = base + ".1";
       }
-      // 更新日志只使用有意义的变更记录（由各版块 saveXxx 产生），
-      // 禁止机器生成的「【控制台推送】…」垃圾日志
+      // 更新日志：以本体软件更新为核心主体，用「优化/修复/增加」直观形式呈现。
+      // 禁止版本号前缀（【v1.6.1】）与后台控制台操作字样。
       const changes = (S.changeLog && S.changeLog.length) ? S.changeLog.filter(isMeaningfulChangelog) : [];
       if(actionDesc && isMeaningfulChangelog(actionDesc)){
         changes.unshift(actionDesc);
@@ -498,6 +498,8 @@ async function publish(bump = false, actionDesc = ""){
         S.admin.updateDialog.changelog = [...changes, ...(S.admin.updateDialog.changelog||[]).filter(isMeaningfulChangelog)].slice(0, 10);
       }
       S.changeLog = [];
+      // 新版本发布后：APK 仓库只保留当前版本与最新版本两个安装包（清理更旧的）
+      cleanupOldApks();
     }
     const msg = bump 
       ? `console: [发布新版本 v${S.admin.version.name} code:${S.admin.version.code}] ${actionDesc || "更新"}`
@@ -520,12 +522,57 @@ async function publish(bump = false, actionDesc = ""){
   }
 }
 
-// 判定是否为有意义的更新日志（过滤机器生成的垃圾日志）
+// 判定是否为有意义的更新日志（过滤机器垃圾与后台操作字样，日志以本体软件更新为核心主体）
 function isMeaningfulChangelog(line){
   if(!line) return false;
-  const bad = ["【控制台推送】","管理后台全局版本发布","APK 制作入库","静默同步","更新设置版块"];
+  const bad = ["【控制台推送】","管理后台全局版本发布","APK 制作入库","静默同步","更新设置版块","控制台","后台"];
   for(const b of bad){ if(line.indexOf(b) >= 0) return false; }
+  // 禁止版本号前缀形式如 【v1.6.1】
+  if(/^【v\d/.test(line.trim())) return false;
   return true;
+}
+
+// ============ APK 仓库清理：只保留当前版本与最新版本两个 APK ============
+async function cleanupOldApks(){
+  try{
+    const items = await ghGet("dist/apk");
+    const apks = Array.isArray(items) ? items.filter(x => x.name.endsWith(".apk")) : [];
+    // 按文件时间排序（GitHub 返回顺序通常即上传时间），保留最新 2 个
+    const sorted = apks.sort((a, b) => (b.name < a.name ? 1 : -1));
+    const currentApkName = (S.admin.version.apkUrl || "").split("/").pop();
+    const keep = new Set();
+    // 当前版本 apk 必保留
+    if(currentApkName) keep.add(currentApkName);
+    // 最新 2 个保留（不足则按序补）
+    sorted.forEach(a => { if(keep.size < 2) keep.add(a.name); });
+    const toDelete = sorted.filter(a => !keep.has(a.name));
+    for(const a of toDelete){
+      try{
+        await ghDelete("dist/apk/" + a.name, a.sha);
+        console.log("已清理旧版本 APK:", a.name);
+      }catch(e){ console.warn("清理失败", a.name, e); }
+    }
+    if(toDelete.length){
+      toast("已自动清理旧版本 APK（仅保留当前与最新两个版本）：" + toDelete.map(x=>x.name).join(", "),"ok");
+      fetchRepoApks(true);
+    }
+  }catch(e){
+    console.warn("cleanupOldApks 失败:", e);
+  }
+}
+
+// GitHub 删除文件
+async function ghDelete(p, sha){
+  const r = await fetch(`${API}/repos/${S.owner}/${S.repo}/contents/${p}`, {
+    method: "DELETE",
+    headers: ghHeaders(true),
+    body: JSON.stringify({ message: "console: 清理旧版本 APK " + p.split("/").pop(), sha: sha })
+  });
+  if(!r.ok){
+    const t = await r.text();
+    throw new Error("删除失败 HTTP " + r.status + " " + t.slice(0,120));
+  }
+  return r.json();
 }
 
 function quickBumpPublish(){
