@@ -6012,54 +6012,7 @@
     ]
   },
   "software": [],
-  "skills": [
-    {
-      "id": "sk_mucrtcelwrif",
-      "type": "skill",
-      "promptType": "skill",
-      "title": "撰写AI视频图像生成",
-      "desc": "撰写AI视频图像生成 技能资源包（ZIP）已上传云端",
-      "prompt": "",
-      "url": "",
-      "author": "懒得找了",
-      "badge": "",
-      "tags": "技能 资源包 ZIP",
-      "previewUrl": "",
-      "mediaUrl": "",
-      "iconUrl": "",
-      "mode": "file"
-    },
-    {
-      "id": "sk_mucww1zlo3yh",
-      "type": "skill",
-      "promptType": "prompt_video",
-      "title": "测试",
-      "desc": "被是",
-      "prompt": "测试",
-      "author": "估计",
-      "badge": "干嘛去",
-      "tags": "死了",
-      "previewUrl": "",
-      "mediaUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790095882671_doubao_video_1790088931209.mp4",
-      "url": "",
-      "mode": "file"
-    },
-    {
-      "id": "sk_mucx7kjtpuue",
-      "type": "skill",
-      "promptType": "prompt_image",
-      "title": "本地",
-      "desc": "本软件",
-      "prompt": "哈",
-      "author": "我去",
-      "badge": "",
-      "tags": "",
-      "previewUrl": "",
-      "mediaUrl": "",
-      "url": "",
-      "mode": "file"
-    }
-  ],
+  "skills": [],
   "settings": {
     "appName": "懒得找了",
     "slogan": "精选AI工具导航、Prompt效果图预览与手机应用无限多开分身百宝箱",
