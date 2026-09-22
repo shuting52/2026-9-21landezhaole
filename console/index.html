@@ -444,11 +444,11 @@ function applyToDevice(){
   try{
     if(document.querySelector(".dlg.show") && typeof saveSoft === "function"){ /* 对话框由各版块自行处理 */ }
   }catch(e){}
-  toast("正在应用并实时同步到本体软件…","ok");
+  toast("⏳ 正在应用并实时同步到本体软件…","ok");
   publish(false);
 }
 
-// ============ 发布逻辑 (双通道：静默同步 / 触发弹窗更新) ============
+// ============ 发布逻辑 (双通道：应用实时同步 / 触发弹窗更新) ============
 async function publish(bump = false, actionDesc = ""){
   if(!S.admin){ toast("请先连接并加载数据","err"); return; }
   // 发布新版本前二次确认：防止误操作导致版本号暴涨（如 1.5.1 连续点到 1.5.11）
@@ -483,28 +483,32 @@ async function publish(bump = false, actionDesc = ""){
       }else{
         S.admin.version.name = base + ".1";
       }
-      const note = actionDesc ? `【控制台推送】${actionDesc}` : "系统功能与站点资源同步更新";
+      // 更新日志只使用有意义的变更记录（由各版块 saveXxx 产生），
+      // 禁止机器生成的「【控制台推送】…」垃圾日志
+      const changes = (S.changeLog && S.changeLog.length) ? S.changeLog.filter(isMeaningfulChangelog) : [];
+      if(actionDesc && isMeaningfulChangelog(actionDesc)){
+        changes.unshift(actionDesc);
+      }
       if(!S.admin.version.changelog) S.admin.version.changelog = [];
-      S.admin.version.changelog.unshift(note);
-      // 自动同步本次变更记录到更新日志（新增/删除站点、软件、Skill、设置、开屏、欢迎等）
-      const changes = (S.changeLog && S.changeLog.length) ? S.changeLog : [];
-      changes.forEach(c => {
-        S.admin.version.changelog.unshift(c);
-      });
+      if(changes.length){
+        S.admin.version.changelog = [...changes, ...S.admin.version.changelog.filter(isMeaningfulChangelog)].slice(0, 12);
+      }
       S.admin.updateDialog = S.admin.updateDialog || { title:"发现新版本", changelog:[], confirmText:"立即更新", cancelText:"稍后再说" };
-      S.admin.updateDialog.changelog = [note, ...changes, ...(S.admin.updateDialog.changelog || [])].slice(0, 12);
+      if(changes.length){
+        S.admin.updateDialog.changelog = [...changes, ...(S.admin.updateDialog.changelog||[]).filter(isMeaningfulChangelog)].slice(0, 10);
+      }
       S.changeLog = [];
     }
     const msg = bump 
       ? `console: [发布新版本 v${S.admin.version.name} code:${S.admin.version.code}] ${actionDesc || "更新"}`
-      : `console: 静默同步数据 ${new Date().toLocaleString("zh-CN")}`;
+      : `console: 应用并实时同步 ${new Date().toLocaleString("zh-CN")}`;
     const d = await ghPut(CONFIG_PATH, JSON.stringify(S.admin, null, 2), msg, S.sha);
     S.sha = d.content.sha;
     S.dirty = false;
     if(bump){
-      toast(`🚀 新版本发布成功 (v${S.admin.version.name})！本体软件将即刻弹出更新弹窗`,"ok");
+      toast(`🚀 新版本发布成功 (v${S.admin.version.name})！本体软件已触发更新弹窗`,"ok");
     }else{
-      toast("💾 数据静默同步成功！本体软件将在下次刷新时无感应用","ok");
+      toast("✅ 应用成功！已实时同步到本体软件（零延迟生效）","ok");
     }
     renderAll();
   }catch(e){
@@ -512,13 +516,21 @@ async function publish(bump = false, actionDesc = ""){
   }
   if(btn){
     btn.disabled = false;
-    btn.textContent = bump ? "🚀 触发更新弹窗" : "✅ 应用";
+    btn.textContent = bump ? "🚀 触发更新" : "✅ 应用";
   }
+}
+
+// 判定是否为有意义的更新日志（过滤机器生成的垃圾日志）
+function isMeaningfulChangelog(line){
+  if(!line) return false;
+  const bad = ["【控制台推送】","管理后台全局版本发布","APK 制作入库","静默同步","更新设置版块"];
+  for(const b of bad){ if(line.indexOf(b) >= 0) return false; }
+  return true;
 }
 
 function quickBumpPublish(){
   confirmDlg("确定发布新版本并递增版本代码，使本体软件实时触发更新弹窗？").then(ok=>{
-    if(ok) publish(true, "管理后台全局版本发布");
+    if(ok) publish(true, "功能与体验全面升级");
   });
 }
 
@@ -600,7 +612,7 @@ function renderHome(){
     </div>
     <div class="row">
       <button class="btn-pri grow" onclick="catForm()">＋ 新增分类</button>
-      <button class="btn-ok" onclick="publish(false)">✅ 应用并同步</button>
+      <button class="btn-ok" onclick="applyToDevice()">✅ 应用</button>
       <button class="btn-bump" onclick="publish(true,'首页分类与站点结构更新')">🚀 推送并触发本体更新弹窗</button>
     </div>
   </div>`;
@@ -756,19 +768,21 @@ function renderSoftware(){
   let html = `<div class="card">
     <div class="action-banner">
       <b>📦 软件库管理</b>
-      <span class="hint">支持本地上传 APK 安装包并实时推送到本体软件触发更新弹窗</span>
+      <span class="hint">支持本地上传 APK / 文件（本体直接下载安装）或填写 URL（本体直接跳转下载），点击「应用」实时同步到本体软件</span>
     </div>
     <div class="row">
       <button class="btn-pri grow" onclick="softForm()">＋ 新增软件</button>
-      <button class="btn-ok" onclick="publish(false)">✅ 应用并同步</button>
-      <button class="btn-bump" onclick="publish(true,'软件库上新/更新')">🚀 推送并触发本体更新弹窗</button>
+      <button class="btn-ok" onclick="applyToDevice()">✅ 应用（实时同步本体）</button>
+      <button class="btn-bump" onclick="publish(true,'软件库上新/更新')">🚀 触发更新弹窗</button>
     </div>
   </div>`;
   if(!list.length) html += `<div class="empty">暂无软件，点击上方新增</div>`;
   list.forEach((s, si) => {
+    const mode = s.mode === "url" ? "URL跳转" : "文件下载";
     html += `<div class="card">
       <div class="item-head">
         ${s.badge ? `<span class="badge NEW">${esc(s.badge)}</span>` : ""}
+        <span class="chip" style="background:#262251;color:#a5b4fc">${mode}</span>
         <span class="item-title">${esc(s.title)}</span>
         <button class="btn-mini pri" onclick="softForm(${si})">✏️ 编辑</button>
         <button class="btn-mini err" onclick="removeSoft(${si})">🗑️ 删除</button>
@@ -777,41 +791,76 @@ function renderSoftware(){
       <div class="row" style="margin-top:6px;flex-wrap:wrap">
         <span class="chip">作者：${esc(s.author||"-")}</span>
         <span class="chip">标签：${esc(s.tags||"-")}</span>
-        ${s.apkUrl ? `<span class="chip" style="background:#14351f;color:#4ade80">✅ APK 已就绪</span>` : `<span class="chip" style="background:#3a1518;color:#f87171">❌ 暂无 APK</span>`}
+        ${s.apkUrl ? `<span class="chip" style="background:#14351f;color:#4ade80">✅ ${s.mode==="url"?"URL 已配置":"APK 已就绪"}</span>` : `<span class="chip" style="background:#3a1518;color:#f87171">❌ 未配置下载</span>`}
       </div>
       ${s.previewUrl ? `<img class="preview-img" src="${esc(s.previewUrl)}" onerror="this.style.display='none'">` : ""}
-      <div class="item-actions">
-        <button class="btn-mini pri" onclick="softForm(${si})">📝 编辑</button>
-        ${s.apkUrl ? `<button class="btn-mini ok" onclick="window.open('${esc(s.apkUrl)}')">⬇️ 下载 APK</button>` : ""}
-      </div>
     </div>`;
   });
   $("softwarePage").innerHTML = html;
 }
 
+// 根据域名自动获取网站 favicon 图标
+function autoFetchIcon(){
+  const url = $("fSwUrl").value.trim() || $("fSwApkUrl").value.trim();
+  if(!url){ toast("请先填写官网/详情 URL","err"); return; }
+  try{
+    const u = new URL(url);
+    const domain = u.hostname;
+    // 多个 favicon 服务兜底
+    const icon = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+    $("fSwIconUrl").value = icon;
+    toast("已自动获取图标：" + domain + "（可直接保存，也可手动修改）","ok");
+  }catch(e){
+    toast("URL 格式不正确","err");
+  }
+}
+
 function softForm(si){
-  const s = si != null ? S.admin.software[si] : { id: uid("sw"), type: "software", title: "", desc: "", url: "", author: "", badge: "", tags: "", apkUrl: "", previewUrl: "" };
+  const s = si != null ? S.admin.software[si] : { id: uid("sw"), type: "software", title: "", desc: "", url: "", author: "", badge: "", tags: "", apkUrl: "", previewUrl: "", iconUrl: "", mode: "file" };
+  const mode = s.mode === "url" ? "url" : "file";
   openDlg(`<div class="dlg-title">${si!=null?"编辑软件":"新增软件"}</div>
   <label>软件名称 *</label><input id="fSwTitle" value="${esc(s.title)}" placeholder="软件名称">
-  <label>功能简述</label><textarea id="fSwDesc">${esc(s.desc)}</textarea>
-  <label>官网 / 详情 URL</label><input id="fSwUrl" value="${esc(s.url)}" placeholder="https://...">
-  <div class="two-col">
-    <div><label>作者</label><input id="fSwAuthor" value="${esc(s.author)}"></div>
-    <div><label>角标</label><input id="fSwBadge" value="${esc(s.badge)}" placeholder="如 站长推荐 / 最新版"></div>
+  <label>软件说明（动态标签，告诉用户这个软件是干嘛的）</label><textarea id="fSwDesc" placeholder="如：一款极简高效的电脑清理神器，免安装单文件，强制剔除注册表残留。">${esc(s.desc)}</textarea>
+  <label>下载方式</label>
+  <select id="fSwMode">
+    <option value="file" ${mode==="file"?"selected":""}>📁 文件模式（本地上传 APK/文件，本体直接下载安装）</option>
+    <option value="url" ${mode==="url"?"selected":""}>🔗 URL 模式（填写下载链接，本体直接跳转下载）</option>
+  </select>
+  <div id="fSwFileWrap" style="display:${mode==="file"?"block":"none"}">
+    <label>本地上传 APK 安装包（上传后自动识别文件名并填充信息）</label>
+    <div class="upload-box" onclick="document.getElementById('fSwApk').click()">📁 点击选择本地 APK 文件${s.apkUrl ? "<br><b style='color:#4ade80'>已关联："+esc(s.apkUrl.split("/").pop())+"</b>" : ""}</div>
+    <input type="file" id="fSwApk" accept=".apk,application/vnd.android.package-archive" onchange="uploadSoftApk(event)">
+    <label>本地上传 MD / ZIP 说明文件（自动补全标题/描述/标签）</label>
+    <div class="upload-box" onclick="document.getElementById('fSwDoc').click()">📄 点击选择 .md 或 .zip 文件（自动解析并补全软件信息）</div>
+    <input type="file" id="fSwDoc" accept=".md,.zip,text/markdown,application/zip" onchange="uploadSoftDoc(event)">
   </div>
-  <label>标签（空格分隔）</label><input id="fSwTags" value="${esc(s.tags)}" placeholder="如 工具 效率 实用">
-  <label>本地上传 APK 文件（直接上传至云端仓库）</label>
-  <div class="upload-box" onclick="document.getElementById('fSwApk').click()">📁 点击选择本地 APK 文件${s.apkUrl ? "<br><b style='color:#4ade80'>已关联："+esc(s.apkUrl.split("/").pop())+"</b>" : ""}</div>
-  <input type="file" id="fSwApk" accept=".apk,application/vnd.android.package-archive" onchange="uploadSoftApk(event)">
-  <label>本地上传 MD / ZIP 说明文件（自动补全标题/描述/标签）</label>
-  <div class="upload-box" onclick="document.getElementById('fSwDoc').click()">📄 点击选择 .md 或 .zip 文件（自动解析并补全软件信息）</div>
-  <input type="file" id="fSwDoc" accept=".md,.zip,text/markdown,application/zip" onchange="uploadSoftDoc(event)">
-  <label>或直接填写 APK 下载直链</label><input id="fSwApkUrl" value="${esc(s.apkUrl)}" placeholder="https://...">
+  <div id="fSwUrlWrap" style="display:${mode==="url"?"block":"none"}">
+    <label>软件下载直链 URL（填写后本体直接跳转该链接下载）</label>
+    <input id="fSwApkUrl" value="${esc(s.apkUrl)}" placeholder="https://...">
+  </div>
+  <label>官网 / 详情 URL（可自动获取图标）</label>
+  <div class="row">
+    <input id="fSwUrl" style="flex:1" value="${esc(s.url)}" placeholder="https://...">
+    <button class="btn-mini pri" onclick="autoFetchIcon()">🎯 自动获取图标</button>
+  </div>
+  <div class="two-col">
+    <div><label>软件图标 URL（可自动获取）</label><input id="fSwIconUrl" value="${esc(s.iconUrl)}" placeholder="https://.../icon.png"></div>
+    <div><label>作者</label><input id="fSwAuthor" value="${esc(s.author)}"></div>
+  </div>
+  <div class="two-col">
+    <div><label>角标</label><input id="fSwBadge" value="${esc(s.badge)}" placeholder="如 站长推荐 / 最新版"></div>
+    <div><label>标签（空格分隔）</label><input id="fSwTags" value="${esc(s.tags)}" placeholder="如 工具 效率 实用"></div>
+  </div>
   <label>预览图（本地上传）</label>
   <div class="upload-box" onclick="document.getElementById('fSwImg').click()">🖼️ 点击选择预览图</div>
   <input type="file" id="fSwImg" accept="image/*" onchange="uploadSoftPreview(event)">
   <label>或直接填写预览图 URL</label><input id="fSwImgUrl" value="${esc(s.previewUrl)}" placeholder="https://...">
-  <div class="dlg-actions"><button onclick="closeDlg()">取消</button><button class="btn-pri" onclick="saveSoft(${si==null?-1:si})">保存</button></div>`);
+  <div class="dlg-actions"><button onclick="closeDlg()">取消</button><button class="btn-pri" onclick="saveSoft(${si==null?-1:si})">💾 保存并同步</button></div>`);
+  $("fSwMode").onchange = () => {
+    const v = $("fSwMode").value;
+    $("fSwFileWrap").style.display = v === "file" ? "block" : "none";
+    $("fSwUrlWrap").style.display = v === "url" ? "block" : "none";
+  };
 }
 
 async function uploadSoftApk(ev){
@@ -821,7 +870,13 @@ async function uploadSoftApk(ev){
   try{
     const url = await uploadFile(f, "dist/apk");
     $("fSwApkUrl").value = url;
-    toast("APK 上传完成！","ok");
+    // 自动识别填充：文件名（去扩展名）作为标题，自动生成描述/标签
+    const name = (f.name||"").replace(/\.[^.]+$/,"");
+    if(!$("fSwTitle").value) $("fSwTitle").value = name;
+    if(!$("fSwDesc").value) $("fSwDesc").value = `${name} 安装包已上传云端，点击即可直接下载安装体验。`;
+    if(!$("fSwTags").value) $("fSwTags").value = "软件 安装包 APK";
+    if(!$("fSwBadge").value) $("fSwBadge").value = "最新版";
+    toast("APK 上传完成！已自动识别并填充信息，点击「保存并同步」即可实时同步到本体软件","ok");
     if(box) box.innerHTML = `✅ 上传完成：${esc(f.name)}`;
   }catch(e){
     toast("上传失败："+e.message,"err");
@@ -847,8 +902,8 @@ async function uploadSoftDoc(ev){
       if(box) box.innerHTML = `⏳ 正在上传 ZIP (${Math.round(f.size/1048576*10)/10}MB)…`;
       const url = await uploadFile(f, "dist/uploads");
       if(!$("fSwTitle").value) $("fSwTitle").value = name;
-      if(!$("fSwUrl").value) $("fSwUrl").value = url;
-      if(!$("fSwDesc").value) $("fSwDesc").value = `${name} 资源包（ZIP）已上传云端`;
+      if($("fSwApkUrl")) $("fSwApkUrl").value = url;
+      if(!$("fSwDesc").value) $("fSwDesc").value = `${name} 资源包（ZIP）已上传云端，点击即可直接下载。`;
       if(!$("fSwTags").value) $("fSwTags").value = "软件 资源包 ZIP";
       if(box) box.innerHTML = `✅ ZIP 已上传：${esc(f.name)}`;
       toast("ZIP 已上传并自动补全信息","ok");
@@ -880,10 +935,16 @@ function saveSoft(si){
     badge: $("fSwBadge").value.trim() || "",
     tags: $("fSwTags").value.trim(),
     apkUrl: $("fSwApkUrl").value.trim(),
-    previewUrl: $("fSwImgUrl").value.trim()
+    previewUrl: $("fSwImgUrl").value.trim(),
+    iconUrl: $("fSwIconUrl") ? $("fSwIconUrl").value.trim() : (S.admin.software[si]||{}).iconUrl || "",
+    mode: $("fSwMode") ? $("fSwMode").value : (S.admin.software[si]||{}).mode || "file"
   };
+  // URL 模式下 apkUrl 由用户填写的直链决定；文件模式下保留上传的文件地址
   if(si >= 0) S.admin.software[si] = obj; else S.admin.software.push(obj);
-  closeDlg(); renderSoftware(); toast("软件已保存","ok");
+  closeDlg(); renderSoftware();
+  // 保存后默认直接应用同步到本体（用户可再点「触发更新弹窗」）
+  publish(false);
+  toast("软件已保存并实时同步到本体软件","ok");
   logChange((si>=0?"更新软件「":"新增软件「")+obj.title+"」");
 }
 
@@ -894,73 +955,185 @@ function removeSoft(si){
 }
 
 // ==========================================
-// 3. Skill 技能库 / Prompt 提示词 (图/视/Prompt/推送弹窗)
+// 3. Skill 技能库 / 提示词区（Skill 与 Prompt 分开呈现）
 // ==========================================
+let skillSubTab = "skill"; // skill / prompt_image / prompt_video
+
 function renderSkill(){
   if(!S.admin) return;
   const list = S.admin.skills || [];
+  const skillList = list.filter(s => s.promptType !== "prompt_image" && s.promptType !== "prompt_video");
+  const imgList = list.filter(s => s.promptType === "prompt_image");
+  const vidList = list.filter(s => s.promptType === "prompt_video");
+
   let html = `<div class="card">
     <div class="action-banner">
-      <b>🧠 Skill 技能库 / Prompt 提示词</b>
-      <span class="hint">支持本地上传预览图/图片/视频、完整编辑Prompt并实时推送到本体触发更新弹窗</span>
+      <b>🧠 Skill 技能库 / 提示词区</b>
+      <span class="hint">Skill 支持本地文件和 URL（同软件版块）；提示词区支持预览图与 Prompt 编辑，应用后实时同步本体</span>
     </div>
-    <div class="row">
-      <button class="btn-pri grow" onclick="skillForm()">＋ 新增 Skill / Prompt</button>
-      <button class="btn-ok" onclick="publish(false)">✅ 应用并同步</button>
-      <button class="btn-bump" onclick="publish(true,'Skill技能与提示词库更新')">🚀 推送并触发本体更新弹窗</button>
+    <div class="row" style="margin-bottom:10px">
+      <button class="btn-mini ${skillSubTab==="skill"?"ok":"gray"}" onclick="skillSubTab='skill';renderSkill()">🛠 Skill 技能库 (${skillList.length})</button>
+      <button class="btn-mini ${skillSubTab==="prompt_image"?"pri":"gray"}" onclick="skillSubTab='prompt_image';renderSkill()">🖼 图片提示词 (${imgList.length})</button>
+      <button class="btn-mini ${skillSubTab==="prompt_video"?"pri":"gray"}" onclick="skillSubTab='prompt_video';renderSkill()">🎬 视频提示词 (${vidList.length})</button>
+      <span class="spacer"></span>
+      <button class="btn-ok" onclick="applyToDevice()">✅ 应用</button>
+      <button class="btn-bump" onclick="publish(true,'Skill技能与提示词库更新')">🚀 触发更新弹窗</button>
     </div>
   </div>`;
-  if(!list.length) html += `<div class="empty">暂无 Skill，点击上方新增</div>`;
-  list.forEach((s, si) => {
-    html += `<div class="card">
-      <div class="item-head">
-        ${s.badge ? `<span class="badge BLUE">${esc(s.badge)}</span>` : ""}
-        <span class="item-title">${esc(s.title)}</span>
-        <button class="btn-mini pri" onclick="skillForm(${si})">✏️ 编辑</button>
-        <button class="btn-mini err" onclick="removeSkill(${si})">🗑️ 删除</button>
-      </div>
-      <div class="item-sub">${esc(s.desc)}</div>
-      ${s.prompt ? `<div class="code-box">${esc(s.prompt.length>140 ? s.prompt.slice(0,140)+"…" : s.prompt)}</div>` : ""}
-      <div class="row" style="margin-top:6px;flex-wrap:wrap">
-        <span class="chip">作者：${esc(s.author||"-")}</span>
-        <span class="chip">标签：${esc(s.tags||"-")}</span>
-        ${s.mediaUrl ? `<span class="chip" style="background:#1e1b4b;color:#a5b4fc">🎬 含视频演示</span>` : ""}
-      </div>
-      ${s.previewUrl ? `<img class="preview-img" src="${esc(s.previewUrl)}" onerror="this.style.display='none'">` : ""}
-      ${s.mediaUrl ? `<video class="preview-video" src="${esc(s.mediaUrl)}" controls onerror="this.style.display='none'"></video>` : ""}
-      <div class="item-actions">
-        <button class="btn-mini pri" onclick="skillForm(${si})">📝 编辑 Prompt 与内容</button>
-      </div>
-    </div>`;
-  });
+
+  if(skillSubTab === "skill"){
+    html += `<div class="card"><div class="row"><button class="btn-pri grow" onclick="skillForm()">＋ 新增 Skill</button></div></div>`;
+    if(!skillList.length) html += `<div class="empty">暂无 Skill，点击上方新增</div>`;
+    skillList.forEach((s, si) => {
+      html += skillCardHtml(s, si);
+    });
+  } else {
+    const isVideo = skillSubTab === "prompt_video";
+    const subList = isVideo ? vidList : imgList;
+    html += `<div class="card"><div class="row">
+      <button class="btn-pri grow" onclick="promptForm('${isVideo?"prompt_video":"prompt_image"}')">＋ 新增${isVideo?"视频":"图片"}提示词</button>
+    </div></div>`;
+    if(!subList.length) html += `<div class="empty">暂无${isVideo?"视频":"图片"}提示词，点击上方新增</div>`;
+    subList.forEach((s, si) => {
+      html += promptCardHtml(s, si);
+    });
+  }
   $("skillPage").innerHTML = html;
 }
 
+function skillCardHtml(s, si){
+  const mode = s.mode === "url" ? "URL跳转" : "文件下载";
+  return `<div class="card">
+    <div class="item-head">
+      ${s.badge ? `<span class="badge BLUE">${esc(s.badge)}</span>` : ""}
+      <span class="chip" style="background:#262251;color:#a5b4fc">${mode}</span>
+      <span class="item-title">${esc(s.title)}</span>
+      <button class="btn-mini pri" onclick="skillForm(${si})">✏️ 编辑</button>
+      <button class="btn-mini err" onclick="removeSkill(${si})">🗑️ 删除</button>
+    </div>
+    <div class="item-sub">${esc(s.desc)}</div>
+    <div class="row" style="margin-top:6px;flex-wrap:wrap">
+      <span class="chip">作者：${esc(s.author||"-")}</span>
+      <span class="chip">标签：${esc(s.tags||"-")}</span>
+      ${s.url || s.fileUrl ? `<span class="chip" style="background:#14351f;color:#4ade80">✅ 已配置下载</span>` : `<span class="chip" style="background:#3a1518;color:#f87171">❌ 未配置下载</span>`}
+    </div>
+    ${s.previewUrl ? `<img class="preview-img" src="${esc(s.previewUrl)}" onerror="this.style.display='none'">` : ""}
+  </div>`;
+}
+
+function promptCardHtml(s, si){
+  return `<div class="card">
+    <div class="item-head">
+      <span class="badge ${s.promptType==="prompt_video"?"GOLD":"NEW"}">${s.promptType==="prompt_video"?"🎬 视频":"🖼 图片"}</span>
+      <span class="item-title">${esc(s.title)}</span>
+      <button class="btn-mini pri" onclick="promptForm('${esc(s.promptType)}',${si})">✏️ 编辑</button>
+      <button class="btn-mini err" onclick="removeSkill(${si})">🗑️ 删除</button>
+    </div>
+    <div class="item-sub">${esc(s.desc)}</div>
+    ${s.prompt ? `<div class="code-box">${esc(s.prompt.length>160 ? s.prompt.slice(0,160)+"…" : s.prompt)}</div>` : ""}
+    <div class="row" style="margin-top:6px;flex-wrap:wrap">
+      ${s.previewUrl ? `<span class="chip" style="background:#1e1b4b;color:#a5b4fc">✅ 已上传预览图</span>` : `<span class="chip" style="background:#3a1518;color:#f87171">❌ 无预览图</span>`}
+      ${s.mediaUrl ? `<span class="chip" style="background:#1e1b4b;color:#a5b4fc">🎬 含演示视频</span>` : ""}
+    </div>
+    ${s.previewUrl ? `<img class="preview-img" src="${esc(s.previewUrl)}" onerror="this.style.display='none'">` : ""}
+  </div>`;
+}
+
+// Skill 表单：与软件版块同理，支持本地文件 / URL 双模式
 function skillForm(si){
-  const s = si != null ? S.admin.skills[si] : { id: uid("sk"), type: "skill", title: "", desc: "", prompt: "", url: "", author: "", badge: "", tags: "", previewUrl: "", mediaUrl: "" };
-  openDlg(`<div class="dlg-title">${si!=null?"编辑 Skill / Prompt":"新增 Skill / Prompt"}</div>
+  const s = si != null ? S.admin.skills[si] : { id: uid("sk"), type: "skill", promptType: "skill", title: "", desc: "", prompt: "", url: "", author: "", badge: "", tags: "", previewUrl: "", mediaUrl: "", iconUrl: "", mode: "file" };
+  const mode = s.mode === "url" ? "url" : "file";
+  openDlg(`<div class="dlg-title">${si!=null?"编辑 Skill":"新增 Skill"}</div>
   <label>Skill 标题 *</label><input id="fSkTitle" value="${esc(s.title)}" placeholder="如 爆款短视频文案生成器">
-  <label>简介描述</label><textarea id="fSkDesc">${esc(s.desc)}</textarea>
-  <label>Prompt 提示词正文（支持多行/变量定义）*</label>
-  <textarea id="fSkPrompt" style="min-height:130px" class="mono" placeholder="你是一位资深文案大师，请根据用户输入的主题...">${esc(s.prompt)}</textarea>
+  <label>Skill 说明（动态标签）</label><textarea id="fSkDesc">${esc(s.desc)}</textarea>
+  <label>下载方式</label>
+  <select id="fSkMode">
+    <option value="file" ${mode==="file"?"selected":""}>📁 文件模式（本地上传 ZIP/MD）</option>
+    <option value="url" ${mode==="url"?"selected":""}>🔗 URL 模式（填写下载链接）</option>
+  </select>
+  <div id="fSkFileWrap" style="display:${mode==="file"?"block":"none"}">
+    <label>本地上传 MD / ZIP 技能文件（自动补全标题/描述/标签）</label>
+    <div class="upload-box" onclick="document.getElementById('fSkDoc').click()">📄 点击选择 .md 或 .zip 文件（自动解析并补全信息）</div>
+    <input type="file" id="fSkDoc" accept=".md,.zip,text/markdown,application/zip" onchange="uploadSkillDoc(event)">
+    <input type="hidden" id="fSkUrl" value="${esc(s.url)}">
+  </div>
+  <div id="fSkUrlWrap" style="display:${mode==="url"?"block":"none"}">
+    <label>Skill 下载直链 URL</label>
+    <input id="fSkUrl" value="${esc(s.url)}" placeholder="https://...">
+  </div>
   <div class="two-col">
     <div><label>作者</label><input id="fSkAuthor" value="${esc(s.author)}"></div>
     <div><label>角标</label><input id="fSkBadge" value="${esc(s.badge)}" placeholder="如 爆款推荐 / 免费开源"></div>
   </div>
-  <label>标签（空格分隔）</label><input id="fSkTags" value="${esc(s.tags)}" placeholder="如 写作 营销 视频Prompt">
-  <label>参考链接</label><input id="fSkUrl" value="${esc(s.url)}" placeholder="https://...">
-  <label>本地上传预览图 / 图片</label>
+  <label>标签（空格分隔）</label><input id="fSkTags" value="${esc(s.tags)}" placeholder="如 写作 营销 技能">
+  <label>预览图（本地上传）</label>
   <div class="upload-box" onclick="document.getElementById('fSkImg').click()">🖼️ 点击选择预览图</div>
   <input type="file" id="fSkImg" accept="image/*" onchange="uploadSkillImg(event)">
-  <label>或填写图片 URL</label><input id="fSkImgUrl" value="${esc(s.previewUrl)}" placeholder="https://...">
-  <label>本地上传 MD / ZIP 技能文件（自动补全标题/Prompt/描述/标签）</label>
-  <div class="upload-box" onclick="document.getElementById('fSkDoc').click()">📄 点击选择 .md 或 .zip 文件（自动解析 Prompt 并补全信息）</div>
-  <input type="file" id="fSkDoc" accept=".md,.zip,text/markdown,application/zip" onchange="uploadSkillDoc(event)">
-  <label>本地上传演示视频（支持 mp4 / webm / mov）</label>
+  <label>或填写预览图 URL</label><input id="fSkImgUrl" value="${esc(s.previewUrl)}" placeholder="https://...">
+  <label>演示视频（可选，本地上传）</label>
   <div class="upload-box" onclick="document.getElementById('fSkMedia').click()">🎬 点击选择视频演示</div>
   <input type="file" id="fSkMedia" accept="video/*" onchange="uploadSkillMedia(event)">
   <label>或填写视频 URL</label><input id="fSkMediaUrl" value="${esc(s.mediaUrl)}" placeholder="https://...">
-  <div class="dlg-actions"><button onclick="closeDlg()">取消</button><button class="btn-pri" onclick="saveSkill(${si==null?-1:si})">保存</button></div>`);
+  <div class="dlg-actions"><button onclick="closeDlg()">取消</button><button class="btn-pri" onclick="saveSkill(${si==null?-1:si})">💾 保存并同步</button></div>`);
+  $("fSkMode").onchange = () => {
+    const v = $("fSkMode").value;
+    $("fSkFileWrap").style.display = v === "file" ? "block" : "none";
+    $("fSkUrlWrap").style.display = v === "url" ? "block" : "none";
+  };
+}
+
+// 提示词表单：支持预览图 + Prompt 编辑
+function promptForm(promptType, si){
+  // 根据类型从对应数组取索引
+  const all = S.admin.skills || [];
+  const list = all.filter(s => s.promptType === promptType);
+  let idx = -1;
+  if(si != null){
+    const target = list[si];
+    idx = all.indexOf(target);
+  }
+  const s = idx >= 0 ? all[idx] : { id: uid("sk"), type: "skill", promptType: promptType, title: "", desc: "", prompt: "", url: "", author: "", badge: "", tags: "", previewUrl: "", mediaUrl: "", iconUrl: "" };
+  const isVideo = promptType === "prompt_video";
+  openDlg(`<div class="dlg-title">${idx>=0?"编辑":"新增"}${isVideo?"视频":"图片"}提示词</div>
+  <label>提示词标题 *</label><input id="fSkTitle" value="${esc(s.title)}" placeholder="如 未来赛博都市 · 霓虹飞车雨夜">
+  <label>提示词中文说明</label><textarea id="fSkDesc">${esc(s.desc)}</textarea>
+  <label>Prompt 提示词正文（支持多行/变量定义）*</label>
+  <textarea id="fSkPrompt" style="min-height:150px" class="mono" placeholder="你是一位资深...">${esc(s.prompt)}</textarea>
+  <div class="two-col">
+    <div><label>作者</label><input id="fSkAuthor" value="${esc(s.author)}"></div>
+    <div><label>目标模型/参数</label><input id="fSkBadge" value="${esc(s.badge)}" placeholder="如 Midjourney v6.1 / Sora"></div>
+  </div>
+  <label>标签（空格分隔）</label><input id="fSkTags" value="${esc(s.tags)}" placeholder="如 赛博科幻 唯美写实">
+  <label>本地上传预览图（效果图，必传最佳）</label>
+  <div class="upload-box" onclick="document.getElementById('fSkImg').click()">🖼️ 点击选择预览图</div>
+  <input type="file" id="fSkImg" accept="image/*" onchange="uploadSkillImg(event)">
+  <label>或填写预览图 URL</label><input id="fSkImgUrl" value="${esc(s.previewUrl)}" placeholder="https://...">
+  ${isVideo ? `<label>演示视频（本地上传）</label>
+  <div class="upload-box" onclick="document.getElementById('fSkMedia').click()">🎬 点击选择视频演示</div>
+  <input type="file" id="fSkMedia" accept="video/*" onchange="uploadSkillMedia(event)">
+  <label>或填写视频 URL</label><input id="fSkMediaUrl" value="${esc(s.mediaUrl)}" placeholder="https://...">` : `<input type="hidden" id="fSkMediaUrl" value="${esc(s.mediaUrl)}">`}
+  <div class="dlg-actions"><button onclick="closeDlg()">取消</button><button class="btn-pri" onclick="savePrompt(${idx})">💾 保存并同步</button></div>`);
+}
+
+function savePrompt(idx){
+  const title = $("fSkTitle").value.trim();
+  if(!title){ toast("提示词标题必填","err"); return; }
+  const s = idx >= 0 ? S.admin.skills[idx] : { id: uid("sk"), type: "skill", promptType: "prompt_image" };
+  s.title = title;
+  s.desc = $("fSkDesc").value.trim();
+  s.prompt = $("fSkPrompt").value;
+  s.author = $("fSkAuthor").value.trim();
+  s.badge = $("fSkBadge").value.trim() || "";
+  s.tags = $("fSkTags").value.trim();
+  s.previewUrl = $("fSkImgUrl").value.trim();
+  s.mediaUrl = $("fSkMediaUrl") ? $("fSkMediaUrl").value.trim() : "";
+  s.url = "";
+  s.mode = "file";
+  if(idx < 0) S.admin.skills.push(s);
+  closeDlg(); renderSkill();
+  publish(false);
+  toast("提示词已保存并实时同步到本体","ok");
+  logChange((idx>=0?"更新":"新增")+"「"+title+"」提示词");
 }
 
 async function uploadSkillImg(ev){
@@ -1022,21 +1195,36 @@ async function uploadSkillMedia(ev){
 function saveSkill(si){
   const title = $("fSkTitle").value.trim();
   if(!title){ toast("Skill 标题必填","err"); return; }
+  const mode = $("fSkMode") ? $("fSkMode").value : "file";
   const obj = {
     id: si >= 0 ? S.admin.skills[si].id : uid("sk"),
     type: "skill",
+    promptType: "skill",
     title,
     desc: $("fSkDesc").value.trim(),
-    prompt: $("fSkPrompt").value,
-    url: $("fSkUrl").value.trim(),
+    prompt: $("fSkPrompt") ? $("fSkPrompt").value : "",
+    url: mode === "url" ? ($("fSkUrl").value.trim()) : ($("fSkDoc").files && $("fSkDoc").files.length ? S.admin.skills[si] && S.admin.skills[si].url || "" : ""),
     author: $("fSkAuthor").value.trim(),
     badge: $("fSkBadge").value.trim() || "",
     tags: $("fSkTags").value.trim(),
     previewUrl: $("fSkImgUrl").value.trim(),
-    mediaUrl: $("fSkMediaUrl").value.trim()
+    mediaUrl: $("fSkMediaUrl") ? $("fSkMediaUrl").value.trim() : "",
+    iconUrl: "",
+    mode: mode
   };
-  if(si >= 0) S.admin.skills[si] = obj; else S.admin.skills.push(obj);
-  closeDlg(); renderSkill(); toast("Skill 已保存","ok");
+  if(mode === "file" && $("fSkDoc").files && $("fSkDoc").files.length){
+    // 文件模式但未上传成功时回退旧值
+  }
+  if(si >= 0){
+    const old = S.admin.skills[si];
+    if(mode === "file" && old && old.url && old.url.indexOf("dist/uploads") >= 0 && !obj.url) obj.url = old.url;
+    S.admin.skills[si] = obj;
+  } else {
+    S.admin.skills.push(obj);
+  }
+  closeDlg(); renderSkill();
+  publish(false);
+  toast("Skill 已保存并实时同步到本体软件","ok");
   logChange((si>=0?"更新Skill「":"新增Skill「")+obj.title+"」");
 }
 
@@ -1047,19 +1235,52 @@ function removeSkill(si){
 }
 
 // ==========================================
-// 4. 设置管理 (管理该版块所有内容，实时推送)
+// 4. 设置管理 (全面对接本体：主题代码/联系作者/反馈/交流群/官网/跑马灯公告)
 // ==========================================
 function renderSettings(){
   if(!S.admin) return;
   const s = S.admin.settings || {};
+  const m = S.admin.marquee || { enabled: true, icon: "📢", defaultText: "", segments: [] };
+  const segHtml = (m.segments||[]).map((seg, i) =>
+    `<div class="row" style="margin-bottom:6px">
+      <input style="width:70px" type="number" min="0" max="23" value="${seg.start}" onchange="mqSeg(${i},'start',this.value)" title="开始小时">
+      <span>~</span>
+      <input style="width:70px" type="number" min="0" max="23" value="${seg.end}" onchange="mqSeg(${i},'end',this.value)" title="结束小时">
+      <input class="grow" value="${esc(seg.text)}" oninput="mqSeg(${i},'text',this.value)" placeholder="该时间段的公告文字">
+      <button class="btn-mini err" onclick="mqSegDel(${i})">✕</button>
+    </div>`
+  ).join("");
+
   $("settingsPage").innerHTML = `<div class="card">
     <div class="action-banner">
       <b>⚙️ 设置版块管理</b>
-      <span class="hint">可以管理此版块里的所有内容并实时推送到本体软件</span>
+      <span class="hint">全面对接本体软件：主题代码 / 联系作者 / 软件反馈 / 官方交流群 / 官方网站 / 跑马灯公告</span>
     </div>
     <label>本体软件 App 名称</label><input id="fSetName" value="${esc(s.appName||"懒得找了")}">
     <label>软件副标题 / Slogan</label><input id="fSetSlogan" value="${esc(s.slogan||"聚合实用导航与效率利器")}">
-    <label>关于我们描述文本</label><textarea id="fSetAbout" style="min-height:90px">${esc(s.aboutText||"")}</textarea>
+    <label>关于我们描述文本</label><textarea id="fSetAbout" style="min-height:80px">${esc(s.aboutText||"")}</textarea>
+    <div class="divider"></div>
+    <h3>🎨 本体主题切换（自定义代码全局应用）</h3>
+    <label>全局自定义 CSS 代码（本体启动后应用至整个软件 UI）</label>
+    <textarea id="fSetThemeCss" class="mono" style="min-height:80px" placeholder="/* 自定义全局样式，如背景渐变、卡片圆角等 */">${esc(s.customThemeCss||"")}</textarea>
+    <label>全局自定义 HTML 结构代码（可选）</label>
+    <textarea id="fSetThemeHtml" class="mono" style="min-height:60px">${esc(s.customThemeHtml||"")}</textarea>
+    <div class="divider"></div>
+    <h3>📣 主页跑马灯公告（24小时时间段轮播）</h3>
+    <label>公告开关</label>
+    <select id="fMqEnabled">
+      <option value="true" ${m.enabled?"selected":""}>✅ 开启跑马灯公告</option>
+      <option value="false" ${!m.enabled?"selected":""}>🚫 关闭跑马灯公告</option>
+    </select>
+    <div class="two-col">
+      <div><label>公告图标（可输入 emoji 或文字）</label><input id="fMqIcon" value="${esc(m.icon||"📢")}" placeholder="如 📢 🔔 ⭐"></div>
+      <div><label>默认公告文字（未命中时间段时展示）</label><input id="fMqDefault" value="${esc(m.defaultText||"")}"></div>
+    </div>
+    <label>24小时时间段轮播列表（开始小时 ~ 结束小时 + 公告文字）</label>
+    <div id="fMqSegs">${segHtml}</div>
+    <button class="btn-mini pri" onclick="mqSegAdd()">＋ 新增时间段</button>
+    <div class="divider"></div>
+    <h3>📮 联系作者与反馈</h3>
     <div class="two-col">
       <div><label>官方 QQ 群 / 联系二维码 URL</label><input id="fSetQQ" value="${esc(s.contactQQ||"")}" placeholder="https://...">
         <div class="upload-box" onclick="document.getElementById('fSetQQFile').click()">🖼️ 本地上传 QQ 二维码</div>
@@ -1068,16 +1289,42 @@ function renderSettings(){
         <div class="upload-box" onclick="document.getElementById('fSetWxFile').click()">🖼️ 本地上传微信二维码</div>
         <input type="file" id="fSetWxFile" accept="image/*" style="display:none" onchange="uploadContactImg(event,'fSetWx')"></div>
     </div>
-    <label>赞赏二维码图片 URL</label><input id="fSetAli" value="${esc(s.contactAlipay||"")}" placeholder="https://...">
+    <label>赞赏/支付宝二维码图片 URL</label><input id="fSetAli" value="${esc(s.contactAlipay||"")}" placeholder="https://...">
     <div class="upload-box" onclick="document.getElementById('fSetAliFile').click()">🖼️ 本地上传支付宝/赞赏码</div>
     <input type="file" id="fSetAliFile" accept="image/*" style="display:none" onchange="uploadContactImg(event,'fSetAli')">
+    <div class="two-col">
+      <div><label>官方交流群链接</label><input id="fSetGroupUrl" value="${esc(s.qqGroupUrl||"")}" placeholder="https://qm.qq.com/..."></div>
+      <div><label>官方交流群号</label><input id="fSetGroupUin" value="${esc(s.qqGroupUin||"")}" placeholder="如 439211347"></div>
+    </div>
+    <div class="two-col">
+      <div><label>官方网站链接</label><input id="fSetWebsite" value="${esc(s.officialWebsite||"")}" placeholder="https://..."></div>
+      <div><label>软件反馈接收邮箱（用户反馈真实送达）</label><input id="fSetEmail" value="${esc(s.feedbackEmail||"")}" placeholder="如 you@qq.com"></div>
+    </div>
     <div class="divider"></div>
     <div class="row">
       <button class="btn-pri grow" onclick="saveSettings()">💾 保存设置</button>
-      <button class="btn-ok" onclick="publish(false)">✅ 应用并同步</button>
-      <button class="btn-bump" onclick="publish(true,'设置与品牌信息更新')">🚀 推送并触发本体更新弹窗</button>
+      <button class="btn-ok" onclick="applyToDevice()">✅ 应用并实时同步</button>
+      <button class="btn-bump" onclick="publish(true,'设置版块全面升级')">🚀 触发更新弹窗</button>
     </div>
   </div>`;
+}
+
+// 跑马灯时间段编辑
+function mqSeg(i, key, val){
+  S.admin.marquee = S.admin.marquee || { enabled: true, icon: "📢", defaultText: "", segments: [] };
+  if(!S.admin.marquee.segments[i]) S.admin.marquee.segments[i] = { start: 0, end: 23, text: "" };
+  if(key === "start") S.admin.marquee.segments[i].start = parseInt(val)||0;
+  if(key === "end") S.admin.marquee.segments[i].end = parseInt(val)||23;
+  if(key === "text") S.admin.marquee.segments[i].text = val;
+}
+function mqSegAdd(){
+  S.admin.marquee = S.admin.marquee || { enabled: true, icon: "📢", defaultText: "", segments: [] };
+  S.admin.marquee.segments.push({ start: 0, end: 23, text: "" });
+  renderSettings();
+}
+function mqSegDel(i){
+  S.admin.marquee.segments.splice(i,1);
+  renderSettings();
 }
 
 async function uploadContactImg(ev, targetId){
@@ -1096,10 +1343,23 @@ function saveSettings(){
     aboutText: $("fSetAbout").value,
     contactQQ: $("fSetQQ").value.trim(),
     contactWechat: $("fSetWx").value.trim(),
-    contactAlipay: $("fSetAli").value.trim()
+    contactAlipay: $("fSetAli").value.trim(),
+    qqGroupUrl: $("fSetGroupUrl").value.trim(),
+    qqGroupUin: $("fSetGroupUin").value.trim(),
+    officialWebsite: $("fSetWebsite").value.trim(),
+    feedbackEmail: $("fSetEmail").value.trim(),
+    customThemeCss: $("fSetThemeCss").value,
+    customThemeHtml: $("fSetThemeHtml").value
   };
-  toast("设置已保存，记得点发布","ok");
-  logChange("更新设置版块（App名称/Slogan/联系作者）");
+  // 跑马灯公告
+  S.admin.marquee = {
+    enabled: $("fMqEnabled").value === "true",
+    icon: ($("fMqIcon").value.trim() || "📢"),
+    defaultText: $("fMqDefault").value.trim(),
+    segments: S.admin.marquee.segments || []
+  };
+  toast("设置已保存，点击「应用并实时同步」推送到本体","ok");
+  logChange("更新设置版块（品牌/联系/公告/主题）");
 }
 
 // ==========================================
@@ -1138,7 +1398,7 @@ function renderSplash(){
     <div class="divider"></div>
     <div class="row">
       <button class="btn-pri grow" onclick="saveSplash()">💾 保存开屏配置</button>
-      <button class="btn-ok" onclick="publish(false)">✅ 应用并同步</button>
+      <button class="btn-ok" onclick="applyToDevice()">✅ 应用</button>
       <button class="btn-bump" onclick="publish(true,'开屏动画配置更新')">🚀 推送并触发本体更新弹窗</button>
     </div>
   </div>`;
@@ -1223,7 +1483,7 @@ function renderWelcome(){
     <div class="divider"></div>
     <div class="row">
       <button class="btn-pri grow" onclick="saveWelcome()">💾 保存欢迎弹窗</button>
-      <button class="btn-ok" onclick="publish(false)">✅ 应用并同步</button>
+      <button class="btn-ok" onclick="applyToDevice()">✅ 应用</button>
       <button class="btn-bump" onclick="publish(true,'欢迎弹窗与新特性介绍发布')">🚀 推送并触发本体更新弹窗</button>
     </div>
   </div>`;
@@ -1297,29 +1557,35 @@ function renderUpdate(){
 </div>">${esc(u.customHtml)}</textarea>
     <div class="divider"></div>
     <div class="row">
-      <button class="btn-pri grow" onclick="saveUpdate()">💾 仅保存更新配置</button>
-      <button class="btn-bump" onclick="bumpAndPublishUpdate()">🚀 发布新版本并立即触发本体更新 (v${Number(v.code)+1})</button>
+      <button class="btn-pri grow" onclick="saveUpdate()">💾 保存更新配置</button>
+      <button class="btn-bump" onclick="bumpAndPublishUpdate()">🚀 发布新版本 (v${Number(v.code)+1})</button>
     </div>
+    <div class="hint" style="margin-top:8px">💡 更新日志自动读取各版块本次操作内容并过滤机器日志，无需手工逐条填写。</div>
   </div>`;
 }
 
 function saveUpdate(){
-  const logs = $("fUpLogs").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+  const rawLogs = $("fUpLogs").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+  // 自动过滤机器生成的垃圾日志
+  const logs = rawLogs.filter(isMeaningfulChangelog);
+  // 自动读取本次变更记录（各版块 saveXxx 产生的有意义的日志）
+  const pending = (S.changeLog && S.changeLog.length) ? S.changeLog.filter(isMeaningfulChangelog) : [];
+  const merged = [...pending, ...logs].slice(0, 12);
   S.admin.version.code = parseInt($("fUpCode").value) || S.admin.version.code;
   S.admin.version.name = $("fUpName").value.trim() || "1.0";
   S.admin.version.force = $("fUpForce").value === "true";
   S.admin.version.apkUrl = $("fUpApkUrl").value.trim();
   S.admin.version.apkUrlRaw = S.admin.version.apkUrl.replace(/^https:\/\/raw\.githubusercontent\.com\//,"https://github.com/").replace(/\/main\//,"/raw/main/");
-  S.admin.version.changelog = logs;
+  S.admin.version.changelog = merged;
   S.admin.updateDialog = {
     title: $("fUpTitle").value.trim() || "发现新版本",
-    changelog: logs,
+    changelog: merged,
     confirmText: $("fUpConfirm").value.trim() || "立即更新",
     cancelText: $("fUpCancel").value.trim() || "稍后再说",
     customCss: $("fUpCss").value,
     customHtml: $("fUpHtml").value
   };
-  toast("更新弹窗配置已保存","ok");
+  toast("更新弹窗配置已保存（已自动过滤机器日志）","ok");
 }
 
 async function bumpAndPublishUpdate(){
@@ -1392,28 +1658,31 @@ function renderApk(){
   $("apkPage").innerHTML = html;
 }
 
-// 手机下载 APK：Android WebView 内用原生下载器；浏览器内直接跳转
+// 手机下载 APK：Android WebView 内用原生下载器；浏览器内用隐藏 iframe 触发下载（修复手机无法下载的问题）
 function downloadApkMobile(url, name){
+  // 1. 云台 APK 内：调用原生系统下载管理器
   try{
-    // 尝试唤起 Android 原生下载（在云台 APK 中有效）
     if(typeof Android !== "undefined" && Android.download){
       Android.download(url, name);
       toast("已开始下载，请查看通知栏","ok");
       return;
     }
   }catch(e){}
-  // 浏览器环境：隐藏 iframe 触发下载（避免直接打开页面）
+  // 2. 隐藏 iframe 触发下载（对 GitHub raw 的 APK 可触发浏览器直接下载，避免新开页面）
   try{
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = name || "app.apk";
-    a.target = "_blank";
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(()=>a.remove(), 1000);
-    toast("已开始下载 " + (name||"") + "，请查看下载记录","ok");
-  }catch(e){
+    const iframe = document.createElement("iframe");
+    iframe.style.display = "none";
+    iframe.src = url;
+    document.body.appendChild(iframe);
+    setTimeout(()=>{ if(iframe.parentNode) iframe.parentNode.removeChild(iframe); }, 60000);
+    toast("已开始下载 " + (name||"") + "，请查看下载记录/通知栏","ok");
+    return;
+  }catch(e){}
+  // 3. 兜底：当前页面直接跳转（GitHub raw 会响应下载）
+  try{
     location.href = url;
+  }catch(e){
+    toast("下载失败，请长按链接选择保存","err");
   }
 }
 

@@ -1,20 +1,20 @@
 {
   "version": {
-    "code": 49,
-    "name": "1.6.0",
+    "code": 50,
+    "name": "1.6.1",
     "changelog": [
-      "【v1.6.0】控制台静默同步改为「应用」，点击实时零延迟同步本体",
-      "【v1.6.0】APK仓库手机下载修复 + 设置实时应用同步",
-      "【v1.6.0】Skill/软件改文件形式（ZIP/APK/MD）同步本体下载",
-      "【v1.6.0】控制台新拟态主题",
-      "【v1.6.0】首页删除新站点置顶文字 + 软件/Skill取消本地上传改文件下载",
-      "【v1.6.0】工具箱10工具独立呈现 + 新增应用分身多开",
-      "【v1.6.0】反馈邮件直达开发者 + 分享去官方网址",
-      "点击「立即更新」直接下载安装新版本"
+      "【v1.6.1】控制台全新升级：应用实时同步、软件/Skill文件与URL双模式",
+      "【v1.6.1】提示词区全新上线：图片提示词区/视频提示词区，支持预览图与编辑",
+      "【v1.6.1】主页新增24小时跑马灯公告，可自定义图标与文字",
+      "【v1.6.1】设置版块全面对接本体：主题代码/联系作者/反馈邮箱/交流群/官网",
+      "【v1.6.1】修复开屏时长不生效问题，严格按后台设定时长展示",
+      "【v1.6.1】软件/Skill版块点击卡片直接下载或跳转，去掉多余按钮",
+      "【v1.6.1】工具箱改版为弹窗交互，更轻便快捷",
+      "【v1.6.1】软件反馈重写：填写即真实送达开发者邮箱"
     ],
     "force": true,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.6.0-1790011889.apk",
-    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.6.0-1790011889.apk"
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.6.1-1790074953.apk",
+    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.6.1-1790074953.apk"
   },
   "home": {
     "categories": [
@@ -6024,7 +6024,8 @@
       "badge": "",
       "tags": "技能 资源包 ZIP",
       "previewUrl": "",
-      "mediaUrl": ""
+      "mediaUrl": "",
+      "promptType": "skill"
     },
     {
       "id": "sk_muc1xrgd1nta",
@@ -6037,7 +6038,8 @@
       "badge": "",
       "tags": "",
       "previewUrl": "",
-      "mediaUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790043891296_L17YSsxs5pSxTVeD.mp4"
+      "mediaUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790043891296_L17YSsxs5pSxTVeD.mp4",
+      "promptType": "prompt_video"
     }
   ],
   "settings": {
@@ -6046,7 +6048,13 @@
     "aboutText": "「懒得找了」致力于打造一个纯净、聚合、高效的资源与工具导航平台。让大家不用再到处求资源、不用忍受满屏广告垃圾，一键直达互联网精品！",
     "contactQQ": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1789978873367_qr_friend_qq.jpg",
     "contactWechat": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1789978883487_qr_friend_wechat.jpg",
-    "contactAlipay": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1789978892386_qr_feed_alipay.jpg"
+    "contactAlipay": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1789978892386_qr_feed_alipay.jpg",
+    "qqGroupUrl": "https://qm.qq.com/q/BnUzn164u21Cu1dG7vAVYJqU_4hw0COArsGrrBOIc0vxu7ES6gOJcYyrpu2JgkVs",
+    "qqGroupUin": "439211347",
+    "officialWebsite": "https://github.com/shuting52/2026-9-21landezhaole",
+    "feedbackEmail": "307779523@qq.com",
+    "customThemeCss": "",
+    "customThemeHtml": ""
   },
   "splash": {
     "type": "default",
@@ -6063,22 +6071,67 @@
     "buttonText": "开始体验"
   },
   "updateDialog": {
-    "title": "发现新版本",
+    "title": "发现新版本 v1.6.1",
     "changelog": [
-      "【控制台推送】设置与品牌信息更新",
-      "【16:21】更新设置版块（App名称/Slogan/联系作者）",
-      "【控制台推送】管理后台全局版本发布",
-      "【控制台推送】新版本 APK 制作入库 (landezhao-com.landezhaole-1789969754.apk)",
-      "新版本 APK 制作入库 (landezhao-com.landezhaole-1789969754.apk)",
-      "【控制台推送】新版本 APK 制作入库 (landezhao-com.landezhaole-1789969754.apk)",
-      "新版本 APK 制作入库 (landezhao-com.landezhaole-1789969754.apk)",
-      "【控制台推送】新版本 APK 制作入库 (landezhao-com.landezhaole-1789969754.apk)",
-      "新版本 APK 制作入库 (landezhao-com.landezhaole-1789969754.apk)",
-      "【控制台推送】新版本 APK 制作入库 (landezhao-com.landezhaole-1789969754.apk)"
+      "【v1.6.1】控制台全新升级：应用实时同步、软件/Skill文件与URL双模式",
+      "【v1.6.1】提示词区全新上线：图片提示词区/视频提示词区，支持预览图与编辑",
+      "【v1.6.1】主页新增24小时跑马灯公告，可自定义图标与文字",
+      "【v1.6.1】设置版块全面对接本体：主题代码/联系作者/反馈邮箱/交流群/官网",
+      "【v1.6.1】修复开屏时长不生效问题，严格按后台设定时长展示",
+      "【v1.6.1】软件/Skill版块点击卡片直接下载或跳转，去掉多余按钮",
+      "【v1.6.1】工具箱改版为弹窗交互，更轻便快捷",
+      "【v1.6.1】软件反馈重写：填写即真实送达开发者邮箱"
     ],
     "confirmText": "立即更新",
     "cancelText": "稍后再说",
     "customCss": "",
     "customHtml": ""
+  },
+  "marquee": {
+    "enabled": true,
+    "icon": "📢",
+    "defaultText": "欢迎使用懒得找应用软件，这里的资源丰富，很多资源都是可以白嫖的。请自寻探索~~",
+    "segments": [
+      {
+        "start": 0,
+        "end": 4,
+        "text": "现在是深夜，夜深人静，早点休息养足精神，明天继续探索～"
+      },
+      {
+        "start": 5,
+        "end": 6,
+        "text": "早上6:00了，记得出门带伞。吃早餐哟，早餐是最重要的一餐。"
+      },
+      {
+        "start": 7,
+        "end": 8,
+        "text": "7:00了，是不是要准备去上班了，上班路上注意安全哟，不要看手机。注意车辆"
+      },
+      {
+        "start": 9,
+        "end": 11,
+        "text": "早上好呀！一日之计在于晨，工作学习注意劳逸结合，记得喝水～"
+      },
+      {
+        "start": 12,
+        "end": 13,
+        "text": "中午好！记得按时吃饭，饭后小憩一会儿，下午继续加油～"
+      },
+      {
+        "start": 14,
+        "end": 16,
+        "text": "下午好！来杯水提提神，继续探索无限资源吧～"
+      },
+      {
+        "start": 17,
+        "end": 18,
+        "text": "傍晚好！忙碌了一天辛苦了，给自己一点放松时间吧～"
+      },
+      {
+        "start": 19,
+        "end": 23,
+        "text": "晚上好！注意休息，不要太累，生命才是最大的财富～"
+      }
+    ]
   }
 }

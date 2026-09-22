@@ -174,44 +174,22 @@ fun UiverseDialog(
                         .fillMaxSize()
                         .weight(1f)
                 ) {
-                    if (isCustomCodeTabActive) {
-                        CustomCodeEditorSection(
-                            cssText = customCssText,
-                            htmlText = customHtmlText,
-                            onCssChange = { customCssText = it },
-                            onHtmlChange = { customHtmlText = it },
-                            onApply = {
-                                onApplyCustomCss(customCssText, customHtmlText)
-                                Toast.makeText(context, "已成功解析并应用自定义主题代码到软件全部 UI！", Toast.LENGTH_SHORT).show()
-                                onClose()
-                            },
-                            onReset = {
-                                onResetDefault()
-                                onClose()
-                            }
-                        )
-                    } else if (selectedCategory == UiverseCategory.UI_KITS) {
-                        UiKitsSection(
-                            activeKit = activeState.activeKit,
-                            onSelectKit = { kit ->
-                                onApplyKit(kit)
-                                Toast.makeText(context, "已全局应用【${kit.displayName}】全套 UI！", Toast.LENGTH_SHORT).show()
-                                onClose()
-                            }
-                        )
-                    } else {
-                        ComponentGallerySection(
-                            category = selectedCategory,
-                            onApply = { item ->
-                                onApplyItemAsComponent(item)
-                                Toast.makeText(context, "已将【${item.name}】样式应用至软件对应组件！", Toast.LENGTH_SHORT).show()
-                                onClose()
-                            },
-                            onViewCode = { item ->
-                                viewingCodeItem = item
-                            }
-                        )
-                    }
+                    // 主题切换：只保留「自定义代码应用」版块，识别每个 UI 组件单独改动、支持全局应用
+                    CustomCodeEditorSection(
+                        cssText = customCssText,
+                        htmlText = customHtmlText,
+                        onCssChange = { customCssText = it },
+                        onHtmlChange = { customHtmlText = it },
+                        onApply = {
+                            onApplyCustomCss(customCssText, customHtmlText)
+                            Toast.makeText(context, "已成功解析并应用自定义主题代码到软件全部 UI！", Toast.LENGTH_SHORT).show()
+                            onClose()
+                        },
+                        onReset = {
+                            onResetDefault()
+                            onClose()
+                        }
+                    )
                 }
             }
         }

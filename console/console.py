@@ -120,10 +120,15 @@ class AdminConsole:
                 else:
                     new_name = old_name + ".1"
                 self.data["version"]["name"] = new_name
-                note = f"【控制台发布】{action_desc}" if action_desc else "系统功能与数据更新"
+                note = action_desc if action_desc else "功能与体验全面升级"
                 if "changelog" not in self.data["version"]:
                     self.data["version"]["changelog"] = []
-                self.data["version"]["changelog"].insert(0, note)
+
+                def meaningful(line):
+                    bad = ["【控制台推送】", "管理后台全局版本发布", "APK 制作入库", "静默同步", "更新设置版块"]
+                    return line and not any(b in line for b in bad)
+
+                self.data["version"]["changelog"] = [note] + [x for x in self.data["version"].get("changelog", []) if meaningful(x)][:11]
                 self.data.setdefault("updateDialog", {
                     "title": "发现新版本",
                     "changelog": [],
@@ -131,11 +136,11 @@ class AdminConsole:
                     "cancelText": "稍后再说"
                 })
                 self.data["updateDialog"]["changelog"] = [note] + [
-                    x for x in self.data["updateDialog"].get("changelog", []) if x != note
-                ][:7]
+                    x for x in self.data["updateDialog"].get("changelog", []) if meaningful(x)
+                ][:9]
                 commit_msg = f"console: [新版本 v{new_name} code:{new_code}] {action_desc or '更新发布'}"
             else:
-                commit_msg = f"console: 应用同步配置 {time.strftime('%Y-%m-%d %H:%M:%S')}"
+                commit_msg = f"console: 应用并实时同步 {time.strftime('%Y-%m-%d %H:%M:%S')}"
 
             content_bytes = json.dumps(self.data, indent=2, ensure_ascii=False).encode("utf-8")
             res = self.client.put_file(CONFIG_PATH, content_bytes, commit_msg, self.sha)
@@ -144,7 +149,7 @@ class AdminConsole:
                 print(f"\n[🚀 成功] 新版本已发布！v{self.data['version']['name']} (code: {self.data['version']['code']})")
                 print(">>> 本体软件将在下次刷新/轮询或启动时即刻弹出更新弹窗！")
             else:
-                print("\n[⚡ 成功] 数据已应用并实时同步至云端仓库！本体软件将零延迟生效！")
+                print("\n[✅ 成功] 已应用并实时同步至云端仓库！本体软件零延迟生效！")
             return True
         except Exception as e:
             print(f"[!] 发布失败: {e}")
@@ -498,7 +503,7 @@ class AdminConsole:
     def _ask_publish(self, action_desc):
         print("\n请选择同步方式:")
         print("  [1] 🚀 触发更新弹窗 (递增版本代码，本体软件下次刷新即刻弹窗提醒)")
-        print("  [2] ⚡ 应用 (保存到云端仓库，本体软件零延迟实时同步生效，不弹窗提醒)")
+        print("  [2] ✅ 应用 (保存到云端仓库，本体软件零延迟实时同步生效，不弹窗提醒)")
         print("  [0] 暂不推送")
         c = input("选择: ").strip()
         if c == "1":
