@@ -6049,7 +6049,7 @@
     "contactAlipay": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1789978892386_qr_feed_alipay.jpg"
   },
   "splash": {
-    "type": "media",
+    "type": "default",
     "customHtml": "",
     "mediaUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1789988080055_Video_1775759622507_300.mp4",
     "durationSeconds": 5,
