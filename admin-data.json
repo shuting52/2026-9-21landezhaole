@@ -6025,6 +6025,22 @@
       "mediaUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790087219080_L17YSsxs5pSxTVeD.mp4",
       "url": "",
       "mode": "file"
+    },
+    {
+      "id": "sk_mucrtcelwrif",
+      "type": "skill",
+      "promptType": "skill",
+      "title": "撰写AI视频图像生成",
+      "desc": "撰写AI视频图像生成 技能资源包（ZIP）已上传云端",
+      "prompt": "",
+      "url": "",
+      "author": "懒得找了",
+      "badge": "",
+      "tags": "技能 资源包 ZIP",
+      "previewUrl": "",
+      "mediaUrl": "",
+      "iconUrl": "",
+      "mode": "file"
     }
   ],
   "settings": {
