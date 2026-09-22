@@ -495,6 +495,20 @@ class NavViewModel(
         )
     }
 
+    /**
+     * 组件级定制：为指定 UI 组件独立应用自定义 CSS（精准修改单个组件样式，不影响其他组件）
+     * 组件清单：首页头部/底部导航/搜索框/站点卡片/提示词卡片/软件卡片/工具箱卡片/弹窗/按钮/输入框
+     */
+    fun applyComponentTheme(compId: String, css: String) {
+        val current = _uiState.value.activeUiverseState
+        val newMap = current.componentThemes.toMutableMap().apply {
+            if (css.isBlank()) remove(compId) else put(compId, css)
+        }
+        _uiState.value = _uiState.value.copy(
+            activeUiverseState = current.copy(componentThemes = newMap)
+        )
+    }
+
     fun uploadResource(type: String, title: String, desc: String, url: String, author: String, tags: String) {
         viewModelScope.launch {
             val entity = UploadedResourceEntity(

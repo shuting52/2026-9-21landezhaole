@@ -297,7 +297,9 @@ data class ActiveUiverseState(
     val patternStyle: PatternStylePreset = PatternStylePreset.DEFAULT_WIND,
     val customStyle: ParsedCssStyle? = null,
     val customCssInput: String = "",
-    val customHtmlInput: String = ""
+    val customHtmlInput: String = "",
+    // 组件级定制主题：组件 id -> 自定义 CSS（精准修改单个 UI 组件）
+    val componentThemes: Map<String, String> = emptyMap()
 )
 
 /**

@@ -17,8 +17,8 @@ android {
     applicationId = "com.landezhaole"
     minSdk = 24
     targetSdk = 36
-    versionCode = 54
-    versionName = "1.6.5"
+    versionCode = 55
+    versionName = "1.6.6"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -42,7 +42,9 @@ android {
   buildTypes {
     release {
       isCrunchPngs = false
-      isMinifyEnabled = false
+      // 代码混淆（R8）+ 资源压缩混淆：提高防破解能力（MT管理器难以篡改）
+      isMinifyEnabled = true
+      isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
       signingConfig = signingConfigs.getByName("release")
     }

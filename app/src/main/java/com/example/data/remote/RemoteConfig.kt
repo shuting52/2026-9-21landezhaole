@@ -130,13 +130,31 @@ data class SettingsDto(
     val logoUrl: String = "",
     val packageName: String = "",
     // 安全加固：签名自校验
-    val security: SecurityDto? = null
+    val security: SecurityDto? = null,
+    // 全局背景媒体（控制台上传图片/视频，url 空则用内置）
+    val bgMedia: BgMediaDto? = null,
+    // 内置歌手海报（控制台可上传替换）
+    val celebrityPosters: List<CelebrityPosterDto> = emptyList(),
+    // UI 组件级主题（每个组件独立代码定制）
+    val componentThemes: Map<String, String> = emptyMap()
 )
 
 /** 安全加固配置：开启后运行时校验自身签名，防止二次打包篡改 */
 data class SecurityDto(
     val enabled: Boolean = false,
     val expectedSha: String = ""
+)
+
+/** 全局背景媒体：图片 / 视频 */
+data class BgMediaDto(
+    val type: String = "none", // none / image / video
+    val url: String = ""
+)
+
+/** 内置歌手海报 */
+data class CelebrityPosterDto(
+    val name: String = "",
+    val url: String = ""
 )
 
 data class SplashDto(

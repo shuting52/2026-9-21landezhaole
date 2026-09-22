@@ -1,6 +1,7 @@
 package com.example.ui.uiverse
 
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -34,6 +35,8 @@ import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Palette
@@ -59,6 +62,7 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -88,7 +92,9 @@ fun UiverseDialog(
     onApplyKit: (UiKitPreset) -> Unit,
     onApplyCustomCss: (css: String, html: String) -> Unit,
     onResetDefault: () -> Unit,
-    onApplyItemAsComponent: (UiverseItem) -> Unit
+    onApplyItemAsComponent: (UiverseItem) -> Unit,
+    onApplyComponentTheme: (compId: String, css: String) -> Unit = { _, _ -> },
+    componentThemes: Map<String, String> = emptyMap()
 ) {
     if (!isOpen) return
 
@@ -177,28 +183,94 @@ fun UiverseDialog(
 
                 Divider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), thickness = 1.dp)
 
+                // 主题子页切换：全局自定义代码 / 组件级定制 / 背景媒体（图片·视频·歌手海报）
+                var themeSubTab by remember { mutableIntStateOf(0) }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFF0F121C))
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (themeSubTab == 0) Color(0xFF6366F1) else Color(0xFF1E2333))
+                            .clickable { themeSubTab = 0 }
+                            .padding(vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("全局代码", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (themeSubTab == 1) Color(0xFF8B5CF6) else Color(0xFF1E2333))
+                            .clickable { themeSubTab = 1 }
+                            .padding(vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("组件定制", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (themeSubTab == 2) Color(0xFFEC4899) else Color(0xFF1E2333))
+                            .clickable { themeSubTab = 2 }
+                            .padding(vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("背景媒体", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+
                 // Body content
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .weight(1f)
                 ) {
-                    // 主题切换：只保留「自定义代码应用」版块，识别每个 UI 组件单独改动、支持全局应用
-                    CustomCodeEditorSection(
-                        cssText = customCssText,
-                        htmlText = customHtmlText,
-                        onCssChange = { customCssText = it },
-                        onHtmlChange = { customHtmlText = it },
-                        onApply = {
-                            onApplyCustomCss(customCssText, customHtmlText)
-                            Toast.makeText(context, "已成功解析并应用自定义主题代码到软件全部 UI！", Toast.LENGTH_SHORT).show()
-                            onClose()
-                        },
-                        onReset = {
-                            onResetDefault()
-                            onClose()
+                    when (themeSubTab) {
+                        0 -> {
+                            // 全局自定义代码应用
+                            CustomCodeEditorSection(
+                                cssText = customCssText,
+                                htmlText = customHtmlText,
+                                onCssChange = { customCssText = it },
+                                onHtmlChange = { customHtmlText = it },
+                                onApply = {
+                                    onApplyCustomCss(customCssText, customHtmlText)
+                                    Toast.makeText(context, "已成功解析并应用自定义主题代码到软件全部 UI！", Toast.LENGTH_SHORT).show()
+                                    onClose()
+                                },
+                                onReset = {
+                                    onResetDefault()
+                                    onClose()
+                                }
+                            )
                         }
-                    )
+                        1 -> {
+                            // 组件级定制：识别软件每个 UI 组件，独立代码输入
+                            ComponentThemeSection(
+                                componentThemes = componentThemes,
+                                onApplyComponentCss = { compId, css ->
+                                    onApplyComponentTheme(compId, css)
+                                    Toast.makeText(context, "已应用组件定制样式！", Toast.LENGTH_SHORT).show()
+                                }
+                            )
+                        }
+                        else -> {
+                            // 背景媒体：图片/视频 + 内置歌手海报
+                            BackgroundMediaSection(
+                                onPickImage = {
+                                    Toast.makeText(context, "请在控制台-设置-背景媒体中上传图片/视频", Toast.LENGTH_LONG).show()
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -975,6 +1047,273 @@ private fun CodeViewerDialog(
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text("应用此样式到软件", color = Color.White, fontSize = 12.sp)
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+// ==========================================
+// 组件级定制：自动识别软件全部 UI 组件，独立代码输入精准修改单个组件
+// ==========================================
+private data class UiComponentInfo(
+    val id: String,
+    val name: String,
+    val desc: String,
+    val defaultCss: String
+)
+
+private val UI_COMPONENTS = listOf(
+    UiComponentInfo("home_header", "首页头部", "品牌区 / 统计信息 / 操作按钮栏", "background: rgba(255,255,255,0.60);\nborder-radius: 14px;"),
+    UiComponentInfo("bottom_nav", "底部导航栏", "五个主 Tab 切换栏", "background: rgba(15,18,28,0.92);\nborder-radius: 18px 18px 0 0;"),
+    UiComponentInfo("search_box", "搜索框", "首页搜索输入区", "border-radius: 20px;\nbackground: rgba(255,255,255,0.80);"),
+    UiComponentInfo("card_item", "站点卡片", "首页导航资源卡片", "background: rgba(255,255,255,0.70);\nborder-radius: 12px;"),
+    UiComponentInfo("prompt_card", "提示词卡片", "提示词区图片/视频卡片", "background: rgba(255,255,255,0.60);\nborder-radius: 18px;"),
+    UiComponentInfo("software_card", "软件/Skill卡片", "软件库与技能库资源卡", "background: rgba(255,255,255,0.60);\nborder-radius: 14px;"),
+    UiComponentInfo("toolbox_card", "工具箱卡片", "小工具网格卡片", "background: rgba(255,255,255,0.70);\nborder-radius: 12px;"),
+    UiComponentInfo("dialog", "弹窗/对话框", "更新弹窗 / 详情弹窗等", "border-radius: 20px;\nbackground: #14142a;"),
+    UiComponentInfo("button", "按钮", "主要操作按钮", "border-radius: 10px;\nbackground: linear-gradient(135deg,#6c63ff,#ff2d78);"),
+    UiComponentInfo("text_field", "输入框", "搜索/反馈等输入组件", "border-radius: 12px;\nbackground: rgba(255,255,255,0.70);")
+)
+
+@Composable
+private fun ComponentThemeSection(
+    componentThemes: Map<String, String>,
+    onApplyComponentCss: (compId: String, css: String) -> Unit
+) {
+    var editingComp by remember { mutableStateOf<UiComponentInfo?>(null) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "UI 组件自动识别 · 独立定制",
+            color = Color(0xFF94A3B8),
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "已自动识别软件全部 UI 组件，点击任意组件即可独立输入代码，精准修改该布局组件样式（不影响其他组件）。",
+            color = Color(0xFF64748B),
+            fontSize = 11.sp
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            items(UI_COMPONENTS.size) { i ->
+                val comp = UI_COMPONENTS[i]
+                val applied = componentThemes[comp.id]
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { editingComp = comp },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (applied != null) Color(0xFF1E1B4B) else Color(0xFF14162A)
+                    ),
+                    border = BorderStroke(
+                        1.dp,
+                        if (applied != null) Color(0xFF8B5CF6).copy(alpha = 0.6f) else Color(0x22FFFFFF)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier.padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(38.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(if (applied != null) Color(0xFF8B5CF6) else Color(0xFF1E2333)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Code,
+                                contentDescription = null,
+                                tint = if (applied != null) Color.White else Color(0xFF8B5CF6),
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(comp.name, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text(comp.desc, color = Color(0xFF94A3B8), fontSize = 10.5.sp)
+                            if (applied != null) {
+                                Text("✅ 已定制", color = Color(0xFF8B5CF6), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                        Icon(
+                            imageVector = Icons.Filled.KeyboardArrowRight,
+                            contentDescription = null,
+                            tint = Color(0xFF64748B),
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    // 组件代码编辑弹窗
+    editingComp?.let { comp ->
+        var cssInput by remember { mutableStateOf(componentThemes[comp.id] ?: comp.defaultCss) }
+        Dialog(
+            onDismissRequest = { editingComp = null },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth(0.94f)
+                    .fillMaxHeight(0.9f)
+                    .clip(RoundedCornerShape(20.dp)),
+                color = Color(0xFF0F121C)
+            ) {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("定制组件 · ${comp.name}", color = Color.White, fontWeight = FontWeight.Black, fontSize = 16.sp)
+                            Text(comp.desc, color = Color(0xFF94A3B8), fontSize = 11.sp)
+                        }
+                        IconButton(onClick = { editingComp = null }) {
+                            Icon(Icons.Filled.Close, contentDescription = "关闭", tint = Color.White)
+                        }
+                    }
+                    androidx.compose.material3.HorizontalDivider(color = Color(0x22FFFFFF))
+                    // CSS 输入区
+                    OutlinedTextField(
+                        value = cssInput,
+                        onValueChange = { cssInput = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .padding(16.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color(0xFF38BDF8),
+                            unfocusedTextColor = Color(0xFF38BDF8),
+                            focusedContainerColor = Color(0xFF090B10),
+                            unfocusedContainerColor = Color(0xFF090B10),
+                            focusedBorderColor = Color(0xFF8B5CF6),
+                            unfocusedBorderColor = Color(0x33FFFFFF)
+                        ),
+                        textStyle = MaterialTheme.typography.bodySmall.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 12.sp
+                        )
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = { editingComp = null },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("取消", color = Color(0xFF94A3B8))
+                        }
+                        Button(
+                            onClick = {
+                                onApplyComponentCss(comp.id, cssInput)
+                                editingComp = null
+                            },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF8B5CF6))
+                        ) {
+                            Text("应用该组件样式", color = Color.White, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ==========================================
+// 背景媒体：图片/视频全局背景 + 内置歌手海报
+// ==========================================
+@Composable
+private fun BackgroundMediaSection(
+    onPickImage: () -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        item {
+            Text("全局背景 · 图片 / 视频", color = Color(0xFF94A3B8), fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            Text(
+                "在控制台-设置-背景媒体上传图片/视频后自动应用到软件全局背景；也可直接选用内置歌手海报。",
+                color = Color(0xFF64748B),
+                fontSize = 11.sp
+            )
+        }
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF14162A)),
+                border = BorderStroke(1.dp, Color(0xFFEC4899).copy(alpha = 0.4f))
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Icon(Icons.Filled.Image, contentDescription = null, tint = Color(0xFFEC4899), modifier = Modifier.size(22.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("本地上传图片 / 视频作为全局背景", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    Text("请在控制台-设置-背景媒体上传", color = Color(0xFF94A3B8), fontSize = 10.5.sp)
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Button(
+                        onClick = onPickImage,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEC4899)),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text("去上传", color = Color.White, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+        item {
+            Text("内置歌手海报 · 一键应用全局背景", color = Color(0xFF94A3B8), fontSize = 13.sp, fontWeight = FontWeight.Bold)
+        }
+        listOf("张韶涵", "张含韵", "卓依婷", "凤凰传奇").forEach { name ->
+            item {
+                val gradient = when (name) {
+                    "张韶涵" -> listOf(Color(0xFFFF6B9D), Color(0xFF6B5BFF))
+                    "张含韵" -> listOf(Color(0xFFFFB199), Color(0xFF8E54E9))
+                    "卓依婷" -> listOf(Color(0xFF43E97B), Color(0xFF38F9D7))
+                    else -> listOf(Color(0xFFFFD200), Color(0xFFF7971E))
+                }
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.15f))
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(90.dp)
+                            .background(Brush.linearGradient(gradient)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(name, color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp)
+                            Text("歌手海报 · 控制台上传后可替换", color = Color.White.copy(alpha = 0.85f), fontSize = 10.sp)
+                        }
                     }
                 }
             }

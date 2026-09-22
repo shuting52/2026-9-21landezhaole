@@ -183,7 +183,10 @@ fun MainScreen(
     var welcomeDialogDismissed by remember { mutableStateOf(false) }
 
     Box(modifier = modifier.fillMaxSize()) {
-        GlobalWindBackground {
+        GlobalWindBackground(
+            bgMediaType = uiState.cloudSettings?.bgMedia?.type ?: "none",
+            bgMediaUrl = uiState.cloudSettings?.bgMedia?.url.orEmpty()
+        ) {
             Scaffold(
                 containerColor = Color.Transparent,
                 contentWindowInsets = WindowInsets.statusBars,
@@ -429,7 +432,8 @@ fun MainScreen(
                 },
                 update = cloudUpdate,
                 apkUrl = cloudVersion.apkUrl.ifBlank { null },
-                forceUpdate = cloudVersion.force
+                forceUpdate = cloudVersion.force,
+                autoDownload = true
             )
         }
 
@@ -617,7 +621,11 @@ fun MainScreen(
                 },
                 onResetDefault = {
                     viewModel.resetUiverseToDefault()
-                }
+                },
+                onApplyComponentTheme = { compId, css ->
+                    viewModel.applyComponentTheme(compId, css)
+                },
+                componentThemes = uiState.activeUiverseState.componentThemes
             )
         }
 

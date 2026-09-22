@@ -1,18 +1,18 @@
 {
   "version": {
-    "code": 54,
-    "name": "1.6.5",
+    "code": 55,
+    "name": "1.6.6",
     "changelog": [
-      "增加：关系认知工具升级，支持省份选择与方言版叫法",
-      "增加：更新弹窗自动获取并下载最新安装包，自动删除旧版本文件",
-      "优化：Skill/提示词可视化预览，修复黑屏问题",
-      "优化：主题切换界面精简，去除冗余文字",
-      "修复：开屏倒计时卡顿问题，倒计时流畅跳动",
-      "修复：IP 定位失败问题，精准核心定位监控"
+      "增加：软件更新自动检测下载安装，无需手动操作",
+      "增加：安装新版本时自动识别并卸载旧版本，解决安装失败问题",
+      "增加：主题切换支持UI组件级识别与独立代码定制，精准修改单个布局组件",
+      "增加：全局背景支持本地上传图片/视频，内置歌手海报（张韶涵/张含韵/卓依婷/凤凰传奇）",
+      "优化：联系作者增加投喂作者与扫一扫功能",
+      "优化：代码混淆与资源加密加固，防止第三方篡改破解"
     ],
     "force": true,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.6.5-1790099579.apk",
-    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.6.5-1790099579.apk"
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.6.6-1790103661.apk",
+    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.6.6-1790103661.apk"
   },
   "home": {
     "categories": [
@@ -6060,7 +6060,29 @@
       "expectedSha": "bb08e49c6c633481108866afcb2f7fb34aa55516e90c4010a9993ba42e5bdae9"
     },
     "logoUrl": "",
-    "packageName": "com.landezhaole"
+    "packageName": "com.landezhaole",
+    "bgMedia": {
+      "type": "image",
+      "url": ""
+    },
+    "celebrityPosters": [
+      {
+        "name": "张韶涵",
+        "url": ""
+      },
+      {
+        "name": "张含韵",
+        "url": ""
+      },
+      {
+        "name": "卓依婷",
+        "url": ""
+      },
+      {
+        "name": "凤凰传奇",
+        "url": ""
+      }
+    ]
   },
   "splash": {
     "type": "default",
@@ -6077,14 +6099,14 @@
     "buttonText": "开始体验"
   },
   "updateDialog": {
-    "title": "发现新版本 v1.6.5",
+    "title": "发现新版本 v1.6.6",
     "changelog": [
-      "增加：关系认知工具升级，支持省份选择与方言版叫法",
-      "增加：更新弹窗自动获取并下载最新安装包，自动删除旧版本文件",
-      "优化：Skill/提示词可视化预览，修复黑屏问题",
-      "优化：主题切换界面精简，去除冗余文字",
-      "修复：开屏倒计时卡顿问题，倒计时流畅跳动",
-      "修复：IP 定位失败问题，精准核心定位监控"
+      "增加：软件更新自动检测下载安装，无需手动操作",
+      "增加：安装新版本时自动识别并卸载旧版本，解决安装失败问题",
+      "增加：主题切换支持UI组件级识别与独立代码定制，精准修改单个布局组件",
+      "增加：全局背景支持本地上传图片/视频，内置歌手海报（张韶涵/张含韵/卓依婷/凤凰传奇）",
+      "优化：联系作者增加投喂作者与扫一扫功能",
+      "优化：代码混淆与资源加密加固，防止第三方篡改破解"
     ],
     "confirmText": "立即更新",
     "cancelText": "稍后再说",
@@ -6219,9 +6241,9 @@
     ]
   },
   "console": {
-    "version": "1.0.3",
-    "code": 4,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v1.0.3.apk"
+    "version": "1.0.4",
+    "code": 5,
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v1.0.4.apk"
   },
   "ipMonitor": {
     "enabled": true,

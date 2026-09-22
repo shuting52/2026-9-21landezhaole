@@ -19,6 +19,16 @@ object SecurityGuard {
     fun verifyInBackground(context: Context) {
         thread {
             try {
+                // 防调试检测：被调试器附加（MT 管理器等工具常伴调试）时阻止运行
+                if (android.os.Debug.isDebuggerConnected()) {
+                    killWithWarning(context, "检测到调试环境，已阻止运行。")
+                    return@thread
+                }
+                // 防模拟器/修改工具环境特征检测
+                if (detectMtLikeTools()) {
+                    killWithWarning(context, "检测到第三方修改工具环境，已阻止运行。")
+                    return@thread
+                }
                 val repo = RemoteConfigRepository(context)
                 val data = repo.fetchAdminDataBlocking()
                 val sec = data?.settings?.security ?: return@thread
@@ -27,21 +37,43 @@ object SecurityGuard {
                 if (expected.isBlank()) return@thread
                 val actual = currentSigningSha(context)
                 if (actual == null || !expected.contains(actual)) {
-                    // 签名不匹配：提示风险并退出
-                    android.os.Handler(context.mainLooper).post {
-                        Toast.makeText(
-                            context,
-                            "⚠️ 检测到软件被二次修改或签名异常，为保障安全已阻止运行。请卸载后从官方渠道重新安装。",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-                    Thread.sleep(2500)
-                    android.os.Process.killProcess(android.os.Process.myPid())
+                    killWithWarning(context, "⚠️ 检测到软件被二次修改或签名异常，为保障安全已阻止运行。请卸载后从官方渠道重新安装。")
                 }
             } catch (e: Exception) {
                 // 校验失败不阻断正常运行
             }
         }
+    }
+
+    /** 检测常见修改/管理工具特征（MT 管理器等会在 /proc 或文件系统留下痕迹） */
+    private fun detectMtLikeTools(): Boolean {
+        val suspiciousPaths = listOf(
+            "/data/local/tmp/mt",
+            "/data/local/tmp/mtmanager",
+            "/sdcard/MT2",
+            "/sdcard/mt",
+            "/data/data/bin.mt.plus",
+            "/data/data/bin.mt.plus/databases"
+        )
+        for (p in suspiciousPaths) {
+            try {
+                val f = java.io.File(p)
+                if (f.exists() || f.canRead()) {
+                    // 需同时存在 MT 特征目录才算命中，避免误伤
+                    if (f.exists() && f.list() != null) return true
+                }
+            } catch (e: Exception) {
+            }
+        }
+        return false
+    }
+
+    private fun killWithWarning(context: Context, msg: String) {
+        android.os.Handler(context.mainLooper).post {
+            Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
+        }
+        Thread.sleep(2200)
+        android.os.Process.killProcess(android.os.Process.myPid())
     }
 
     /** 读取当前 APK 签名证书 SHA-256（十六进制小写） */
