@@ -275,7 +275,9 @@ const DEFAULT_OWNER = "shuting52";
 const DEFAULT_REPO  = "2026-9-21landezhaole";
 const CONFIG_PATH   = "admin-data.json";
 // 控制台程序当前内置版本（每次发布新控制台 APK 时递增；与本体软件版本完全分离）
-const CONSOLE_LOCAL_VERSION = 1;
+// 注意：必须与仓库 admin-data.json 的 console.code 一致——
+// 已安装最新版本时 code <= CONSOLE_LOCAL_VERSION，不再重复弹出更新提示。
+const CONSOLE_LOCAL_VERSION = 3;
 
 const S = {
   token: DEFAULT_TOKEN,
@@ -567,17 +569,24 @@ async function cleanupOldApks(){
 
 // ============ 控制台程序自更新（与本体软件更新完全分离） ============
 // 检测到仓库发布了新的控制台 APK 时，提示下载并自动安装替换老版本。
+// 已下载/已安装最新版本后不再提示；本地版本常量 + localStorage 双重记忆。
 function checkConsoleUpdate(){
   try{
     const con = S.admin && S.admin.console;
     if(!con || !con.code || !con.apkUrl) return;
-    if(con.code <= CONSOLE_LOCAL_VERSION) return; // 已是最新
+    if(con.code <= CONSOLE_LOCAL_VERSION) return; // 已是最新（内置版本与云端一致）
+    // 本机已提示/已安装过该版本则不再重复弹窗
+    try{
+      const prompted = parseInt(localStorage.getItem("lzdz_console_prompted") || "0", 10);
+      if(prompted >= con.code) return;
+    }catch(e){}
     confirmDlgHtml(
-      `? 发现控制台程序新版本 <b>v${esc(con.version)}</b>（当前 v1.0）<br>` +
+      `? 发现控制台程序新版本 <b>v${esc(con.version)}</b><br>` +
       `控制台程序更新与本体软件完全分离，不影响本体软件。<br><br>` +
       `点击确认将自动下载并安装新版本，替换当前控制台程序。`
     ).then(ok=>{
       if(!ok) return;
+      try{ localStorage.setItem("lzdz_console_prompted", String(con.code)); }catch(e){}
       toast("正在下载控制台新版本并自动安装…","ok");
       if(typeof Android !== "undefined" && Android.downloadAndInstall){
         // 云台 APK 环境：原生下载+安装
@@ -626,7 +635,8 @@ function fileToBase64(file){
 async function uploadFile(file, folder){
   if(!S.admin){ toast("请先连接","err"); return null; }
   const b64 = await fileToBase64(file);
-  const safe = file.name.replace(/[^\w.-]/g,"_");
+  // 保留原始中文文件名（只替换文件系统非法字符），保证本体下载后是上传时的文件名
+  const safe = file.name.replace(/[\\/:*?"<>|]/g,"_").trim() || ("file_" + Date.now());
   const p = `${folder}/${Date.now()}_${safe}`;
   await ghPutBin(p, b64, "console: 上传 " + file.name);
   return rawUrl(p);
@@ -1163,6 +1173,8 @@ function skillForm(si){
 
 // 提示词表单：支持预览图 + Prompt 编辑
 function promptForm(promptType, si){
+  // 记录本次编辑的提示词类型（修复：新建视频提示词被错误保存为图片提示词的 BUG）
+  window.__promptType = promptType;
   // 根据类型从对应数组取索引
   const all = S.admin.skills || [];
   const list = all.filter(s => s.promptType === promptType);
@@ -1197,7 +1209,10 @@ function promptForm(promptType, si){
 function savePrompt(idx){
   const title = $("fSkTitle").value.trim();
   if(!title){ toast("提示词标题必填","err"); return; }
-  const s = idx >= 0 ? S.admin.skills[idx] : { id: uid("sk"), type: "skill", promptType: "prompt_image" };
+  // 使用表单打开时的类型（修复：视频分类被自动改到图片分类的 BUG）
+  const promptType = window.__promptType || "prompt_image";
+  const s = idx >= 0 ? S.admin.skills[idx] : { id: uid("sk"), type: "skill", promptType: promptType };
+  s.promptType = promptType; // 编辑时也强制纠正类型
   s.title = title;
   s.desc = $("fSkDesc").value.trim();
   s.prompt = $("fSkPrompt").value;

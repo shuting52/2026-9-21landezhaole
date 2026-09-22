@@ -57,7 +57,8 @@ fun UploadHubScreen(
     resourceType: String,
     resources: List<UploadedResourceEntity>,
     onDelete: (id: String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showDelete: Boolean = true
 ) {
     val context = LocalContext.current
 
@@ -112,6 +113,7 @@ fun UploadHubScreen(
                 items(resources, key = { it.id }) { res ->
                     ResourceFileCard(
                         res = res,
+                        showDelete = showDelete,
                         onDelete = {
                             onDelete(res.id)
                             Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
@@ -126,6 +128,7 @@ fun UploadHubScreen(
 @Composable
 private fun ResourceFileCard(
     res: UploadedResourceEntity,
+    showDelete: Boolean = true,
     onDelete: () -> Unit
 ) {
     val context = LocalContext.current
@@ -218,13 +221,15 @@ private fun ResourceFileCard(
                         )
                     }
                 }
-                IconButton(onClick = onDelete, modifier = Modifier.size(30.dp)) {
-                    Icon(
-                        imageVector = Icons.Filled.DeleteOutline,
-                        contentDescription = "删除",
-                        tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
-                        modifier = Modifier.size(20.dp)
-                    )
+                if (showDelete) {
+                    IconButton(onClick = onDelete, modifier = Modifier.size(30.dp)) {
+                        Icon(
+                            imageVector = Icons.Filled.DeleteOutline,
+                            contentDescription = "删除",
+                            tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
 

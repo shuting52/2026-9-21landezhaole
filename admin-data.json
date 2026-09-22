@@ -1,18 +1,20 @@
 {
   "version": {
-    "code": 52,
-    "name": "1.6.3",
+    "code": 53,
+    "name": "1.6.4",
     "changelog": [
-      "增加：首页置顶实时 IP 定位监控（支持开关与自定义数据源，仅显示定位 IP）",
-      "增加：公告支持开启/关闭，关闭后首页不再呈现公告内容",
-      "优化：公告文案更新为官方宣言，24 小时逐小时轮播不同内容、每日不重复",
-      "优化：主题切换仅保留自定义代码应用，删除英文分类入口",
-      "修复：开屏时长严格按默认 5 秒及后台设定展示",
-      "优化：控制台程序更新与本体软件更新完全分离，互不干扰"
+      "增加：关系认知小工具，覆盖中国56个民族的不同亲属称呼",
+      "增加：IP 实时定位中文精准显示，支持开关与数据源配置",
+      "优化：软件库更名为「懒得找了-软件库」，更新说明文字",
+      "优化：提示词区名称与图标优化，更简洁直观",
+      "优化：Skill/提示词可视化预览，上传视频图片实时展示",
+      "修复：开屏倒计时不动的问题，默认8秒后自动进入软件",
+      "修复：跑马灯公告开关无效问题，关闭后不再显示公告",
+      "修复：公告24小时逐小时轮播，默认文案+按时段播放不停顿"
     ],
     "force": true,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.6.3-1790084197.apk",
-    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.6.3-1790084197.apk"
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.6.4-1790093970.apk",
+    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.6.4-1790093970.apk"
   },
   "home": {
     "categories": [
@@ -6072,14 +6074,16 @@
     "buttonText": "开始体验"
   },
   "updateDialog": {
-    "title": "发现新版本 v1.6.3",
+    "title": "发现新版本 v1.6.4",
     "changelog": [
-      "增加：首页置顶实时 IP 定位监控（支持开关与自定义数据源，仅显示定位 IP）",
-      "增加：公告支持开启/关闭，关闭后首页不再呈现公告内容",
-      "优化：公告文案更新为官方宣言，24 小时逐小时轮播不同内容、每日不重复",
-      "优化：主题切换仅保留自定义代码应用，删除英文分类入口",
-      "修复：开屏时长严格按默认 5 秒及后台设定展示",
-      "优化：控制台程序更新与本体软件更新完全分离，互不干扰"
+      "增加：关系认知小工具，覆盖中国56个民族的不同亲属称呼",
+      "增加：IP 实时定位中文精准显示，支持开关与数据源配置",
+      "优化：软件库更名为「懒得找了-软件库」，更新说明文字",
+      "优化：提示词区名称与图标优化，更简洁直观",
+      "优化：Skill/提示词可视化预览，上传视频图片实时展示",
+      "修复：开屏倒计时不动的问题，默认8秒后自动进入软件",
+      "修复：跑马灯公告开关无效问题，关闭后不再显示公告",
+      "修复：公告24小时逐小时轮播，默认文案+按时段播放不停顿"
     ],
     "confirmText": "立即更新",
     "cancelText": "稍后再说",
@@ -6214,12 +6218,12 @@
     ]
   },
   "console": {
-    "version": "1.0.1",
-    "code": 2,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v1.0.1.apk"
+    "version": "1.0.2",
+    "code": 3,
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v1.0.2.apk"
   },
   "ipMonitor": {
-    "enabled": true,
-    "url": "https://ipinfo.io/json"
+    "enabled": false,
+    "url": "https://ip-api.com/json/?lang=zh-CN"
   }
 }
