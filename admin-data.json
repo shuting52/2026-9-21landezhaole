@@ -6010,7 +6010,23 @@
     ]
   },
   "software": [],
-  "skills": [],
+  "skills": [
+    {
+      "id": "sk_muczot741pp5",
+      "type": "skill",
+      "promptType": "prompt_video",
+      "title": "测试",
+      "desc": "测试1",
+      "prompt": "测试2",
+      "author": "23",
+      "badge": "你",
+      "tags": "根据",
+      "previewUrl": "",
+      "mediaUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790100594948_doubao_video_1790088931209.mp4",
+      "url": "",
+      "mode": "file"
+    }
+  ],
   "settings": {
     "appName": "懒得找了",
     "slogan": "精选AI工具导航、Prompt效果图预览与手机应用无限多开分身百宝箱",
