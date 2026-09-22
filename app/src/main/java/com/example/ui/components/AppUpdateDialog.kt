@@ -245,6 +245,13 @@ fun AppUpdateDialog(
                             if (file.length() < 1024 || file.readBytes().take(2).toByteArray().contentEquals(byteArrayOf(0x50, 0x4B)).not()) {
                                 throw Exception("文件不完整")
                             }
+                            // 自动删除旧版本的 APK 缓存文件（只保留最新下载的安装包）
+                            try {
+                                val oldDir = File(context.cacheDir, "update")
+                                oldDir.listFiles()?.forEach { f ->
+                                    if (f.absolutePath != file.absolutePath) f.delete()
+                                }
+                            } catch (_: Exception) {}
                             progress = 100f
                             statusLabel = "下载完成，准备安装…"
                             delay(300)

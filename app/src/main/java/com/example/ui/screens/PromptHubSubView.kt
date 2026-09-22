@@ -146,7 +146,7 @@ fun PromptHubSubView(
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
-                        text = "暂无提示词，等待云端控制台同步…",
+                        text = "还未获取到任何资源哟 请联系作者",
                         fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -202,28 +202,65 @@ private fun CloudPromptCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column {
-            // 可视化预览：视频提示词优先播放演示视频，图片提示词展示预览图
+            // 可视化预览：视频提示词优先播放演示视频（失败时回退预览图，避免黑屏），图片提示词展示预览图
             if (isVideo && prompt.mediaUrl.isNotBlank()) {
-                // 视频预览（静音循环自动播放，点击暂停/继续）
-                androidx.compose.ui.viewinterop.AndroidView(
-                    factory = { ctx ->
-                        android.widget.VideoView(ctx).apply {
-                            setVideoURI(android.net.Uri.parse(prompt.mediaUrl))
-                            setOnPreparedListener { mp ->
-                                mp.isLooping = true
-                                mp.setVolume(0f, 0f)
-                                mp.start()
+                var videoFailed by remember { mutableStateOf(false) }
+                if (!videoFailed) {
+                    // 视频预览（静音循环自动播放，点击暂停/继续；加载失败自动回退预览图避免黑屏）
+                    androidx.compose.ui.viewinterop.AndroidView(
+                        factory = { ctx ->
+                            android.widget.VideoView(ctx).apply {
+                                setVideoURI(android.net.Uri.parse(prompt.mediaUrl))
+                                setOnPreparedListener { mp ->
+                                    mp.isLooping = true
+                                    mp.setVolume(0f, 0f)
+                                    mp.start()
+                                }
+                                setOnErrorListener { mp, what, extra ->
+                                    // 视频无法解码/加载：回退到预览图或提示，避免黑屏
+                                    videoFailed = true
+                                    true
+                                }
+                                setOnClickListener {
+                                    if (isPlaying) pause() else start()
+                                }
                             }
-                            setOnClickListener {
-                                if (isPlaying) pause() else start()
-                            }
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(170.dp)
-                        .clip(RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp))
-                )
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(170.dp)
+                            .clip(RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp))
+                    )
+                } else if (prompt.previewUrl.isNotBlank()) {
+                    // 视频加载失败：展示预览图
+                    AsyncImage(
+                        model = prompt.previewUrl,
+                        contentDescription = prompt.title,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(160.dp)
+                            .clip(RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp))
+                    )
+                } else {
+                    // 无预览图：显示提示条
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(80.dp)
+                            .background(Color(0xFF1E1E24))
+                            .clip(RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "视频暂不支持内嵌预览，点击卡片右上角编辑/复制提示词使用",
+                            fontSize = 11.sp,
+                            color = Color.White.copy(alpha = 0.75f),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
+                }
             } else if (prompt.previewUrl.isNotBlank()) {
                 Box(
                     modifier = Modifier

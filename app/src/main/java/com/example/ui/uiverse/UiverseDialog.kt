@@ -277,7 +277,7 @@ private fun UiverseHeader(
                     }
                 }
                 Text(
-                    text = "内置款式1~5与全套UI主题一键应用 · 自动适配全屏背景",
+                    text = "自定义代码应用 · 识别软件全部 UI 组件并全局生效",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 10.5.sp
                 )
@@ -666,7 +666,7 @@ private fun CustomCodeEditorSection(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "自定义代码驱动软件UI (CSS + HTML)",
+                        text = "自定义代码应用",
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.5.sp
@@ -674,31 +674,11 @@ private fun CustomCodeEditorSection(
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "支持直接粘贴或编写标准 CSS+HTML 代码，系统将智能提取背景渐变、描边圆角、发光阴影与模糊特效，一键应用到整个软件的所有界面与UI元素中！",
+                    text = "支持直接粘贴或编写标准 CSS+HTML 代码，自动应用到软件全局 UI。",
                     color = Color(0xFFF1F5F9),
                     fontSize = 11.sp
                 )
             }
-        }
-
-        // Quick Preset Templates
-        Text(
-            text = "⚡ 快速载入预设代码模板：",
-            color = Color(0xFF94A3B8),
-            fontSize = 11.5.sp,
-            fontWeight = FontWeight.Bold
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            PresetPill("赛博发光") { onCssChange(UiverseCssEngine.templateNeonCard) }
-            PresetPill("极光玻璃") { onCssChange(UiverseCssEngine.templateGlassAurora) }
-            PresetPill("新野蛮主义") { onCssChange(UiverseCssEngine.templateNeoBrutalism) }
-            PresetPill("新拟物浮雕") { onCssChange(UiverseCssEngine.templateNeumorphicClay) }
-            PresetPill("全息棱镜") { onCssChange(UiverseCssEngine.templateHolographic) }
         }
 
         // Live Preview Box of the current CSS

@@ -48,6 +48,7 @@ import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.OpenInBrowser
@@ -1314,7 +1315,120 @@ private val KIN_RELATIONS = listOf(
     KinRelation("儿子的儿子", "孙子", "儿子的儿子称孙子"),
     KinRelation("女儿的女儿", "外孙女", "女儿的女儿称外孙女"),
     KinRelation("爸爸的爸爸", "爷爷", "父亲的父亲称爷爷（部分地区称爹爹/阿公）"),
-    KinRelation("妈妈的妈妈", "外婆（姥姥）", "母亲的母亲称外婆/姥姥")
+    KinRelation("妈妈的妈妈", "外婆（姥姥）", "母亲的母亲称外婆/姥姥"),
+    // 新增：不同辈分的称呼
+    KinRelation("父亲的兄弟", "伯父/叔父", "父亲的兄长称伯父，父亲之弟称叔父"),
+    KinRelation("母亲的兄弟", "舅舅", "母亲的兄弟称舅舅"),
+    KinRelation("父亲的姐妹", "姑妈", "父亲的姐妹称姑妈"),
+    KinRelation("母亲的姐妹", "姨妈", "母亲的姐妹称姨妈"),
+    KinRelation("堂兄弟姐妹的父亲", "伯父/叔父", "堂兄弟姐妹的父亲即父亲的兄弟"),
+    KinRelation("表兄弟姐妹的母亲", "姨母/姑母", "表兄弟姐妹的母亲是母亲的姐妹或父亲的姐妹")
+)
+
+// 中国各省份（全国 34 个省级行政区，含 23 省 5 自治区 4 直辖市 2 特别行政区）
+private val CHINA_PROVINCES = listOf(
+    "北京市","天津市","河北省","山西省","内蒙古自治区","辽宁省","吉林省","黑龙江省",
+    "上海市","江苏省","浙江省","安徽省","福建省","江西省","山东省","河南省",
+    "湖北省","湖南省","广东省","广西壮族自治区","海南省","重庆市","四川省","贵州省",
+    "云南省","西藏自治区","陕西省","甘肃省","青海省","宁夏回族自治区","新疆维吾尔自治区",
+    "台湾省","香港特别行政区","澳门特别行政区"
+)
+
+// 各省份方言版亲属称呼（示例：省份 -> 关系问题 -> 方言叫法）
+private val PROVINCE_KIN_DIALECT = mapOf(
+    "北京市" to mapOf(
+        "爸爸的爸爸" to "爷爷",
+        "妈妈的妈妈" to "姥姥",
+        "爸爸的哥哥" to "大爷（大伯）",
+        "爸爸的弟弟" to "叔叔",
+        "妈妈的兄弟" to "舅舅"
+    ),
+    "上海市" to mapOf(
+        "爸爸的爸爸" to "爷爷（阿爷）",
+        "妈妈的妈妈" to "外婆（阿婆）",
+        "爸爸的哥哥" to "伯伯",
+        "爸爸的弟弟" to "叔叔",
+        "妈妈的兄弟" to "舅舅"
+    ),
+    "广东省" to mapOf(
+        "爸爸的爸爸" to "爷爷（阿公）",
+        "妈妈的妈妈" to "外婆（婆婆）",
+        "爸爸的哥哥" to "伯爷",
+        "爸爸的弟弟" to "叔父（阿叔）",
+        "妈妈的兄弟" to "舅父（阿舅）",
+        "姐姐的儿子" to "外甥"
+    ),
+    "四川省" to mapOf(
+        "爸爸的爸爸" to "爷爷",
+        "妈妈的妈妈" to "外婆（家家）",
+        "爸爸的哥哥" to "大伯",
+        "爸爸的弟弟" to "幺爸",
+        "妈妈的兄弟" to "舅舅",
+        "姐姐的儿子" to "外甥"
+    ),
+    "福建省" to mapOf(
+        "爸爸的爸爸" to "阿公",
+        "妈妈的妈妈" to "阿嬷",
+        "爸爸的哥哥" to "阿伯",
+        "爸爸的弟弟" to "阿叔",
+        "妈妈的兄弟" to "阿舅"
+    ),
+    "山东省" to mapOf(
+        "爸爸的爸爸" to "爷爷",
+        "妈妈的妈妈" to "姥姥",
+        "爸爸的哥哥" to "大爷",
+        "爸爸的弟弟" to "叔叔",
+        "妈妈的兄弟" to "舅舅"
+    ),
+    "陕西省" to mapOf(
+        "爸爸的爸爸" to "爷爷（爷）",
+        "妈妈的妈妈" to "外婆（婆）",
+        "爸爸的哥哥" to "伯父（大伯）",
+        "爸爸的弟弟" to "叔父",
+        "妈妈的兄弟" to "舅舅"
+    ),
+    "湖南省" to mapOf(
+        "爸爸的爸爸" to "嗲嗲",
+        "妈妈的妈妈" to "外婆（家家）",
+        "爸爸的哥哥" to "伯伯",
+        "爸爸的弟弟" to "满满",
+        "妈妈的兄弟" to "舅舅"
+    ),
+    "浙江省" to mapOf(
+        "爸爸的爸爸" to "爷爷（阿爷）",
+        "妈妈的妈妈" to "外婆（阿婆）",
+        "爸爸的哥哥" to "伯伯",
+        "爸爸的弟弟" to "叔叔",
+        "妈妈的兄弟" to "舅舅"
+    ),
+    "江苏省" to mapOf(
+        "爸爸的爸爸" to "爷爷",
+        "妈妈的妈妈" to "外婆（好婆）",
+        "爸爸的哥哥" to "伯伯",
+        "爸爸的弟弟" to "叔叔",
+        "妈妈的兄弟" to "舅舅"
+    ),
+    "河南省" to mapOf(
+        "爸爸的爸爸" to "爷爷",
+        "妈妈的妈妈" to "外婆（姥姥）",
+        "爸爸的哥哥" to "大爷",
+        "爸爸的弟弟" to "叔叔",
+        "妈妈的兄弟" to "舅爷"
+    ),
+    "黑龙江省" to mapOf(
+        "爸爸的爸爸" to "爷爷",
+        "妈妈的妈妈" to "姥姥",
+        "爸爸的哥哥" to "大爷",
+        "爸爸的弟弟" to "老叔",
+        "妈妈的兄弟" to "舅舅"
+    ),
+    "重庆市" to mapOf(
+        "爸爸的爸爸" to "爷爷",
+        "妈妈的妈妈" to "外婆",
+        "爸爸的哥哥" to "伯伯（大爷）",
+        "爸爸的弟弟" to "幺爸",
+        "妈妈的兄弟" to "舅舅"
+    )
 )
 
 // 中国56个民族
@@ -1371,6 +1485,7 @@ private val ETHNIC_KIN_SPECIAL = mapOf(
 private fun RelationKinScreenView(context: Context) {
     var selectedRelation by remember { mutableStateOf(KIN_RELATIONS[0]) }
     var selectedEthnic by remember { mutableStateOf("汉族") }
+    var selectedProvince by remember { mutableStateOf("北京市") }
     var regionExpanded by remember { mutableStateOf(false) }
 
     LazyColumn(
@@ -1382,7 +1497,7 @@ private fun RelationKinScreenView(context: Context) {
         item {
             ToolHeaderBanner(
                 title = "关系认知 · 亲戚称呼查询",
-                desc = "姐姐的弟弟叫什么？姐姐的儿子叫什么？覆盖中国56个民族的不同叫法，选择地区看特色称呼。",
+                desc = "姐姐的弟弟叫什么？姐姐的儿子叫什么？支持全国省份选择 + 56个民族 + 方言版叫法。",
                 icon = Icons.Filled.Groups
             )
         }
@@ -1430,11 +1545,13 @@ private fun RelationKinScreenView(context: Context) {
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(10.dp))
-                    // 当前民族/地区的叫法
+                    // 方言版叫法（按省份优先）
+                    val dialect = PROVINCE_KIN_DIALECT[selectedProvince]?.get(selectedRelation.ask)
                     val special = ETHNIC_KIN_SPECIAL[selectedEthnic]?.get(selectedRelation.ask)
-                    val answer = special ?: selectedRelation.common
+                    // 展示顺序：方言版 → 民族特色 → 普通话通用
+                    val answer = dialect ?: special ?: selectedRelation.common
                     Text(
-                        text = "【$selectedEthnic】${selectedEthnic}的称呼：",
+                        text = "【$selectedProvince · $selectedEthnic】称呼：",
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -1445,10 +1562,24 @@ private fun RelationKinScreenView(context: Context) {
                         fontWeight = FontWeight.Black,
                         color = MaterialTheme.colorScheme.primary
                     )
-                    if (special == null) {
+                    if (dialect != null) {
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "（该民族通用称谓与普通话一致，具体以当地口语为准）",
+                            text = "（方言版叫法，源自$selectedProvince）",
+                            fontSize = 10.5.sp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    } else if (special != null) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "（$selectedEthnic 民族特色叫法）",
+                            fontSize = 10.5.sp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    } else {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "（普通话通用称谓；不同地区方言可能有差异）",
                             fontSize = 10.5.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -1460,6 +1591,91 @@ private fun RelationKinScreenView(context: Context) {
                             fontSize = 10.5.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                    }
+                }
+            }
+        }
+
+        // 省份选择（全国 34 省级行政区）
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.6f)),
+                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.7f))
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    var provinceExpanded by remember { mutableStateOf(false) }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .clickable { provinceExpanded = !provinceExpanded }
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.LocationOn,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "选择省份（全国）",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = "当前：$selectedProvince",
+                                fontSize = 10.5.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.Filled.KeyboardArrowDown,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier
+                                .size(20.dp)
+                                .rotate(if (provinceExpanded) 180f else 0f)
+                        )
+                    }
+                    if (provinceExpanded) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        CHINA_PROVINCES.chunked(4).forEach { row ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(5.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                row.forEach { province ->
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(
+                                                if (selectedProvince == province) MaterialTheme.colorScheme.primary
+                                                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                            )
+                                            .clickable { selectedProvince = province; provinceExpanded = false }
+                                            .padding(vertical = 7.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = province.replace("省", "").replace("市", "").replace("自治区", "").replace("特别行政区", "").replace("壮族", "桂").replace("回族", "宁").replace("维吾尔", "新").replace("藏族", "藏"),
+                                            fontSize = 10.sp,
+                                            fontWeight = if (selectedProvince == province) FontWeight.Bold else FontWeight.Medium,
+                                            color = if (selectedProvince == province) Color.White else MaterialTheme.colorScheme.onSurface,
+                                            maxLines = 1
+                                        )
+                                    }
+                                }
+                                repeat(4 - row.size) { Spacer(modifier = Modifier.weight(1f)) }
+                            }
+                        }
                     }
                 }
             }
