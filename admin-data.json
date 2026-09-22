@@ -6021,7 +6021,7 @@
     "qqGroupUrl": "https://qm.qq.com/q/BnUzn164u21Cu1dG7vAVYJqU_4hw0COArsGrrBOIc0vxu7ES6gOJcYyrpu2JgkVs",
     "qqGroupUin": "439211347",
     "officialWebsite": "",
-    "feedbackEmail": "307779523@qq.com",
+    "feedbackEmail": "",
     "customThemeCss": "",
     "customThemeHtml": ""
   },
@@ -6187,7 +6187,7 @@
     "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v1.0.1.apk"
   },
   "ipMonitor": {
-    "enabled": false,
+    "enabled": true,
     "url": "https://ipinfo.io/json"
   }
 }
