@@ -95,9 +95,7 @@ fun UiverseDialog(
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
 
-    // Category selection: matching the exact 12 from screenshot plus Custom Code
-    var selectedCategory by remember { mutableStateOf(UiverseCategory.UI_KITS) }
-    var isCustomCodeTabActive by remember { mutableStateOf(false) }
+    // 主题切换仅保留「自定义代码应用」，原英文分类入口已移除
 
     // Custom CSS / HTML inputs
     var customCssText by remember {
@@ -153,18 +151,29 @@ fun UiverseDialog(
                     }
                 )
 
-                // Top Category Navigation (Horizontal scrollable pill list mirroring the screenshot)
-                UiverseCategoryBar(
-                    selectedCategory = selectedCategory,
-                    isCustomCodeActive = isCustomCodeTabActive,
-                    onSelectCategory = {
-                        selectedCategory = it
-                        isCustomCodeTabActive = false
-                    },
-                    onSelectCustomCode = {
-                        isCustomCodeTabActive = true
-                    }
-                )
+                // 主题切换：仅保留「自定义代码应用」，不再展示英文分类入口（UI Kits/Buttons/Cards 等）
+                // 顶部简单提示条
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFF0F121C))
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Code,
+                        contentDescription = null,
+                        tint = Color(0xFF8B5CF6),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "自定义代码应用（识别软件全部 UI 组件，全局生效）",
+                        color = Color(0xFFCBD5E1),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
 
                 Divider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), thickness = 1.dp)
 

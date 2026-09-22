@@ -48,33 +48,50 @@ import java.util.Calendar
 import kotlinx.coroutines.delay
 
 /**
- * 24小时不断轮播跑马灯公告内容
+ * 24小时不断轮播跑马灯公告内容（默认官宣文案）
  */
-const val MARQUEE_ANNOUNCEMENT_TEXT = "欢迎使用懒得找应用软件，这里的资源丰富，很多资源都是可以白嫖的。请自寻探索~~现在是早上的9:00，请工作的时候注意适当不要太累生命才是最大的财富"
+const val MARQUEE_ANNOUNCEMENT_TEXT = "本软件集成了上百款站点和应用，有些内容都是可以白嫖的哟～具体内容请自行发掘体验。后续我们会陆续的更新新内容的，请尽情期待吧～  懒得找了 官宣"
 
 /**
  * 根据当前小时（0-23点）动态生成对应时间段播报文案。
- * 每个时间段（深夜/清晨/早上/上午/中午/下午/傍晚/晚上）播放不同的问候文字，
- * 并实时显示当前时间（HH:mm）。
+ * 24 小时逐小时轮播不同内容，每天同一时段文案固定不重复。
  */
 fun getHourlyMarqueeText(calendar: Calendar = Calendar.getInstance()): String {
     val hour = calendar.get(Calendar.HOUR_OF_DAY)
     val minute = calendar.get(Calendar.MINUTE)
     val hh = "%02d".format(hour)
     val mm = "%02d".format(minute)
-    val prefix = "欢迎使用懒得找应用软件，这里的资源丰富，很多资源都是可以白嫖的。请自寻探索~~"
-    val tail = "，请工作的时候注意适当不要太累，生命才是最大的财富"
-    val periodText = when (hour) {
-        in 0..4 -> "现在是深夜$hh:$mm，夜深人静，早点休息养足精神，明天继续探索～"
-        in 5..6 -> "现在是清晨$hh:$mm，新的一天开始啦，早起的人运气不会差，快去发现宝藏吧！"
-        in 7..9 -> "现在是早上$hh:$mm，早上好呀！一日之计在于晨，工作学习注意劳逸结合～"
-        in 10..11 -> "现在是上午$hh:$mm，上午好！专注工作学习的同时，记得起身活动一下哦～"
-        in 12..13 -> "现在是中午$hh:$mm，中午好！记得按时吃饭，饭后小憩，下午继续加油～"
-        in 14..16 -> "现在是下午$hh:$mm，下午好！来杯水提提神，继续探索无限资源吧～"
-        in 17..18 -> "现在是傍晚$hh:$mm，傍晚好！忙碌了一天辛苦了，给自己一点放松时间吧～"
-        else -> "现在是晚上$hh:$mm，晚上好！注意休息，不要太累～"
+    val prefix = "本软件集成了上百款站点和应用，有些内容都是可以白嫖的哟～具体内容请自行发掘体验。"
+    val tail = "后续我们会陆续的更新新内容的，请尽情期待吧～  懒得找了 官宣"
+    // 24 个时段逐小时文案（6-7点 / 7-8点…每天对应时段固定，不重复）
+    val hourText = when (hour) {
+        0 -> "现在是$hh:$mm，深夜了，早点休息养足精神，明天继续探索～"
+        1 -> "现在是$hh:$mm，凌晨1点啦，放下手机睡个好觉吧～"
+        2 -> "现在是$hh:$mm，凌晨2点，熬夜伤身，快去休息～"
+        3 -> "现在是$hh:$mm，凌晨3点，万籁俱寂，愿你好梦～"
+        4 -> "现在是$hh:$mm，凌晨4点，夜将尽黎明将至，养精蓄锐～"
+        5 -> "现在是$hh:$mm，清晨5点，早起的人运气不会差，去发现宝藏吧！"
+        6 -> "现在是早上$hh:$mm，记得出门带伞。吃早餐哟，早餐是最重要的一餐。"
+        7 -> "现在是早上$hh:$mm，是不是要准备去上班了，路上注意安全哟，不要看手机，注意车辆。"
+        8 -> "现在是早上$hh:$mm，一日之计在于晨，工作学习加油，记得喝水～"
+        9 -> "现在是上午$hh:$mm，专注工作学习的同时，记得起身活动一下哦～"
+        10 -> "现在是上午$hh:$mm，来杯水提提神，高效时刻来啦～"
+        11 -> "现在是上午$hh:$mm，再坚持一会儿就午休啦，加油～"
+        12 -> "现在是中午$hh:$mm，记得按时吃饭，饭后小憩一会儿，下午继续～"
+        13 -> "现在是下午$hh:$mm，午休好了吗？精神满满再出发～"
+        14 -> "现在是下午$hh:$mm，犯困的话起来走走，伸个懒腰吧～"
+        15 -> "现在是下午$hh:$mm，下午茶时间，放松一下继续探索资源吧～"
+        16 -> "现在是下午$hh:$mm，离下班越来越近啦，稳住～"
+        17 -> "现在是傍晚$hh:$mm，忙碌了一天辛苦了，给自己一点放松时间吧～"
+        18 -> "现在是傍晚$hh:$mm，下班路上注意安全，回家好好休息～"
+        19 -> "现在是晚上$hh:$mm，晚饭吃了吗？记得按时吃饭哦～"
+        20 -> "现在是晚上$hh:$mm，休闲时光，看看喜欢的资源放松一下吧～"
+        21 -> "现在是晚上$hh:$mm，早点洗漱，准备进入梦乡吧～"
+        22 -> "现在是晚上$hh:$mm，夜深了，放下手机，好好休息～"
+        23 -> "现在是晚上$hh:$mm，祝你好梦，明天又是元气满满的一天～"
+        else -> "现在是$hh:$mm，祝你开心每一天～"
     }
-    return prefix + periodText + tail
+    return prefix + hourText + tail
 }
 @Composable
 fun IpMonitorWidget(
@@ -86,7 +103,8 @@ fun IpMonitorWidget(
 
 /**
  * 跑马灯公告栏主组件
- * 支持云端配置：icon（图标）、segments（24小时时间段轮播）、defaultText（默认文字）
+ * - 云端配置 enabled=false 时完全不渲染（后台关闭后本体不再呈现公告）
+ * - 支持云端 icon / segments（24小时逐小时轮播）/ defaultText
  */
 @Composable
 fun MarqueeNoticeWidget(
@@ -94,6 +112,9 @@ fun MarqueeNoticeWidget(
     text: String = MARQUEE_ANNOUNCEMENT_TEXT,
     cloudMarquee: MarqueeDto? = null
 ) {
+    // 后台关闭跑马灯：本体完全不渲染公告内容
+    if (cloudMarquee?.enabled == false) return
+
     // 按当前小时动态生成播报文案，每分钟刷新一次（时间与时间段文字实时变化）
     var displayText by remember { mutableStateOf(getHourlyMarqueeText()) }
     LaunchedEffect(Unit) {
