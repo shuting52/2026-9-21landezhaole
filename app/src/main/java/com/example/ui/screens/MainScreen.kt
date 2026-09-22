@@ -13,6 +13,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.layout.ContentScale
 import com.example.R
+import com.example.ui.components.IpLocationMonitorWidget
 import com.example.ui.components.IpMonitorWidget
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -220,7 +221,8 @@ fun MainScreen(
                                 onOpenTheme = { viewModel.setThemeDialogVisible(true) },
                                 onOpenAddSite = { showAddSiteDialog = true },
                                 onTriggerSplash = { viewModel.showSplash() },
-                                cloudMarquee = uiState.cloudMarquee
+                                cloudMarquee = uiState.cloudMarquee,
+                                cloudIpMonitor = uiState.cloudIpMonitor
                             )
                         }
 
@@ -648,7 +650,8 @@ private fun HeaderBrandSection(
     onOpenTheme: () -> Unit,
     onOpenAddSite: () -> Unit,
     onTriggerSplash: () -> Unit,
-    cloudMarquee: com.example.data.remote.MarqueeDto? = null
+    cloudMarquee: com.example.data.remote.MarqueeDto? = null,
+    cloudIpMonitor: com.example.data.remote.IpMonitorDto? = null
 ) {
     val primaryColor = MaterialTheme.colorScheme.primary
     val secondaryColor = MaterialTheme.colorScheme.secondary
@@ -779,7 +782,13 @@ private fun HeaderBrandSection(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // 24小时跑马灯公告（云端控制台可自定义图标与文字）
+            // 首页置顶 · 实时 IP 定位监控（后台控制台可开关/配 URL，只显示定位 IP）
+            IpLocationMonitorWidget(
+                cloudIpMonitor = cloudIpMonitor,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            // 24小时跑马灯公告（云端控制台可开关、自定义图标与逐小时文案）
             IpMonitorWidget(
                 modifier = Modifier.fillMaxWidth(),
                 cloudMarquee = cloudMarquee

@@ -274,6 +274,8 @@ const DEFAULT_TOKEN = "";
 const DEFAULT_OWNER = "shuting52";
 const DEFAULT_REPO  = "2026-9-21landezhaole";
 const CONFIG_PATH   = "admin-data.json";
+// 控制台程序当前内置版本（每次发布新控制台 APK 时递增；与本体软件版本完全分离）
+const CONSOLE_LOCAL_VERSION = 1;
 
 const S = {
   token: DEFAULT_TOKEN,
@@ -416,6 +418,8 @@ async function connect(){
     toast("云端数据加载成功","ok");
     // 异步加载仓库已有 APK
     fetchRepoApks(false);
+    // 控制台程序自更新检查（与本体软件更新完全分离，只在控制台程序内提示）
+    checkConsoleUpdate();
   }catch(e){
     $("connInfo").innerHTML = '<span class="status-dot fail"></span>加载失败：' + e.message;
     setSub("连接失败");
@@ -558,6 +562,34 @@ async function cleanupOldApks(){
     }
   }catch(e){
     console.warn("cleanupOldApks 失败:", e);
+  }
+}
+
+// ============ 控制台程序自更新（与本体软件更新完全分离） ============
+// 检测到仓库发布了新的控制台 APK 时，提示下载并自动安装替换老版本。
+function checkConsoleUpdate(){
+  try{
+    const con = S.admin && S.admin.console;
+    if(!con || !con.code || !con.apkUrl) return;
+    if(con.code <= CONSOLE_LOCAL_VERSION) return; // 已是最新
+    confirmDlgHtml(
+      `? 发现控制台程序新版本 <b>v${esc(con.version)}</b>（当前 v1.0）<br>` +
+      `控制台程序更新与本体软件完全分离，不影响本体软件。<br><br>` +
+      `点击确认将自动下载并安装新版本，替换当前控制台程序。`
+    ).then(ok=>{
+      if(!ok) return;
+      toast("正在下载控制台新版本并自动安装…","ok");
+      if(typeof Android !== "undefined" && Android.downloadAndInstall){
+        // 云台 APK 环境：原生下载+安装
+        Android.downloadAndInstall(con.apkUrl, "console-apk-v" + con.version + ".apk");
+      } else {
+        // 浏览器环境：直接打开下载链接
+        window.open(con.apkUrl, "_blank");
+        toast("已在浏览器打开下载，请下载后安装控制台新版本","ok");
+      }
+    });
+  }catch(e){
+    console.warn("checkConsoleUpdate 失败:", e);
   }
 }
 
@@ -1082,7 +1114,7 @@ function promptCardHtml(s, si){
       ${s.previewUrl ? `<span class="chip" style="background:#1e1b4b;color:#a5b4fc">✅ 已上传预览图</span>` : `<span class="chip" style="background:#3a1518;color:#f87171">❌ 无预览图</span>`}
       ${s.mediaUrl ? `<span class="chip" style="background:#1e1b4b;color:#a5b4fc">🎬 含演示视频</span>` : ""}
     </div>
-    ${s.previewUrl ? `<img class="preview-img" src="${esc(s.previewUrl)}" onerror="this.style.display='none'">` : ""}
+    ${s.mediaUrl ? `<video class="preview-video" src="${esc(s.mediaUrl)}" controls preload="metadata" onerror="this.style.display='none'"></video>` : (s.previewUrl ? `<img class="preview-img" src="${esc(s.previewUrl)}" onerror="this.style.display='none'">` : "")}
   </div>`;
 }
 
@@ -1327,6 +1359,16 @@ function renderSettings(){
     <div id="fMqSegs">${segHtml}</div>
     <button class="btn-mini pri" onclick="mqSegAdd()">＋ 新增时间段</button>
     <div class="divider"></div>
+    <h3>? 首页置顶 · 实时 IP 定位监控</h3>
+    <label>IP 定位开关</label>
+    <select id="fIpEnabled">
+      <option value="false" ${(S.admin.ipMonitor||{}).enabled?"":"selected"}>? 关闭（首页不显示定位）</option>
+      <option value="true" ${(S.admin.ipMonitor||{}).enabled?"selected":""}>✅ 开启（首页置顶显示定位 IP）</option>
+    </select>
+    <label>IP 定位数据源 URL（返回 JSON 含 ip/city/region；仅用于定位，UI 不显示网站字样）</label>
+    <input id="fIpUrl" value="${esc((S.admin.ipMonitor||{}).url||"")}" placeholder="https://ipinfo.io/json">
+    <div class="hint">示例：https://ipinfo.io/json 或 https://ip-api.com/json/?lang=zh-CN</div>
+    <div class="divider"></div>
     <h3>📮 联系作者与反馈</h3>
     <div class="two-col">
       <div><label>官方 QQ 群 / 联系二维码 URL</label><input id="fSetQQ" value="${esc(s.contactQQ||"")}" placeholder="https://...">
@@ -1405,8 +1447,13 @@ function saveSettings(){
     defaultText: $("fMqDefault").value.trim(),
     segments: S.admin.marquee.segments || []
   };
+  // IP 定位监控
+  S.admin.ipMonitor = {
+    enabled: $("fIpEnabled").value === "true",
+    url: $("fIpUrl").value.trim()
+  };
   toast("设置已保存，点击「应用并实时同步」推送到本体","ok");
-  logChange("更新设置版块（品牌/联系/公告/主题）");
+  logChange("更新设置版块（品牌/联系/公告/主题/IP定位）");
 }
 
 // ==========================================
