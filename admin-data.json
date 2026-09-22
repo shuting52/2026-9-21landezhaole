@@ -6012,37 +6012,7 @@
     ]
   },
   "software": [],
-  "skills": [
-    {
-      "id": "sk_muau849rt7t1",
-      "type": "skill",
-      "title": "夏林果真人IP封面",
-      "desc": "夏林果真人IP封面 技能资源包（ZIP）已上传云端",
-      "prompt": "",
-      "url": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1789970497488______IP__.zip",
-      "author": "懒得找了",
-      "badge": "",
-      "tags": "技能 资源包 ZIP",
-      "previewUrl": "",
-      "mediaUrl": "",
-      "promptType": "skill"
-    },
-    {
-      "id": "sk_muc1xrgd1nta",
-      "type": "skill",
-      "title": "桌面趣味视频",
-      "desc": "",
-      "prompt": "参考提示：创建一个高端的 16:9 macOS 桌面截图，以汤姆和杰瑞为主角。\n\n构建一个原创的电影式卡通客厅环境，在日落时分，一侧窗户透入温暖的光线，木质地板，舒适的家具，柔和的阴影，散落着调皮的物件，以及微妙的氛围深度。\n\n将汤姆和杰瑞一起放置在右侧，在一个富有表现力的调皮时刻，保留他们经典卡通外观、比例、颜色、面部表情、服装/细节以及原始 2D 动画美学。\n\n汤姆应该戏剧性地做出反应，而杰瑞显得调皮捣蛋，创造一个自然的叙事时刻。保持两个角色完全可见，避免裁剪脸部、手、尾巴或重要细节。\n\n使用温暖的金橙色照明，混合深棕色、奶油色、柔和的红色和柔和的蓝色点缀。添加微妙的电影式照明和深度，同时保持艺术作品明显的卡通风格。\n\n左侧预留用于桌面快捷方式。添加正好 18 个应用程序，分成三列六行：\n\nChrome | Safari | Gmail  \nYouTube | Spotify | Discord  \nSlack | Zoom | Microsoft Teams  \nNotion | Word | Excel  \nInstagram | Reddit | Netflix  \nSteam | Dropbox | Google Drive  \n\n使用干净、可识别的应用程序标志，相同尺寸、宽裕间距和清晰的白色标签。\n\n在顶部添加一个逼真的半透明 macOS 菜单栏：  \nApple 标志、访达、文件、编辑、查看、前往、窗口、帮助  \n右侧带有 Wi-Fi、电池、控制图标和时钟。\n\n在底部添加一个浮动的半透明 Dock，向左侧定位，以免阻挡汤姆和杰瑞。\n\nDock：  \n访达、Safari、信息、邮件、照片、日历、系统设置、分隔符、下载、废纸篓。\n\n最终风格：高端动画电影艺术作品结合逼真的 macOS 界面，电影式构图，干净的字体，强烈的角色融合，精致的照明，详细的环境，以及平衡的负空间。\n\n无笔记本电脑、显示器、键盘、鼠标、打开的应用程序、额外角色、重复图标、大标题、广告、横幅或水印。\n\n输出一张完成的超高分辨率 16:9 边缘到边缘桌面图像。",
-      "url": "",
-      "author": "",
-      "badge": "",
-      "tags": "",
-      "previewUrl": "",
-      "mediaUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790076975128_L17YSsxs5pSxTVeD.mp4",
-      "promptType": "prompt_video",
-      "mode": "file"
-    }
-  ],
+  "skills": [],
   "settings": {
     "appName": "懒得找了",
     "slogan": "精选AI工具导航、Prompt效果图预览与手机应用无限多开分身百宝箱",
