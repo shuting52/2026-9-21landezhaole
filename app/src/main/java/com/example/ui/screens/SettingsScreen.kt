@@ -868,10 +868,16 @@ private fun ContactAuthorDialog(
 
                             Spacer(modifier = Modifier.height(12.dp))
                             Text(
-                                text = "支付宝扫码",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
+                                text = "投喂作者",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color(0xFF1677FF)
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "开发不易，投喂作者一杯奶茶呗～",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
 
                             Spacer(modifier = Modifier.height(14.dp))
@@ -921,10 +927,16 @@ private fun ContactAuthorDialog(
 
                             Spacer(modifier = Modifier.height(12.dp))
                             Text(
-                                text = "QQ扫码",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
+                                text = "扫一扫 加好友",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color(0xFF1976D2)
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "QQ 扫码加好友交流～",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
 
                             Spacer(modifier = Modifier.height(14.dp))
@@ -974,10 +986,16 @@ private fun ContactAuthorDialog(
 
                             Spacer(modifier = Modifier.height(12.dp))
                             Text(
-                                text = "微信扫码",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
+                                text = "扫一扫 加好友",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color(0xFF07C160)
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "微信扫码加好友交流～",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
 
                             Spacer(modifier = Modifier.height(14.dp))

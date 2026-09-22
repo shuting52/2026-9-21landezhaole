@@ -43,6 +43,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -94,7 +95,8 @@ fun AppUpdateDialog(
     onUpdateFinished: () -> Unit = {},
     update: UpdateDialogDto? = null,
     apkUrl: String? = null,
-    forceUpdate: Boolean = false
+    forceUpdate: Boolean = false,
+    autoDownload: Boolean = false
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -104,6 +106,7 @@ fun AppUpdateDialog(
     var statusLabel by remember { mutableStateOf("等待更新…") }
     // 签名冲突标记：检测到旧版本签名不一致时引导先卸载再安装
     var isSignatureConflict by remember { mutableStateOf(false) }
+
 
     // 云端配置（由控制台发布，实时同步）
     val cloudTitle = update?.title ?: "发现新版本"
@@ -313,6 +316,15 @@ fun AppUpdateDialog(
         fun download() { onDownload() }
         @JavascriptInterface
         fun close() { onClose() }
+    }
+
+    // 自动下载模式：弹窗出现后自动开始下载新版本（无需手动点击「立即更新」）
+    LaunchedEffect(Unit) {
+        if (autoDownload && !apkUrl.isNullOrBlank() && !isUpdating) {
+            // 稍作延迟，让弹窗先渲染出来
+            delay(400)
+            startRealDownload()
+        }
     }
 
     fun startUpdate() {
@@ -623,21 +635,33 @@ fun AppUpdateDialog(
                                     .testTag("uiverse_more_options")
                             )
 
-                            // 签名冲突时：引导先卸载旧版本再安装（解决旧版本未卸载导致安装失败问题）
+                            // 签名冲突时：自动识别并引导先卸载旧版本再安装（解决旧版本未卸载导致安装失败问题）
                             if (isSignatureConflict) {
                                 Button(
                                     onClick = {
-                                        // 跳转系统设置-应用详情页，用户可一键卸载旧版本
+                                        // 自动调用系统卸载界面卸载旧版本（安装新版本前先卸载，彻底避免签名冲突安装失败）
                                         try {
                                             val intent = Intent(
-                                                android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                                Intent.ACTION_DELETE,
                                                 Uri.parse("package:" + context.packageName)
-                                            )
-                                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                            ).apply {
+                                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                            }
                                             context.startActivity(intent)
-                                            Toast.makeText(context, "请在应用详情页点击「卸载」，卸载完成后重新打开软件即可安装新版本", Toast.LENGTH_LONG).show()
+                                            Toast.makeText(context, "已打开卸载界面，卸载完成后请重新打开本软件即可自动安装新版本", Toast.LENGTH_LONG).show()
                                         } catch (e: Exception) {
-                                            Toast.makeText(context, "无法打开应用详情页，请到系统设置手动卸载旧版本", Toast.LENGTH_LONG).show()
+                                            // 兜底：跳转应用详情页手动卸载
+                                            try {
+                                                val intent = Intent(
+                                                    android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                                    Uri.parse("package:" + context.packageName)
+                                                )
+                                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                                context.startActivity(intent)
+                                                Toast.makeText(context, "请在应用详情页点击「卸载」，卸载完成后重新打开软件即可安装新版本", Toast.LENGTH_LONG).show()
+                                            } catch (e2: Exception) {
+                                                Toast.makeText(context, "请到系统设置手动卸载旧版本后重新安装", Toast.LENGTH_LONG).show()
+                                            }
                                         }
                                     },
                                     colors = ButtonDefaults.buttonColors(
@@ -649,7 +673,7 @@ fun AppUpdateDialog(
                                     modifier = Modifier.testTag("uiverse_uninstall_btn")
                                 ) {
                                     Text(
-                                        text = "去卸载旧版本",
+                                        text = "一键卸载旧版本",
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.Bold
                                     )
