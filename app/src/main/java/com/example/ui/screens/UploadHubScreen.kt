@@ -292,7 +292,8 @@ private fun ResourceFileCard(
                                     setVideoURI(Uri.parse(res.mediaUrl))
                                     setOnPreparedListener { mp ->
                                         mp.isLooping = true
-                                        mp.setVolume(0f, 0f)
+                                        // v1.7.3：视频支持声音播放，自动播放带声音
+                                        mp.setVolume(1f, 1f)
                                         mp.start()
                                     }
                                     setOnErrorListener { mp, what, extra ->

@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
@@ -52,6 +53,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -79,6 +81,24 @@ data class MouthpieceCategory(
     val icon: String,
     val triggers: List<String>,
     val templates: List<Pair<String, String>> // (Tone, Response)
+)
+
+// v1.7.3：一键导入的聊天/社交软件平台（包名 → 跳转；null 表示系统短信）
+private val CHAT_APPS = listOf(
+    Triple("微信", "com.tencent.mm", "💬"),
+    Triple("QQ", "com.tencent.mobileqq", "💬"),
+    Triple("短信", "sms", "✉️"),
+    Triple("支付宝", "com.eg.android.AlipayGphone", "🔷"),
+    Triple("Telegram", "org.telegram.messenger", "✈️")
+)
+
+// v1.7.3：分享到的短视频/社交平台
+private val SHORT_VIDEO_APPS = listOf(
+    Triple("抖音", "com.ss.android.ugc.aweme", "🎵"),
+    Triple("快手", "com.smile.gifmaker", "🎬"),
+    Triple("小红书", "com.xingin.xhs", "📕"),
+    Triple("哔哩哔哩", "tv.danmaku.bili", "📺"),
+    Triple("微博", "com.sina.weibo", "🌐")
 )
 
 private val MOUTHPIECE_CATEGORIES = listOf(
@@ -194,43 +214,50 @@ fun MouthpieceSection(modifier: Modifier = Modifier) {
     val savedFavorites = remember { mutableStateListOf<String>() }
     // v1.7.2：刷新计数器——同一输入每次「刷新」也随机生成全新文案
     var refreshCounter by remember { mutableIntStateOf(0) }
+    // v1.7.3：平台选择弹窗状态（mode=chat 导入聊天软件 / share 分享短视频平台，text=当前文案）
+    var platformPicker by remember { mutableStateOf<Pair<String, String>?>(null) }
 
     val currentCategory = remember(selectedCategoryId) {
         MOUTHPIECE_CATEGORIES.first { it.id == selectedCategoryId }
     }
 
-    /** 一键导入第三方聊天平台：复制文案到剪贴板 + 自动跳转微信/QQ 等应用，粘贴即用 */
-    fun importToChatApp(text: String) {
+    /** 一键导入第三方聊天平台：复制文案到剪贴板 + 自动跳转微信/QQ 等应用，粘贴即用
+     *  v1.7.3：改为弹出聊天软件选择列表后真实跳转 */
+    fun launchToPlatform(pkg: String?, text: String, isShare: Boolean) {
         try {
             val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             cm.setPrimaryClip(ClipData.newPlainText("嘴强嘴替", text))
         } catch (_: Exception) {}
-        // 依次尝试第三方聊天/社交平台（微信→QQ→抖音→快手→支付宝），成功即跳转
-        val targets = listOf(
-            "com.tencent.mm",          // 微信
-            "com.tencent.mobileqq",    // QQ
-            "com.ss.android.ugc.aweme",// 抖音
-            "com.smile.gifmaker",      // 快手
-            "com.xingin.xhs"           // 小红书
-        )
-        var launched = false
-        for (pkg in targets) {
-            try {
+        try {
+            if (pkg == "sms") {
+                // 短信：直接打开系统短信发送界面
+                val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:"))
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+            } else if (pkg != null) {
                 val launch = context.packageManager.getLaunchIntentForPackage(pkg)
                 if (launch != null) {
                     launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     context.startActivity(launch)
-                    launched = true
-                    break
+                } else {
+                    // 应用未安装：跳应用商店
+                    try {
+                        val store = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$pkg"))
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        context.startActivity(store)
+                    } catch (_: Exception) {}
+                    Toast.makeText(context, "未安装该应用，已复制文案，可自行安装后使用", Toast.LENGTH_LONG).show()
+                    return
                 }
-            } catch (_: Exception) {}
+            }
+            Toast.makeText(
+                context,
+                "✅ 文案已复制！进入${if (isShare) "发布/评论区" else "聊天窗口"}后长按输入框粘贴即可",
+                Toast.LENGTH_LONG
+            ).show()
+        } catch (e: Exception) {
+            Toast.makeText(context, "✅ 已复制文案！请到目标应用粘贴使用", Toast.LENGTH_LONG).show()
         }
-        Toast.makeText(
-            context,
-            if (launched) "✅ 已复制回怼文案！请在打开的聊天窗口输入框长按粘贴即可"
-            else "✅ 已复制回怼文案！请到微信/QQ 聊天框长按粘贴使用",
-            Toast.LENGTH_LONG
-        ).show()
     }
 
     // v1.7.2：生成时引入随机性——每次生成/刷新都产出不同的新鲜文案（同一输入刷新也不同）
@@ -522,14 +549,14 @@ fun MouthpieceSection(modifier: Modifier = Modifier) {
                             }
 
                             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                // v1.7.2：一键导入第三方聊天平台（复制 + 跳转微信/QQ，粘贴即用）
+                                // v1.7.2/1.7.3：一键导入聊天软件（微信/QQ/短信/支付宝等）——复制 + 弹出平台选择 + 真实跳转
                                 IconButton(
-                                    onClick = { importToChatApp(text) },
+                                    onClick = { platformPicker = "chat" to text },
                                     modifier = Modifier.size(28.dp)
                                 ) {
                                     Icon(
                                         imageVector = Icons.Filled.Chat,
-                                        contentDescription = "导入聊天框",
+                                        contentDescription = "导入聊天软件",
                                         tint = Color(0xFF07C160),
                                         modifier = Modifier.size(16.dp)
                                     )
@@ -551,17 +578,12 @@ fun MouthpieceSection(modifier: Modifier = Modifier) {
 
                                 IconButton(
                                     onClick = {
-                                        try {
-                                            val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                                                type = "text/plain"
-                                                putExtra(Intent.EXTRA_TEXT, text)
-                                            }
-                                            context.startActivity(Intent.createChooser(shareIntent, "分享回怼文案"))
-                                        } catch (_: Exception) {}
+                                        // v1.7.3：分享 → 弹出短视频/社交平台选择列表，真实跳转插入输入框
+                                        platformPicker = "share" to text
                                     },
                                     modifier = Modifier.size(28.dp)
                                 ) {
-                                    Icon(Icons.Filled.Share, contentDescription = "分享", modifier = Modifier.size(16.dp))
+                                    Icon(Icons.Filled.Share, contentDescription = "分享到短视频平台", modifier = Modifier.size(16.dp))
                                 }
 
                                 IconButton(
@@ -589,6 +611,64 @@ fun MouthpieceSection(modifier: Modifier = Modifier) {
                     }
                 }
             }
+        }
+
+        // v1.7.3：平台选择弹窗（绿色按钮→聊天软件；分享→短视频/社交平台）
+        platformPicker?.let { (mode, text) ->
+            val isShare = mode == "share"
+            val title = if (isShare) "🎬 分享到短视频/社交平台" else "💬 一键导入聊天软件"
+            val apps = if (isShare) SHORT_VIDEO_APPS else CHAT_APPS
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { platformPicker = null },
+                title = {
+                    Text(title, fontWeight = FontWeight.Black, fontSize = 16.sp)
+                },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            text = "将自动复制文案并跳转到所选平台，进入后长按输入框粘贴即可（${text.length} 字）",
+                            fontSize = 11.5.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        apps.forEach { (name, pkg, icon) ->
+                            Surface(
+                                onClick = {
+                                    platformPicker = null
+                                    launchToPlatform(pkg, text, isShare)
+                                },
+                                shape = RoundedCornerShape(12.dp),
+                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)
+                                ) {
+                                    Text(text = icon, fontSize = 18.sp)
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Text(
+                                        text = name,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    Icon(
+                                        imageVector = Icons.Filled.ContentCopy,
+                                        contentDescription = "复制并跳转",
+                                        tint = if (isShare) FlameRed else Color(0xFF07C160),
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { platformPicker = null }) { Text("取消") }
+                }
+            )
         }
     }
 }

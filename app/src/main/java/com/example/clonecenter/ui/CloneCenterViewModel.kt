@@ -112,10 +112,20 @@ class CloneCenterViewModel(
         return ok
     }
 
-    /** 为指定应用创建分身（落库 + 尝试安装进分身空间） */
-    fun cloneApp(app: InstalledApp) {
-        if (!isProfileOwner()) {
-            _message.value = "请先点击「创建工作分身空间」，完成系统引导后再创建应用分身"
+    /** 待自动添加的分身应用（创建分身空间成功后自动安装） */
+    private var pendingCloneApp: InstalledApp? = null
+
+    /** 消费一次性提示消息 */
+    fun consumeMessage() {
+        _message.value = null
+    }
+
+    /** 为指定应用创建分身（落库 + 尝试安装进分身空间）
+     * v1.7.3：直接点击创建即自动创建分身空间并添加分身
+     */
+    fun cloneApp(app: InstalledApp, activity: Activity) {
+        if (!profileManager.supportsManagedProfile()) {
+            _message.value = "当前设备不支持应用分身（需 Android 5.0+ 且支持多用户）"
             return
         }
         // 已在分身空间：直接提示，不重复安装
@@ -123,6 +133,29 @@ class CloneCenterViewModel(
             _message.value = "${app.label} 已在分身空间中，可直接切换工作空间使用"
             return
         }
+        if (!isProfileOwner()) {
+            // v1.7.3：无需手动点击创建分身空间——直接发起系统创建流程，完成后自动添加
+            pendingCloneApp = app
+            profileManager.startProvisioning(activity)
+            _message.value = "正在为「${app.label}」创建分身空间…\n请按系统引导完成创建，完成后将自动添加分身"
+            return
+        }
+        doClone(app)
+    }
+
+    /** 分身空间创建流程结束回调（ActivityResult） */
+    fun onProvisioningResult(ok: Boolean) {
+        val app = pendingCloneApp
+        pendingCloneApp = null
+        if (ok && app != null) {
+            doClone(app)
+        } else if (app != null) {
+            _message.value = "分身空间创建已取消，可重新点击「创建」继续"
+        }
+    }
+
+    /** 执行真实分身：落库 + 安装进分身空间 */
+    private fun doClone(app: InstalledApp) {
         viewModelScope.launch {
             val id = repository.createRecord(app)
             val installed = withContext(Dispatchers.IO) {
@@ -136,13 +169,8 @@ class CloneCenterViewModel(
             _message.value = if (installed) {
                 "分身创建成功：${app.label}（已添加到分身空间，切换工作空间即可使用）"
             } else {
-                "已记录分身：${app.label}\n系统未允许自动添加，请打开「分身空间设置」→ 应用商店中手动安装"
+                "已记录分身：${app.label}\n系统未允许自动添加，请打开「分身空间设置」中手动安装"
             }
         }
-    }
-
-    /** 消费一次性提示消息 */
-    fun consumeMessage() {
-        _message.value = null
     }
 }

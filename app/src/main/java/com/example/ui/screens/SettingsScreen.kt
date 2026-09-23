@@ -341,7 +341,8 @@ fun SettingsScreen(
                             Icon(
                                 imageVector = Icons.Filled.RocketLaunch,
                                 contentDescription = null,
-                                tint = if (hasNewCloudVersion) Color(0xFF34C759) else Color(0xFF6C63FF),
+                                // v1.7.3：有新版本用红色图标标识（提醒更新）
+                                tint = if (hasNewCloudVersion) Color(0xFFE53935) else Color(0xFF6C63FF),
                                 modifier = Modifier.size(22.dp)
                             )
                         }
@@ -375,14 +376,32 @@ fun SettingsScreen(
                                 )
                             } else {
                                 Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = when {
-                                        hasNewCloudVersion -> "有新版本~请及时更新"
-                                        else -> "当前版本 v${com.example.BuildConfig.VERSION_NAME}"
-                                    },
-                                    fontSize = 11.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                // v1.7.3：无新版本显示「已是最新版本」；有新版本用红色动态呼吸标识提醒更新
+                                if (hasNewCloudVersion) {
+                                    val blink by rememberInfiniteTransition(label = "update_red_blink")
+                                        .animateFloat(
+                                            initialValue = 0.35f,
+                                            targetValue = 1f,
+                                            animationSpec = infiniteRepeatable(
+                                                animation = tween(650, easing = LinearEasing),
+                                                repeatMode = RepeatMode.Reverse
+                                            ),
+                                            label = "updateRedBlink"
+                                        )
+                                    Text(
+                                        text = "⚠️ 有新版本更新，点击立即更新！",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFFE53935),
+                                        modifier = Modifier.graphicsLayer { alpha = blink }
+                                    )
+                                } else {
+                                    Text(
+                                        text = "已是最新版本",
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
                         }
                         Icon(
