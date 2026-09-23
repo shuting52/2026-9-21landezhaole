@@ -1,8 +1,11 @@
 {
   "version": {
-    "code": 55,
-    "name": "1.6.6",
+    "code": 56,
+    "name": "1.6.7",
     "changelog": [
+      "修复：本体软件加密加固后偶发闪退问题，全面优化稳定性",
+      "新增：工具箱「分身助手」— Work Profile 应用分身，扫描应用一键分身双开，系统级隔离",
+      "优化：安全校验改为温和提醒模式，不再误杀正常用户与合法加固包",
       "增加：软件更新自动检测下载安装，无需手动操作",
       "增加：安装新版本时自动识别并卸载旧版本，解决安装失败问题",
       "增加：主题切换支持UI组件级识别与独立代码定制，精准修改单个布局组件",
@@ -10,9 +13,9 @@
       "优化：联系作者增加投喂作者与扫一扫功能",
       "优化：代码混淆与资源加密加固，防止第三方篡改破解"
     ],
-    "force": true,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.6.6-1790103661.apk",
-    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.6.6-1790103661.apk"
+    "force": false,
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.6.7-1790126953291.apk",
+    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.6.7-1790126953291.apk"
   },
   "home": {
     "categories": [
@@ -6057,7 +6060,7 @@
     "customThemeHtml": "",
     "security": {
       "enabled": true,
-      "expectedSha": "bb08e49c6c633481108866afcb2f7fb34aa55516e90c4010a9993ba42e5bdae9"
+      "expectedSha": "b9a618e311024bf29b6f24a95eb9a0f69700e07b9b11e007ae2db6c55abf1603"
     },
     "logoUrl": "",
     "packageName": "com.landezhaole",
@@ -6099,8 +6102,11 @@
     "buttonText": "开始体验"
   },
   "updateDialog": {
-    "title": "发现新版本 v1.6.6",
+    "title": "发现新版本 v1.6.7",
     "changelog": [
+      "修复：本体软件加密加固后偶发闪退问题，全面优化稳定性",
+      "新增：工具箱「分身助手」— Work Profile 应用分身，扫描应用一键分身双开，系统级隔离",
+      "优化：安全校验改为温和提醒模式，不再误杀正常用户与合法加固包",
       "增加：软件更新自动检测下载安装，无需手动操作",
       "增加：安装新版本时自动识别并卸载旧版本，解决安装失败问题",
       "增加：主题切换支持UI组件级识别与独立代码定制，精准修改单个布局组件",

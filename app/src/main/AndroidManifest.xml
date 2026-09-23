@@ -13,6 +13,8 @@
         android:maxSdkVersion="28" />
     <!-- 更新弹窗：允许安装新版本 APK -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- 分身助手：查询全部已安装应用清单（受限制权限，仅用于扫描应用列表） -->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
 
     <queries>
         <intent>
@@ -77,6 +79,24 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- 分身助手：Work Profile 设备管理接收器 -->
+        <receiver
+            android:name=".clonecenter.admin.CloneAdminReceiver"
+            android:description="@string/app_name"
+            android:exported="true"
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
+
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_admin" />
+
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+
+                <action android:name="android.app.action.PROFILE_PROVISIONING_COMPLETE" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
