@@ -344,6 +344,44 @@ fun SplashScreenOverlay(
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
+
+                // v1.7.3：动态文字——逐字浮现打字机效果 + 上下浮动 + 渐变流光
+                val splashDynamicText = "每天少走弯路 · 尽情探索互联网宝藏资源"
+                var typedCount by remember { mutableIntStateOf(0) }
+                LaunchedEffect(Unit) {
+                    while (typedCount < splashDynamicText.length) {
+                        delay(85)
+                        typedCount++
+                    }
+                }
+                val textFloatY by rememberInfiniteTransition(label = "splash_text_float")
+                    .animateFloat(
+                        initialValue = -5f,
+                        targetValue = 5f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(1500, easing = FastOutSlowInEasing),
+                            repeatMode = RepeatMode.Reverse
+                        ),
+                        label = "splashTextFloat"
+                    )
+                Text(
+                    text = splashDynamicText.take(typedCount) +
+                        (if (typedCount < splashDynamicText.length) "▌" else "✨"),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    letterSpacing = 1.sp,
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        brush = Brush.linearGradient(
+                            colors = listOf(SunsetOrange, NeonPurple, ElectricCyan),
+                            start = Offset(shimmerOffset, 0f),
+                            end = Offset(shimmerOffset + 160f, 60f)
+                        )
+                    ),
+                    modifier = Modifier.graphicsLayer {
+                        translationY = textFloatY * density
+                        alpha = entryAlpha.value
+                    }
+                )
             }
         }
         }

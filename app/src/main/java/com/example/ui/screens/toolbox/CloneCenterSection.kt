@@ -92,16 +92,12 @@ fun CloneCenterScreenView(
         }
     }
 
-    // Work Profile 创建结果回调
+    // 分身空间创建结果回调（v1.7.3：创建成功后自动添加待创建的分身应用）
     val provisionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         val ok = result.resultCode == android.app.Activity.RESULT_OK
-        Toast.makeText(
-            context,
-            if (ok) "分身空间创建流程已完成，请按系统引导继续设置" else "已取消创建分身空间",
-            Toast.LENGTH_LONG
-        ).show()
+        viewModel.onProvisioningResult(ok)
         // 重新加载状态
         profileActive = viewModel.isProfileActive()
         viewModel.refreshApps()
@@ -132,7 +128,7 @@ fun CloneCenterScreenView(
         ) {
             Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
                 Text(
-                    text = "分身助手 · Work Profile 应用分身",
+                    text = "分身助手 · 应用分身助手",
                     fontWeight = FontWeight.Black,
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurface
@@ -140,10 +136,10 @@ fun CloneCenterScreenView(
                 Spacer(modifier = Modifier.height(3.dp))
                 Text(
                     text = when {
-                        !supportsProfile -> "当前设备不支持 Work Profile（需 Android 5.0+ 且支持多用户）"
-                        profileActive && isProfileOwner -> "✅ 分身空间已启用：桌面已出现「工作」标签，选择应用点击「创建」即可分身"
+                        !supportsProfile -> "当前设备不支持应用分身（需 Android 5.0+ 且支持多用户）"
+                        profileActive && isProfileOwner -> "✅ 分身空间已启用：选择应用点击「创建」即可分身"
                         profileActive -> "分身空间已创建：请先打开系统「分身空间设置」确认本机管理状态"
-                        !isProfileOwner -> "已就绪：点击「创建工作分身空间」后即可分身应用"
+                        !isProfileOwner -> "已就绪：点击应用「创建」即可自动创建分身空间并分身"
                         else -> "分身空间已启用：选择应用点击「创建」即可分身"
                     },
                     fontSize = 11.sp,
@@ -185,7 +181,7 @@ fun CloneCenterScreenView(
                 enabled = supportsProfile && !profileActive,
                 modifier = Modifier.weight(1f)
             ) {
-                Text(if (profileActive) "分身空间已启用" else "创建工作分身空间", fontSize = 13.sp)
+                Text(if (profileActive) "分身空间已启用" else "创建分身空间", fontSize = 13.sp)
             }
         }
 
@@ -302,7 +298,14 @@ fun CloneCenterScreenView(
                 AppRow(
                     app = app,
                     alreadyInProfile = app.packageName in installedInProfile,
-                    onClick = { viewModel.cloneApp(app) }
+                    onClick = {
+                        val activity = context.findActivity()
+                        if (activity != null) {
+                            viewModel.cloneApp(app, activity)
+                        } else {
+                            Toast.makeText(context, "无法启动创建流程", Toast.LENGTH_LONG).show()
+                        }
+                    }
                 )
             }
             if (apps.isEmpty()) {

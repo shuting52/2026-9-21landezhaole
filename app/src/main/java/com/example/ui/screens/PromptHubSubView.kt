@@ -88,7 +88,12 @@ fun PromptHubSubView(
         }
     }
 
-    Column(modifier = modifier.padding(horizontal = 14.dp, vertical = 6.dp)) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 14.dp, vertical = 6.dp),
+        verticalArrangement = Arrangement.Top
+    ) {
         // 分类筛选：全部 / 图片提示词 / 视频提示词
         Row(
             modifier = Modifier
@@ -153,9 +158,12 @@ fun PromptHubSubView(
                 }
             }
         } else {
+            // v1.7.3：修复列表自动置底问题——LazyColumn 用 weight 撑满剩余空间并从顶部排列
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(14.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.Top,
                 contentPadding = PaddingValues(bottom = 20.dp)
             ) {
                 items(filteredList, key = { it.id }) { prompt ->
@@ -219,7 +227,8 @@ private fun CloudPromptCard(
                                     setVideoURI(android.net.Uri.parse(prompt.mediaUrl))
                                     setOnPreparedListener { mp ->
                                         mp.isLooping = true
-                                        mp.setVolume(0f, 0f)
+                                        // v1.7.3：视频区支持声音播放，自动播放带声音
+                                        mp.setVolume(1f, 1f)
                                         mp.start()
                                     }
                                     setOnErrorListener { mp, what, extra ->
@@ -452,7 +461,8 @@ private fun CloudPromptPreviewDialog(
                             setVideoURI(android.net.Uri.parse(prompt.mediaUrl))
                             setOnPreparedListener { mp ->
                                 mp.isLooping = true
-                                mp.setVolume(0f, 0f)
+                                // v1.7.3：全屏视频支持声音播放
+                                mp.setVolume(1f, 1f)
                                 mp.start()
                             }
                             layoutParams = android.view.ViewGroup.LayoutParams(
@@ -555,7 +565,8 @@ private fun CloudPromptPreviewDialog(
                                             setVideoURI(android.net.Uri.parse(prompt.mediaUrl))
                                             setOnPreparedListener { mp ->
                                                 mp.isLooping = true
-                                                mp.setVolume(0f, 0f)
+                                                // v1.7.3：弹窗内视频支持声音播放
+                                                mp.setVolume(1f, 1f)
                                                 mp.start()
                                             }
                                             setOnErrorListener { mp, what, extra ->

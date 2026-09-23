@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.remote.MarqueeDto
 import java.util.Calendar
+import java.util.TimeZone
 import kotlinx.coroutines.delay
 
 /**
@@ -52,11 +53,18 @@ import kotlinx.coroutines.delay
  */
 const val MARQUEE_ANNOUNCEMENT_TEXT = "本软件集成了上百款站点和应用，有些内容都是可以白嫖的哟～具体内容请自行发掘体验。后续我们会陆续的更新新内容的，请尽情期待吧～  懒得找了 官宣"
 
+/** 北京时间（Asia/Shanghai）当前日历，用于 24 小时轮播与公告判断 */
+fun beijingCalendar(now: Calendar = Calendar.getInstance()): Calendar {
+    return Calendar.getInstance(TimeZone.getTimeZone("Asia/Shanghai")).apply {
+        timeInMillis = now.timeInMillis
+    }
+}
+
 /**
- * 根据当前小时（0-23点）动态生成对应时间段播报文案。
+ * 根据当前北京时间小时（0-23点）动态生成对应时间段播报文案。
  * 24 小时逐小时轮播不同内容，每天同一时段文案固定不重复。
  */
-fun getHourlyMarqueeText(calendar: Calendar = Calendar.getInstance()): String {
+fun getHourlyMarqueeText(calendar: Calendar = beijingCalendar()): String {
     val hour = calendar.get(Calendar.HOUR_OF_DAY)
     val minute = calendar.get(Calendar.MINUTE)
     val hh = "%02d".format(hour)
@@ -133,12 +141,25 @@ fun MarqueeNoticeWidget(
     }
 
     var displayText by remember { mutableStateOf(playlist.firstOrNull() ?: defaultText) }
-    LaunchedEffect(playlist) {
-        var index = 0
+    // v1.7.3：严格按「北京时间」当前小时命中对应时段文案（start<=hour<end，支持跨天），
+    // 每分钟刷新一次，整点自动切换下一时段；无命中时段则回退默认文案/小时动态文案。
+    LaunchedEffect(cloudMarquee) {
+        fun resolveByBeijingHour(): String {
+            val hour = beijingCalendar().get(Calendar.HOUR_OF_DAY)
+            val segs = cloudMarquee?.segments.orEmpty().filter { it.text.isNotBlank() }
+            // 匹配当前小时所在的时段（处理跨天段：start>end 表示跨午夜）
+            val hit = segs.firstOrNull { seg ->
+                val s = seg.start % 24
+                val e = seg.end % 24
+                if (s <= e) hour >= s && hour < e
+                else hour >= s || hour < e
+            }
+            return hit?.text ?: defaultText
+        }
         while (true) {
-            displayText = playlist[index % playlist.size]
-            index++
-            delay(8000L) // 每段展示 8 秒，逐条轮播不间歇
+            displayText = resolveByBeijingHour()
+            // 每分钟刷新：整点（或后台修改时段）后自动切换
+            delay(60_000L)
         }
     }
     val effectiveText = displayText
@@ -244,19 +265,22 @@ fun MarqueeNoticeWidget(
 }
 
 /**
- * 解析跑马灯文字：优先命中云端配置的时间段，否则使用云端默认文字，再回退到按小时动态文案。
+ * 解析跑马灯文字：优先命中云端配置的时间段（按北京时间），否则使用云端默认文字，再回退到按小时动态文案。
  */
 fun resolveMarqueeText(cloudMarquee: MarqueeDto?): String {
     if (cloudMarquee?.enabled != true) return getHourlyMarqueeText()
-    val now = Calendar.getInstance()
+    val now = beijingCalendar()
     val hour = now.get(Calendar.HOUR_OF_DAY)
     val segments = cloudMarquee.segments.orEmpty()
     segments.firstOrNull { seg ->
-        hour >= (seg.start % 24) && hour <= (seg.end % 24)
+        val s = seg.start % 24
+        val e = seg.end % 24
+        if (s <= e) hour >= s && hour < e
+        else hour >= s || hour < e
     }?.let { seg ->
         if (seg.text.isNotBlank()) return seg.text
     }
-    return cloudMarquee.defaultText.ifBlank { getHourlyMarqueeText() }
+    return cloudMarquee.defaultText.ifBlank { getHourlyMarqueeText(now) }
 }
 
 /**

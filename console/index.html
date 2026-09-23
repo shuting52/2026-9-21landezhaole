@@ -710,6 +710,39 @@ function renderHome(){
       <button class="btn-bump" onclick="publish(true,'首页分类与站点结构更新')">🚀 推送并触发本体更新弹窗</button>
     </div>
   </div>`;
+  // ========== 站点收录（v1.7.3 新增）==========
+  html += `<div class="card" style="border:1px solid var(--pri, #6c63ff);">
+    <div class="action-banner">
+      <b>🌟 站点收录（一键批量收录）</b>
+      <span class="hint">每行一个 URL，自动识别使用说明/站点图标/自动分类/自动打角标（NEW），新站点实时同步到本体并置顶展示</span>
+    </div>
+    <label>输入站点 URL（每行一个，支持批量）</label>
+    <textarea id="fCollectUrls" style="min-height:100px" placeholder="https://chatgpt.com&#10;https://www.doubao.com&#10;https://www.deepl.com/translator"></textarea>
+    <div class="two-col">
+      <div>
+        <label>自动分类策略</label>
+        <select id="fCollectStrategy">
+          <option value="auto">✨ 自动识别分类（按关键词匹配）</option>
+          <option value="first">📍 收入第一个分类</option>
+        </select>
+      </div>
+      <div>
+        <label>角标标签</label>
+        <select id="fCollectBadge">
+          <option value="NEW">NEW（新收录·首页置顶）</option>
+          <option value="HOT">HOT</option>
+          <option value="站长推荐">站长推荐</option>
+          <option value="独家">独家</option>
+          <option value="">无角标</option>
+        </select>
+      </div>
+    </div>
+    <div id="fCollectLog" class="collect-log" style="margin-top:8px;max-height:160px;overflow:auto;font-size:11.5px;line-height:1.7"></div>
+    <div class="row" style="margin-top:8px">
+      <button class="btn-pri grow" onclick="collectSites()">🌟 一键收录并同步本体</button>
+      <button class="btn-ok" onclick="applyToDevice()">✅ 应用</button>
+    </div>
+  </div>`;
   if(!cats.length) html += `<div class="empty">暂无分类，点击上方新增</div>`;
   cats.forEach((c, ci) => {
     const cards = c.cards || [];
@@ -757,6 +790,128 @@ function toggleCollapse(el){
   const isHidden = body.style.display === 'none';
   body.style.display = isHidden ? '' : 'none';
   if(arrow) arrow.classList.toggle('open', isHidden);
+}
+
+// ========== 站点收录：自动识别使用说明/图标/分类/角标（v1.7.3）==========
+// 分类关键词映射（匹配分类 id + 名称 + 描述）
+const COLLECT_KEYWORDS = [
+  { id: "ai_models", kw: ["ai","gpt","chat","claude","gemini","copilot","midjourney","通义","文心","豆包","kimi","智谱","deepseek","即梦","runway","sora","大模型","ai绘画","ai写作"] },
+  { id: "ai_canvas", kw: ["canvas","画布","创作","设计","figma","boardmix","processon","draw","sketch","海报","配图"] },
+  { id: "ai_prompts", kw: ["prompt","提示词","skill","咒语"] },
+  { id: "tools_magic", kw: ["tool","工具","utils","翻译","deepl","转换","压缩","解压","密码","二维码","计算器","ocr","ai搜索"] },
+  { id: "movie", kw: ["movie","video","tv","影视","视频","bilibili","youku","iqiyi","tencent","dy","快手","抖音","netflix","disney","豆瓣"] },
+  { id: "discounts", kw: ["优惠","折扣","省钱","券","返利","比价","白菜","神价"] },
+  { id: "music", kw: ["music","音乐","网易云","qq音乐","酷狗","spotify","歌词"] },
+  { id: "book", kw: ["book","阅读","小说","漫画","电子书","zlib","微信读书","起点"] },
+  { id: "code", kw: ["code","github","git","编程","开发者","stackoverflow","npm","docker","linux"] },
+  { id: "social", kw: ["社交","社区","贴吧","论坛","知乎","微博","reddit","quora"] },
+  { id: "news", kw: ["news","新闻","资讯","日报","头条","财新","界面"] },
+  { id: "game", kw: ["game","游戏","steam","epic","switch","psn","原神","王者"] },
+  { id: "life", kw: ["生活","美食","菜谱","健康","医疗","天气","养生","运动"] },
+  { id: "work", kw: ["工作","办公","文档","wps","office","钉钉","飞书","notion","trello","会议"] }
+];
+
+// 自动识别分类：优先关键词命中，其次放入站点最多的分类，最后第一个分类
+function autoDetectCategory(url, title){
+  const cats = (S.admin.home && S.admin.home.categories) || [];
+  if(!cats.length) return null;
+  const text = (url + " " + (title||"")).toLowerCase();
+  for(const m of COLLECT_KEYWORDS){
+    const cat = cats.find(c => c.id === m.id);
+    if(!cat) continue;
+    if(m.kw.some(k => text.includes(k))) return cat;
+  }
+  // 关键词未命中：放入站点最多的分类（新站点更容易被发现）
+  let best = cats[0];
+  for(const c of cats){ if((c.cards||[]).length > (best.cards||[]).length) best = c; }
+  return best;
+}
+
+// 自动识别使用说明：r.jina.ai 抓取网页标题与描述（失败回退域名）
+async function fetchSiteMeta(url){
+  const domain = (url||"").replace(/^https?:\/\//,"").replace(/^www\./,"").split(/[\/?#]/)[0];
+  try{
+    const resp = await fetch("https://r.jina.ai/" + url);
+    const text = await resp.text();
+    if(!text) return {};
+    // 标题：优先 Title: 行 / 第一个 markdown 标题
+    let title = "";
+    const titleMatch = text.match(/^Title:\s*(.+)$/im);
+    if(titleMatch) title = titleMatch[1].trim();
+    if(!title){
+      const h1 = text.match(/^#+\s+(.+)$/m);
+      if(h1) title = h1[1].trim();
+    }
+    if(!title) title = text.split(/\r?\n/).find(l => l.trim() && !l.startsWith("http"));
+    title = (title||"").slice(0, 60);
+    // 描述：找包含“简介/说明/介绍/欢迎/是”的句子，或 URL 正文第二段
+    let desc = "";
+    const descMatch = text.match(/^Description:\s*(.+)$/im);
+    if(descMatch) desc = descMatch[1].trim();
+    if(!desc){
+      const lines = text.split(/\r?\n/).filter(l => l.trim().length > 15 && !l.startsWith("#") && !l.startsWith("http"));
+      desc = (lines[0]||"").trim();
+    }
+    desc = (desc||"").replace(/\s+/g," ").slice(0, 80);
+    return { title, desc, domain };
+  }catch(e){
+    return { title:"", desc:"", domain };
+  }
+}
+
+// 一键收录：多个 URL 批量处理，自动分类/图标/角标，实时同步本体
+async function collectSites(){
+  const urls = ($("fCollectUrls").value||"").split(/\r?\n/).map(s=>s.trim()).filter(s => /^https?:\/\//i.test(s));
+  if(!urls.length){ toast("请先输入至少一个有效 URL（https:// 开头）","err"); return; }
+  if(!S.admin.home.categories.length){ toast("请先创建至少一个分类","err"); return; }
+  const logBox = $("fCollectLog");
+  const strategy = $("fCollectStrategy").value;
+  const badge = $("fCollectBadge").value;
+  let ok = 0, dup = 0, fail = 0;
+  for(const raw of urls){
+    let url = raw.replace(/\/$/,"");
+    const domain = url.replace(/^https?:\/\//,"").replace(/^www\./,"").split(/[\/?#]/)[0];
+    logBox.innerHTML += `<div>⏳ 收录中：${esc(domain)}</div>`;
+    // 去重：已存在的相同域名/URL 跳过
+    const allCards = S.admin.home.categories.flatMap(c => c.cards||[]);
+    const normUrl = u => u.replace(/^https?:\/\//,"").replace(/^www\./,"").replace(/\/$/,"");
+    if(allCards.some(c => normUrl(c.url) === normUrl(url))){
+      logBox.innerHTML += `<div style="color:#f87171">⏭️ 已存在：${esc(domain)}（跳过）</div>`;
+      dup++; continue;
+    }
+    try{
+      const meta = await fetchSiteMeta(url);
+      const title = meta.title || domain;
+      const desc = meta.desc || `${title} · 本站收录的优质资源`;
+      const cat = strategy === "first" ? S.admin.home.categories[0] : autoDetectCategory(url, title);
+      if(!cat){ fail++; logBox.innerHTML += `<div style="color:#f87171">❌ 分类获取失败：${esc(domain)}</div>`; continue; }
+      // 自动图标：Google favicon 服务（无需上传，稳定可用）
+      const icon = "https://www.google.com/s2/favicons?domain=" + domain + "&sz=128";
+      cat.cards.push({
+        id: uid("site"),
+        title, url,
+        icon, fallbackText: (title||"")[0] || "懒",
+        badge: badge || null,
+        badgeType: badge ? "NEW" : "ROSE",
+        desc,
+        categoryId: cat.id,
+        subcatId: (cat.subcategories[0]||{}).id || "all",
+        highlights: ""
+      });
+      ok++;
+      logBox.innerHTML += `<div style="color:#4ade80">✅ 已收录 →【${esc(cat.name)}】${esc(title)} <span style="color:#a5b4fc">(${esc(domain)})</span></div>`;
+      logBox.scrollTop = logBox.scrollHeight;
+    }catch(e){
+      fail++; logBox.innerHTML += `<div style="color:#f87171">❌ 失败：${esc(domain)} (${esc(e.message||"网络错误")})</div>`;
+    }
+  }
+  logBox.innerHTML += `<div style="color:#fbbf24;font-weight:bold">🎉 收录完成：成功 ${ok} / 跳过 ${dup} / 失败 ${fail}</div>`;
+  renderHome();
+  if(ok > 0){
+    try{ await publish(false); }catch(e){}
+    toast(`已收录 ${ok} 个站点并实时同步到本体软件（新站点已置顶展示）`,"ok");
+    logChange(`站点收录：新增 ${ok} 个站点（自动分类/图标/角标）`);
+  }
 }
 
 function catForm(ci){
