@@ -434,18 +434,19 @@ fun MainScreen(
         val cloudVersion = uiState.cloudVersion
         val cloudUpdate = uiState.cloudUpdate
         val prefs = remember { context.getSharedPreferences("lzdz_update_prefs", Context.MODE_PRIVATE) }
-        // 死命令：开屏动画结束后才呈现更新弹窗；有新版本就强制弹出且不可自行关闭，
-        // 直到用户点击「立即更新」并完成安装；已是最新版本（cloudCode <= localCode）绝不弹窗。
+        // 死命令（1.7.1 修复时序）：更新弹窗只在开屏动画完全结束后呈现；
+        // 有新版本（cloudCode > localCode）就强制弹出且不可自行关闭，直到用户点「立即更新」并完成安装；
+        // 已是最新版本（cloudCode <= localCode）绝不弹窗。
+        // 不依赖「是否看过」记录：只要云端有更新就弹，避免倒计时后不弹、需手动检测的问题。
         LaunchedEffect(uiState.isCloudReady, cloudVersion?.code, uiState.isSplashVisible) {
             val localCode = com.example.BuildConfig.VERSION_CODE
             val cloudCode = cloudVersion?.code ?: 0
-            // 仅当：开屏已结束 && 云端有更新（本地版本低于云端）时弹窗；已是最新版绝不弹
-            if (uiState.isCloudReady && !uiState.isSplashVisible && cloudCode > localCode && !updateDialogDismissed) {
+            // 开屏已结束 && 云端配置已就绪 && 云端版本高于本地 → 强制弹窗
+            if (!uiState.isSplashVisible && cloudVersion != null && uiState.isCloudReady && cloudCode > localCode) {
                 showCloudUpdateDialog = true
-                prefs.edit().putInt("last_shown_version_code", cloudCode).apply()
             }
         }
-        if (showCloudUpdateDialog && cloudUpdate != null && cloudVersion != null) {
+        if (showCloudUpdateDialog && cloudVersion != null) {
             AppUpdateDialog(
                 onDismiss = {
                     showCloudUpdateDialog = false
@@ -456,7 +457,13 @@ fun MainScreen(
                     showCloudUpdateDialog = false
                     updateDialogDismissed = true
                 },
-                update = cloudUpdate,
+                // 云端弹窗配置缺失时用默认值兜底，确保弹窗一定渲染
+                update = cloudUpdate ?: com.example.data.remote.UpdateDialogDto(
+                    title = "发现新版本",
+                    changelog = cloudVersion.changelog,
+                    confirmText = "立即更新",
+                    cancelText = "稍后再说"
+                ),
                 apkUrl = cloudVersion.apkUrl.ifBlank { null },
                 // 强制执行更新：弹窗出现后不可自行关闭，必须用户点「立即更新」
                 forceUpdate = true,
@@ -465,9 +472,9 @@ fun MainScreen(
             )
         }
 
-        // 云端欢迎界面弹窗：控制台开启后，本体启动展示新功能介绍
+        // 云端欢迎界面弹窗：仅开屏结束后才展示（避免开屏期间弹窗盖在开屏之上）
         val cloudWelcome = uiState.cloudWelcome
-        if (uiState.isCloudReady && cloudWelcome?.enabled == true && !welcomeDialogDismissed) {
+        if (uiState.isCloudReady && !uiState.isSplashVisible && cloudWelcome?.enabled == true && !welcomeDialogDismissed) {
             AlertDialog(
                 onDismissRequest = { welcomeDialogDismissed = true },
                 title = {
