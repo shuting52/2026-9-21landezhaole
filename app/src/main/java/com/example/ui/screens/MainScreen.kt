@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.animation.AnimatedVisibility
@@ -53,7 +54,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.TextStyle
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 import java.text.NumberFormat
 import java.util.Calendar
 import java.util.Locale
@@ -110,6 +115,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -182,6 +188,16 @@ fun MainScreen(
     var showCloudUpdateDialog by remember { mutableStateOf(false) }
     var updateDialogDismissed by remember { mutableStateOf(false) }
     var welcomeDialogDismissed by remember { mutableStateOf(false) }
+
+    // 启动时恢复自定义背景（跨重启持久）
+    LaunchedEffect(Unit) {
+        val prefs = context.getSharedPreferences("lzdz_bg_prefs", Context.MODE_PRIVATE)
+        val type = prefs.getString("bg_type", "none") ?: "none"
+        val path = prefs.getString("bg_path", "") ?: ""
+        if (type != "none" && path.isNotBlank()) {
+            viewModel.setLocalBgMedia(type, "file://$path")
+        }
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
         // 本地背景媒体优先（主题版块本机选择），无本地媒体时回退云端背景
@@ -375,11 +391,12 @@ fun MainScreen(
                         } else {
                             UploadHubScreen(
                                 title = "Skill · 技能库",
-                                subtitle = "由云台控制台实时同步，点击卡片直接下载 ZIP/MD 技能包",
+                                subtitle = "由云台控制台实时同步，增删均在后台控制，点击卡片直接下载 ZIP/MD 技能包",
                                 resourceType = "skill",
                                 resources = uploadedSkills,
                                 onDelete = { id -> viewModel.deleteUploadedResource(id) },
-                                modifier = Modifier.fillMaxSize()
+                                modifier = Modifier.fillMaxSize(),
+                                showDelete = false
                             )
                         }
                     }
@@ -614,35 +631,53 @@ fun MainScreen(
 
         // Uiverse.io Skin & UI Kit Studio Dialog
         if (uiState.isThemeDialogVisible) {
-            // 本机选择背景图片/视频（无需控制台上传）
+            val coroutineScope = rememberCoroutineScope()
+            // 选择背景文件 → 复制到应用私有目录（跨重启持久）→ 全局应用 → 关闭主题弹窗
+            fun applyCustomBg(uri: Uri?, type: String) {
+                if (uri == null) return
+                coroutineScope.launch {
+                    val result = withContext(Dispatchers.IO) {
+                        try {
+                            val dir = File(context.filesDir, "custom_bg")
+                            dir.mkdirs()
+                            val ext = if (type == "video") ".mp4" else ".jpg"
+                            val target = File(dir, "custom_bg_${System.currentTimeMillis()}$ext")
+                            context.contentResolver.openInputStream(uri)?.use { input ->
+                                target.outputStream().use { output -> input.copyTo(output) }
+                            }
+                            // 持久化类型与路径（App 重启后恢复）
+                            context.getSharedPreferences("lzdz_bg_prefs", Context.MODE_PRIVATE)
+                                .edit()
+                                .putString("bg_type", type)
+                                .putString("bg_path", target.absolutePath)
+                                .apply()
+                            "file://${target.absolutePath}"
+                        } catch (e: Exception) {
+                            // 复制失败：回退使用内容 URI（当前会话仍可用）
+                            try {
+                                context.contentResolver.takePersistableUriPermission(
+                                    uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                )
+                            } catch (e2: Exception) { }
+                            uri.toString()
+                        }
+                    }
+                    viewModel.setLocalBgMedia(type, result)
+                    // 关闭主题弹窗，让用户立刻看到全局背景效果
+                    viewModel.setThemeDialogVisible(false)
+                    Toast.makeText(
+                        context,
+                        if (type == "image") "已应用自定义图片背景，全局生效" else "已应用自定义视频背景，全局生效",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
             val bgImageLauncher = rememberLauncherForActivityResult(
                 androidx.activity.result.contract.ActivityResultContracts.OpenDocument()
-            ) { uri ->
-                if (uri != null) {
-                    try {
-                        context.contentResolver.takePersistableUriPermission(
-                            uri,
-                            android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
-                        )
-                    } catch (e: Exception) { }
-                    viewModel.setLocalBgMedia("image", uri.toString())
-                    Toast.makeText(context, "已应用本地图片背景", Toast.LENGTH_SHORT).show()
-                }
-            }
+            ) { uri -> applyCustomBg(uri, "image") }
             val bgVideoLauncher = rememberLauncherForActivityResult(
                 androidx.activity.result.contract.ActivityResultContracts.OpenDocument()
-            ) { uri ->
-                if (uri != null) {
-                    try {
-                        context.contentResolver.takePersistableUriPermission(
-                            uri,
-                            android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
-                        )
-                    } catch (e: Exception) { }
-                    viewModel.setLocalBgMedia("video", uri.toString())
-                    Toast.makeText(context, "已应用本地视频背景", Toast.LENGTH_SHORT).show()
-                }
-            }
+            ) { uri -> applyCustomBg(uri, "video") }
             UiverseDialog(
                 isOpen = true,
                 onClose = { viewModel.setThemeDialogVisible(false) },
@@ -672,7 +707,10 @@ fun MainScreen(
                 },
                 onClearLocalBgMedia = {
                     viewModel.clearLocalBgMedia()
-                    Toast.makeText(context, "已清除本地背景，恢复默认", Toast.LENGTH_SHORT).show()
+                    // 同时清除持久化记录
+                    context.getSharedPreferences("lzdz_bg_prefs", Context.MODE_PRIVATE)
+                        .edit().clear().apply()
+                    Toast.makeText(context, "已清除自定义背景，恢复默认", Toast.LENGTH_SHORT).show()
                 }
             )
         }
