@@ -6145,7 +6145,7 @@
     "customHtml": ""
   },
   "marquee": {
-    "enabled": false,
+    "enabled": true,
     "icon": "📢",
     "defaultText": "本软件集成了上百款站点和应用，有些内容都是可以白嫖的哟～具体内容请自行发掘体验。后续我们会陆续的更新新内容的，请尽情期待吧～  懒得找了 官宣",
     "segments": [
