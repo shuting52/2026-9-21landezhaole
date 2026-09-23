@@ -16,7 +16,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.R
 import com.example.data.remote.UpdateDialogDto
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -31,6 +34,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -55,6 +59,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -125,8 +130,8 @@ fun AppUpdateDialog(
 
     /**
      * 安装新版本 APK：
-     * 1. 安装前对比「已安装旧版本」与「新 APK」签名：不一致时引导先卸载旧版本，
-     *    避免 INSTALL_FAILED_UPDATE_INCOMPATIBLE 安装失败（旧版本不卸载装不上新包的问题）。
+     * 1. 安装前对比「已安装旧版本」与「新 APK」签名：不一致时自动引导卸载旧版本（跳系统卸载页），
+     *    卸载完成后从保存的安装包重新安装，避免 INSTALL_FAILED_UPDATE_INCOMPATIBLE 安装失败。
      * 2. 签名一致 → 走系统安装器覆盖安装（保留数据，无需卸载）。
      */
     fun installApk(file: File) {
@@ -144,10 +149,31 @@ fun AppUpdateDialog(
             } catch (e: Exception) { null }
 
             if (installedSig != null && newSig != null && installedSig != newSig) {
-                // 签名不一致：引导先卸载旧版本再安装（自动卸载引导）
+                // 签名不一致：自动引导卸载旧版本，卸载完成后自动安装新版本
                 isSignatureConflict = true
-                statusLabel = "检测到旧版本签名不一致，请先卸载旧版本再安装"
-                Toast.makeText(context, "旧版本签名与新版本不同，需要先卸载旧版本，避免安装失败", Toast.LENGTH_LONG).show()
+                statusLabel = "旧版本签名不同，正在引导卸载…"
+                Toast.makeText(context, "检测到旧版本签名不同，请按系统提示卸载旧版本，卸载完成后将自动安装新版本", Toast.LENGTH_LONG).show()
+                // 保存待安装 APK 路径，供卸载后自动安装使用
+                context.getSharedPreferences("lzdz_update_prefs", Context.MODE_PRIVATE)
+                    .edit().putString("pending_install_apk", file.absolutePath).apply()
+                // 打开系统卸载界面（卸载旧版本后回到桌面，重新打开本 APK 即可安装新版本）
+                try {
+                    val uninstallIntent = Intent(Intent.ACTION_DELETE, Uri.parse("package:" + context.packageName)).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    context.startActivity(uninstallIntent)
+                    // 卸载完成后，用户在桌面重新打开下载的安装包即可完成新版本安装
+                    coroutineScope.launch {
+                        statusLabel = "已打开系统卸载页，请卸载后重新打开安装包完成安装"
+                        delay(4000)
+                        onUpdateFinished()
+                        onDismiss()
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(context, "无法自动打开卸载页，请手动卸载旧版本后再安装", Toast.LENGTH_LONG).show()
+                    isSignatureConflict = false
+                    statusLabel = "请先手动卸载旧版本，再安装新版本"
+                }
                 return
             }
 
@@ -478,28 +504,68 @@ fun AppUpdateDialog(
                     onClick = { closeUpdate() }
                 )
                 .testTag("uiverse_dialog_mask"),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.BottomCenter
         ) {
-            // Uiverse.io Card Container
+            // 底部滑入动画：从底部缓缓升起并淡入（动态卡通弹窗）
+            var appear by remember { mutableStateOf(false) }
+            LaunchedEffect(Unit) { appear = true }
+            val slideY by animateFloatAsState(
+                targetValue = if (appear) 0f else 120f,
+                animationSpec = tween(durationMillis = 450),
+                label = "slideY"
+            )
+            val fadeAlpha by animateFloatAsState(
+                targetValue = if (appear) 1f else 0f,
+                animationSpec = tween(durationMillis = 400),
+                label = "fadeAlpha"
+            )
+            // 顶部卡通表情摇摆动画
+            val bounce by androidx.compose.animation.core.rememberInfiniteTransition(label = "bounce")
+                .animateFloat(
+                    initialValue = -6f,
+                    targetValue = 6f,
+                    animationSpec = androidx.compose.animation.core.infiniteRepeatable(
+                        animation = androidx.compose.animation.core.tween(700),
+                        repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
+                    ),
+                    label = "bounce"
+                )
+
+            // 底部卡通卡片容器
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                contentAlignment = Alignment.TopCenter
+                    .padding(top = 40.dp)
+                    .graphicsLayer {
+                        translationY = slideY * density
+                        alpha = fadeAlpha
+                    }
             ) {
-                // White Rounded Card
+                // 卡通顶部装饰：摇摆火箭 + 星星
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .offset(y = -34.dp)
+                        .graphicsLayer { rotationZ = bounce },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("🚀", fontSize = 30.sp)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("✨", fontSize = 18.sp)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("🎉", fontSize = 26.sp)
+                }
+                // White Rounded Card（底部全宽、顶部大圆角）
                 Box(
                     modifier = Modifier
-                        .padding(top = 23.dp)
-                        .widthIn(min = 280.dp, max = 310.dp)
                         .fillMaxWidth()
                         .shadow(
                             elevation = 10.dp,
-                            shape = RoundedCornerShape(16.dp),
+                            shape = RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp),
                             ambientColor = Color(0x4D3C4043),
                             spotColor = Color(0x263C4043)
                         )
-                        .clip(RoundedCornerShape(16.dp))
+                        .clip(RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp))
                         .background(Color.White)
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
@@ -704,20 +770,8 @@ fun AppUpdateDialog(
                     }
                 }
 
-                // Protruding Top SVG Cookie Badge from Uiverse.io
-                Box(
-                    modifier = Modifier
-                        .size(65.dp, 46.dp)
-                        .testTag("uiverse_cookie_badge"),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_uiverse_cookie),
-                        contentDescription = "Uiverse Cookie",
-                        tint = Color.Unspecified,
-                        modifier = Modifier.size(65.dp, 46.dp)
-                    )
-                }
+                // 底部安全区域留白
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
     }

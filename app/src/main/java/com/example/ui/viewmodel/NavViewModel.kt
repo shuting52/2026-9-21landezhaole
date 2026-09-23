@@ -81,7 +81,10 @@ data class NavUiState(
     val cloudUpdate: UpdateDialogDto? = null,
     val cloudSettings: SettingsDto? = null,
     val cloudMarquee: MarqueeDto? = null,
-    val cloudIpMonitor: IpMonitorDto? = null
+    val cloudIpMonitor: IpMonitorDto? = null,
+    // 本地背景媒体（主题版块直接本机选择，无需控制台）：type = none/image/video, uri 为本地内容 URI
+    val localBgMediaType: String = "none",
+    val localBgMediaUri: String = ""
 )
 
 class NavViewModel(
@@ -784,6 +787,23 @@ class NavViewModel(
 
     fun showSplash() {
         _uiState.value = _uiState.value.copy(isSplashVisible = true)
+    }
+
+    // ============ 本地背景媒体（主题版块本机上传） ============
+    /** 设置本地背景媒体：type 为 image/video/none，uri 为本地内容 URI */
+    fun setLocalBgMedia(type: String, uri: String) {
+        _uiState.value = _uiState.value.copy(
+            localBgMediaType = type,
+            localBgMediaUri = uri
+        )
+    }
+
+    /** 清除本地背景媒体（恢复默认/云端背景） */
+    fun clearLocalBgMedia() {
+        _uiState.value = _uiState.value.copy(
+            localBgMediaType = "none",
+            localBgMediaUri = ""
+        )
     }
 }
 

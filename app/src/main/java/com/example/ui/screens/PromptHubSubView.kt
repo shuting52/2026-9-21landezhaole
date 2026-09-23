@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.ZoomIn
@@ -207,30 +208,59 @@ private fun CloudPromptCard(
                 var videoFailed by remember { mutableStateOf(false) }
                 if (!videoFailed) {
                     // 视频预览（静音循环自动播放，点击暂停/继续；加载失败自动回退预览图避免黑屏）
-                    androidx.compose.ui.viewinterop.AndroidView(
-                        factory = { ctx ->
-                            android.widget.VideoView(ctx).apply {
-                                setVideoURI(android.net.Uri.parse(prompt.mediaUrl))
-                                setOnPreparedListener { mp ->
-                                    mp.isLooping = true
-                                    mp.setVolume(0f, 0f)
-                                    mp.start()
-                                }
-                                setOnErrorListener { mp, what, extra ->
-                                    // 视频无法解码/加载：回退到预览图或提示，避免黑屏
-                                    videoFailed = true
-                                    true
-                                }
-                                setOnClickListener {
-                                    if (isPlaying) pause() else start()
-                                }
-                            }
-                        },
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(170.dp)
                             .clip(RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp))
-                    )
+                    ) {
+                        androidx.compose.ui.viewinterop.AndroidView(
+                            factory = { ctx ->
+                                android.widget.VideoView(ctx).apply {
+                                    setVideoURI(android.net.Uri.parse(prompt.mediaUrl))
+                                    setOnPreparedListener { mp ->
+                                        mp.isLooping = true
+                                        mp.setVolume(0f, 0f)
+                                        mp.start()
+                                    }
+                                    setOnErrorListener { mp, what, extra ->
+                                        // 视频无法解码/加载：回退到预览图或提示，避免黑屏
+                                        videoFailed = true
+                                        true
+                                    }
+                                    setOnClickListener {
+                                        if (isPlaying) pause() else start()
+                                    }
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(170.dp)
+                        )
+                        // 全屏观看按钮
+                        Surface(
+                            onClick = { onImageClick() },
+                            shape = RoundedCornerShape(50),
+                            color = Color.Black.copy(alpha = 0.55f),
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .padding(8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Filled.Fullscreen,
+                                    contentDescription = "全屏观看",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("全屏观看", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
                 } else if (prompt.previewUrl.isNotBlank()) {
                     // 视频加载失败：展示预览图
                     AsyncImage(
@@ -419,6 +449,66 @@ private fun CloudPromptPreviewDialog(
     onDismiss: () -> Unit,
     onCopy: (String) -> Unit
 ) {
+    // 是否进入全屏视频模式（沉浸式播放）
+    var fullscreenVideo by remember { mutableStateOf(false) }
+
+    if (fullscreenVideo) {
+        // 全屏视频播放（点击退出全屏）
+        Dialog(
+            onDismissRequest = { fullscreenVideo = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black)
+                    .clickable { fullscreenVideo = false }
+            ) {
+                androidx.compose.ui.viewinterop.AndroidView(
+                    factory = { ctx ->
+                        android.widget.VideoView(ctx).apply {
+                            setVideoURI(android.net.Uri.parse(prompt.mediaUrl))
+                            setOnPreparedListener { mp ->
+                                mp.isLooping = true
+                                mp.setVolume(0f, 0f)
+                                mp.start()
+                            }
+                            layoutParams = android.view.ViewGroup.LayoutParams(
+                                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                                android.view.ViewGroup.LayoutParams.MATCH_PARENT
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
+                // 顶部返回按钮
+                Surface(
+                    onClick = { fullscreenVideo = false },
+                    shape = CircleShape,
+                    color = Color.Black.copy(alpha = 0.6f),
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(16.dp)
+                ) {
+                    Icon(
+                        Icons.Filled.Close,
+                        contentDescription = "退出全屏",
+                        tint = Color.White,
+                        modifier = Modifier.padding(10.dp).size(20.dp)
+                    )
+                }
+                Text(
+                    text = "全屏观看 · 点击空白处退出",
+                    color = Color.White.copy(alpha = 0.6f),
+                    fontSize = 11.sp,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 24.dp)
+                )
+            }
+        }
+    }
+
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -467,7 +557,68 @@ private fun CloudPromptPreviewDialog(
                         }
                     }
 
-                    if (prompt.previewUrl.isNotBlank()) {
+                    // 视频提示词：优先内嵌播放演示视频 + 全屏按钮；图片提示词展示预览图
+                    if (prompt.type == "prompt_video" && prompt.mediaUrl.isNotBlank()) {
+                        var videoFailed by remember { mutableStateOf(false) }
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(240.dp)
+                                .background(Color.Black)
+                        ) {
+                            if (!videoFailed) {
+                                androidx.compose.ui.viewinterop.AndroidView(
+                                    factory = { ctx ->
+                                        android.widget.VideoView(ctx).apply {
+                                            setVideoURI(android.net.Uri.parse(prompt.mediaUrl))
+                                            setOnPreparedListener { mp ->
+                                                mp.isLooping = true
+                                                mp.setVolume(0f, 0f)
+                                                mp.start()
+                                            }
+                                            setOnErrorListener { mp, what, extra ->
+                                                videoFailed = true
+                                                true
+                                            }
+                                        }
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(240.dp)
+                                )
+                            } else if (prompt.previewUrl.isNotBlank()) {
+                                AsyncImage(
+                                    model = prompt.previewUrl,
+                                    contentDescription = prompt.title,
+                                    contentScale = ContentScale.Fit,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                            // 全屏观看按钮（点击进入沉浸式全屏播放）
+                            Surface(
+                                onClick = { fullscreenVideo = true },
+                                shape = RoundedCornerShape(50),
+                                color = Color.Black.copy(alpha = 0.6f),
+                                modifier = Modifier
+                                    .align(Alignment.BottomEnd)
+                                    .padding(12.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        Icons.Filled.Fullscreen,
+                                        contentDescription = "全屏观看",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(5.dp))
+                                    Text("全屏", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+                    } else if (prompt.previewUrl.isNotBlank()) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
