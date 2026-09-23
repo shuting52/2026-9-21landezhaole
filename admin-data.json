@@ -6077,8 +6077,8 @@
   "welcome": {
     "enabled": true,
     "title": "懒得找了:",
-    "content": "由懒得找了自主开发的收录站终于上线啦～\n为期一周不断迭代 不断优化。终于可以落地了",
-    "welcomeText": "",
+    "content": "",
+    "welcomeText": "由懒得找了自主开发的收录站终于上线啦～ 为期一周不断迭代 不断优化。终于可以落地了",
     "imageUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790138376323_Camera_XHS_1789700113875.jpg",
     "buttonText": "开始体验"
   },
