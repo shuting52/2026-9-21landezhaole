@@ -171,7 +171,9 @@ data class WelcomeDto(
     val content: String = "",
     val welcomeText: String = "",
     val imageUrl: String = "",
-    val buttonText: String = "开始使用"
+    val buttonText: String = "开始使用",
+    // 弹窗比例：compact 紧凑 / standard 标准 / wide 宽幅（控制台可调）
+    val ratio: String = "standard"
 )
 
 data class UpdateDialogDto(
