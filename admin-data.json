@@ -6045,6 +6045,22 @@
       "mediaUrl": "",
       "url": "",
       "mode": "file"
+    },
+    {
+      "id": "sk_mudmeqslzi71",
+      "type": "skill",
+      "promptType": "skill",
+      "title": "夏林果真人IP封面",
+      "desc": "真人IP短视频封面",
+      "prompt": "",
+      "url": "",
+      "author": "开源～小红书博主",
+      "badge": "爆款推荐",
+      "tags": "技能 资源包 ZIP",
+      "previewUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790138774029_Screenshot_2026_0923_124605.png",
+      "mediaUrl": "",
+      "iconUrl": "",
+      "mode": "file"
     }
   ],
   "settings": {
