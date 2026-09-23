@@ -6060,6 +6060,21 @@
       "mediaUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790144629204_L17YSsxs5pSxTVeD.mp4",
       "url": "",
       "mode": "file"
+    },
+    {
+      "id": "sk_mudqw21fbnc1",
+      "type": "skill",
+      "promptType": "prompt_video",
+      "title": "卡点换装",
+      "desc": "将衣服和人物图丢给豆包，",
+      "prompt": "真人实拍风格，一位美丽少女，皮肤白皙，正随着Future House风格的DJ舞曲俏皮地舞动，舞蹈动作包含俏皮的摆胯、手臂波浪步和定点pose，且与音乐节拍完全吻合；镜头会跟着音乐节拍前后推拉运镜，顶部有柔和的聚光灯打下来照亮少女，整体光影柔和、氛围感强，画面比例为9:16。排除：模糊，低清，噪点，水印，文字，logo，扭曲，变形，五官崩坏，动作僵硬，画面抖动，比例失调。边跳边卡点换装后面服装，9:16",
+      "author": "来源于推特博主分享",
+      "badge": "Seedance2.5/H3/wan3.0",
+      "tags": "",
+      "previewUrl": "",
+      "mediaUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790146298025_卡点换装.mp4",
+      "url": "",
+      "mode": "file"
     }
   ],
   "settings": {
