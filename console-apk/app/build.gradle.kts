@@ -10,13 +10,23 @@ android {
         applicationId = "com.yuntai"
         minSdk = 24
         targetSdk = 36
-        versionCode = 5
-        versionName = "1.0.4"
+        versionCode = 6
+        versionName = "1.0.5"
+    }
+
+    signingConfigs {
+        create("release") {
+            storeFile = file(System.getenv("CONSOLE_KEYSTORE_PATH") ?: "${System.getProperty("user.home")}/toolchain/lzdz-release.keystore")
+            storePassword = System.getenv("CONSOLE_STORE_PASSWORD") ?: "lzdz123456"
+            keyAlias = "lzdz-release"
+            keyPassword = System.getenv("CONSOLE_KEY_PASSWORD") ?: "lzdz123456"
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
