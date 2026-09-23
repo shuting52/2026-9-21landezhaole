@@ -6120,7 +6120,7 @@
   },
   "welcome": {
     "enabled": true,
-    "title": "欢迎来到懒得找了",
+    "title": "",
     "content": "为期一周不断迭代优化的新版本终于上线啦～\n新应用可能存在小Bug，欢迎宝贝们及时反馈\n收录站资源丰富，很多资源都可以白嫖哦\n发现Bug请第一时间反馈，我会尽快处理",
     "welcomeText": "嗨～欢迎回家！愿你在这里发现更多宝藏！",
     "imageUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790152223860_Screenshot_20260919_200948.jpg",
