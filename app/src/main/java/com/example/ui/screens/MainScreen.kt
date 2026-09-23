@@ -142,6 +142,7 @@ import com.example.ui.components.AppUpdateDialog
 import com.example.ui.components.AtmosphereOverlay
 import com.example.ui.components.CategorySitesDialog
 import com.example.ui.components.CustomRadioBottomNav
+import com.example.ui.components.CuteWelcomeDialog
 import com.example.ui.components.GlobalWindBackground
 import com.example.ui.components.HideAndSeekLoader
 import com.example.ui.components.ResourceCard
@@ -391,7 +392,7 @@ fun MainScreen(
                         } else {
                             UploadHubScreen(
                                 title = "Skill · 技能库",
-                                subtitle = "由云台控制台实时同步，增删均在后台控制，点击卡片直接下载 ZIP/MD 技能包",
+                                subtitle = "点击卡片即可下载技能包到本地，即下即用",
                                 resourceType = "skill",
                                 resources = uploadedSkills,
                                 onDelete = { id -> viewModel.deleteUploadedResource(id) },
@@ -473,44 +474,12 @@ fun MainScreen(
         }
 
         // 云端欢迎界面弹窗：仅开屏结束后才展示（避免开屏期间弹窗盖在开屏之上）
+        // v1.7.2：改为可爱卡通动态绘制弹窗（底部滑入 + 表情摇摆 + 粉紫渐变），欢迎语每行一条独立呈现
         val cloudWelcome = uiState.cloudWelcome
         if (uiState.isCloudReady && !uiState.isSplashVisible && cloudWelcome?.enabled == true && !welcomeDialogDismissed) {
-            AlertDialog(
-                onDismissRequest = { welcomeDialogDismissed = true },
-                title = {
-                    Text(
-                        text = cloudWelcome.title.ifBlank { "欢迎使用" },
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                text = {
-                    Column {
-                        if (cloudWelcome.welcomeText.isNotBlank()) {
-                            Text(
-                                text = cloudWelcome.welcomeText,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(bottom = 8.dp)
-                            )
-                        }
-                        if (cloudWelcome.imageUrl.isNotBlank()) {
-                            coil.compose.AsyncImage(
-                                model = cloudWelcome.imageUrl,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 8.dp),
-                                contentScale = ContentScale.Crop
-                            )
-                        }
-                        Text(text = cloudWelcome.content.ifBlank { "新版本已上线，快去体验吧！" })
-                    }
-                },
-                confirmButton = {
-                    Button(onClick = { welcomeDialogDismissed = true }) {
-                        Text(cloudWelcome.buttonText.ifBlank { "开始使用" })
-                    }
-                }
+            CuteWelcomeDialog(
+                welcome = cloudWelcome,
+                onDismiss = { welcomeDialogDismissed = true }
             )
         }
 

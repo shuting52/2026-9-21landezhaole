@@ -1,7 +1,10 @@
 package com.example.ui.screens
 
+import android.app.DownloadManager
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Environment
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -155,15 +158,54 @@ private fun ResourceFileCard(
         else -> MaterialTheme.colorScheme.primary
     }
 
-    // 点击卡片：文件直接下载 / URL 直接跳转（不再单独放按钮）
-    val onCardClick = {
-        if (url.isNotBlank()) {
+    /** 使用系统下载管理器下载文件到手机「下载」目录（通知栏可见进度） */
+    fun downloadToLocal(url: String, fileName: String?) {
+        try {
+            val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+            val safeName = (fileName?.ifBlank { null } ?: url.substringAfterLast('/').ifBlank { "download.bin" })
+                .replace(" ", "_")
+                .replace(Regex("[\\\\/:*?\"<>|]"), "_")
+            val request = DownloadManager.Request(Uri.parse(url))
+                .setTitle("懒得找了 · ${res.title}")
+                .setDescription("正在下载 $safeName")
+                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                .setAllowedOverMetered(true)
+                .setMimeType(
+                    when {
+                        isApk -> "application/vnd.android.package-archive"
+                        isZip -> "application/zip"
+                        isMd -> "text/markdown"
+                        else -> "application/octet-stream"
+                    }
+                )
+                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, safeName)
+            dm.enqueue(request)
+            Toast.makeText(context, "已开始下载到手机「下载」文件夹，完成后可在通知栏查看", Toast.LENGTH_LONG).show()
+        } catch (e: Exception) {
+            // 系统下载器不可用时退回浏览器下载
             try {
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 context.startActivity(intent)
-            } catch (e: Exception) {
-                Toast.makeText(context, "无法打开：$url", Toast.LENGTH_SHORT).show()
+            } catch (e2: Exception) {
+                Toast.makeText(context, "下载失败，请稍后重试", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    // 点击卡片：文件（zip/apk/md）直接下载到本地 / URL 直接跳转
+    val onCardClick = {
+        if (url.isNotBlank()) {
+            if (isFile) {
+                downloadToLocal(url, res.title + (if (isZip) ".zip" else if (isApk) ".apk" else if (isMd) ".md" else ""))
+            } else {
+                try {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(intent)
+                } catch (e: Exception) {
+                    Toast.makeText(context, "无法打开：$url", Toast.LENGTH_SHORT).show()
+                }
             }
         } else {
             Toast.makeText(context, "该资源暂未配置下载链接", Toast.LENGTH_SHORT).show()

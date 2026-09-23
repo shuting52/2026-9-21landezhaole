@@ -192,21 +192,72 @@ fun MouthpieceSection(modifier: Modifier = Modifier) {
     var customInput by remember { mutableStateOf("") }
     var generatedReplies by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
     val savedFavorites = remember { mutableStateListOf<String>() }
+    // v1.7.2：刷新计数器——同一输入每次「刷新」也随机生成全新文案
+    var refreshCounter by remember { mutableIntStateOf(0) }
 
     val currentCategory = remember(selectedCategoryId) {
         MOUTHPIECE_CATEGORIES.first { it.id == selectedCategoryId }
     }
 
-    val generateRepliesForText = { input: String ->
-        val list = mutableListOf<Pair<String, String>>()
-        currentCategory.templates.forEach { (tone, reply) ->
-            if (selectedTone == "全部语气" || selectedTone == tone) {
-                val enhancedReply = if (input.isNotBlank()) {
-                    "“$input”？—— $reply"
-                } else {
-                    reply
+    /** 一键导入第三方聊天平台：复制文案到剪贴板 + 自动跳转微信/QQ 等应用，粘贴即用 */
+    fun importToChatApp(text: String) {
+        try {
+            val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            cm.setPrimaryClip(ClipData.newPlainText("嘴强嘴替", text))
+        } catch (_: Exception) {}
+        // 依次尝试第三方聊天/社交平台（微信→QQ→抖音→快手→支付宝），成功即跳转
+        val targets = listOf(
+            "com.tencent.mm",          // 微信
+            "com.tencent.mobileqq",    // QQ
+            "com.ss.android.ugc.aweme",// 抖音
+            "com.smile.gifmaker",      // 快手
+            "com.xingin.xhs"           // 小红书
+        )
+        var launched = false
+        for (pkg in targets) {
+            try {
+                val launch = context.packageManager.getLaunchIntentForPackage(pkg)
+                if (launch != null) {
+                    launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(launch)
+                    launched = true
+                    break
                 }
-                list.add(tone to enhancedReply)
+            } catch (_: Exception) {}
+        }
+        Toast.makeText(
+            context,
+            if (launched) "✅ 已复制回怼文案！请在打开的聊天窗口输入框长按粘贴即可"
+            else "✅ 已复制回怼文案！请到微信/QQ 聊天框长按粘贴使用",
+            Toast.LENGTH_LONG
+        ).show()
+    }
+
+    // v1.7.2：生成时引入随机性——每次生成/刷新都产出不同的新鲜文案（同一输入刷新也不同）
+    val generateRepliesForText = { input: String ->
+        val rnd = java.util.Random(System.currentTimeMillis() + input.hashCode() * 31 + refreshCounter * 7)
+        val filtered = currentCategory.templates.filter {
+            selectedTone == "全部语气" || selectedTone == it.first
+        }
+        val list = mutableListOf<Pair<String, String>>()
+        filtered.shuffled(rnd).forEach { (tone, reply) ->
+            val enhancedReply = if (input.isNotBlank()) {
+                "“$input”？—— $reply"
+            } else {
+                reply
+            }
+            list.add(tone to enhancedReply)
+        }
+        // 随机补充 1-2 条万能金句，保证每次刷新都有新鲜感
+        if (rnd.nextBoolean()) {
+            val extras = RANDOM_PUNCHLINES.shuffled(rnd).take(if (rnd.nextBoolean()) 2 else 1)
+            extras.forEach { punch ->
+                val tone = when (rnd.nextInt(3)) {
+                    0 -> "犀利暴击"
+                    1 -> "幽默自嘲"
+                    else -> "优雅体面"
+                }
+                list.add(tone to (if (input.isNotBlank()) "“$input”？—— $punch" else punch))
             }
         }
         if (list.isEmpty()) {
@@ -416,6 +467,21 @@ fun MouthpieceSection(modifier: Modifier = Modifier) {
             }
         }
 
+        // 5.5 自由输入随机刷新：任意内容输入即可刷新生成全新文案（v1.7.2）
+        Button(
+            onClick = {
+                refreshCounter++
+                generateRepliesForText(customInput)
+            },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = FlameRed)
+        ) {
+            Icon(Icons.Filled.Casino, contentDescription = null, modifier = Modifier.size(15.dp))
+            Spacer(modifier = Modifier.width(5.dp))
+            Text("🎲 刷新文案（输入任意内容，点击即可生成全新回怼）", fontSize = 12.5.sp, fontWeight = FontWeight.Bold)
+        }
+
         // 6. 生成结果卡片列表
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             generatedReplies.forEachIndexed { index, (tone, text) ->
@@ -456,6 +522,19 @@ fun MouthpieceSection(modifier: Modifier = Modifier) {
                             }
 
                             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                // v1.7.2：一键导入第三方聊天平台（复制 + 跳转微信/QQ，粘贴即用）
+                                IconButton(
+                                    onClick = { importToChatApp(text) },
+                                    modifier = Modifier.size(28.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Chat,
+                                        contentDescription = "导入聊天框",
+                                        tint = Color(0xFF07C160),
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+
                                 IconButton(
                                     onClick = {
                                         if (isFav) savedFavorites.remove(text) else savedFavorites.add(text)

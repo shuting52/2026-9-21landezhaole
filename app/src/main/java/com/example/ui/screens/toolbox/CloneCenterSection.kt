@@ -36,6 +36,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -74,6 +77,20 @@ fun CloneCenterScreenView(
 
     val supportsProfile = viewModel.supportsProfile()
     val isProfileOwner = viewModel.isProfileOwner()
+    // 分身空间启用状态（周期性刷新，创建/移除后自动更新）
+    var profileActive by remember { mutableStateOf(viewModel.isProfileActive()) }
+    // 移除分身空间二次确认弹窗
+    var showRemoveConfirm by remember { mutableStateOf(false) }
+    // 已在分身空间中的应用包名集合（避免重复创建）
+    var installedInProfile by remember { mutableStateOf(setOf<String>()) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            profileActive = viewModel.isProfileActive()
+            installedInProfile = apps.filter { viewModel.isAppInProfile(it.packageName) }.map { it.packageName }.toSet()
+            kotlinx.coroutines.delay(2000L)
+        }
+    }
 
     // Work Profile 创建结果回调
     val provisionLauncher = rememberLauncherForActivityResult(
@@ -86,6 +103,7 @@ fun CloneCenterScreenView(
             Toast.LENGTH_LONG
         ).show()
         // 重新加载状态
+        profileActive = viewModel.isProfileActive()
         viewModel.refreshApps()
     }
 
@@ -123,6 +141,8 @@ fun CloneCenterScreenView(
                 Text(
                     text = when {
                         !supportsProfile -> "当前设备不支持 Work Profile（需 Android 5.0+ 且支持多用户）"
+                        profileActive && isProfileOwner -> "✅ 分身空间已启用：桌面已出现「工作」标签，选择应用点击「创建」即可分身"
+                        profileActive -> "分身空间已创建：请先打开系统「分身空间设置」确认本机管理状态"
                         !isProfileOwner -> "已就绪：点击「创建工作分身空间」后即可分身应用"
                         else -> "分身空间已启用：选择应用点击「创建」即可分身"
                     },
@@ -162,11 +182,69 @@ fun CloneCenterScreenView(
                         Toast.makeText(context, "无法启动分身空间创建流程", Toast.LENGTH_LONG).show()
                     }
                 },
-                enabled = supportsProfile,
+                enabled = supportsProfile && !profileActive,
                 modifier = Modifier.weight(1f)
             ) {
-                Text(if (isProfileOwner) "分身空间已启用" else "创建工作分身空间", fontSize = 13.sp)
+                Text(if (profileActive) "分身空间已启用" else "创建工作分身空间", fontSize = 13.sp)
             }
+        }
+
+        // 分身空间管理操作（启用后可设置/移除）
+        if (profileActive) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedButton(
+                    onClick = { viewModel.openProfileSettings() },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("⚙️ 分身空间设置", fontSize = 12.5.sp, fontWeight = FontWeight.Bold)
+                }
+                Button(
+                    onClick = { showRemoveConfirm = true },
+                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    ),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("🗑 移除分身空间", fontSize = 12.5.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "💡 移除后将删除桌面「工作」标签及分身空间内全部应用数据，请谨慎操作",
+                fontSize = 10.sp,
+                color = MaterialTheme.colorScheme.error.copy(alpha = 0.75f)
+            )
+        }
+
+        // 移除分身空间二次确认
+        if (showRemoveConfirm) {
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { showRemoveConfirm = false },
+                title = { Text("移除分身空间？", fontWeight = FontWeight.Black) },
+                text = {
+                    Text("将删除桌面「工作」标签及其中的全部分身应用与数据，移除后需重新创建才能分身。确定继续吗？", fontSize = 13.sp)
+                },
+                confirmButton = {
+                    androidx.compose.material3.TextButton(
+                        onClick = {
+                            viewModel.removeProfile()
+                            showRemoveConfirm = false
+                            profileActive = viewModel.isProfileActive()
+                        }
+                    ) {
+                        Text("确定移除", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+                    }
+                },
+                dismissButton = {
+                    androidx.compose.material3.TextButton(onClick = { showRemoveConfirm = false }) {
+                        Text("取消")
+                    }
+                }
+            )
         }
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -223,6 +301,7 @@ fun CloneCenterScreenView(
             items(apps, key = { it.packageName }) { app ->
                 AppRow(
                     app = app,
+                    alreadyInProfile = app.packageName in installedInProfile,
                     onClick = { viewModel.cloneApp(app) }
                 )
             }
@@ -303,6 +382,7 @@ private fun CloneRow(clone: CloneEntity) {
 @Composable
 private fun AppRow(
     app: InstalledApp,
+    alreadyInProfile: Boolean = false,
     onClick: () -> Unit
 ) {
     Row(
@@ -338,13 +418,28 @@ private fun AppRow(
             )
         }
         Spacer(modifier = Modifier.width(8.dp))
-        Button(
-            onClick = onClick,
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                horizontal = 14.dp, vertical = 6.dp
-            )
-        ) {
-            Text("创建", fontSize = 12.sp)
+        if (alreadyInProfile) {
+            Surface(
+                shape = RoundedCornerShape(6.dp),
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+            ) {
+                Text(
+                    text = "已在分身空间",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                )
+            }
+        } else {
+            Button(
+                onClick = onClick,
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                    horizontal = 14.dp, vertical = 6.dp
+                )
+            ) {
+                Text("创建", fontSize = 12.sp)
+            }
         }
     }
 }

@@ -1265,11 +1265,11 @@ async function uploadSkillDoc(ev){
       const url = await uploadFile(f, "dist/uploads");
       if(!$("fSkTitle").value) $("fSkTitle").value = name;
       if(!$("fSkUrl").value) $("fSkUrl").value = url;
-      if(!$("fSkDesc").value) $("fSkDesc").value = `${name} 技能资源包（ZIP）已上传云端`;
+      if(!$("fSkDesc").value) $("fSkDesc").value = `${name} 技能资源包（ZIP）已上传云端，点击卡片即可下载到本地`;
       if(!$("fSkTags").value) $("fSkTags").value = "技能 资源包 ZIP";
       if(!$("fSkAuthor").value) $("fSkAuthor").value = "懒得找了";
-      if(box) box.innerHTML = `✅ ZIP 已上传：${esc(f.name)}`;
-      toast("ZIP 已上传并自动补全信息","ok");
+      if(box) box.innerHTML = `✅ ZIP 已上传（无需填写 URL，本体可直接下载）：${esc(f.name)}`;
+      toast("ZIP 已上传，本体点击卡片即可直接下载到本地","ok");
     }else{
       toast("仅支持 .md 或 .zip 文件","err");
     }
@@ -1295,6 +1295,8 @@ function saveSkill(si){
   const title = $("fSkTitle").value.trim();
   if(!title){ toast("Skill 标题必填","err"); return; }
   const mode = $("fSkMode") ? $("fSkMode").value : "file";
+  // 修复：文件模式（本地上传 ZIP/MD）时，直接使用上传成功后的云端直链（fSkUrl 隐藏字段）
+  const fileUrl = $("fSkUrl") ? $("fSkUrl").value.trim() : "";
   const obj = {
     id: si >= 0 ? S.admin.skills[si].id : uid("sk"),
     type: "skill",
@@ -1302,7 +1304,7 @@ function saveSkill(si){
     title,
     desc: $("fSkDesc").value.trim(),
     prompt: $("fSkPrompt") ? $("fSkPrompt").value : "",
-    url: mode === "url" ? ($("fSkUrl").value.trim()) : ($("fSkDoc").files && $("fSkDoc").files.length ? S.admin.skills[si] && S.admin.skills[si].url || "" : ""),
+    url: mode === "url" ? fileUrl : fileUrl,
     author: $("fSkAuthor").value.trim(),
     badge: $("fSkBadge").value.trim() || "",
     tags: $("fSkTags").value.trim(),
@@ -1311,19 +1313,17 @@ function saveSkill(si){
     iconUrl: "",
     mode: mode
   };
-  if(mode === "file" && $("fSkDoc").files && $("fSkDoc").files.length){
-    // 文件模式但未上传成功时回退旧值
-  }
   if(si >= 0){
     const old = S.admin.skills[si];
-    if(mode === "file" && old && old.url && old.url.indexOf("dist/uploads") >= 0 && !obj.url) obj.url = old.url;
+    // 未重新上传文件且 URL 为空时保留旧文件直链
+    if(mode === "file" && !obj.url && old && old.url) obj.url = old.url;
     S.admin.skills[si] = obj;
   } else {
     S.admin.skills.push(obj);
   }
   closeDlg(); renderSkill();
   publish(false);
-  toast("Skill 已保存并实时同步到本体软件","ok");
+  toast("Skill 已保存并实时同步到本体软件"+(obj.url ? "（文件可直接下载）" : ""),"ok");
   logChange((si>=0?"更新Skill「":"新增Skill「")+obj.title+"」");
 }
 
@@ -1633,22 +1633,28 @@ function saveSplash(){
 // ==========================================
 function renderWelcome(){
   if(!S.admin) return;
-  const w = S.admin.welcome || { enabled: false, title: "欢迎使用全新版本", content: "", imageUrl: "", buttonText: "开始体验" };
+  const w = S.admin.welcome || { enabled: false, title: "欢迎使用全新版本", content: "", welcomeText: "", imageUrl: "", buttonText: "开始体验", ratio: "standard" };
   $("welcomePage").innerHTML = `<div class="card">
     <div class="action-banner">
       <b>👋 欢迎界面弹窗管理</b>
-      <span class="hint">可以增加新功能特性列表，并实时推送到本体软件触发更新弹窗提醒</span>
+      <span class="hint">欢迎语采用独立弹窗逐行呈现（每行一条），支持卡通动态样式与比例调节，实时推送本体触发更新弹窗</span>
     </div>
     <label>弹窗开关</label>
     <select id="fWlEnabled">
-      <option value="true" ${w.enabled?"selected":""}>✅ 启用欢迎弹窗（用户进入时弹出新功能速递）</option>
+      <option value="true" ${w.enabled?"selected":""}>✅ 启用欢迎弹窗（进入时弹出可爱卡通欢迎弹窗）</option>
       <option value="false" ${!w.enabled?"selected":""}>🚫 停用欢迎弹窗</option>
     </select>
-    <label>弹窗主标题</label><input id="fWlTitle" value="${esc(w.title)}" placeholder="如 欢迎体验全新版本">
-    <label>欢迎文字（简短问候语，展示在功能列表上方）</label>
-    <input id="fWlText" value="${esc(w.welcomeText||"")}" placeholder="如：欢迎使用「懒得找了」，愿你在这里发现更多宝藏！">
-    <label>新功能说明列表（每行一条）</label>
-    <textarea id="fWlContent" style="min-height:120px" placeholder="1. 新增【嘴强嘴替】与年龄计算器&#10;2. 全新 3 排舒适导航网格布局&#10;3. 权威高精度 IP 实时监控引擎">${esc(w.content)}</textarea>
+    <label>弹窗主标题</label><input id="fWlTitle" value="${esc(w.title)}" placeholder="如 欢迎来到懒得找了">
+    <label>欢迎问候语（弹窗主视觉大字，独立弹窗呈现）</label>
+    <input id="fWlText" value="${esc(w.welcomeText||"")}" placeholder="如：嗨～欢迎回家！愿你在这里发现更多宝藏！">
+    <label>欢迎语列表（每行一条，弹窗内逐行展示）</label>
+    <textarea id="fWlContent" style="min-height:120px" placeholder="新功能上线啦～&#10;全新卡通欢迎弹窗&#10;Skill 技能包一键下载&#10;嘴强嘴替自由刷新文案">${esc(w.content)}</textarea>
+    <label>弹窗比例（宽窄调节）</label>
+    <select id="fWlRatio">
+      <option value="compact" ${(w.ratio||"standard")==="compact"?"selected":""}>紧凑（窄条，适合简短欢迎语）</option>
+      <option value="standard" ${(w.ratio||"standard")==="standard"?"selected":""}>标准（默认比例）</option>
+      <option value="wide" ${(w.ratio||"standard")==="wide"?"selected":""}>宽幅（大卡片，适合图文并茂）</option>
+    </select>
     <label>欢迎配图（本地上传）</label>
     <div class="upload-box" onclick="document.getElementById('fWlImg').click()">🖼️ 点击上传配图</div>
     <input type="file" id="fWlImg" accept="image/*" onchange="uploadWelcomeImg(event)">
@@ -1681,10 +1687,11 @@ function saveWelcome(){
     content: $("fWlContent").value,
     welcomeText: $("fWlText") ? $("fWlText").value.trim() : "",
     imageUrl: $("fWlImgUrl").value.trim(),
-    buttonText: $("fWlBtn").value.trim() || "开始体验"
+    buttonText: $("fWlBtn").value.trim() || "开始体验",
+    ratio: $("fWlRatio") ? $("fWlRatio").value : "standard"
   };
   toast("欢迎弹窗已保存","ok");
-  logChange("更新欢迎弹窗与欢迎文字");
+  logChange("更新欢迎弹窗：欢迎语"+($("fWlText").value.trim()||"")+"，比例"+($("fWlRatio").value));
 }
 
 // ==========================================
