@@ -993,19 +993,6 @@
         ],
         "cards": [
           {
-            "id": "prompts_-1",
-            "title": "Seedance 2.5 Prompt",
-            "url": "https://evolink.ai/zh/seedance-2-5-prompts",
-            "icon": "",
-            "fallbackText": "词",
-            "badge": "海量词库",
-            "badgeType": "GOLD",
-            "desc": "覆盖人物、场景、镜头语言高端摄影咒语",
-            "categoryId": "ai_prompts",
-            "subcatId": "prompt",
-            "highlights": ""
-          },
-          {
             "id": "prompts_-2",
             "title": "AIART.PICS",
             "url": "https://aiart.pics/",
@@ -2882,19 +2869,6 @@
             "highlights": ""
           },
           {
-            "id": "gam-9",
-            "title": "红色警戒2&尤里",
-            "url": "https://pan.quark.cn/s/2f1d9bd396ca",
-            "icon": "",
-            "fallbackText": "RA2",
-            "badge": "局域网对战",
-            "badgeType": "ROSE",
-            "desc": "红警2尤里的复仇win10/11防卡死纯净版",
-            "categoryId": "game",
-            "subcatId": "pc",
-            "highlights": ""
-          },
-          {
             "id": "gam-10",
             "title": "在线小霸王红白机",
             "url": "https://www.yikm.net/",
@@ -3050,19 +3024,6 @@
             "badge": "高薪模板",
             "badgeType": "NEW",
             "desc": "根据意向岗位智能生成排版优雅的专业简历",
-            "categoryId": "tools",
-            "subcatId": "ai_assist",
-            "highlights": ""
-          },
-          {
-            "id": "too-5",
-            "title": "AI编程Atoms",
-            "url": "https://atoms.dev",
-            "icon": "",
-            "fallbackText": "Atom",
-            "badge": "代码生成",
-            "badgeType": "BLUE",
-            "desc": "智能对话生成全栈可用代码与在线运行",
             "categoryId": "tools",
             "subcatId": "ai_assist",
             "highlights": ""
@@ -3809,19 +3770,6 @@
             "highlights": ""
           },
           {
-            "id": "par-6",
-            "title": "悬赏兼职平台",
-            "url": "https://link3.cc/fmy18",
-            "icon": "",
-            "fallbackText": "赏",
-            "badge": "兼职任务",
-            "badgeType": "NEW",
-            "desc": "手机利用碎片时间完成悬赏任务赚零花",
-            "categoryId": "partners",
-            "subcatId": "side_hustle",
-            "highlights": ""
-          },
-          {
             "id": "par-7",
             "title": "学术版codex",
             "url": "https://qiewenpaper.com/app/agent?utm_source=daott",
@@ -4345,19 +4293,6 @@
             "highlights": "内置上百种企业服务集成节点；原生AI Agent、向量检索与LangChain模块深度集成"
           },
           {
-            "id": "new_site_13",
-            "title": "Dify",
-            "url": "https://dify.ai/",
-            "icon": "https://dify.ai/favicon.ico",
-            "fallbackText": "Dify",
-            "badge": "NEW",
-            "badgeType": "NEW",
-            "desc": "全球开源最火爆的LLM应用开发平台，轻松定义RAG与工作流",
-            "categoryId": "coding_tools",
-            "subcatId": "agent",
-            "highlights": "可视化Prompt编排与版本管理；极度健全的企业级RAG检索流水线与API输出"
-          },
-          {
             "id": "new_site_14",
             "title": "袋马",
             "url": "https://www.daimax.cn/",
@@ -4761,19 +4696,6 @@
             "highlights": "专为TPU与边缘算力芯片深度优化，赋能智能安防、工业质检与车载AI应用"
           },
           {
-            "id": "new_site_45",
-            "title": "火山机器学习平台",
-            "url": "https://www.volcengine.com/product/ml-platform",
-            "icon": "https://www.volcengine.com/favicon.ico",
-            "fallbackText": "ML",
-            "badge": "NEW",
-            "badgeType": "NEW",
-            "desc": "火山引擎大模型智能体与机器学习开发部署平台",
-            "categoryId": "coding_tools",
-            "subcatId": "agent",
-            "highlights": "为开发者与企业提供定制模型训练、微调、安全对齐与高性能云端推理调度服务"
-          },
-          {
             "id": "new_site_46",
             "title": "晨涧云",
             "url": "https://www.mornai.cn/",
@@ -5032,19 +4954,6 @@
             "categoryId": "coding_tools",
             "subcatId": "maas",
             "highlights": "免运维一键拉起Stable Diffusion、Ollama与vLLM实例，成本降幅高达50%"
-          },
-          {
-            "id": "new_site_66",
-            "title": "智谱清流",
-            "url": "https://bigmodel.cn/agent",
-            "icon": "https://bigmodel.cn/favicon.ico",
-            "fallbackText": "清流",
-            "badge": "NEW",
-            "badgeType": "NEW",
-            "desc": "智谱AI官方企业级智能体Agent平台与知识库定制中枢",
-            "categoryId": "coding_tools",
-            "subcatId": "agent",
-            "highlights": "内置GLM-4全功能插件体系；支持多智能体辩论、任务拆解与自动化业务流转"
           },
           {
             "id": "new_site_67",
@@ -5398,19 +5307,6 @@
             "highlights": "支持跨模型组合工作流，支持一键将AI能力接入团队协作工具"
           },
           {
-            "id": "code_site_1",
-            "title": "TRAE",
-            "url": "https://www.trae.cn/",
-            "icon": "https://www.trae.cn/favicon.ico",
-            "fallbackText": "TRAE",
-            "badge": "AI IDE",
-            "badgeType": "BLUE",
-            "desc": "字节跳动出品的新一代自适应AI编程IDE，全工程感知与智能代理协作",
-            "categoryId": "coding_tools",
-            "subcatId": "ide",
-            "highlights": "内置Claude 3.5与GPT-4o前沿大模型；支持Builder自主全工程代码生成与即时预览；专为现代全栈开发者打造的自适应AI IDE"
-          },
-          {
             "id": "code_site_2",
             "title": "码上飞",
             "url": "https://codeflying.cgref.cn/aibot",
@@ -5723,19 +5619,6 @@
             "highlights": "支持代码补全、技术规范答疑、单元测试生成与代码优化，企业研发深度提效"
           },
           {
-            "id": "code_site_26",
-            "title": "通义灵码",
-            "url": "https://tongyi.aliyun.com/lingma",
-            "icon": "https://tongyi.aliyun.com/favicon.ico",
-            "fallbackText": "灵码",
-            "badge": "阿里出品",
-            "badgeType": "GOLD",
-            "desc": "阿里云出品的AI智能编码助手，上百万开发者的日常提效首选",
-            "categoryId": "coding_tools",
-            "subcatId": "assistant",
-            "highlights": "支持行级/函数级代码补全、自然语言写代码、单元测试生成与代码优化，国内极速无网络阻碍"
-          },
-          {
             "id": "code_site_27",
             "title": "iFlyCode",
             "url": "https://iflycode.xfyun.cn/",
@@ -5786,19 +5669,6 @@
             "categoryId": "coding_tools",
             "subcatId": "assistant",
             "highlights": "推理速度极快，内存占用小，支持自动补全、代码查错与智能解释"
-          },
-          {
-            "id": "code_orig_copilot",
-            "title": "GitHub Copilot",
-            "url": "https://github.com/features/copilot",
-            "icon": "https://github.com/favicon.ico",
-            "fallbackText": "Copilot",
-            "badge": "行业标杆",
-            "badgeType": "BLUE",
-            "desc": "GitHub与OpenAI联手打造的全球最普及AI结对程序员",
-            "categoryId": "coding_tools",
-            "subcatId": "assistant",
-            "highlights": "深度集成各大主流IDE；海量开源仓库训练支撑；代码补全、对话提问与CLI全方位支持"
           },
           {
             "id": "code_orig_firebase",
