@@ -98,7 +98,7 @@ fun UiverseDialog(
     onApplyItemAsComponent: (UiverseItem) -> Unit,
     onApplyComponentTheme: (compId: String, css: String) -> Unit = { _, _ -> },
     componentThemes: Map<String, String> = emptyMap(),
-    // 本地背景媒体：本机选择图片/视频（不再需要控制台上传）
+    // 本地自定义背景：本机选择图片/视频
     localBgMediaType: String = "none",
     onPickLocalImage: () -> Unit = {},
     onPickLocalVideo: () -> Unit = {},
@@ -191,7 +191,7 @@ fun UiverseDialog(
 
                 Divider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), thickness = 1.dp)
 
-                // 主题子页切换：全局自定义代码 / 组件级定制 / 背景媒体（图片·视频·歌手海报）
+                // 主题子页切换：全局自定义代码 / 组件级定制 / 自定义背景（图片·视频）
                 var themeSubTab by remember { mutableIntStateOf(0) }
                 Row(
                     modifier = Modifier
@@ -231,7 +231,7 @@ fun UiverseDialog(
                             .padding(vertical = 8.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("背景媒体", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text("自定义背景", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                 }
 
