@@ -1,5 +1,7 @@
 package com.example.ui.screens.toolbox
 
+import android.content.Context
+import android.content.ContextWrapper
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.widget.Toast
@@ -152,7 +154,14 @@ fun CloneCenterScreenView(
                 Text("重新扫描", fontSize = 13.sp)
             }
             Button(
-                onClick = { viewModel.createProfile(context as android.app.Activity) },
+                onClick = {
+                    val activity = context.findActivity()
+                    if (activity != null) {
+                        viewModel.createProfile(activity)
+                    } else {
+                        Toast.makeText(context, "无法启动分身空间创建流程", Toast.LENGTH_LONG).show()
+                    }
+                },
                 enabled = supportsProfile,
                 modifier = Modifier.weight(1f)
             ) {
@@ -361,4 +370,11 @@ private fun formatTime(timestamp: Long): String {
     } catch (e: Exception) {
         ""
     }
+}
+
+/** 从 Context 链中安全找到 Activity（Dialog 内 LocalContext 不是 Activity，直接强转会闪退） */
+private tailrec fun Context.findActivity(): android.app.Activity? = when (this) {
+    is android.app.Activity -> this
+    is android.content.ContextWrapper -> baseContext.findActivity()
+    else -> null
 }

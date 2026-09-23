@@ -1386,8 +1386,8 @@ function renderSettings(){
       <option value="true" ${(S.admin.ipMonitor||{}).enabled?"selected":""}>✅ 开启（首页置顶显示定位 IP）</option>
     </select>
     <label>IP 定位数据源 URL（返回 JSON 含 ip/city/region；仅用于定位，UI 不显示网站字样）</label>
-    <input id="fIpUrl" value="${esc((S.admin.ipMonitor||{}).url||"")}" placeholder="https://ipinfo.io/json">
-    <div class="hint">示例：https://ipinfo.io/json 或 https://ip-api.com/json/?lang=zh-CN</div>
+    <input id="fIpUrl" value="${esc((S.admin.ipMonitor||{}).url||"https://ip.useragentinfo.com/json")}" placeholder="https://ip.useragentinfo.com/json">
+    <div class="hint">默认高精度中文源 https://ip.useragentinfo.com/json（含省市区）；备选 https://ipinfo.io/json 或 https://ip-api.com/json/?lang=zh-CN</div>
     <div class="divider"></div>
     <h3>📮 联系作者与反馈</h3>
     <div class="two-col">
@@ -1431,28 +1431,6 @@ function renderSettings(){
     <label>内置签名指纹 SHA-256（本体运行时校验自身签名，防止二次打包篡改）</label>
     <input id="fSecSha" class="mono" value="${esc((s.security||{}).expectedSha||"")}" placeholder="填入正式签名证书 SHA-256（apksigner 可查）">
     <div class="hint">开启后：若 APK 被他人二次打包/篡改签名，本体启动时检测到签名不一致将提示风险并拒绝运行，有效防止破解二改。</div>
-    <div class="divider"></div>
-    <h3>🎨 全局背景媒体（图片 / 视频）</h3>
-    <label>背景类型</label>
-    <select id="fBgType">
-      <option value="none" ${(s.bgMedia||{}).type==="none"?"selected":""}>不使用背景媒体</option>
-      <option value="image" ${(s.bgMedia||{}).type==="image"?"selected":""}>🖼️ 图片背景</option>
-      <option value="video" ${(s.bgMedia||{}).type==="video"?"selected":""}>🎬 视频背景（循环播放）</option>
-    </select>
-    <label>本地上传背景图片 / 视频（自动上传并应用到本体全局背景）</label>
-    <div class="upload-box" onclick="document.getElementById('fBgFile').click()">📤 点击上传背景媒体（JPG/PNG/MP4/WebM）</div>
-    <input type="file" id="fBgFile" accept="image/*,video/*" style="display:none" onchange="uploadBgMedia(event)">
-    <label>或填写媒体直链 URL</label><input id="fBgUrl" value="${esc((s.bgMedia||{}).url||"")}" placeholder="https://.../bg.jpg">
-    <div class="divider"></div>
-    <h3>🌟 内置歌手海报（本地上传替换，一键应用全局背景）</h3>
-    <div class="hint">内置歌手：张韶涵 / 张含韵 / 卓依婷 / 凤凰传奇。上传对应海报图后自动替换内置渐变海报，应用后本体全局背景展示。</div>
-    <div id="fCelebList">${(s.celebrityPosters||[]).map((cp,ci)=>`
-      <div class="row" style="margin-bottom:6px">
-        <b style="width:80px">${esc(cp.name)}</b>
-        <input class="grow" id="fcUrl${ci}" value="${esc(cp.url)}" placeholder="海报图片 URL（留空用内置渐变）">
-        <button class="btn-mini pri" onclick="document.getElementById('fcFile${ci}').click()">📤 上传</button>
-        <input type="file" id="fcFile${ci}" accept="image/*" style="display:none" onchange="uploadCelebPoster(event,${ci})">
-      </div>`).join("")}
     <div class="divider"></div>
     <div class="row">
       <button class="btn-pri grow" onclick="saveSettings()">💾 保存设置</button>
@@ -1530,17 +1508,7 @@ function saveSettings(){
     security: {
       enabled: $("fSecEnabled").value === "true",
       expectedSha: $("fSecSha").value.trim()
-    },
-    // 全局背景媒体
-    bgMedia: {
-      type: $("fBgType").value,
-      url: $("fBgUrl").value.trim()
-    },
-    // 内置歌手海报（保留 name，url 更新为用户上传值）
-    celebrityPosters: (S.admin.settings.celebrityPosters || []).map((cp, ci) => ({
-      name: cp.name,
-      url: $("fcUrl" + ci) ? $("fcUrl" + ci).value.trim() : (cp.url || "")
-    }))
+    }
   };
   // 跑马灯公告
   S.admin.marquee = {
@@ -1549,41 +1517,13 @@ function saveSettings(){
     defaultText: $("fMqDefault").value.trim(),
     segments: S.admin.marquee.segments || []
   };
-  // IP 定位监控（默认可靠中文源 ip-api.com http 中文；如需 https 可填其他源）
+  // IP 定位监控（默认高精度中文源 https://ip.useragentinfo.com/json；本体端会多源投票取最精准结果）
   S.admin.ipMonitor = {
     enabled: $("fIpEnabled").value === "true",
-    url: $("fIpUrl").value.trim()
+    url: $("fIpUrl").value.trim() || "https://ip.useragentinfo.com/json"
   };
   toast("设置已保存，点击「应用并实时同步」推送到本体","ok");
   logChange("更新设置版块（品牌/联系/公告/主题/IP定位/加固）");
-}
-
-// 上传全局背景媒体（图片/视频）
-async function uploadBgMedia(ev){
-  const f = ev.target.files[0]; if(!f) return;
-  const box = ev.target.previousElementSibling;
-  if(box) box.innerHTML = "⏳ 正在上传背景媒体…";
-  try{
-    const url = await uploadFile(f, "dist/uploads");
-    $("fBgUrl").value = url;
-    const isVideo = f.type.startsWith("video/");
-    $("fBgType").value = isVideo ? "video" : "image";
-    if(box) box.innerHTML = "✅ 已上传：" + esc(f.name);
-    toast("背景媒体已上传，点「应用并实时同步」推送到本体","ok");
-  }catch(e){
-    toast("上传失败："+e.message,"err");
-    if(box) box.innerHTML = "📤 点击上传背景媒体（JPG/PNG/MP4/WebM）";
-  }
-}
-
-// 上传歌手海报图（替换内置渐变）
-async function uploadCelebPoster(ev, ci){
-  const f = ev.target.files[0]; if(!f) return;
-  try{
-    const url = await uploadFile(f, "dist/uploads");
-    if($("fcUrl" + ci)) $("fcUrl" + ci).value = url;
-    toast("歌手海报已上传，点「应用并实时同步」推送到本体","ok");
-  }catch(e){ toast("上传失败："+e.message,"err"); }
 }
 
 // 上传软件品牌图标

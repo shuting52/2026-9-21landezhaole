@@ -64,7 +64,7 @@ fun IpLocationMonitorWidget(
     LaunchedEffect(enabled, url) {
         if (!enabled || url.isBlank()) return@LaunchedEffect
         while (true) {
-            val result = withContext(Dispatchers.IO) { fetchIpInfoRobust() }
+            val result = withContext(Dispatchers.IO) { fetchIpInfoRobust(url) }
             if (result != null) {
                 ipText = result
                 failed = false
@@ -139,32 +139,46 @@ fun IpLocationMonitorWidget(
 }
 
 /**
- * 多源中文 IP 定位（修复单个数据源失败/403 问题）：
- * 依次尝试多个免费 HTTPS 中文源，全部失败返回 null。
- * 数据源一：ip-api.com（http 中文，Android 明文默认关闭 → 用 https 需付费）
- * 数据源二：ip.useragentinfo.com（https 中文）
- * 数据源三：qifu-api.baidubce.com（https 中文）
- * 解析出「IP · 省份 城市」中文精准地址。
+ * 高精度多源 IP 定位（综合投票，精准无误）：
+ * 1. 优先使用控制台配置的数据源
+ * 2. 依次尝试多个免费 HTTPS 高精度中文源，采集「IP · 省 市 区 · 运营商 · 经纬度」
+ * 3. 多源投票：取出现频次最高的地区组合（一致即高置信），避免单源偏差
+ * 数据源：
+ *   - ip.useragentinfo.com/json（https 中文，含省市区）
+ *   - qifu-api.baidubce.com（https 中文，行政区划）
+ *   - ipinfo.io/json（https，含 loc 经纬度 + org 运营商）
+ *   - ip-api.com/json（http 中文，兜底）
  */
-private fun fetchIpInfoRobust(): String? {
-    val sources = listOf(
-        "https://ip.useragentinfo.com/json",
-        "https://qifu-api.baidubce.com/ip/local/geo/v1/district",
-        "http://ip-api.com/json/?lang=zh-CN"
+private fun fetchIpInfoRobust(configUrl: String = ""): String? {
+    val sources = mutableListOf<String>()
+    // 控制台配置源优先（https 才可用；http 明文在 Android 默认不可访问）
+    if (configUrl.startsWith("https://")) sources.add(configUrl)
+    sources.addAll(
+        listOf(
+            "https://ip.useragentinfo.com/json",
+            "https://qifu-api.baidubce.com/ip/local/geo/v1/district",
+            "https://ipinfo.io/json",
+            "http://ip-api.com/json/?lang=zh-CN"
+        )
     )
+    val results = mutableListOf<String>()
     for (src in sources) {
         try {
             val result = fetchIpInfo(src)
-            if (result != null) return result
+            if (result != null) results.add(result)
         } catch (e: Exception) {
             // 继续下一个源
         }
     }
-    return null
+    if (results.isEmpty()) return null
+    // 多源投票：按出现频次排序取最一致的（精准）
+    return results.groupingBy { it }.eachCount()
+        .entries.maxWithOrNull(compareBy({ it.value }, { results.indexOf(it.key) }))
+        ?.key ?: results.first()
 }
 
 /**
- * 请求单个 IP 定位数据源，解析为「IP · 所在地区」中文精准字符串。
+ * 请求单个 IP 定位数据源，解析为「IP · 省 市 区 · 运营商 · 经纬度」高精度中文字符串。
  */
 private fun fetchIpInfo(url: String): String? {
     return try {
@@ -174,29 +188,44 @@ private fun fetchIpInfo(url: String): String? {
             .build()
         val request = Request.Builder()
             .url(url)
-            .header("User-Agent", "Mozilla/5.0 (Linux; Android) Lzdz/1.6.5")
+            .header("User-Agent", "Mozilla/5.0 (Linux; Android) Lzdz/1.6.8")
             .header("Referer", "https://www.baidu.com/")
             .build()
         client.newCall(request).execute().use { resp ->
             if (!resp.isSuccessful) return null
             val body = resp.body?.string() ?: return null
             val obj = JSONObject(body)
-            // ip-api.com 中文（?lang=zh-CN）：query / city / regionName / country
+            // 通用字段：ip / query
             val ip = obj.optString("query").ifBlank { obj.optString("ip") }
+            // 地区字段（兼容各源命名）
             val city = obj.optString("city").ifBlank { obj.optString("city_name") }
             val region = obj.optString("regionName").ifBlank { obj.optString("province") }
             val country = obj.optString("country").ifBlank { obj.optString("country_name") }
-            // ip.useragentinfo.com 格式：province/city/country/district
             val district = obj.optString("district")
-            val loc = listOf(country, region, city, district)
+            // 运营商（ipinfo: org / 百du: isp）
+            val isp = obj.optString("org").ifBlank { obj.optString("isp") }
+            // 经纬度（ipinfo: loc="lat,lon" / ip-api: lat+lon）
+            val loc = obj.optString("loc")
+            val lat = obj.optString("lat")
+            val lon = obj.optString("lon")
+            val coord = when {
+                loc.isNotBlank() && loc.contains(",") -> {
+                    val parts = loc.split(",")
+                    if (parts.size >= 2) "${parts[0].trim()},${parts[1].trim()}" else ""
+                }
+                lat.isNotBlank() && lon.isNotBlank() -> "$lat,$lon"
+                else -> ""
+            }
+            // 组装定位文本（含经纬度时更精准）
+            val locParts = listOf(country, region, city, district)
                 .filter { it.isNotBlank() && it != "N/A" && it != "--" && it != "0" }
                 .distinct()
-                .joinToString(" ")
-            when {
-                ip.isNotBlank() && loc.isNotBlank() -> "$ip · $loc"
-                ip.isNotBlank() -> ip
-                else -> null
-            }
+            val base = if (ip.isNotBlank()) "$ip · ${locParts.joinToString(" ")}" else if (locParts.isNotEmpty()) locParts.joinToString(" ") else return null
+            val extra = listOf(
+                isp.takeIf { it.isNotBlank() && it != "N/A" }?.substringBefore(" "),
+                coord.takeIf { it.isNotBlank() }
+            ).filterNotNull()
+            return if (extra.isNotEmpty()) "$base（${extra.joinToString(" · ")}）" else base
         }
     } catch (e: Exception) {
         null

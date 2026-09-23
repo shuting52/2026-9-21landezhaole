@@ -5,6 +5,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -183,9 +184,16 @@ fun MainScreen(
     var welcomeDialogDismissed by remember { mutableStateOf(false) }
 
     Box(modifier = modifier.fillMaxSize()) {
+        // 本地背景媒体优先（主题版块本机选择），无本地媒体时回退云端背景
+        val bgType = uiState.localBgMediaType.ifBlank { "none" }.let {
+            if (it != "none") it else (uiState.cloudSettings?.bgMedia?.type ?: "none")
+        }
+        val bgUrl = uiState.localBgMediaUri.ifBlank {
+            uiState.cloudSettings?.bgMedia?.url.orEmpty()
+        }
         GlobalWindBackground(
-            bgMediaType = uiState.cloudSettings?.bgMedia?.type ?: "none",
-            bgMediaUrl = uiState.cloudSettings?.bgMedia?.url.orEmpty()
+            bgMediaType = bgType,
+            bgMediaUrl = bgUrl
         ) {
             Scaffold(
                 containerColor = Color.Transparent,
@@ -606,6 +614,35 @@ fun MainScreen(
 
         // Uiverse.io Skin & UI Kit Studio Dialog
         if (uiState.isThemeDialogVisible) {
+            // 本机选择背景图片/视频（无需控制台上传）
+            val bgImageLauncher = rememberLauncherForActivityResult(
+                androidx.activity.result.contract.ActivityResultContracts.OpenDocument()
+            ) { uri ->
+                if (uri != null) {
+                    try {
+                        context.contentResolver.takePersistableUriPermission(
+                            uri,
+                            android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        )
+                    } catch (e: Exception) { }
+                    viewModel.setLocalBgMedia("image", uri.toString())
+                    Toast.makeText(context, "已应用本地图片背景", Toast.LENGTH_SHORT).show()
+                }
+            }
+            val bgVideoLauncher = rememberLauncherForActivityResult(
+                androidx.activity.result.contract.ActivityResultContracts.OpenDocument()
+            ) { uri ->
+                if (uri != null) {
+                    try {
+                        context.contentResolver.takePersistableUriPermission(
+                            uri,
+                            android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        )
+                    } catch (e: Exception) { }
+                    viewModel.setLocalBgMedia("video", uri.toString())
+                    Toast.makeText(context, "已应用本地视频背景", Toast.LENGTH_SHORT).show()
+                }
+            }
             UiverseDialog(
                 isOpen = true,
                 onClose = { viewModel.setThemeDialogVisible(false) },
@@ -625,7 +662,18 @@ fun MainScreen(
                 onApplyComponentTheme = { compId, css ->
                     viewModel.applyComponentTheme(compId, css)
                 },
-                componentThemes = uiState.activeUiverseState.componentThemes
+                componentThemes = uiState.activeUiverseState.componentThemes,
+                localBgMediaType = uiState.localBgMediaType,
+                onPickLocalImage = {
+                    bgImageLauncher.launch(arrayOf("image/*"))
+                },
+                onPickLocalVideo = {
+                    bgVideoLauncher.launch(arrayOf("video/*"))
+                },
+                onClearLocalBgMedia = {
+                    viewModel.clearLocalBgMedia()
+                    Toast.makeText(context, "已清除本地背景，恢复默认", Toast.LENGTH_SHORT).show()
+                }
             )
         }
 
