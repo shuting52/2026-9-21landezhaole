@@ -6058,12 +6058,12 @@
     "feedbackEmail": "",
     "customThemeCss": "",
     "customThemeHtml": "",
-    "security": {
-      "enabled": true,
-      "expectedSha": "b9a618e311024bf29b6f24a95eb9a0f69700e07b9b11e007ae2db6c55abf1603"
-    },
     "logoUrl": "",
     "packageName": "com.landezhaole",
+    "security": {
+      "enabled": false,
+      "expectedSha": "b9a618e311024bf29b6f24a95eb9a0f69700e07b9b11e007ae2db6c55abf1603"
+    },
     "bgMedia": {
       "type": "image",
       "url": ""
