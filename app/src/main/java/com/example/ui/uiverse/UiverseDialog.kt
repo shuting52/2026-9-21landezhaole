@@ -271,7 +271,7 @@ fun UiverseDialog(
                             )
                         }
                         else -> {
-                            // 背景媒体：本机直接选择图片/视频作为全局背景
+                            // 自定义背景：本机直接选择图片/视频，全局应用（复制到本地私有目录，跨重启持久）
                             BackgroundMediaSection(
                                 localBgMediaType = localBgMediaType,
                                 onPickImage = onPickLocalImage,
@@ -1252,7 +1252,7 @@ private fun ComponentThemeSection(
 }
 
 // ==========================================
-// 背景媒体：本机直接选择图片/视频作为全局背景（不再需要控制台，已删除歌手海报）
+// 自定义背景：本机直接选择图片/视频作为全局背景（跨重启持久、全局应用）
 // ==========================================
 @Composable
 private fun BackgroundMediaSection(
@@ -1268,9 +1268,9 @@ private fun BackgroundMediaSection(
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         item {
-            Text("全局背景 · 图片 / 视频", color = Color(0xFF94A3B8), fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            Text("自定义背景 · 图片 / 视频", color = Color(0xFF94A3B8), fontSize = 13.sp, fontWeight = FontWeight.Bold)
             Text(
-                "从本机相册/文件直接选择图片或视频作为软件全局背景，全程本地处理，无需任何外部上传。",
+                "从本机直接选择图片或视频，应用为软件全局背景（所有页面生效），选择后自动保存，重启依然保留。",
                 color = Color(0xFF64748B),
                 fontSize = 11.sp
             )
@@ -1347,7 +1347,7 @@ private fun BackgroundMediaSection(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 12.sp
                             )
-                            Text("回到首页即可看到效果", color = Color(0xFF94A3B8), fontSize = 10.sp)
+                            Text("全局所有页面已生效，重启保留", color = Color(0xFF94A3B8), fontSize = 10.sp)
                         }
                         TextButton(onClick = onClear) {
                             Text("清除", color = Color(0xFFF87171), fontWeight = FontWeight.Bold)
