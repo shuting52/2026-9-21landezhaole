@@ -6073,6 +6073,22 @@
       "mediaUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790146298025_卡点换装.mp4",
       "url": "",
       "mode": "file"
+    },
+    {
+      "id": "sk_mudu7wp984zr",
+      "type": "skill",
+      "promptType": "skill",
+      "title": "生日祝福Skill",
+      "desc": "将下载的文件解压，丢给豆包工作模式。输入\"加载\"即可",
+      "prompt": "",
+      "url": "",
+      "author": "陈淑婷",
+      "badge": "爆款推荐",
+      "tags": "生日模版",
+      "previewUrl": "",
+      "mediaUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790151820542_生日祝福.zip",
+      "iconUrl": "",
+      "mode": "file"
     }
   ],
   "settings": {
