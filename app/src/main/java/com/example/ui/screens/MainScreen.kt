@@ -434,12 +434,13 @@ fun MainScreen(
         val cloudVersion = uiState.cloudVersion
         val cloudUpdate = uiState.cloudUpdate
         val prefs = remember { context.getSharedPreferences("lzdz_update_prefs", Context.MODE_PRIVATE) }
-        LaunchedEffect(uiState.isCloudReady, cloudVersion?.code) {
+        // 死命令：开屏动画结束后才呈现更新弹窗；有新版本就强制弹出且不可自行关闭，
+        // 直到用户点击「立即更新」并完成安装；已是最新版本（cloudCode <= localCode）绝不弹窗。
+        LaunchedEffect(uiState.isCloudReady, cloudVersion?.code, uiState.isSplashVisible) {
             val localCode = com.example.BuildConfig.VERSION_CODE
             val cloudCode = cloudVersion?.code ?: 0
-            val shownCode = prefs.getInt("last_shown_version_code", -1)
-            // 仅当：云端有更新 && 用户还没看过这个版本 && 本地版本低于云端 时弹窗
-            if (uiState.isCloudReady && cloudCode > localCode && cloudCode > shownCode && !updateDialogDismissed) {
+            // 仅当：开屏已结束 && 云端有更新（本地版本低于云端）时弹窗；已是最新版绝不弹
+            if (uiState.isCloudReady && !uiState.isSplashVisible && cloudCode > localCode && !updateDialogDismissed) {
                 showCloudUpdateDialog = true
                 prefs.edit().putInt("last_shown_version_code", cloudCode).apply()
             }
@@ -457,8 +458,10 @@ fun MainScreen(
                 },
                 update = cloudUpdate,
                 apkUrl = cloudVersion.apkUrl.ifBlank { null },
-                forceUpdate = cloudVersion.force,
-                autoDownload = true
+                // 强制执行更新：弹窗出现后不可自行关闭，必须用户点「立即更新」
+                forceUpdate = true,
+                // 不自动下载：等待用户点击「立即更新」后才开始下载
+                autoDownload = false
             )
         }
 
