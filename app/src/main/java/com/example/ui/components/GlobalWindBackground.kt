@@ -95,45 +95,6 @@ fun GlobalWindBackground(
     )
 
     Box(modifier = modifier.fillMaxSize()) {
-        // 全局背景媒体（控制台上传图片/视频）：铺满整个软件背景（置于风背景之上、内容之下）
-        if (bgMediaType == "image" && bgMediaUrl.isNotBlank()) {
-            coil.compose.AsyncImage(
-                model = bgMediaUrl,
-                contentDescription = null,
-                contentScale = androidx.compose.ui.layout.ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-            // 半透明遮罩保证前景内容可读
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.35f))
-            )
-        } else if (bgMediaType == "video" && bgMediaUrl.isNotBlank()) {
-            androidx.compose.ui.viewinterop.AndroidView(
-                factory = { ctx ->
-                    android.widget.VideoView(ctx).apply {
-                        setVideoURI(android.net.Uri.parse(bgMediaUrl))
-                        setOnPreparedListener { mp ->
-                            mp.isLooping = true
-                            mp.setVolume(0f, 0f)
-                            mp.start()
-                        }
-                        layoutParams = android.view.ViewGroup.LayoutParams(
-                            android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-                            android.view.ViewGroup.LayoutParams.MATCH_PARENT
-                        )
-                    }
-                },
-                modifier = Modifier.fillMaxSize()
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.35f))
-            )
-        }
-
         when {
             uiverse.patternStyle == PatternStylePreset.CYBER_GRID || uiverse.activeKit == UiKitPreset.CYBERPUNK_NEON -> {
                 Canvas(modifier = Modifier.fillMaxSize()) {
@@ -228,6 +189,46 @@ fun GlobalWindBackground(
                     )
                 }
             }
+        }
+
+        // 自定义背景媒体（图片/视频）：必须画在风背景 Canvas 之上、内容之下，
+        // 否则会被风背景底色完全覆盖导致「上传没效果」
+        if (bgMediaType == "image" && bgMediaUrl.isNotBlank()) {
+            coil.compose.AsyncImage(
+                model = bgMediaUrl,
+                contentDescription = null,
+                contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+            // 半透明遮罩保证前景内容可读
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.35f))
+            )
+        } else if (bgMediaType == "video" && bgMediaUrl.isNotBlank()) {
+            androidx.compose.ui.viewinterop.AndroidView(
+                factory = { ctx ->
+                    android.widget.VideoView(ctx).apply {
+                        setVideoURI(android.net.Uri.parse(bgMediaUrl))
+                        setOnPreparedListener { mp ->
+                            mp.isLooping = true
+                            mp.setVolume(0f, 0f)
+                            mp.start()
+                        }
+                        layoutParams = android.view.ViewGroup.LayoutParams(
+                            android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                            android.view.ViewGroup.LayoutParams.MATCH_PARENT
+                        )
+                    }
+                },
+                modifier = Modifier.fillMaxSize()
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.35f))
+            )
         }
 
         // Swaying Wind/Leaf Decorative Ambient Icons when in Default Wind pattern

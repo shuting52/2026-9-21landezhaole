@@ -26,7 +26,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.ZoomIn
@@ -237,29 +236,12 @@ private fun CloudPromptCard(
                                 .fillMaxWidth()
                                 .height(170.dp)
                         )
-                        // 全屏观看按钮
-                        Surface(
-                            onClick = { onImageClick() },
-                            shape = RoundedCornerShape(50),
-                            color = Color.Black.copy(alpha = 0.55f),
+                        // 视频预览：点击即可弹出全屏观看（无文字标记，轻触即开）
+                        Box(
                             modifier = Modifier
-                                .align(Alignment.Center)
-                                .padding(8.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    Icons.Filled.Fullscreen,
-                                    contentDescription = "全屏观看",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text("全屏观看", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                            }
-                        }
+                                .fillMaxSize()
+                                .clickable { onImageClick() }
+                        )
                     }
                 } else if (prompt.previewUrl.isNotBlank()) {
                     // 视频加载失败：展示预览图
@@ -498,7 +480,7 @@ private fun CloudPromptPreviewDialog(
                     )
                 }
                 Text(
-                    text = "全屏观看 · 点击空白处退出",
+                    text = "点击任意处退出全屏",
                     color = Color.White.copy(alpha = 0.6f),
                     fontSize = 11.sp,
                     modifier = Modifier
@@ -594,29 +576,12 @@ private fun CloudPromptPreviewDialog(
                                     modifier = Modifier.fillMaxSize()
                                 )
                             }
-                            // 全屏观看按钮（点击进入沉浸式全屏播放）
-                            Surface(
-                                onClick = { fullscreenVideo = true },
-                                shape = RoundedCornerShape(50),
-                                color = Color.Black.copy(alpha = 0.6f),
+                            // 视频预览：点击视频区域即进入全屏播放（无文字标记，轻触即开）
+                            Box(
                                 modifier = Modifier
-                                    .align(Alignment.BottomEnd)
-                                    .padding(12.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        Icons.Filled.Fullscreen,
-                                        contentDescription = "全屏观看",
-                                        tint = Color.White,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(5.dp))
-                                    Text("全屏", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                                }
-                            }
+                                    .fillMaxSize()
+                                    .clickable { fullscreenVideo = true }
+                            )
                         }
                     } else if (prompt.previewUrl.isNotBlank()) {
                         Box(
