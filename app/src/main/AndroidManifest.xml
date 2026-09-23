@@ -79,24 +79,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- 分身助手：Work Profile 设备管理接收器 -->
-        <receiver
-            android:name=".clonecenter.admin.CloneAdminReceiver"
-            android:description="@string/app_name"
-            android:exported="true"
-            android:permission="android.permission.BIND_DEVICE_ADMIN">
-
-            <meta-data
-                android:name="android.app.device_admin"
-                android:resource="@xml/device_admin" />
-
-            <intent-filter>
-                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
-
-                <action android:name="android.app.action.PROFILE_PROVISIONING_COMPLETE" />
-            </intent-filter>
-        </receiver>
     </application>
 
 </manifest>
