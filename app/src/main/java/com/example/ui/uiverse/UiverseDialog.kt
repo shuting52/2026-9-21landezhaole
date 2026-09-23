@@ -33,6 +33,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Image
@@ -41,6 +42,7 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Style
 import androidx.compose.material3.Button
@@ -60,6 +62,7 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -94,7 +97,12 @@ fun UiverseDialog(
     onResetDefault: () -> Unit,
     onApplyItemAsComponent: (UiverseItem) -> Unit,
     onApplyComponentTheme: (compId: String, css: String) -> Unit = { _, _ -> },
-    componentThemes: Map<String, String> = emptyMap()
+    componentThemes: Map<String, String> = emptyMap(),
+    // 本地背景媒体：本机选择图片/视频（不再需要控制台上传）
+    localBgMediaType: String = "none",
+    onPickLocalImage: () -> Unit = {},
+    onPickLocalVideo: () -> Unit = {},
+    onClearLocalBgMedia: () -> Unit = {}
 ) {
     if (!isOpen) return
 
@@ -263,11 +271,12 @@ fun UiverseDialog(
                             )
                         }
                         else -> {
-                            // 背景媒体：图片/视频 + 内置歌手海报
+                            // 背景媒体：本机直接选择图片/视频作为全局背景
                             BackgroundMediaSection(
-                                onPickImage = {
-                                    Toast.makeText(context, "请在控制台-设置-背景媒体中上传图片/视频", Toast.LENGTH_LONG).show()
-                                }
+                                localBgMediaType = localBgMediaType,
+                                onPickImage = onPickLocalImage,
+                                onPickVideo = onPickLocalVideo,
+                                onClear = onClearLocalBgMedia
                             )
                         }
                     }
@@ -1243,11 +1252,14 @@ private fun ComponentThemeSection(
 }
 
 // ==========================================
-// 背景媒体：图片/视频全局背景 + 内置歌手海报
+// 背景媒体：本机直接选择图片/视频作为全局背景（不再需要控制台，已删除歌手海报）
 // ==========================================
 @Composable
 private fun BackgroundMediaSection(
-    onPickImage: () -> Unit
+    localBgMediaType: String = "none",
+    onPickImage: () -> Unit,
+    onPickVideo: () -> Unit,
+    onClear: () -> Unit
 ) {
     LazyColumn(
         modifier = Modifier
@@ -1258,7 +1270,7 @@ private fun BackgroundMediaSection(
         item {
             Text("全局背景 · 图片 / 视频", color = Color(0xFF94A3B8), fontSize = 13.sp, fontWeight = FontWeight.Bold)
             Text(
-                "在控制台-设置-背景媒体上传图片/视频后自动应用到软件全局背景；也可直接选用内置歌手海报。",
+                "从本机相册/文件直接选择图片或视频作为软件全局背景，全程本地处理，无需任何外部上传。",
                 color = Color(0xFF64748B),
                 fontSize = 11.sp
             )
@@ -1273,46 +1285,72 @@ private fun BackgroundMediaSection(
                 Column(modifier = Modifier.padding(16.dp)) {
                     Icon(Icons.Filled.Image, contentDescription = null, tint = Color(0xFFEC4899), modifier = Modifier.size(22.dp))
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("本地上传图片 / 视频作为全局背景", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                    Text("请在控制台-设置-背景媒体上传", color = Color(0xFF94A3B8), fontSize = 10.5.sp)
+                    Text("本机选择图片作为全局背景", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    Text("支持 JPG / PNG / WebP，自动铺满全屏", color = Color(0xFF94A3B8), fontSize = 10.5.sp)
                     Spacer(modifier = Modifier.height(10.dp))
                     Button(
                         onClick = onPickImage,
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEC4899)),
                         shape = RoundedCornerShape(10.dp)
                     ) {
-                        Text("去上传", color = Color.White, fontWeight = FontWeight.Bold)
+                        Text("选择图片", color = Color.White, fontWeight = FontWeight.Bold)
                     }
                 }
             }
         }
         item {
-            Text("内置歌手海报 · 一键应用全局背景", color = Color(0xFF94A3B8), fontSize = 13.sp, fontWeight = FontWeight.Bold)
-        }
-        listOf("张韶涵", "张含韵", "卓依婷", "凤凰传奇").forEach { name ->
-            item {
-                val gradient = when (name) {
-                    "张韶涵" -> listOf(Color(0xFFFF6B9D), Color(0xFF6B5BFF))
-                    "张含韵" -> listOf(Color(0xFFFFB199), Color(0xFF8E54E9))
-                    "卓依婷" -> listOf(Color(0xFF43E97B), Color(0xFF38F9D7))
-                    else -> listOf(Color(0xFFFFD200), Color(0xFFF7971E))
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF14162A)),
+                border = BorderStroke(1.dp, Color(0xFF6366F1).copy(alpha = 0.4f))
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Icon(Icons.Filled.PlayCircle, contentDescription = null, tint = Color(0xFF6366F1), modifier = Modifier.size(22.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("本机选择视频作为全局背景", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    Text("支持 MP4 / WebM，循环静音播放", color = Color(0xFF94A3B8), fontSize = 10.5.sp)
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Button(
+                        onClick = onPickVideo,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6366F1)),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text("选择视频", color = Color.White, fontWeight = FontWeight.Bold)
+                    }
                 }
+            }
+        }
+        if (localBgMediaType != "none") {
+            item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.15f))
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF0E3B2E)),
+                    border = BorderStroke(1.dp, Color(0xFF34D399).copy(alpha = 0.5f))
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(90.dp)
-                            .background(Brush.linearGradient(gradient)),
-                        contentAlignment = Alignment.Center
+                    Row(
+                        modifier = Modifier.padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(name, color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp)
-                            Text("歌手海报 · 控制台上传后可替换", color = Color.White.copy(alpha = 0.85f), fontSize = 10.sp)
+                        Icon(
+                            Icons.Filled.CheckCircle,
+                            contentDescription = null,
+                            tint = Color(0xFF34D399),
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                if (localBgMediaType == "image") "已应用本地图片背景" else "已应用本地视频背景",
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 12.sp
+                            )
+                            Text("回到首页即可看到效果", color = Color(0xFF94A3B8), fontSize = 10.sp)
+                        }
+                        TextButton(onClick = onClear) {
+                            Text("清除", color = Color(0xFFF87171), fontWeight = FontWeight.Bold)
                         }
                     }
                 }
