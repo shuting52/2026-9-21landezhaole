@@ -6065,29 +6065,7 @@
     "security": {
       "enabled": false,
       "expectedSha": "b9a618e311024bf29b6f24a95eb9a0f69700e07b9b11e007ae2db6c55abf1603"
-    },
-    "bgMedia": {
-      "type": "image",
-      "url": ""
-    },
-    "celebrityPosters": [
-      {
-        "name": "张韶涵",
-        "url": ""
-      },
-      {
-        "name": "张含韵",
-        "url": ""
-      },
-      {
-        "name": "卓依婷",
-        "url": ""
-      },
-      {
-        "name": "凤凰传奇",
-        "url": ""
-      }
-    ]
+    }
   },
   "splash": {
     "type": "default",
@@ -6255,6 +6233,6 @@
   },
   "ipMonitor": {
     "enabled": true,
-    "url": "https://ip-api.com/json/?lang=zh-CN"
+    "url": "https://myip.ipip.net/"
   }
 }
