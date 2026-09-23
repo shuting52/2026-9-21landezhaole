@@ -76,6 +76,11 @@ fun PromptHubSubView(
     val context = LocalContext.current
     var selectedType by remember { mutableStateOf<String?>(null) } // null=全部, image, video
     var previewing by remember { mutableStateOf<UploadedResourceEntity?>(null) }
+    // v1.7.4：全局只有一个视频正在播放（带声音）——避免多个视频同时出声
+    var activeVideoId by remember { mutableStateOf<String?>(null) }
+    fun stopOtherVideos(activeId: String?) {
+        if (activeVideoId != activeId) activeVideoId = activeId
+    }
 
     val imageList = prompts.filter { it.type == "prompt_image" }
     val videoList = prompts.filter { it.type == "prompt_video" }
@@ -169,7 +174,13 @@ fun PromptHubSubView(
                 items(filteredList, key = { it.id }) { prompt ->
                     CloudPromptCard(
                         prompt = prompt,
-                        onImageClick = { previewing = prompt },
+                        activeVideoId = activeVideoId,
+                        onVideoActivate = { id -> stopOtherVideos(id) },
+                        onImageClick = {
+                            previewing = prompt
+                            // 打开全屏预览时停掉列表中的卡片视频，避免同时出声
+                            stopOtherVideos("preview_" + prompt.id)
+                        },
                         onCopy = { text ->
                             val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                             cm.setPrimaryClip(ClipData.newPlainText("Prompt", text))
@@ -198,10 +209,14 @@ fun PromptHubSubView(
 @Composable
 private fun CloudPromptCard(
     prompt: UploadedResourceEntity,
+    activeVideoId: String? = null,
+    onVideoActivate: (String) -> Unit = {},
     onImageClick: () -> Unit,
     onCopy: (String) -> Unit
 ) {
     val isVideo = prompt.type == "prompt_video"
+    // v1.7.4：当前卡片是否为“正在播放（带声音）”的视频
+    val isActiveVideo = isVideo && activeVideoId == prompt.id
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
@@ -214,7 +229,10 @@ private fun CloudPromptCard(
             if (isVideo && prompt.mediaUrl.isNotBlank()) {
                 var videoFailed by remember { mutableStateOf(false) }
                 if (!videoFailed) {
-                    // 视频预览（静音循环自动播放，点击暂停/继续；加载失败自动回退预览图避免黑屏）
+                    // v1.7.4 单视频播放方案：
+                    // - 仅「当前激活视频」播放声音；其他视频静音暂停，避免多个视频同时出声
+                    // - 点击视频区域 → 激活该视频（其他自动暂停）
+                    // - activeVideoId 变化时自动暂停/静音本视频
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -227,30 +245,85 @@ private fun CloudPromptCard(
                                     setVideoURI(android.net.Uri.parse(prompt.mediaUrl))
                                     setOnPreparedListener { mp ->
                                         mp.isLooping = true
-                                        // v1.7.3：视频区支持声音播放，自动播放带声音
-                                        mp.setVolume(1f, 1f)
-                                        mp.start()
+                                        if (isActiveVideo) {
+                                            mp.setVolume(1f, 1f)
+                                            mp.start()
+                                        } else {
+                                            mp.setVolume(0f, 0f)
+                                            mp.pause()
+                                        }
                                     }
                                     setOnErrorListener { mp, what, extra ->
-                                        // 视频无法解码/加载：回退到预览图或提示，避免黑屏
                                         videoFailed = true
                                         true
                                     }
                                     setOnClickListener {
-                                        if (isPlaying) pause() else start()
+                                        if (isActiveVideo) {
+                                            if (isPlaying) pause() else start()
+                                        } else {
+                                            onVideoActivate(prompt.id)
+                                        }
                                     }
+                                }
+                            },
+                            update = { view ->
+                                // activeVideoId 变化时：成为激活视频则继续播放，否则暂停（VideoView 无 setVolume，直接暂停即可静音）
+                                if (view.isPlaying && !isActiveVideo) {
+                                    view.pause()
+                                } else if (isActiveVideo) {
+                                    if (!view.isPlaying) view.start()
                                 }
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(170.dp)
                         )
-                        // 视频预览：点击即可弹出全屏观看（无文字标记，轻触即开）
+                        // 视频预览：点击即可激活播放（仅当前一个带声音）/暂停
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .clickable { onImageClick() }
+                                .clickable {
+                                    if (isActiveVideo) {
+                                        onVideoActivate("")
+                                    } else {
+                                        onVideoActivate(prompt.id)
+                                    }
+                                }
                         )
+                        // 声音状态角标
+                        if (isActiveVideo) {
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = Color.Black.copy(alpha = 0.55f),
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(8.dp)
+                            ) {
+                                Text(
+                                    text = "🔊 播放中",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                )
+                            }
+                        } else {
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = Color.Black.copy(alpha = 0.4f),
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(8.dp)
+                            ) {
+                                Text(
+                                    text = "🔇 点击播放",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                )
+                            }
+                        }
                     }
                 } else if (prompt.previewUrl.isNotBlank()) {
                     // 视频加载失败：展示预览图

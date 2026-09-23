@@ -54,6 +54,7 @@ import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Spellcheck
@@ -99,8 +100,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.ui.screens.toolbox.AgeCalculatorSection
-import com.example.ui.screens.toolbox.CloneCenterScreenView
 import com.example.ui.screens.toolbox.ConstellationSection
+import com.example.ui.screens.toolbox.FoodPickerScreenView
 import com.example.ui.screens.toolbox.MouthpieceSection
 import com.example.ui.screens.toolbox.OfflineTreasureSection
 import java.net.URLDecoder
@@ -187,11 +188,11 @@ enum class ToolboxTab(
         icon = Icons.Filled.Groups,
         desc = "亲戚称呼智能查询 · 覆盖中国56个民族的不同叫法 · 地区选择"
     ),
-    CLONE_CENTER(
-        title = "分身助手",
-        shortLabel = "分身助手",
-        icon = Icons.Filled.CopyAll,
-        desc = "Work Profile 应用分身 · 扫描应用一键分身双开 · 系统级隔离"
+    FOOD_PICKER(
+        title = "今天吃什么？",
+        shortLabel = "今天吃什么",
+        icon = Icons.Filled.Restaurant,
+        desc = "随机色子 · 各大菜系 · 配料调味料 · 制作教程 · 每菜系独一无二"
     ),
 }
 
@@ -363,7 +364,7 @@ fun ToolboxScreen(
                                 ToolboxTab.UUID_GEN -> UuidGeneratorScreenView(context = LocalContext.current)
                                 ToolboxTab.TEXT_STATS -> TextStatsScreenView(context = LocalContext.current)
                                 ToolboxTab.RELATION_KIN -> RelationKinScreenView(context = LocalContext.current)
-                                ToolboxTab.CLONE_CENTER -> CloneCenterScreenView()
+                                ToolboxTab.FOOD_PICKER -> FoodPickerScreenView()
                             }
                         }
                     }

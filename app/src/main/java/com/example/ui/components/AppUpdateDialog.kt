@@ -113,17 +113,16 @@ fun AppUpdateDialog(
     var isSignatureConflict by remember { mutableStateOf(false) }
 
 
-    // 云端配置（由控制台发布，实时同步）
+    // v1.7.4：更新弹窗内容「写死」——后续发布任何版本都不随云端 changelog 变化
+    val FIXED_UPDATE_LOGS = listOf(
+        "叮咚～我们又又又更新啦！",
+        "赶紧快来看看新版本有什么好宝贝吧",
+        "我们一直在白嫖的路上，一直在奔跑哟",
+        "快点更新吧～期待您发现自己的新大陆。"
+    )
+    // 云端配置（由控制台发布，实时同步）；标题保留版本号，正文内容固定不变
     val cloudTitle = update?.title ?: "发现新版本"
-    val cloudLogs: List<String> = update?.changelog?.takeIf { it.isNotEmpty() }
-        ?: listOf(
-            "新增云端实时同步功能",
-            "首页分类/角标可由控制台远程配置",
-            "软件库支持 APK 直链下载更新",
-            "Skill 技能库支持本地文件同步",
-            "开屏动画支持自定义代码配置",
-            "修复已知体验问题与稳定性提升"
-        )
+    val cloudLogs: List<String> = FIXED_UPDATE_LOGS
     val cloudConfirm = update?.confirmText ?: "立即更新"
     val cloudCancel = update?.cancelText ?: "稍后再说"
     val customHtml = update?.customHtml?.takeIf { it.isNotBlank() }

@@ -139,8 +139,13 @@ private fun ResourceFileCard(
     onDelete: () -> Unit
 ) {
     val context = LocalContext.current
-    val url = res.url.ifBlank { res.fileUrl }
-    val isFile = url.contains("/dist/uploads/") || url.contains("/dist/apk/") || res.mode != "url"
+    // v1.7.4 修复：严格区分「文件模式」与「URL 模式」
+    // - 文件模式（mode=file，控制台上传 APK/ZIP/MD）：直接用 fileUrl（或 url）下载到本地
+    // - URL 模式（mode=url）：才使用链接跳转打开/浏览器下载
+    val isFileMode = res.mode != "url"
+    val fileLink = res.fileUrl.ifBlank { res.url }
+    val url = if (isFileMode) fileLink else res.url.ifBlank { res.fileUrl }
+    val isFile = isFileMode && url.isNotBlank()
     val isApk = url.endsWith(".apk", ignoreCase = true)
     val isZip = url.endsWith(".zip", ignoreCase = true)
     val isMd = url.endsWith(".md", ignoreCase = true)

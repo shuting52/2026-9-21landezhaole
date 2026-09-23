@@ -220,6 +220,9 @@ class NavViewModel(
             val cloudSkills = data.skills
 
             cloudSoftwares.forEach { sw ->
+                // v1.7.4 修复：控制台文件模式把上传文件直链存在 apkUrl 字段，必须映射到 fileUrl，
+                // 否则本体拿不到下载链接（显示「未配置下载」）。URL 模式 apkUrl 为跳转直链。
+                val fileLink = sw.apkUrl.ifBlank { sw.url }
                 repository.saveUploadedResource(
                     UploadedResourceEntity(
                         id = sw.id,
@@ -230,13 +233,14 @@ class NavViewModel(
                         author = sw.author,
                         badge = sw.badge.ifBlank { "站长推荐" },
                         tags = sw.tags,
-                        fileUrl = sw.fileUrl,
+                        fileUrl = fileLink,
                         iconUrl = sw.iconUrl,
                         mode = sw.mode
                     )
                 )
             }
             cloudSkills.forEach { sk ->
+                // v1.7.4：Skill 文件模式直链在 url 字段；URL 模式 url 为跳转直链
                 repository.saveUploadedResource(
                     UploadedResourceEntity(
                         id = sk.id,
@@ -247,7 +251,7 @@ class NavViewModel(
                         author = sk.author,
                         badge = sk.badge.ifBlank { "站长推荐" },
                         tags = sk.tags,
-                        fileUrl = sk.fileUrl,
+                        fileUrl = sk.url,
                         prompt = sk.prompt,
                         previewUrl = sk.previewUrl,
                         mediaUrl = sk.mediaUrl,
