@@ -6011,7 +6011,22 @@
       }
     ]
   },
-  "software": [],
+  "software": [
+    {
+      "id": "sw_mudu2q27u97w",
+      "type": "software",
+      "title": "豆包去水印助手_3.6",
+      "desc": "豆包视频/图片去水印助手",
+      "url": "",
+      "author": "陈淑婷",
+      "badge": "最新版",
+      "tags": "软件 安装包 APK",
+      "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/1790151569803_豆包去水印助手_3.6.apk",
+      "previewUrl": "",
+      "iconUrl": "https://www.google.com/s2/favicons?domain=raw.githubusercontent.com&sz=128",
+      "mode": "file"
+    }
+  ],
   "skills": [
     {
       "id": "sk_mudmeqslzi71",
