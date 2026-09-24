@@ -19,8 +19,8 @@ android {
     targetSdk = 36
     // v1.7.8 规则（写死）：版本号必须与云端 admin-data.json 的 version.code 完全一致，
     // 且 apkUrl 必须指向与 versionName 一致的真实安装包，否则会造成「永远提示更新但装不上」死循环。
-    versionCode = 67
-    versionName = "1.7.8"
+    versionCode = 68
+    versionName = "1.7.9"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
