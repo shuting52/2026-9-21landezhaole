@@ -1,8 +1,11 @@
 {
   "version": {
-    "code": 65,
-    "name": "1.7.6",
+    "code": 66,
+    "name": "1.7.7",
     "changelog": [
+      "叮咚～我们又又又更新啦！",
+      "控制台连接稳定性优化：无 Token 也能 CDN 只读浏览云端数据",
+      "更新弹窗保持 AppUpdater 卡通动态呈现，升级更流畅",
       "优化：更新弹窗全新升级——完全采用卡通动态呈现（Canvas 手绘猫咪动画、进度环、均衡器动效、火箭发射、彩带庆祝），屏幕中间展示",
       "优化：更新内容固定「叮咚～我们又又又更新啦！」文案，后续任何版本发布均不变",
       "修复：新版安装替换旧版问题——签名已固定，v1.7.5 之后的版本全部同签名，可直接无缝覆盖安装；旧版本（≤1.7.4）首次升级自动引导卸载并把安装包拷贝到「下载」文件夹",
@@ -11,8 +14,8 @@
       "修复：视频可视化预览延迟——列表默认显示预览图即时呈现，点击后再播放视频（带声音）"
     ],
     "force": true,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.7.6-1790211960000.apk",
-    "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.7.6-1790211960000.apk"
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.7.7-1790222354996.apk",
+    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.7.7-1790222354996.apk"
   },
   "home": {
     "categories": [
@@ -5996,8 +5999,11 @@
     "ratio": "standard"
   },
   "updateDialog": {
-    "title": "发现新版本 v1.7.6",
+    "title": "发现新版本 v1.7.7",
     "changelog": [
+      "叮咚～我们又又又更新啦！",
+      "控制台连接稳定性优化：无 Token 也能 CDN 只读浏览云端数据",
+      "更新弹窗保持 AppUpdater 卡通动态呈现，升级更流畅",
       "优化：更新弹窗全新升级——完全采用卡通动态呈现（Canvas 手绘猫咪动画、进度环、均衡器动效、火箭发射、彩带庆祝），屏幕中间展示",
       "优化：更新内容固定「叮咚～我们又又又更新啦！」文案，后续任何版本发布均不变",
       "修复：新版安装替换旧版问题——签名已固定，v1.7.5 之后的版本全部同签名，可直接无缝覆盖安装；旧版本（≤1.7.4）首次升级自动引导卸载并把安装包拷贝到「下载」文件夹",
@@ -6138,9 +6144,9 @@
     ]
   },
   "console": {
-    "version": "1.0.12",
-    "code": 13,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v1.0.12-1790216167000.apk"
+    "version": "1.0.13",
+    "code": 14,
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v1.0.13-1790222354996.apk"
   },
   "ipMonitor": {
     "enabled": false,
