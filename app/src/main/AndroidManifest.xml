@@ -68,6 +68,11 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- v1.7.5：PackageInstaller 安装会话结果接收（参照 AppUpdater） -->
+        <receiver
+            android:name=".ui.components.UpdateInstallReceiver"
+            android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

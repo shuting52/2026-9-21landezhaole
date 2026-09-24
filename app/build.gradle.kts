@@ -17,19 +17,20 @@ android {
     applicationId = "com.landezhaole"
     minSdk = 24
     targetSdk = 36
-    versionCode = 63
-    versionName = "1.7.4"
+    versionCode = 64
+    versionName = "1.7.5"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
   signingConfigs {
     create("release") {
+      // v1.7.5 修复：写死固定签名密钥与密码，保证每个版本签名永远一致（覆盖安装不再失败）
       val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
       storeFile = file(keystorePath)
-      storePassword = System.getenv("STORE_PASSWORD")
+      storePassword = System.getenv("STORE_PASSWORD") ?: "lzdz2026!secure"
       keyAlias = "upload"
-      keyPassword = System.getenv("KEY_PASSWORD")
+      keyPassword = System.getenv("KEY_PASSWORD") ?: "lzdz2026!secure"
     }
     create("debugConfig") {
       storeFile = file("${rootDir}/debug.keystore")
