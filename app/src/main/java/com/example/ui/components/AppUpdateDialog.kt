@@ -272,7 +272,20 @@ fun AppUpdateDialog(
                             statusLabel = "下载中… ${progress.toInt()}%"
                         }
                         // 校验 APK 文件头 PK（ZIP/APK 魔数）
-                        val header = try { file.inputStream().use { it.readNBytes(2) } } catch (e: Exception) { ByteArray(0) }
+                        // v1.7.8 修复：readNBytes 仅 API 33+ 存在，minSdk 24 下 lint 报错导致构建失败，
+                        // 改用兼容的 read 循环读取前 2 字节
+                        val header = try {
+                            file.inputStream().use { ins ->
+                                val h = ByteArray(2)
+                                var n = 0
+                                while (n < 2) {
+                                    val r = ins.read(h, n, 2 - n)
+                                    if (r < 0) break
+                                    n += r
+                                }
+                                h
+                            }
+                        } catch (e: Exception) { ByteArray(0) }
                         if (file.length() < 1024 * 50 ||
                             header.size < 2 ||
                             header[0] != 'P'.code.toByte() ||
@@ -434,8 +447,10 @@ fun AppUpdateDialog(
             onDismissRequest = { closeUpdate() },
             properties = DialogProperties(
                 usePlatformDefaultWidth = false,
-                dismissOnBackPress = !isUpdating,
-                dismissOnClickOutside = !isUpdating
+                // v1.7.8：强制更新时任何方式都不可关闭（返回键/点外部都不行），
+                // 必须完成「立即更新」安装；仅非强制且非下载中才允许关闭
+                dismissOnBackPress = !isUpdating && !forceUpdate,
+                dismissOnClickOutside = !isUpdating && !forceUpdate
             )
         ) {
             val jsBridge = remember { UpdateJsBridge({ startUpdate() }, { closeUpdate() }) }
@@ -603,7 +618,9 @@ fun AppUpdateDialog(
                     Runtime.getRuntime().exit(0)
                 }
             } catch (e: Exception) { }
-        }
+        },
+        // v1.7.8：强制更新弹窗内提供官方群入口（mqq 直拉，失败跳网页）
+        onOpenGroup = { openOfficialGroup() }
     )
 }
 
