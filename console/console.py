@@ -36,6 +36,19 @@ API_BASE      = "https://api.github.com"
 
 
 class GitHubClient:
+    # 只读镜像列表（国内网络下 api.github.com / cdn.jsdelivr.net 可能不可达或被 DNS 污染，自动顺延）
+    # 仅用于「读取文件内容」兜底；写入/删除仍必须走官方 API。
+    MIRRORS = [
+        lambda o, r, p: f"https://testingcf.jsdelivr.net/gh/{o}/{r}@main/{p}",
+        lambda o, r, p: f"https://cdn.jsdelivr.net/gh/{o}/{r}@main/{p}",
+        lambda o, r, p: f"https://fastly.jsdelivr.net/gh/{o}/{r}@main/{p}",
+        lambda o, r, p: f"https://gcore.jsdelivr.net/gh/{o}/{r}@main/{p}",
+        lambda o, r, p: f"https://ghfast.top/https://raw.githubusercontent.com/{o}/{r}/main/{p}",
+        lambda o, r, p: f"https://ghproxy.net/https://raw.githubusercontent.com/{o}/{r}/main/{p}",
+        lambda o, r, p: f"https://raw.gitmirror.com/{o}/{r}/main/{p}",
+        lambda o, r, p: f"https://raw.githubusercontent.com/{o}/{r}/main/{p}",
+    ]
+
     def __init__(self, token=DEFAULT_TOKEN, owner=DEFAULT_OWNER, repo=DEFAULT_REPO):
         self.token = token
         self.owner = owner
@@ -62,6 +75,22 @@ class GitHubClient:
             if e.code == 404:
                 return None
             raise
+        except Exception as e:
+            # API 不可达（网络受限/被墙/限流）：尝试只读镜像，返回与 API 同构的假响应
+            api_err = str(e)
+            mirror_errors = []
+            for maker in self.MIRRORS:
+                try:
+                    murl = maker(self.owner, self.repo, path)
+                    with request.urlopen(murl, timeout=15) as resp:
+                        text = resp.read().decode("utf-8")
+                    if text.lstrip().startswith("<"):
+                        mirror_errors.append(f"{murl}: 返回网页(疑似被拦截)")
+                        continue
+                    return {"sha": "", "content": base64.b64encode(text.encode("utf-8")).decode("utf-8")}
+                except Exception as e2:
+                    mirror_errors.append(f"{murl}: {e2}")
+            raise RuntimeError(f"API 与全部镜像均失败。API: {api_err}; 镜像: {'; '.join(mirror_errors[:4])}")
 
     def put_file(self, path, content_bytes, commit_message, sha=None):
         url = f"{API_BASE}/repos/{self.owner}/{self.repo}/contents/{path}"

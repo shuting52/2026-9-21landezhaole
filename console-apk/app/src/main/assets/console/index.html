@@ -277,7 +277,7 @@ const CONFIG_PATH   = "admin-data.json";
 // 控制台程序内置 versionCode（与 console-apk/app/build.gradle.kts 的 versionCode 保持一致）。
 // v1.0.12 修复：运行时优先读取原生桥回传的「真实已安装 versionCode」，
 // 只有浏览器环境取不到时才回退到该常量，彻底避免常量漏改导致更新判断失效。
-const CONSOLE_BUILTIN_VERSION = 15;
+const CONSOLE_BUILTIN_VERSION = 16;
 
 // 取当前控制台程序的真实版本号：APK 内用系统安装包 versionCode，浏览器回退内置常量
 function getLocalConsoleVersion(){
@@ -442,6 +442,44 @@ function b64DecodeUtf8(b64){
   return decodeURIComponent(escape(binary));
 }
 
+// ============ 云端连接：API 优先，多镜像兜底（v1.0.15 修复「云端数据解析失败」） ============
+// 背景：国内网络下 api.github.com 可能不稳定，jsDelivr 主站(cdn.jsdelivr.net) 可能被 DNS 污染
+// 返回 HTTP 200 的假网页，导致 JSON.parse 失败误报「云端数据解析失败」。
+// 修复：对每个来源做「网页拦截检测 + JSON 校验」，失败自动顺延到下一个镜像，全部失败才报错。
+
+/** 判断响应文本是否为网页而非 JSON 数据（DNS 污染/运营商劫持常返回 200 的 HTML 假页面） */
+function looksLikeHtml(text){
+  const t = String(text || "").trimStart();
+  if(!t) return false;
+  if(t.startsWith("<{")) return false;      // 极少见但兼容
+  if(t.startsWith("<")) return true;       // 正常 JSON 不可能以 < 开头
+  return /^<\s*(!DOCTYPE|html|HTML|head|script|meta|title|body)/.test(t);
+}
+
+/** 校验并解析云端 JSON（防止把假网页/垃圾内容当数据用） */
+function parseAdminJson(text){
+  const t = String(text || "");
+  if(!t) throw new Error("返回内容为空");
+  if(looksLikeHtml(t)) throw new Error("返回的是网页而非 JSON（网络疑似被拦截/劫持）");
+  const obj = JSON.parse(t);
+  if(!obj || typeof obj !== "object" || Array.isArray(obj)) throw new Error("返回内容不是预期的数据对象");
+  // 最小结构校验：必须是本项目的 admin-data 结构
+  if(!obj.home && !obj.version) throw new Error("数据缺少 home/version 字段，可能不是 admin-data.json");
+  return obj;
+}
+
+/** 只读镜像列表（顺序即优先级；API 失败后依次尝试，全部失败才报错） */
+const READ_MIRRORS = [
+  { name: "jsdelivr-testingcf", url: o => `https://testingcf.jsdelivr.net/gh/${o.owner}/${o.repo}@main/${CONFIG_PATH}` },
+  { name: "jsdelivr-cdn",       url: o => `https://cdn.jsdelivr.net/gh/${o.owner}/${o.repo}@main/${CONFIG_PATH}` },
+  { name: "jsdelivr-fastly",    url: o => `https://fastly.jsdelivr.net/gh/${o.owner}/${o.repo}@main/${CONFIG_PATH}` },
+  { name: "jsdelivr-gcore",     url: o => `https://gcore.jsdelivr.net/gh/${o.owner}/${o.repo}@main/${CONFIG_PATH}` },
+  { name: "ghfast-top",         url: o => `https://ghfast.top/https://raw.githubusercontent.com/${o.owner}/${o.repo}/main/${CONFIG_PATH}` },
+  { name: "ghproxy-net",        url: o => `https://ghproxy.net/https://raw.githubusercontent.com/${o.owner}/${o.repo}/main/${CONFIG_PATH}` },
+  { name: "gitmirror",          url: o => `https://raw.gitmirror.com/${o.owner}/${o.repo}/main/${CONFIG_PATH}` },
+  { name: "raw",                url: o => `https://raw.githubusercontent.com/${o.owner}/${o.repo}/main/${CONFIG_PATH}` }
+];
+
 async function connect(){
   S.token = $("cfgToken").value.trim();
   S.owner = $("cfgOwner").value.trim();
@@ -450,52 +488,69 @@ async function connect(){
   if(!S.owner || !S.repo){ toast("请填写 Owner 和仓库名","err"); return; }
   setSub("正在连接…");
   $("connInfo").innerHTML = '<span class="status-dot idle"></span>连接云端仓库中…';
-  let d = null; let via = "api";
+
+  let admin = null;   // 解析后的数据
+  let sha   = "";
+  let via   = "api";
+  let apiErr = "";
+  const errors = [];
+
+  // 1) 主路径：GitHub Contents API（带 Token 可写，实时无缓存）
   try{
-    // 主路径：GitHub Contents API（有 Token 时配额 5000/小时，优先）
-    d = await ghGet(CONFIG_PATH);
+    const r = await fetch(`${API}/repos/${S.owner}/${S.repo}/contents/${CONFIG_PATH}`, { headers: ghHeaders() });
+    const text = await r.text();
+    if(!r.ok){
+      if(r.status === 401) throw new Error("Token 无效或已过期（HTTP 401）");
+      if(r.status === 404) throw new Error("仓库或文件不存在（HTTP 404）");
+      throw new Error("API 读取失败 HTTP " + r.status);
+    }
+    if(looksLikeHtml(text)) throw new Error("API 返回了网页而非 JSON（网络疑似被劫持）");
+    const d = JSON.parse(text);
+    if(!d || typeof d.content !== "string" || !d.content) throw new Error("API 返回缺少 content 字段");
+    admin = parseAdminJson(b64DecodeUtf8(d.content));
+    sha = d.sha || "";
+    via = "api";
   }catch(e){
-    // 兜底：Token 为空/无效或 API 限流时，改用 CDN/raw 只读加载（无限频，加载必成功）
-    // v1.0.14：使用独立的 UTF-8 安全的 base64 编码函数，避免 btoa() 遇到中文/emoji 时报错
-    const tryCdn = async () => {
-      const cdnUrl = `https://cdn.jsdelivr.net/gh/${S.owner}/${S.repo}@main/${CONFIG_PATH}`;
-      const r = await fetch(cdnUrl);
-      if(!r.ok) throw new Error("CDN HTTP " + r.status);
-      return { content: b64EncodeUtf8(await r.text()), sha: "" };
-    };
-    const tryRaw = async () => {
-      const rawUrl = `https://raw.githubusercontent.com/${S.owner}/${S.repo}/main/${CONFIG_PATH}`;
-      const r = await fetch(rawUrl);
-      if(!r.ok) throw new Error("raw HTTP " + r.status);
-      return { content: b64EncodeUtf8(await r.text()), sha: "" };
-    };
-    try {
-      d = await tryCdn(); via = "cdn";
-    } catch(e2) {
-      try { d = await tryRaw(); via = "raw"; }
-      catch(e3) {
-        const msg = String((e && e.message) || e || "");
-        const is401 = msg.indexOf("401") >= 0 || msg.indexOf("Bad credentials") >= 0;
-        let hint = "";
-        if(is401) hint = "<br><b style='color:#f87171'>Token 无效或已过期（401）</b>：请在顶部配置区粘贴有效 GitHub Token。";
-        else if(!S.token) hint = "<br><b style='color:#f87171'>未填写 Token，且 CDN 直读不可达</b>：请检查网络，或粘贴 GitHub Token 后重试。";
-        else hint = "<br><b style='color:#f87171'>网络异常</b>：请检查网络连接后重试。";
-        $("connInfo").innerHTML = `<span class="status-dot fail"></span>加载失败：${esc(msg)}${hint}`;
-        setSub("连接失败");
-        toast("连接云端失败，请检查 Token 与网络","err");
-        return;
+    apiErr = String((e && e.message) || e || "");
+    errors.push("api: " + apiErr);
+    // 2) 只读镜像兜底：逐个尝试，校验通过即用
+    for(const m of READ_MIRRORS){
+      try{
+        const r = await fetch(m.url({ owner: S.owner, repo: S.repo }), { headers: ghHeaders(false) });
+        if(!r.ok) throw new Error("HTTP " + r.status);
+        admin = parseAdminJson(await r.text());
+        sha = "";
+        via = m.name;
+        break;
+      }catch(e2){
+        errors.push(m.name + ": " + String((e2 && e2.message) || e2));
       }
     }
-  }
-  try{
-    // v1.0.14 修复「云端数据解析失败」：UTF-8 严格处理 + 详细错误原因
-    const raw = d.content || "";
-    if(!raw){
-      throw new Error("返回内容为空（d.content 为空）");
+    if(!admin){
+      // 全部失败：给出可看懂的原因
+      const is401 = apiErr.indexOf("401") >= 0 || apiErr.indexOf("Bad credentials") >= 0;
+      const gotHtml = errors.some(x => x.indexOf("网页") >= 0);
+      let hint = "";
+      if(is401){
+        hint = "<br><b style='color:#f87171'>Token 无效或已过期（401）</b>：请在顶部配置区粘贴有效 GitHub Token。";
+      }else if(gotHtml){
+        hint = "<br><b style='color:#f87171'>网络疑似被拦截</b>：多个来源都返回了网页而非数据。请切换网络（WiFi/流量/代理）后重试。";
+      }else if(!S.token){
+        hint = "<br><b style='color:#f87171'>未填写 Token，且直读源不可达</b>：请检查网络，或粘贴 GitHub Token 后重试。";
+      }else{
+        hint = "<br><b style='color:#f87171'>网络异常</b>：api.github.com 与全部镜像均不可达，请检查网络（国内网络可能需要代理）后重试。";
+      }
+      $("connInfo").innerHTML = '<span class="status-dot fail"></span>连接失败（已尝试 ' + errors.length + ' 个来源）' + hint + "<br><span style='opacity:.6;font-size:12px'>" + esc(errors.slice(0, 4).join("；")) + "</span>";
+      setSub("连接失败");
+      toast("连接云端失败，请检查 Token 与网络","err");
+      return;
     }
-    const decoded = b64DecodeUtf8(raw);
-    S.admin = JSON.parse(decoded);
-    S.sha   = d.sha || "";
+  }
+
+  // 3) 加载成功
+  try{
+    S.admin = admin;
+    S.sha   = sha;
     S.loaded = true;
     S.dirty = false;
     setSub("已连接 · " + S.owner + "/" + S.repo + (via !== "api" ? "（" + via + " 只读）" : ""));
