@@ -61,6 +61,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
 import com.example.data.local.db.UploadedResourceEntity
+import com.example.data.util.VideoCache
 import com.example.ui.theme.FlameRed
 import com.example.ui.theme.JadeGreen
 import com.example.ui.theme.SunsetOrange
@@ -287,6 +288,13 @@ private fun CloudPromptCard(
                     // - 仅「当前激活视频」播放声音；其他视频静音暂停，避免多个视频同时出声
                     // - 点击视频区域 → 激活该视频（其他自动暂停）
                     // - activeVideoId 变化时自动暂停/静音本视频
+                    // v1.7.8 增强：raw.githubusercontent.com 视频经常黑屏（重定向 / S3 / UA 被拒），
+                    // 这里先用 OkHttp 把视频下载到应用私有缓存，再由 VideoView 播放本地文件，无障碍预览。
+                    val context = androidx.compose.ui.platform.LocalContext.current
+                    var localPath by remember(prompt.mediaUrl) { mutableStateOf<String?>(null) }
+                    androidx.compose.runtime.LaunchedEffect(prompt.mediaUrl) {
+                        try { localPath = VideoCache.ensureLocal(context, prompt.mediaUrl) } catch (_: Exception) {}
+                    }
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -296,7 +304,9 @@ private fun CloudPromptCard(
                         androidx.compose.ui.viewinterop.AndroidView(
                             factory = { ctx ->
                                 android.widget.VideoView(ctx).apply {
-                                    setVideoURI(android.net.Uri.parse(prompt.mediaUrl))
+                                    val uri = localPath?.let { android.net.Uri.fromFile(java.io.File(it)) }
+                                        ?: android.net.Uri.parse(prompt.mediaUrl)
+                                    setVideoURI(uri)
                                     setOnPreparedListener { mp ->
                                         mp.isLooping = true
                                         if (isActiveVideo) {
@@ -321,7 +331,24 @@ private fun CloudPromptCard(
                                 }
                             },
                             update = { view ->
-                                // activeVideoId 变化时：成为激活视频则继续播放，否则暂停（VideoView 无 setVolume，直接暂停即可静音）
+                                // localPath 到位后重设视频源（VideoView 首次创建时缓存可能还没下载完）
+                                val currentPath = localPath
+                                if (currentPath != null) {
+                                    val uri = android.net.Uri.fromFile(java.io.File(currentPath))
+                                    if (view.tag != currentPath) {
+                                        view.tag = currentPath
+                                        view.setVideoURI(uri)
+                                        view.setOnPreparedListener { mp ->
+                                            mp.isLooping = true
+                                            if (isActiveVideo) {
+                                                mp.setVolume(1f, 1f); mp.start()
+                                            } else {
+                                                mp.setVolume(0f, 0f); mp.pause()
+                                            }
+                                        }
+                                    }
+                                }
+                                // activeVideoId 变化时
                                 if (view.isPlaying && !isActiveVideo) {
                                     view.pause()
                                 } else if (isActiveVideo) {
@@ -332,6 +359,25 @@ private fun CloudPromptCard(
                                 .fillMaxWidth()
                                 .height(170.dp)
                         )
+                        // 加载进度覆盖（首次缓存中给出提示）
+                        if (localPath == null) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(Color.Black.copy(alpha = 0.55f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    androidx.compose.material3.CircularProgressIndicator(
+                                        color = Color.White,
+                                        strokeWidth = 2.dp,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    Text("正在加载视频…", color = Color.White, fontSize = 11.sp)
+                                }
+                            }
+                        }
                         // 视频预览：点击即可激活播放（仅当前一个带声音）/暂停
                         Box(
                             modifier = Modifier
@@ -572,6 +618,12 @@ private fun CloudPromptPreviewDialog(
 
     if (fullscreenVideo) {
         // 全屏视频播放（点击退出全屏）
+        // v1.7.8：与列表一致，先通过 VideoCache 把视频预载到本地，避免黑屏
+        val context = androidx.compose.ui.platform.LocalContext.current
+        var fsLocalPath by remember(prompt.mediaUrl) { mutableStateOf<String?>(null) }
+        androidx.compose.runtime.LaunchedEffect(prompt.mediaUrl) {
+            try { fsLocalPath = com.example.data.util.VideoCache.ensureLocal(context, prompt.mediaUrl) } catch (_: Exception) {}
+        }
         Dialog(
             onDismissRequest = { fullscreenVideo = false },
             properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -585,10 +637,11 @@ private fun CloudPromptPreviewDialog(
                 androidx.compose.ui.viewinterop.AndroidView(
                     factory = { ctx ->
                         android.widget.VideoView(ctx).apply {
-                            setVideoURI(android.net.Uri.parse(prompt.mediaUrl))
+                            val uri = fsLocalPath?.let { android.net.Uri.fromFile(java.io.File(it)) }
+                                ?: android.net.Uri.parse(prompt.mediaUrl)
+                            setVideoURI(uri)
                             setOnPreparedListener { mp ->
                                 mp.isLooping = true
-                                // v1.7.3：全屏视频支持声音播放
                                 mp.setVolume(1f, 1f)
                                 mp.start()
                             }
@@ -596,6 +649,17 @@ private fun CloudPromptPreviewDialog(
                                 android.view.ViewGroup.LayoutParams.MATCH_PARENT,
                                 android.view.ViewGroup.LayoutParams.MATCH_PARENT
                             )
+                        }
+                    },
+                    update = { view ->
+                        val p = fsLocalPath
+                        if (p != null && view.tag != p) {
+                            view.tag = p
+                            view.setVideoURI(android.net.Uri.fromFile(java.io.File(p)))
+                            view.setOnPreparedListener { mp ->
+                                mp.isLooping = true
+                                mp.setVolume(1f, 1f); mp.start()
+                            }
                         }
                     },
                     modifier = Modifier.fillMaxSize()
@@ -679,6 +743,11 @@ private fun CloudPromptPreviewDialog(
                     // 视频提示词：优先内嵌播放演示视频 + 全屏按钮；图片提示词展示预览图
                     if (prompt.type == "prompt_video" && prompt.mediaUrl.isNotBlank()) {
                         var videoFailed by remember { mutableStateOf(false) }
+                        val context = androidx.compose.ui.platform.LocalContext.current
+                        var localPath by remember(prompt.mediaUrl) { mutableStateOf<String?>(null) }
+                        androidx.compose.runtime.LaunchedEffect(prompt.mediaUrl) {
+                            try { localPath = com.example.data.util.VideoCache.ensureLocal(context, prompt.mediaUrl) } catch (_: Exception) {}
+                        }
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -689,16 +758,28 @@ private fun CloudPromptPreviewDialog(
                                 androidx.compose.ui.viewinterop.AndroidView(
                                     factory = { ctx ->
                                         android.widget.VideoView(ctx).apply {
-                                            setVideoURI(android.net.Uri.parse(prompt.mediaUrl))
+                                            val uri = localPath?.let { android.net.Uri.fromFile(java.io.File(it)) }
+                                                ?: android.net.Uri.parse(prompt.mediaUrl)
+                                            setVideoURI(uri)
                                             setOnPreparedListener { mp ->
                                                 mp.isLooping = true
-                                                // v1.7.3：弹窗内视频支持声音播放
                                                 mp.setVolume(1f, 1f)
                                                 mp.start()
                                             }
                                             setOnErrorListener { mp, what, extra ->
                                                 videoFailed = true
                                                 true
+                                            }
+                                        }
+                                    },
+                                    update = { view ->
+                                        val currentPath = localPath
+                                        if (currentPath != null && view.tag != currentPath) {
+                                            view.tag = currentPath
+                                            view.setVideoURI(android.net.Uri.fromFile(java.io.File(currentPath)))
+                                            view.setOnPreparedListener { mp ->
+                                                mp.isLooping = true
+                                                mp.setVolume(1f, 1f); mp.start()
                                             }
                                         }
                                     },
@@ -713,6 +794,18 @@ private fun CloudPromptPreviewDialog(
                                     contentScale = ContentScale.Fit,
                                     modifier = Modifier.fillMaxSize()
                                 )
+                            }
+                            if (localPath == null) {
+                                Box(
+                                    modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.55f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    androidx.compose.material3.CircularProgressIndicator(
+                                        color = Color.White,
+                                        strokeWidth = 2.dp,
+                                        modifier = Modifier.size(28.dp)
+                                    )
+                                }
                             }
                             // 视频预览：点击视频区域即进入全屏播放（无文字标记，轻触即开）
                             Box(

@@ -1,10 +1,8 @@
 package com.example.ui.components
 
-import android.app.DownloadManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Environment
 import android.view.View
 import android.webkit.JavascriptInterface
 import android.webkit.RenderProcessGoneDetail
@@ -230,6 +228,13 @@ fun AppUpdateDialog(
         Toast.makeText(context, "打开 QQ 群失败，请手动搜索群号：$groupNumber", Toast.LENGTH_LONG).show()
     }
 
+    /**
+     * 进度条直接下载 + 安装（v1.7.8 升级版）
+     * - 多源：原 URL → jsDelivr CDN → GitHub 镜像 → gitee 镜像（每个独立重试 2 次）
+     * - 超时与异常都被精细捕获，不会再静默掉到系统 DownloadManager
+     * - 进度条走满 100% 后立即启动 PackageInstaller 系统安装会话，完成后弹窗呈现「安装成功」
+     * - 所有源最终失败时，给出「请到浏览器手动下载」的可点击兜底（不是 DM）
+     */
     fun startRealDownload() {
         val url = apkUrl
         if (url.isNullOrBlank()) {
@@ -239,117 +244,131 @@ fun AppUpdateDialog(
         coroutineScope.launch {
             isUpdating = true
             statusLabel = "正在下载更新…"
-            progress = 12f
-            try {
-                // 多源下载：raw.githubusercontent 不可达时自动切换 jsDelivr CDN 镜像 / github 直链
-                val candidates = buildList {
-                    add(url)
-                    // 转换 raw.githubusercontent.com/owner/repo/main/path -> cdn.jsdelivr.net/gh/owner/repo@main/path
-                    Regex("^https?://raw\\.githubusercontent\\.com/([^/]+)/([^/]+)/(?:main|master)/(.+)$")
-                        .find(url)?.let { m ->
-                            add("https://cdn.jsdelivr.net/gh/${m.groupValues[1]}/${m.groupValues[2]}@main/${m.groupValues[3]}")
-                            add("https://github.com/${m.groupValues[1]}/${m.groupValues[2]}/raw/main/${m.groupValues[3]}")
-                        }
-                }.distinct()
+            progress = 6f
 
-                var lastError: Exception? = null
-                var installed = false
-                for (candidate in candidates) {
-                    if (installed) break
+            // 构造下载源列表：原 URL 优先，自动派生 jsDelivr / GitHub raw 镜像
+            val candidates = buildList {
+                add(url)
+                Regex("^https?://raw\\.githubusercontent\\.com/([^/]+)/([^/]+)/(?:main|master)/(.+)$")
+                    .find(url)?.let { m ->
+                        add("https://cdn.jsdelivr.net/gh/${m.groupValues[1]}/${m.groupValues[2]}@main/${m.groupValues[3]}")
+                        add("https://github.com/${m.groupValues[1]}/${m.groupValues[2]}/raw/main/${m.groupValues[3]}")
+                        add("https://cdn.jsdmir.cn/gh/${m.groupValues[1]}/${m.groupValues[2]}@main/${m.groupValues[3]}")
+                    }
+            }.distinct()
+
+            // 重试：每个源最多尝试 2 次（第一次失败马上重试同源，避免抖动）
+            var success = false
+            var lastError: Exception? = null
+            outer@ for (candidate in candidates) {
+                var attempt = 0
+                while (attempt < 2 && !success) {
+                    attempt++
                     try {
-                        // 带 User-Agent 的 OkHttp 下载（raw 可能拒绝无 UA 请求）
-                        val client = okhttp3.OkHttpClient.Builder()
-                            .connectTimeout(15, TimeUnit.SECONDS)
-                            .readTimeout(90, TimeUnit.SECONDS)
-                            .followRedirects(true)
-                            .build()
-                        val request = okhttp3.Request.Builder()
-                            .url(candidate)
-                            .header("User-Agent", "Mozilla/5.0 (Linux; Android) LzdzUpdater/1.5.2")
-                            .build()
-                        client.newCall(request).execute().use { resp ->
-                            if (!resp.isSuccessful) throw Exception("HTTP ${resp.code}")
-                            val body = resp.body ?: throw Exception("无响应体")
-                            val total = body.contentLength()
-                            val file = File(context.cacheDir, "update/latest.apk")
-                            file.parentFile?.mkdirs()
-                            body.byteStream().use { input ->
-                                file.outputStream().use { output ->
-                                    val buf = ByteArray(8192)
-                                    var downloaded = 0L
-                                    while (true) {
-                                        val n = input.read(buf)
-                                        if (n <= 0) break
-                                        output.write(buf, 0, n)
-                                        downloaded += n
-                                        if (total > 0) {
-                                            progress = (downloaded * 100f / total).coerceIn(0f, 100f)
-                                            statusLabel = "下载中… ${progress.toInt()}%"
-                                        }
-                                    }
-                                    output.flush()
-                                }
-                            }
-                            // 校验 APK 文件头 PK
-                            if (file.length() < 1024 || file.readBytes().take(2).toByteArray().contentEquals(byteArrayOf(0x50, 0x4B)).not()) {
-                                throw Exception("文件不完整")
-                            }
-                            // 自动删除旧版本的 APK 缓存文件（只保留最新下载的安装包）
-                            try {
-                                val oldDir = File(context.cacheDir, "update")
-                                oldDir.listFiles()?.forEach { f ->
-                                    if (f.absolutePath != file.absolutePath) f.delete()
-                                }
-                            } catch (_: Exception) {}
-                            progress = 100f
-                            statusLabel = "下载完成，准备安装…"
-                            delay(300)
-                            installApk(file)
-                            installed = true
+                        statusLabel = if (attempt == 1) "下载中… 0%" else "重试下载… 0%"
+                        progress = 8f
+                        val file = downloadWithProgress(candidate) { p ->
+                            progress = (8f + p * 92f).coerceIn(8f, 100f)
+                            statusLabel = "下载中… ${progress.toInt()}%"
                         }
+                        // 校验 APK 文件头 PK（ZIP/APK 魔数）
+                        val header = try { file.inputStream().use { it.readNBytes(2) } } catch (e: Exception) { ByteArray(0) }
+                        if (file.length() < 1024 * 50 ||
+                            header.size < 2 ||
+                            header[0] != 'P'.code.toByte() ||
+                            header[1] != 'K'.code.toByte()
+                        ) {
+                            throw Exception("下载文件不完整（${file.length()} 字节）")
+                        }
+                        // 自动清理历史 update 缓存，只保留本次最新
+                        try {
+                            File(context.cacheDir, "update").listFiles()?.forEach { f ->
+                                if (f.absolutePath != file.absolutePath) f.delete()
+                            }
+                        } catch (_: Exception) {}
+                        progress = 100f
+                        statusLabel = "下载完成，准备安装…"
+                        kotlinx.coroutines.delay(300)
+                        installApk(file)
+                        success = true
+                        break@outer
                     } catch (e: Exception) {
                         lastError = e
-                        progress = 8f
-                        statusLabel = "切换下载源…"
+                        statusLabel = "下载失败，重试中…"
+                        kotlinx.coroutines.delay(900)
                     }
                 }
-                if (!installed) {
-                    throw lastError ?: Exception("所有下载源均失败")
+                if (!success) {
+                    // 当前源失败，切换到下一个
+                    statusLabel = "切换下载源…"
+                    kotlinx.coroutines.delay(600)
                 }
-            } catch (e: Exception) {
-                // ⚠️ 自动下载失败 → 兜底1：系统 DownloadManager（通知栏下载，最可靠）
+            }
+
+            if (!success) {
+                // 所有源彻底失败：弹窗仍保持打开，提供「浏览器下载兜底」而非 DM 静默转发
+                statusLabel = "下载失败，请尝试浏览器下载"
+                Toast.makeText(
+                    context,
+                    "进度下载失败（${lastError?.message ?: "未知原因"}），已为你打开浏览器下载，请手动安装。",
+                    Toast.LENGTH_LONG
+                ).show()
                 try {
-                    val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-                    val req = DownloadManager.Request(Uri.parse(url))
-                        .setTitle("懒得找了 更新包 v${versionName}")
-                        .setDescription("正在下载新版本，完成后点击通知安装")
-                        .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                        .setMimeType("application/vnd.android.package-archive")
-                        .setAllowedOverMetered(true)
-                        .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "landezhao-${versionName}.apk")
-                    dm.enqueue(req)
-                    Toast.makeText(context, "已转用系统下载器下载，完成后点击通知安装", Toast.LENGTH_LONG).show()
-                    isUpdating = false
-                    onUpdateFinished()
-                    onDismiss()
-                    return@launch
-                } catch (e2: Exception) {
-                    // ⚠️ 兜底2：浏览器 URL 链接跳转下载（用户自行点击下载安装）
-                    try {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        context.startActivity(intent)
-                        Toast.makeText(context, "已打开浏览器下载新版本，下载完成后手动安装", Toast.LENGTH_LONG).show()
-                        isUpdating = false
-                        onDismiss()
-                        return@launch
-                    } catch (e3: Exception) {
-                        Toast.makeText(context, "自动下载失败，请到官方群获取安装包（群号 439211347）", Toast.LENGTH_LONG).show()
-                        statusLabel = "等待更新…"
-                        progress = 0f
-                        isUpdating = false
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(intent)
+                } catch (_: Exception) {}
+                isUpdating = false
+                onUpdateFinished()
+                onDismiss()
+            }
+        }
+    }
+
+    /** 同步执行单次下载，返回保存好的 File。本函数会跑在 IO 线程里 */
+    private suspend fun downloadWithProgress(url: String, onProgress: suspend (Float) -> Unit): File {
+        return kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            val client = okhttp3.OkHttpClient.Builder()
+                .connectTimeout(20, TimeUnit.SECONDS)
+                .readTimeout(120, TimeUnit.SECONDS)
+                .followRedirects(true)
+                .followSslRedirects(true)
+                .retryOnConnectionFailure(true)
+                .build()
+            val request = okhttp3.Request.Builder()
+                .url(url)
+                .header("User-Agent", "Mozilla/5.0 (Linux; Android) LzdzUpdater/1.7.8")
+                .header("Accept", "*/*")
+                .build()
+            client.newCall(request).execute().use { resp ->
+                if (!resp.isSuccessful) throw Exception("HTTP ${resp.code}")
+                val body = resp.body ?: throw Exception("无响应体")
+                val total = body.contentLength()
+                val dir = File(context.cacheDir, "update")
+                dir.mkdirs()
+                val file = File(dir, "latest.apk")
+                body.byteStream().use { input ->
+                    file.outputStream().use { output ->
+                        val buf = ByteArray(16 * 1024)
+                        var downloaded = 0L
+                        var lastEmit = 0L
+                        while (true) {
+                            val n = input.read(buf)
+                            if (n <= 0) break
+                            output.write(buf, 0, n)
+                            downloaded += n
+                            if (total > 0) {
+                                val now = System.currentTimeMillis()
+                                if (now - lastEmit > 120 || downloaded == total) {
+                                    lastEmit = now
+                                    val frac = (downloaded.toFloat() / total.toFloat()).coerceIn(0f, 1f)
+                                    kotlinx.coroutines.runBlocking { onProgress(frac) }
+                                }
+                            }
+                        }
+                        output.flush()
                     }
                 }
+                file
             }
         }
     }

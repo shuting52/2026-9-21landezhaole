@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.data.local.db.UploadedResourceEntity
+import com.example.data.util.VideoCache
 
 /**
  * 资源展示页（软件 / Skill）：

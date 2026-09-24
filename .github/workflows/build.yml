@@ -1,0 +1,143 @@
+name: Build Android APKs
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_body:
+        description: "Release notes（可选）"
+        required: false
+        default: ""
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          save-always: true
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Decode keystore secrets (本体 APK 签名固定)
+        env:
+          LZDZ_KEYSTORE_BASE64: ${{ secrets.LZDZ_KEYSTORE_BASE64 }}
+          LZDZ_KEYSTORE_PASSWORD: ${{ secrets.LZDZ_KEYSTORE_PASSWORD }}
+          LZDZ_KEY_ALIAS: ${{ secrets.LZDZ_KEY_ALIAS }}
+          LZDZ_KEY_PASSWORD: ${{ secrets.LZDZ_KEY_PASSWORD }}
+          CONSOLE_KEYSTORE_BASE64: ${{ secrets.CONSOLE_KEYSTORE_BASE64 }}
+          CONSOLE_KEYSTORE_PASSWORD: ${{ secrets.CONSOLE_KEYSTORE_PASSWORD }}
+          CONSOLE_KEY_ALIAS: ${{ secrets.CONSOLE_KEY_ALIAS }}
+          CONSOLE_KEY_PASSWORD: ${{ secrets.CONSOLE_KEY_PASSWORD }}
+        run: |
+          set -e
+          mkdir -p signing
+          if [ -n "$LZDZ_KEYSTORE_BASE64" ]; then
+            echo "==> 解密本体 keystore"
+            echo "$LZDZ_KEYSTORE_BASE64" | base64 -d > signing/lzdz-release.keystore
+            # 也写到 app/ 期望的路径（兼容 build.gradle.kts 中 ${rootDir}/my-upload-key.jks）
+            cp signing/lzdz-release.keystore my-upload-key.jks
+            ls -la signing/ my-upload-key.jks
+          else
+            echo "::warning::未配置 LZDZ_KEYSTORE_BASE64，跳过本体签名；产物将未签名"
+          fi
+          if [ -n "$CONSOLE_KEYSTORE_BASE64" ]; then
+            echo "==> 解密控制台 keystore"
+            echo "$CONSOLE_KEYSTORE_BASE64" | base64 -d > signing/lzdz-console.keystore
+            # console-apk 也优先去 rootDir/signing 找
+            ls -la signing/
+          else
+            echo "::warning::未配置 CONSOLE_KEYSTORE_BASE64，跳过控制台签名"
+          fi
+
+      - name: Build 本体 (landezha)
+        env:
+          KEYSTORE_PATH: signing/lzdz-release.keystore
+          STORE_PASSWORD: ${{ secrets.LZDZ_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.LZDZ_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.LZDZ_KEY_PASSWORD }}
+        run: |
+          set -e
+          ./gradlew :app:assembleRelease --no-daemon
+        continue-on-error: true
+
+      - name: Build 控制台 (yuntai console)
+        env:
+          CONSOLE_KEYSTORE_PATH: signing/lzdz-console.keystore
+          CONSOLE_STORE_PASSWORD: ${{ secrets.CONSOLE_KEYSTORE_PASSWORD }}
+          CONSOLE_KEY_ALIAS: ${{ secrets.CONSOLE_KEY_ALIAS }}
+          CONSOLE_KEY_PASSWORD: ${{ secrets.CONSOLE_KEY_PASSWORD }}
+        run: |
+          set -e
+          ./gradlew :console-apk:assembleRelease --no-daemon
+        continue-on-error: true
+
+      - name: 收集 APK
+        id: collect
+        run: |
+          set -e
+          mkdir -p dist-artifacts
+          find . -path '*/build/outputs/apk/release/*.apk' -exec cp {} dist-artifacts/ \;
+          echo "ARTIFACTS_DIR=dist-artifacts" >> $GITHUB_OUTPUT
+          ls -la dist-artifacts/
+
+      - name: 上传到工作流 artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apks
+          path: dist-artifacts/
+
+      - name: 推送到 dist/apk 与 dist/console
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          for f in dist-artifacts/*.apk; do
+            if [[ "$f" == *"console"* ]]; then
+              target="dist/console/$(basename $f)"
+            else
+              target="dist/apk/$(basename $f)"
+            fi
+            echo "==> 上传 $f -> $target"
+            gh api -X PUT \
+              -H "Authorization: token $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              repos/${{ github.repository }}/contents/$target \
+              --input <(jq -n --arg c "$(base64 -w0 $f)" --arg msg "ci: 发布 $(basename $f)" '{
+                message: $msg,
+                content: $c
+              }')
+          done
+
+      - name: 创建 GitHub Release
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist-artifacts/*.apk
+          generate_release_notes: true
+          body: ${{ github.event.inputs.release_body }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

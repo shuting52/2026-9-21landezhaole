@@ -143,27 +143,25 @@ class NavViewModel(
         }
         val cloudCats = data.home?.categories ?: emptyList()
         val localCats = NavData.categories
-        val newCats = if (cloudCats.isNotEmpty()) {
-            val cloudCardCount = cloudCats.sumOf { it.cards.size }
-            val localCardCount = localCats.sumOf { it.cards.size }
-            if (cloudCardCount >= localCardCount) {
-                cloudCats.map { it.toNavCategory() }
-            } else {
-                // Merge cloud categories with local categories so all 400+ unique sites are always preserved
-                val cloudCatMap = cloudCats.associateBy { it.id }
-                localCats.map { localCat ->
-                    val cloudCat = cloudCatMap[localCat.id]
-                    if (cloudCat != null && cloudCat.cards.isNotEmpty()) {
-                        val cloudNavCards = cloudCat.cards.map { it.toNavCard() }
-                        val mergedCards = (cloudNavCards + localCat.cards).distinctBy { it.url }
-                        localCat.copy(cards = mergedCards)
-                    } else {
-                        localCat
-                    }
-                }
-            }
-        } else {
-            localCats
+        // v1.7.8 写死规则：站点只能增加不能删除原站点，除非是重复站点。
+        // 合并策略：云端与本地并集，按 normalizedUrl 去重——云端出现重复 URL 时覆盖本地版本，本地独有保留。
+        val localByKey = localCats.flatMap { cat -> cat.cards.map { c -> normalizeSiteUrl(c.url) to (cat.id to c) } }.toMap()
+        val cloudByKey = cloudCats.flatMap { cat -> cat.cards.map { c -> normalizeSiteUrl(c.url) to (cat.id to c) } }.toMap()
+
+        val allCatsById = (localCats.map { it.id } + cloudCats.map { it.id }).distinct()
+        val newCats = allCatsById.map { catId ->
+            val localCat = localCats.firstOrNull { it.id == catId }
+            val cloudCat = cloudCats.firstOrNull { it.id == catId }
+            val localCards = localCat?.cards ?: emptyList()
+            val cloudCards = cloudCat?.cards ?: emptyList()
+            // 合并：云端优先（覆盖同名），本地独有保留
+            val merged = (cloudCards.map { c -> normalizeSiteUrl(c.url) to c } +
+                localCards.map { c -> normalizeSiteUrl(c.url) to c })
+                .distinctBy { it.first }
+                .map { it.second }
+            // 选择云端的元信息为优先（保留设置 / 名称），如果不存在则用本地
+            val baseCat = cloudCat ?: localCat!!
+            baseCat.copy(cards = merged)
         }
         val current = _uiState.value
         val validSelectedId = newCats.any { it.id == current.selectedCategoryId }
@@ -210,9 +208,8 @@ class NavViewModel(
     }
 
     /**
-     * 将控制台发布的 software / skills 数组同步到本地数据库：
-     * - 云端有的条目 upsert（新增/更新）
-     * - 控制台来源（id 以 sw_/sk_ 开头）但云端已删除的条目从本地删除
+     * v1.7.8 写死规则：站点只能增加，不能删除原站点（除检测到重复站点）。
+     * 本函数现在仅做「新增 / 更新」，不再删除任何本地条目——即使云端控制台移除了某个 sw_/sk_ 条目，本地依旧保留。
      */
     private suspend fun syncCloudResources(data: AdminData) {
         try {
@@ -260,27 +257,7 @@ class NavViewModel(
                     )
                 )
             }
-
-            // 删除同步：控制台来源（sw_/sk_ 前缀）但云端已不存在的条目
-            val cloudSwIds = cloudSoftwares.map { it.id }.toSet()
-            val cloudSkIds = cloudSkills.map { it.id }.toSet()
-            val localAll = repository.getAllUploadedResources()
-            localAll.forEach { local ->
-                val cloudManaged = when (local.type) {
-                    "software" -> local.id.startsWith("sw_")
-                    "skill", "prompt_image", "prompt_video" -> local.id.startsWith("sk_")
-                    else -> false
-                }
-                if (cloudManaged) {
-                    val stillInCloud = when (local.type) {
-                        "software" -> local.id in cloudSwIds
-                        else -> local.id in cloudSkIds
-                    }
-                    if (!stillInCloud) {
-                        repository.deleteUploadedResource(local.id)
-                    }
-                }
-            }
+            // ⚠️ v1.7.8 写死规则：站点只能增加不能删除原站点——这里不再做「云端已删 → 本地同步删」动作
         } catch (e: Exception) {
             // 同步失败不阻断主流程
         }
