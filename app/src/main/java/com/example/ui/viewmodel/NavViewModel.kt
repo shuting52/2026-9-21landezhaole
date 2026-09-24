@@ -145,22 +145,21 @@ class NavViewModel(
         val localCats = NavData.categories
         // v1.7.8 写死规则：站点只能增加不能删除原站点，除非是重复站点。
         // 合并策略：云端与本地并集，按 normalizedUrl 去重——云端出现重复 URL 时覆盖本地版本，本地独有保留。
-        val localByKey = localCats.flatMap { cat -> cat.cards.map { c -> normalizeSiteUrl(c.url) to (cat.id to c) } }.toMap()
-        val cloudByKey = cloudCats.flatMap { cat -> cat.cards.map { c -> normalizeSiteUrl(c.url) to (cat.id to c) } }.toMap()
-
         val allCatsById = (localCats.map { it.id } + cloudCats.map { it.id }).distinct()
         val newCats = allCatsById.map { catId ->
             val localCat = localCats.firstOrNull { it.id == catId }
             val cloudCat = cloudCats.firstOrNull { it.id == catId }
+            // v1.7.8 修复：cloudCat 是 CategoryDto、localCat 是 NavCategory，类型不同不能直接 ?: 合并，
+            // 统一转成 NavCategory 后合并（云端优先），避免 Elvis 推断成 Any 导致 copy 无法解析
+            val baseCat: NavCategory = if (cloudCat != null) cloudCat.toNavCategory() else localCat ?: NavCategory(id = catId, name = catId)
             val localCards = localCat?.cards ?: emptyList()
             val cloudCards = cloudCat?.cards ?: emptyList()
             // 合并：云端优先（覆盖同名），本地独有保留
-            val merged = (cloudCards.map { c -> normalizeSiteUrl(c.url) to c } +
+            val merged = (cloudCards.map { c -> normalizeSiteUrl(c.url) to c.toNavCard() } +
                 localCards.map { c -> normalizeSiteUrl(c.url) to c })
                 .distinctBy { it.first }
                 .map { it.second }
             // 选择云端的元信息为优先（保留设置 / 名称），如果不存在则用本地
-            val baseCat = cloudCat ?: localCat!!
             baseCat.copy(cards = merged)
         }
         val current = _uiState.value
