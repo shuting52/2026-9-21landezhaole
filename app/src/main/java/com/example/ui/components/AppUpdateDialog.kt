@@ -338,7 +338,7 @@ fun AppUpdateDialog(
     }
 
     /** 同步执行单次下载，返回保存好的 File。本函数会跑在 IO 线程里 */
-    private suspend fun downloadWithProgress(url: String, onProgress: suspend (Float) -> Unit): File {
+    suspend fun downloadWithProgress(url: String, onProgress: suspend (Float) -> Unit): File {
         return kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
             val client = okhttp3.OkHttpClient.Builder()
                 .connectTimeout(20, TimeUnit.SECONDS)
