@@ -374,7 +374,8 @@ async function ghGet(p){
 }
 
 async function ghPut(p, content, msg, sha){
-  const body = { message: msg, content: btoa(unescape(encodeURIComponent(content))) };
+  // v1.0.14：统一使用 UTF-8 安全的 base64 编码，与读取端保持一致
+  const body = { message: msg, content: b64EncodeUtf8(content) };
   if(sha) body.sha = sha;
   const r = await fetch(`${API}/repos/${S.owner}/${S.repo}/contents/${p}`, {
     method: "PUT",
@@ -407,7 +408,40 @@ function rawUrl(p){
   return `https://raw.githubusercontent.com/${S.owner}/${S.repo}/main/${p}`;
 }
 
-// ============ 连接 / 加载 ============
+// ============ UTF-8 安全的 Base64 编码（修复「大文件 / emoji 导致 JSON.parse 失败」）============
+function b64EncodeUtf8(str){
+  // 将 UTF-8 字符串转为 base64，使用 unescape+encodeURIComponent 传统技巧是 Android WebView 唯一可靠的方式
+  try{
+    // 优先使用现代 TextEncoder（与原 JSON 字节序一致，避免 surprise）
+    if(typeof TextEncoder !== "undefined"){
+      const bytes = new TextEncoder().encode(str);
+      let binary = "";
+      for(let i=0; i<bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+      return btoa(binary);
+    }
+  }catch(_){ }
+  return btoa(unescape(encodeURIComponent(str)));
+}
+
+/** Base64 → 原始字符串：优先现代 API，失败兑底到 escape+atob 传统方式 */
+function b64DecodeUtf8(b64){
+  const clean = (b64 || "").replace(/\n/g, "");
+  let binary = "";
+  try{
+    binary = atob(clean);
+  }catch(e){
+    throw new Error("Base64 解码失败：" + (e && e.message ? e.message : e));
+  }
+  if(typeof TextDecoder !== "undefined"){
+    try{
+      const bytes = new Uint8Array(binary.length);
+      for(let i=0; i<binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      return new TextDecoder("utf-8", { fatal: false }).decode(bytes);
+    }catch(_){ }
+  }
+  return decodeURIComponent(escape(binary));
+}
+
 async function connect(){
   S.token = $("cfgToken").value.trim();
   S.owner = $("cfgOwner").value.trim();
@@ -422,17 +456,18 @@ async function connect(){
     d = await ghGet(CONFIG_PATH);
   }catch(e){
     // 兜底：Token 为空/无效或 API 限流时，改用 CDN/raw 只读加载（无限频，加载必成功）
+    // v1.0.14：使用独立的 UTF-8 安全的 base64 编码函数，避免 btoa() 遇到中文/emoji 时报错
     const tryCdn = async () => {
       const cdnUrl = `https://cdn.jsdelivr.net/gh/${S.owner}/${S.repo}@main/${CONFIG_PATH}`;
       const r = await fetch(cdnUrl);
       if(!r.ok) throw new Error("CDN HTTP " + r.status);
-      return { content: btoa(unescape(encodeURIComponent(await r.text()))), sha: "" };
+      return { content: b64EncodeUtf8(await r.text()), sha: "" };
     };
     const tryRaw = async () => {
       const rawUrl = `https://raw.githubusercontent.com/${S.owner}/${S.repo}/main/${CONFIG_PATH}`;
       const r = await fetch(rawUrl);
       if(!r.ok) throw new Error("raw HTTP " + r.status);
-      return { content: btoa(unescape(encodeURIComponent(await r.text()))), sha: "" };
+      return { content: b64EncodeUtf8(await r.text()), sha: "" };
     };
     try {
       d = await tryCdn(); via = "cdn";
@@ -453,8 +488,13 @@ async function connect(){
     }
   }
   try{
-    const txt = decodeURIComponent(escape(atob(d.content.replace(/\n/g,""))));
-    S.admin = JSON.parse(txt);
+    // v1.0.14 修复「云端数据解析失败」：UTF-8 严格处理 + 详细错误原因
+    const raw = d.content || "";
+    if(!raw){
+      throw new Error("返回内容为空（d.content 为空）");
+    }
+    const decoded = b64DecodeUtf8(raw);
+    S.admin = JSON.parse(decoded);
     S.sha   = d.sha || "";
     S.loaded = true;
     S.dirty = false;
