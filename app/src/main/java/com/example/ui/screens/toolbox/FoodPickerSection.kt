@@ -140,6 +140,7 @@ private val DISH_DATABASE = listOf(
 
 private val CUISINES = listOf("川菜", "粤菜", "湘菜", "江浙菜", "东北菜", "家常菜", "素食", "汤羹", "主食", "甜品小吃", "西餐", "日韩料理", "烧烤", "火锅", "面点")
 
+@androidx.compose.foundation.layout.ExperimentalLayoutApi
 @Composable
 fun FoodPickerScreenView(modifier: Modifier = Modifier) {
     var selectedCuisines by remember { mutableStateOf(setOf<String>()) }
@@ -218,30 +219,30 @@ fun FoodPickerScreenView(modifier: Modifier = Modifier) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(6.dp))
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                items(CUISINES.chunked(3)) { row ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
-                        row.forEach { cuisine ->
-                            val selected = cuisine in selectedCuisines
-                            Surface(
-                                onClick = {
-                                    selectedCuisines = if (selected) selectedCuisines - cuisine else selectedCuisines + cuisine
-                                },
-                                shape = RoundedCornerShape(10.dp),
-                                color = if (selected) SunsetOrange.copy(alpha = 0.25f) else Color.White.copy(alpha = 0.55f),
-                                border = BorderStroke(1.dp, if (selected) SunsetOrange else Color.Transparent),
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text(
-                                    text = cuisine,
-                                    fontSize = 11.5.sp,
-                                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (selected) SunsetOrange else MaterialTheme.colorScheme.onSurface,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.padding(vertical = 7.dp)
-                                )
-                            }
-                        }
+            // v1.7.6 修复：移除嵌套 LazyColumn（外层已是 LazyColumn，内嵌滚动容器会崩溃），改为 FlowRow 平铺
+            androidx.compose.foundation.layout.FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                CUISINES.forEach { cuisine ->
+                    val selected = cuisine in selectedCuisines
+                    Surface(
+                        onClick = {
+                            selectedCuisines = if (selected) selectedCuisines - cuisine else selectedCuisines + cuisine
+                        },
+                        shape = RoundedCornerShape(10.dp),
+                        color = if (selected) SunsetOrange.copy(alpha = 0.25f) else Color.White.copy(alpha = 0.55f),
+                        border = BorderStroke(1.dp, if (selected) SunsetOrange else Color.Transparent)
+                    ) {
+                        Text(
+                            text = cuisine,
+                            fontSize = 11.5.sp,
+                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                            color = if (selected) SunsetOrange else MaterialTheme.colorScheme.onSurface,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp)
+                        )
                     }
                 }
             }
