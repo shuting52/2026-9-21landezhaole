@@ -274,10 +274,21 @@ const DEFAULT_TOKEN = "";
 const DEFAULT_OWNER = "shuting52";
 const DEFAULT_REPO  = "2026-9-21landezhaole";
 const CONFIG_PATH   = "admin-data.json";
-// 控制台程序当前内置版本（每次发布新控制台 APK 时递增；与本体软件版本完全分离）
-// 注意：必须与仓库 admin-data.json 的 console.code 一致——
-// 已安装最新版本时 code <= CONSOLE_LOCAL_VERSION，不再重复弹出更新提示。
-const CONSOLE_LOCAL_VERSION = 7;
+// 控制台程序内置 versionCode（与 console-apk/app/build.gradle.kts 的 versionCode 保持一致）。
+// v1.0.12 修复：运行时优先读取原生桥回传的「真实已安装 versionCode」，
+// 只有浏览器环境取不到时才回退到该常量，彻底避免常量漏改导致更新判断失效。
+const CONSOLE_BUILTIN_VERSION = 13;
+
+// 取当前控制台程序的真实版本号：APK 内用系统安装包 versionCode，浏览器回退内置常量
+function getLocalConsoleVersion(){
+  try{
+    if(typeof Android !== "undefined" && Android.getVersionCode){
+      const v = parseInt(Android.getVersionCode(), 10);
+      if(!isNaN(v) && v > 0) return v;
+    }
+  }catch(e){}
+  return CONSOLE_BUILTIN_VERSION;
+}
 
 const S = {
   token: DEFAULT_TOKEN,
@@ -587,13 +598,17 @@ async function cleanupOldApks(){
 }
 
 // ============ 控制台程序自更新（与本体软件更新完全分离） ============
-// 检测到仓库发布了新的控制台 APK 时，提示下载并自动安装替换老版本。
-// 已下载/已安装最新版本后不再提示；本地版本常量 + localStorage 双重记忆。
+// v1.0.12 修复「新版本推不到老版本」：
+//   1) 本地版本以真实安装包 versionCode 为准（getLocalConsoleVersion），不再依赖过期常量；
+//   2) 「已提示」标记只在真正调起下载后才写入，避免下载失败却被永久标记为已提示；
+//   3) 用户点「稍后」不落标记，下次连接仍会提醒；
+//   4) 提供手动「检查控制台更新」入口，无论标记如何都能强制重试。
 function checkConsoleUpdate(){
   try{
     const con = S.admin && S.admin.console;
     if(!con || !con.code || !con.apkUrl) return;
-    if(con.code <= CONSOLE_LOCAL_VERSION) return; // 已是最新（内置版本与云端一致）
+    const localCode = getLocalConsoleVersion();
+    if(con.code <= localCode) return; // 已是最新（真实已安装版本 >= 云端版本）
     // 本机已提示/已安装过该版本则不再重复弹窗
     try{
       const prompted = parseInt(localStorage.getItem("lzdz_console_prompted") || "0", 10);
@@ -604,20 +619,46 @@ function checkConsoleUpdate(){
       `控制台程序更新与本体软件完全分离，不影响本体软件。<br><br>` +
       `点击确认将自动下载并安装新版本，替换当前控制台程序。`
     ).then(ok=>{
-      if(!ok) return;
-      try{ localStorage.setItem("lzdz_console_prompted", String(con.code)); }catch(e){}
-      toast("正在下载控制台新版本并自动安装…","ok");
-      if(typeof Android !== "undefined" && Android.downloadAndInstall){
-        // 云台 APK 环境：原生下载+安装
-        Android.downloadAndInstall(con.apkUrl, "console-apk-v" + con.version + ".apk");
-      } else {
-        // 浏览器环境：直接打开下载链接
-        window.open(con.apkUrl, "_blank");
-        toast("已在浏览器打开下载，请下载后安装控制台新版本","ok");
-      }
+      if(!ok) return; // 选择「稍后」：不写标记，下次连接仍会提示
+      doConsoleUpdate(con);
     });
   }catch(e){
     console.warn("checkConsoleUpdate 失败:", e);
+  }
+}
+
+// 手动检查控制台更新（忽略「已提示」标记，供用户主动触发）
+async function manualCheckConsoleUpdate(){
+  if(!S.admin){ toast("请先连接并加载云端数据","err"); return; }
+  const con = S.admin.console;
+  if(!con || !con.code || !con.apkUrl){ toast("云端未配置控制台版本信息","err"); return; }
+  const localCode = getLocalConsoleVersion();
+  if(con.code <= localCode){
+    try{ localStorage.removeItem("lzdz_console_prompted"); }catch(e){}
+    toast(`当前控制台已是最新版本 v${Android && Android.getVersionName ? Android.getVersionName() : localCode}`,"ok");
+    return;
+  }
+  const ok = await confirmDlgHtml(
+    `发现控制台程序新版本 <b>v${esc(con.version)}</b>（当前 code:${localCode} → 最新 code:${con.code}）<br><br>` +
+    `点击确认将下载并自动安装新版本。`
+  );
+  if(ok) doConsoleUpdate(con);
+}
+
+// 执行控制台更新下载+安装；仅在真正调起下载后记录「已提示」
+function doConsoleUpdate(con){
+  try{
+    if(typeof Android !== "undefined" && Android.downloadAndInstall){
+      try{ localStorage.setItem("lzdz_console_prompted", String(con.code)); }catch(e){}
+      toast("正在下载控制台新版本并自动安装…","ok");
+      Android.downloadAndInstall(con.apkUrl, "console-apk-v" + con.version + ".apk");
+    } else {
+      // 浏览器环境：打开下载链接，下载由浏览器负责
+      window.open(con.apkUrl, "_blank");
+      toast("已在浏览器打开下载，请下载后安装控制台新版本","ok");
+    }
+  }catch(e){
+    toast("调起更新失败：" + e.message,"err");
   }
 }
 
@@ -2056,6 +2097,36 @@ function renderApk(){
     <div class="hint" style="margin-top:4px">实时扫描 GitHub 仓库中的 APK 安装包，支持一键设为当前发布版本触发弹窗；发布新版本时自动只保留当前+最新两个安装包：</div>
   </div>`;
 
+  // ========== 控制台程序版本管理（v1.0.12 新增）==========
+  const con = (S.admin && S.admin.console) || {};
+  const localCode = getLocalConsoleVersion();
+  const localName = (typeof Android !== "undefined" && Android.getVersionName) ? Android.getVersionName() : ("code " + localCode);
+  html += `<div class="card" style="border:1px solid var(--pri,#6c63ff);">
+    <div class="action-banner">
+      <b>🖥️ 控制台程序版本管理</b>
+      <span class="hint">控制台程序更新与本体软件完全分离；此处维护云端控制台版本号与安装包直链，老版本控制台会自动收到更新提示</span>
+    </div>
+    <div class="hint" style="margin-bottom:8px">
+      本机已安装控制台：<b>v${esc(localName)}</b>（code:${localCode}）　·　
+      云端最新控制台：<b>v${esc(con.version||"未设置")}</b>（code:${con.code||0}）
+    </div>
+    <div class="two-col">
+      <div><label>控制台版本名</label><input id="fConVerName" value="${esc(con.version||"1.0.12")}" placeholder="如 1.0.12"></div>
+      <div><label>控制台 versionCode（必须递增）</label><input id="fConVerCode" type="number" value="${esc(con.code||12)}" placeholder="如 12"></div>
+    </div>
+    <label>控制台 APK 直链（留空则用下方上传的包）</label>
+    <input id="fConApkUrl" value="${esc(con.apkUrl||"")}" placeholder="https://raw.githubusercontent.com/.../console-apk-v1.0.12-xxx.apk">
+    <label>上传新版控制台 APK 到仓库 dist/console/</label>
+    <div class="upload-box" onclick="document.getElementById('fConApkLocal').click()">🖥️ 点击选择控制台 APK 文件上传</div>
+    <input type="file" id="fConApkLocal" accept=".apk,application/vnd.android.package-archive" onchange="handleUploadConsoleApk(event)">
+    <div id="conUploadStatus" style="margin-top:6px;font-size:12px;color:var(--tx2)"></div>
+    <div class="row" style="margin-top:8px">
+      <button class="btn-pri grow" onclick="saveConsoleVersion()">💾 保存并发布控制台更新</button>
+      <button class="btn-warn" onclick="manualCheckConsoleUpdate()">🔍 本机检查控制台更新</button>
+      <button class="btn-mini gray" onclick="clearConsolePromptFlag()">♻️ 重置本机更新提示</button>
+    </div>
+  </div>`;
+
   if(!list.length){
     html += `<div class="empty">暂未检测到 dist/apk/ 中的安装包，上传后或点击右上角刷新即可显示</div>`;
   } else {
@@ -2211,6 +2282,67 @@ async function setAsReleaseApk(url, filename){
   toast(`正在发布并同步更新弹窗 (v${S.admin.version.name} code:${S.admin.version.code})…`,"ok");
   await publish(true, desc);
   renderAll();
+}
+
+// ============ 控制台程序版本管理（v1.0.12 新增）============
+
+// 清除本机「已提示」标记，强制下次连接重新检测控制台更新
+function clearConsolePromptFlag(){
+  try{
+    localStorage.removeItem("lzdz_console_prompted");
+    toast("已重置本机控制台更新提示标记，重新连接后会再次检测更新","ok");
+  }catch(e){
+    toast("重置失败："+e.message,"err");
+  }
+}
+
+// 上传新版控制台 APK 到仓库 dist/console/
+async function handleUploadConsoleApk(ev){
+  const f = ev.target.files[0]; if(!f) return;
+  const status = $("conUploadStatus");
+  if(!S.admin){ toast("请先连接","err"); return; }
+  status.innerHTML = `⏳ 正在将 ${esc(f.name)} (${Math.round(f.size/1048576*10)/10}MB) 上传至 dist/console/ …`;
+  try{
+    const url = await uploadFile(f, "dist/console");
+    status.innerHTML = `✅ 上传成功！直链：<a href="${url}" target="_blank">${url}</a>`;
+    toast("控制台 APK 上传成功！","ok");
+    if($("fConApkUrl")) $("fConApkUrl").value = url;
+  }catch(e){
+    status.innerHTML = `❌ 上传失败：${esc(e.message)}`;
+    toast("上传失败："+e.message,"err");
+  }
+}
+
+// 保存并发布控制台版本：更新 admin-data.json 的 console 字段
+// （仅同步配置，不触发本体软件更新弹窗——控制台更新与本体完全分离）
+async function saveConsoleVersion(){
+  if(!S.admin){ toast("请先连接并加载云端数据","err"); return; }
+  const name = ($("fConVerName")?.value || "").trim();
+  const codeRaw = ($("fConVerCode")?.value || "").trim();
+  const url = ($("fConApkUrl")?.value || "").trim();
+  const code = parseInt(codeRaw, 10);
+  if(!name){ toast("请填写控制台版本名","err"); return; }
+  if(!code || code <= 0){ toast("请填写有效的 versionCode（正整数）","err"); return; }
+  if(!url){ toast("请填写或上传控制台 APK 直链","err"); return; }
+  const oldCode = parseInt(S.admin.console?.code) || 0;
+  if(code <= oldCode){
+    const ok = await confirmDlgHtml(
+      `⚠️ 新的 versionCode <b>${code}</b> 未大于云端当前值 <b>${oldCode}</b>。<br><br>` +
+      `控制台程序依靠 code 递增判断是否需要更新，若填写偏小，<b>老版本将收不到更新提示</b>。<br><br>确定仍要保存吗？`
+    );
+    if(!ok) return;
+  }
+  S.admin.console = { version: name, code: code, apkUrl: url };
+  toast("正在发布控制台版本信息…","ok");
+  try{
+    const msg = `console: 发布控制台程序 v${name} code:${code}`;
+    const d = await ghPut(CONFIG_PATH, JSON.stringify(S.admin, null, 2), msg, S.sha);
+    S.sha = d.content.sha;
+    toast(`✅ 控制台版本 v${name} (code:${code}) 已发布，老版本控制台下次连接即可收到更新提示`,"ok");
+    renderAll();
+  }catch(e){
+    toast("发布失败："+e.message,"err");
+  }
 }
 
 // ============ 导出 / 导入 ============
