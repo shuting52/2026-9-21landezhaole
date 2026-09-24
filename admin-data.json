@@ -6258,9 +6258,9 @@
     ]
   },
   "console": {
-    "version": "1.0.14",
-    "code": 15,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v1.0.14-2026_0924.apk"
+    "version": "1.0.15",
+    "code": 16,
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v1.0.15-1790251714.apk"
   },
   "ipMonitor": {
     "enabled": false,
