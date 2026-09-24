@@ -130,18 +130,20 @@ jobs:
           set -e
           upload_file() {
             local f="$1" target="$2"
-            local b64
-            b64=$(base64 -w0 "$f")
-            local sha
-            sha=$(gh api "repos/${{ github.repository }}/contents/$target" -q '.sha' 2>/dev/null || true)
+            local b64file sha
+            # base64 写入临时文件，避免 jq 命令行参数超限（Argument list too long）
+            b64file=$(mktemp)
+            base64 -w0 "$f" > "$b64file"
+            sha=$(gh api "repos/${{ github.repository }}/contents/$target" -q '.sha // empty' 2>/dev/null || true)
             echo "==> 上传 $(basename $f) -> $target (sha=${sha:0:7})"
             if [ -n "$sha" ]; then
-              jq -n --arg c "$b64" --arg msg "ci: 发布 $(basename $f)" --arg s "$sha" '{message:$msg, content:$c, sha:$s}' \
+              jq -n --rawfile c "$b64file" --arg msg "ci: 发布 $(basename $f)" --arg s "$sha" '{message:$msg, content:$c, sha:$s}' \
                 | gh api -X PUT -H "Accept: application/vnd.github+json" "repos/${{ github.repository }}/contents/$target" --input -
             else
-              jq -n --arg c "$b64" --arg msg "ci: 发布 $(basename $f)" '{message:$msg, content:$c}' \
+              jq -n --rawfile c "$b64file" --arg msg "ci: 发布 $(basename $f)" '{message:$msg, content:$c}' \
                 | gh api -X PUT -H "Accept: application/vnd.github+json" "repos/${{ github.repository }}/contents/$target" --input -
             fi
+            rm -f "$b64file"
           }
           for f in dist-artifacts/*.apk; do
             [ -f "$f" ] || continue
