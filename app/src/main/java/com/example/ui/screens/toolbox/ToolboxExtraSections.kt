@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -563,7 +565,7 @@ private fun androidx.compose.foundation.layout.RowScope.ToggleCell(label: String
                     .size(14.dp)
                     .clip(CircleShape)
                     .background(if (checked) JadeGreen else Color.White.copy(alpha = 0.7f))
-                    .then(androidx.compose.foundation.border(1.dp, if (checked) JadeGreen else Color.Gray, CircleShape))
+                    .border(1.dp, if (checked) JadeGreen else Color.Gray, CircleShape)
             ) {
                 if (checked) Text("✓", fontSize = 9.sp, color = Color.White, modifier = Modifier.padding(start = 2.dp))
             }
@@ -572,9 +574,6 @@ private fun androidx.compose.foundation.layout.RowScope.ToggleCell(label: String
         }
     }
 }
-
-private fun androidx.compose.ui.Modifier.border(width: androidx.compose.ui.unit.Dp, color: Color, shape: androidx.compose.ui.graphics.Shape) =
-    this.then(androidx.compose.foundation.border(width, color, shape))
 
 /* ============================================================
  * 4) 文本二维码（v1.7.8）：纯本地，使用 zxing
@@ -727,6 +726,7 @@ fun QrCodeTextScreenView() {
 /* ============================================================
  * 5) 调色卡 / 取色（v1.7.8）：HEX/RGB/HSL 互转
  * ============================================================ */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ColorCardScreenView() {
     val context = LocalContext.current
