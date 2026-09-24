@@ -277,7 +277,7 @@ const CONFIG_PATH   = "admin-data.json";
 // 控制台程序内置 versionCode（与 console-apk/app/build.gradle.kts 的 versionCode 保持一致）。
 // v1.0.12 修复：运行时优先读取原生桥回传的「真实已安装 versionCode」，
 // 只有浏览器环境取不到时才回退到该常量，彻底避免常量漏改导致更新判断失效。
-const CONSOLE_BUILTIN_VERSION = 14;
+const CONSOLE_BUILTIN_VERSION = 15;
 
 // 取当前控制台程序的真实版本号：APK 内用系统安装包 versionCode，浏览器回退内置常量
 function getLocalConsoleVersion(){
