@@ -98,6 +98,24 @@ object VideoCache {
     }
 
     private fun downloadTo(context: Context, url: String, target: File) {
+        // v1.7.9 修复视频黑屏：raw.githubusercontent.com 在国内经常被墙/重定向失败，
+        // 按序尝试 多镜像（jsDelivr 多节点 + 国内代理 + raw 直链），全部失败才抛错
+        val lastErr = arrayOfNulls<Exception>(1)
+        for (candidate in mirrorCandidates(url)) {
+            try {
+                downloadFrom(candidate, target)
+                return
+            } catch (e: Exception) {
+                lastErr[0] = e
+                Log.w(TAG, "镜像下载失败 $candidate: ${e.message}")
+            }
+        }
+        // 清理超出限额
+        trimCache(dir = cacheDir(context))
+        throw lastErr[0] ?: IOException("所有下载源均失败")
+    }
+
+    private fun downloadFrom(url: String, target: File) {
         val request = Request.Builder()
             .url(url)
             .header("User-Agent", "Mozilla/5.0 (Linux; Android) LzdzMediaCache/1.7.8")
@@ -119,9 +137,30 @@ object VideoCache {
                     if (total < MIN_BYTES) throw IOException("文件过小（$total 字节）")
                 }
             }
-            // 清理超出限额的部分（按最旧优先）
-            trimCache(dir = cacheDir(context))
         }
+    }
+
+    /** 生成视频下载候选源：原始 URL → jsDelivr 多节点 → 国内代理 → raw 直链 */
+    private fun mirrorCandidates(url: String): List<String> {
+        val list = mutableListOf<String>()
+        if (url.isNotBlank()) list.add(url)
+        try {
+            val m = Regex("^https?://raw\\.githubusercontent\\.com/([^/]+)/([^/]+)/(?:main|master)/(.+)$")
+                .find(url)
+            if (m != null) {
+                val owner = m.groupValues[1]
+                val repo = m.groupValues[2]
+                val path = m.groupValues[3]
+                list.add("https://testingcf.jsdelivr.net/gh/$owner/$repo@main/$path")
+                list.add("https://cdn.jsdelivr.net/gh/$owner/$repo@main/$path")
+                list.add("https://fastly.jsdelivr.net/gh/$owner/$repo@main/$path")
+                list.add("https://gcore.jsdelivr.net/gh/$owner/$repo@main/$path")
+                list.add("https://ghfast.top/https://raw.githubusercontent.com/$owner/$repo/main/$path")
+                list.add("https://ghproxy.net/https://raw.githubusercontent.com/$owner/$repo/main/$path")
+                list.add("https://raw.gitmirror.com/$owner/$repo/main/$path")
+            }
+        } catch (_: Exception) {}
+        return list.distinct()
     }
 
     private fun cacheDir(context: Context): File {
