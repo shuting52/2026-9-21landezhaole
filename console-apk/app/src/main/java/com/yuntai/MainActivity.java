@@ -115,6 +115,9 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(buildRoot());
+        // 修复闪退：先构建首页（catLv/siteLv 等控件必须先存在），
+        // 否则连接成功回调 renderHomeLists() 会因控件为 null 而 NPE 闪退
+        buildPage("home");
         doConnect(false);
     }
 
@@ -1235,6 +1238,8 @@ public class MainActivity extends Activity {
             boolean ok = readConfig();
             runOnUiThread(() -> {
                 if (ok) {
+                    // 防闪退：确保当前页签已构建（首次连接时页面可能还没创建）
+                    if (!pages.containsKey(currentTab)) buildPage(currentTab);
                     statusBar.setText("● 已连接 " + source + " ｜ v" + admin.optJSONObject("version").optString("name", "?")
                             + " (code " + admin.optJSONObject("version").optString("code", "?") + ")");
                     if (sha.isEmpty() && !token.isEmpty()) statusBar.append("（只读镜像，写入需 API 可达）");
