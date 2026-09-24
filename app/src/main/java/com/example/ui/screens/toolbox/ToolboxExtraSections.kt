@@ -546,7 +546,7 @@ fun PasswordGeneratorScreenView() {
 }
 
 @Composable
-private fun ToggleCell(label: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+private fun androidx.compose.foundation.layout.RowScope.ToggleCell(label: String, checked: Boolean, onChange: (Boolean) -> Unit) {
     Surface(
         onClick = { onChange(!checked) },
         shape = RoundedCornerShape(10.dp),
