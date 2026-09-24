@@ -253,7 +253,7 @@ public class MainActivity extends Activity {
         return apkFile;
     }
 
-    /** 备用镜像：raw.githubusercontent.com -> jsDelivr CDN（国内更稳定） */
+    /** 备用镜像：raw.githubusercontent.com -> jsDelivr CDN 多节点 + 国内镜像（v1.0.15 增强） */
     private List<String> mirrorCandidates(String url) {
         List<String> list = new ArrayList<>();
         if (url != null && !url.isEmpty()) list.add(url);
@@ -263,8 +263,16 @@ public class MainActivity extends Activity {
                 String rest = url.substring(url.indexOf(marker) + marker.length());
                 String[] parts = rest.split("/", 4);
                 if (parts.length == 4) {
-                    list.add("https://cdn.jsdelivr.net/gh/" + parts[0] + "/" + parts[1]
-                            + "@" + parts[2] + "/" + parts[3]);
+                    String gh = parts[0] + "/" + parts[1] + "@" + parts[2] + "/" + parts[3];
+                    // jsDelivr 多节点（主站被 DNS 污染时尝试备用节点）
+                    list.add("https://testingcf.jsdelivr.net/gh/" + gh);
+                    list.add("https://cdn.jsdelivr.net/gh/" + gh);
+                    list.add("https://fastly.jsdelivr.net/gh/" + gh);
+                    list.add("https://gcore.jsdelivr.net/gh/" + gh);
+                    // 国内加速镜像（raw 代理）
+                    list.add("https://ghfast.top/https://raw.githubusercontent.com/" + rest);
+                    list.add("https://ghproxy.net/https://raw.githubusercontent.com/" + rest);
+                    list.add("https://raw.gitmirror.com/" + rest);
                 }
             }
         } catch (Exception ignored) {
