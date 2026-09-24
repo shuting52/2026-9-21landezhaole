@@ -152,6 +152,8 @@ private fun ResourceFileCard(
     val isApk = url.endsWith(".apk", ignoreCase = true)
     val isZip = url.endsWith(".zip", ignoreCase = true)
     val isMd = url.endsWith(".md", ignoreCase = true)
+    // v1.7.9：只有 apk/zip/md 文件才显示「安装」，URL 形式显示「直达」（自动识别类型）
+    val canInstall = isApk || isZip || isMd
 
     val badgeText = when {
         isApk -> "APK"
@@ -201,10 +203,10 @@ private fun ResourceFileCard(
         }
     }
 
-    // 点击卡片：文件（zip/apk/md）直接下载到本地 / URL 直接跳转
+    // 点击卡片：apk/zip/md → 下载（安装）；URL → 直接打开
     val onCardClick = {
         if (url.isNotBlank()) {
-            if (isFile) {
+            if (canInstall) {
                 downloadToLocal(url, res.title + (if (isZip) ".zip" else if (isApk) ".apk" else if (isMd) ".md" else ""))
             } else {
                 try {
@@ -417,26 +419,26 @@ private fun ResourceFileCard(
                     )
                 }
                 Spacer(modifier = Modifier.weight(1f))
-                // 直接点击卡片即可下载/跳转的提示
+                // 自动识别按钮：apk/zip/md → 「安装」；URL → 「直达」
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .background(if (isFile) Color(0xFF22C55E).copy(alpha = 0.12f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+                        .background(if (canInstall) Color(0xFF22C55E).copy(alpha = 0.12f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
                         .padding(horizontal = 10.dp, vertical = 6.dp)
                 ) {
                     Icon(
-                        imageVector = if (isFile) Icons.Filled.Download else Icons.Filled.OpenInNew,
+                        imageVector = if (canInstall) Icons.Filled.Download else Icons.Filled.OpenInNew,
                         contentDescription = null,
-                        tint = if (isFile) Color(0xFF22C55E) else MaterialTheme.colorScheme.primary,
+                        tint = if (canInstall) Color(0xFF22C55E) else MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(14.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = if (isFile) "点击卡片直接下载" else "点击卡片直接打开",
+                        text = if (canInstall) "安装" else "直达",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (isFile) Color(0xFF22C55E) else MaterialTheme.colorScheme.primary
+                        color = if (canInstall) Color(0xFF22C55E) else MaterialTheme.colorScheme.primary
                     )
                 }
             }
