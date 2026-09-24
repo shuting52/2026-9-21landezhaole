@@ -1,17 +1,18 @@
 {
   "version": {
-    "code": 66,
-    "name": "1.7.7",
+    "code": 67,
+    "name": "1.7.8",
     "changelog": [
       "叮咚～我们又又又更新啦！",
-      "控制台连接稳定性优化：无 Token 也能 CDN 只读浏览云端数据",
-      "更新弹窗保持 AppUpdater 卡通动态呈现，升级更流畅",
-      "优化：更新弹窗全新升级——完全采用卡通动态呈现（Canvas 手绘猫咪动画、进度环、均衡器动效、火箭发射、彩带庆祝），屏幕中间展示",
-      "优化：更新内容固定「叮咚～我们又又又更新啦！」文案，后续任何版本发布均不变",
-      "修复：新版安装替换旧版问题——签名已固定，v1.7.5 之后的版本全部同签名，可直接无缝覆盖安装；旧版本（≤1.7.4）首次升级自动引导卸载并把安装包拷贝到「下载」文件夹",
-      "修复：工具箱「今天吃什么」点击闪退问题（列表嵌套崩溃）",
-      "修复：控制台加载失败 401 问题（Token 为空不再请求、401 明确提示）",
-      "修复：视频可视化预览延迟——列表默认显示预览图即时呈现，点击后再播放视频（带声音）"
+      "新增「免费短剧」分类，多个免费短剧站点一键直达（含字节系）",
+      "修复：立即更新真正走进度条走满直接安装，不再走系统下载管理器",
+      "工具箱新增 5 个不联网稳定小工具：随机数色子、BMI、密码生成、文本二维码、调色卡",
+      "「今天吃什么」全面升级：录入我的菜 / 我的最爱 / 自定菜数 / 一键复制菜单",
+      "Skill 视频黑屏修复：自动预缓存到本地再播放，无障碍可视化",
+      "控制台云端数据解析加固：UTF-8 严格处理 + 大文件优化",
+      "控制台自更新链路修复：云端 code 真实递增，确保老控制台能收到升级提示",
+      "叮咚～我们又又又更新啦！",
+      "控制台连接稳定性优化：无 Token 也能 CDN 只读浏览云端数据"
     ],
     "force": true,
     "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.7.7-1790222354996.apk",
@@ -965,6 +966,19 @@
             "categoryId": "ai_canvas",
             "subcatId": "canvas",
             "highlights": "支持万人级设计系统规范与流畅画布缩放；深受国内顶尖互联网团队青睐"
+          },
+          {
+            "id": "site_edimakor_2026",
+            "title": "Edimakor AI Studio",
+            "url": "https://app.edimakor.ai/tw/studio/home?from=tab",
+            "icon": "https://app.edimakor.ai/edimakor.ico",
+            "fallbackText": "🎬",
+            "badge": "新动态",
+            "badgeType": "NEW",
+            "desc": "Edimakor AI 在线创作平台 · 一键生成 AI 图片与 AI 视频 · 无需写提示词",
+            "categoryId": "ai_canvas",
+            "subcatId": "all",
+            "highlights": "AI 创作 · 图生视频 · 无需提示词"
           }
         ]
       },
@@ -1524,6 +1538,93 @@
             "categoryId": "tools_magic",
             "subcatId": "daily",
             "highlights": ""
+          }
+        ]
+      },
+      {
+        "id": "short_drama",
+        "name": "免费短剧",
+        "iconKey": "movie",
+        "desc": "免费短剧在线观看平台 · 日更热门短剧 · 全题材覆盖",
+        "subcategories": [
+          {
+            "id": "all",
+            "name": "全部"
+          },
+          {
+            "id": "popular",
+            "name": "热门短剧"
+          },
+          {
+            "id": "new",
+            "name": "最新上架"
+          }
+        ],
+        "cards": [
+          {
+            "id": "sd_001",
+            "title": "红果短剧",
+            "url": "https://www.hongguo.tv/",
+            "icon": "https://www.hongguo.tv/favicon.ico",
+            "fallbackText": "🍿",
+            "badge": "新动态",
+            "badgeType": "NEW",
+            "desc": "字节跳动旗下免费短剧 App · 海量短剧资源每日更新 · 免费观看",
+            "categoryId": "short_drama",
+            "subcatId": "all",
+            "highlights": "免费 · 字节出品 · 日更"
+          },
+          {
+            "id": "sd_002",
+            "title": "河马短剧",
+            "url": "https://www.hemashort.com/",
+            "icon": "https://www.hemashort.com/favicon.ico",
+            "fallbackText": "🦛",
+            "badge": "新动态",
+            "badgeType": "NEW",
+            "desc": "免费短剧在线观看 · 都市言情古装悬疑全覆盖 · 手机平板通用",
+            "categoryId": "short_drama",
+            "subcatId": "all",
+            "highlights": "免费 · 全题材 · 多端可用"
+          },
+          {
+            "id": "sd_003",
+            "title": "星芽短剧",
+            "url": "https://www.xingyashort.com/",
+            "icon": "https://www.xingyashort.com/favicon.ico",
+            "fallbackText": "⭐",
+            "badge": "新动态",
+            "badgeType": "NEW",
+            "desc": "免费短剧平台 · 热门短剧大全 · 支持投屏与下载",
+            "categoryId": "short_drama",
+            "subcatId": "all",
+            "highlights": "免费 · 可投屏 · 可下载"
+          },
+          {
+            "id": "sd_004",
+            "title": "番茄短剧",
+            "url": "https://fanqienovel.com/short-play",
+            "icon": "https://fanqienovel.com/favicon.ico",
+            "fallbackText": "🍅",
+            "badge": "新动态",
+            "badgeType": "NEW",
+            "desc": "字节番茄小说官方短剧频道 · 免费短剧 · 热门 IP 同款",
+            "categoryId": "short_drama",
+            "subcatId": "all",
+            "highlights": "字节系 · 免费 · IP 改编"
+          },
+          {
+            "id": "sd_005",
+            "title": "抖音短剧",
+            "url": "https://www.douyin.com/discover/short",
+            "icon": "https://www.douyin.com/favicon.ico",
+            "fallbackText": "🎵",
+            "badge": "新动态",
+            "badgeType": "NEW",
+            "desc": "抖音内置短剧入口 · 热门短剧看不停 · 字节官方",
+            "categoryId": "short_drama",
+            "subcatId": "all",
+            "highlights": "字节 · 免费 · 海量"
           }
         ]
       },
@@ -2425,6 +2526,19 @@
             "categoryId": "resources",
             "subcatId": "all",
             "highlights": "持续更新超过1500+精致图标；现代UI设计与开发首选图标体系"
+          },
+          {
+            "id": "site_lark_wiki_2026",
+            "title": "字节飞书·AI 短剧资源 Wiki",
+            "url": "https://bytedance.larkoffice.com/wiki/RXh5ww6EqighMdkVTMccm2d4n7e",
+            "icon": "https://bytedance.larkoffice.com/favicon.ico",
+            "fallbackText": "📚",
+            "badge": "新动态",
+            "badgeType": "NEW",
+            "desc": "字节跳动内部飞书知识库 · AI 短剧资源 · 工具教程 · 素材库 · 持续更新",
+            "categoryId": "resources",
+            "subcatId": "all",
+            "highlights": "字节官方 · Wiki · 持续更新"
           }
         ]
       },
@@ -6144,9 +6258,9 @@
     ]
   },
   "console": {
-    "version": "1.0.13",
-    "code": 14,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v1.0.13-1790222354996.apk"
+    "version": "1.0.14",
+    "code": 15,
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v1.0.14-2026_0924.apk"
   },
   "ipMonitor": {
     "enabled": false,

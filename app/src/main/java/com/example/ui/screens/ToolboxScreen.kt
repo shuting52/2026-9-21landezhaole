@@ -102,10 +102,15 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.ui.screens.toolbox.AgeCalculatorSection
+import com.example.ui.screens.toolbox.BmiCalculatorScreenView
+import com.example.ui.screens.toolbox.ColorCardScreenView
 import com.example.ui.screens.toolbox.ConstellationSection
 import com.example.ui.screens.toolbox.FoodPickerScreenView
 import com.example.ui.screens.toolbox.MouthpieceSection
 import com.example.ui.screens.toolbox.OfflineTreasureSection
+import com.example.ui.screens.toolbox.PasswordGeneratorScreenView
+import com.example.ui.screens.toolbox.QrCodeTextScreenView
+import com.example.ui.screens.toolbox.RandomNumberScreenView
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.security.MessageDigest
@@ -195,6 +200,36 @@ enum class ToolboxTab(
         shortLabel = "今天吃什么",
         icon = Icons.Filled.Restaurant,
         desc = "随机色子 · 各大菜系 · 配料调味料 · 制作教程 · 每菜系独一无二"
+    ),
+    RANDOM_NUMBER(
+        title = "随机数/色子",
+        shortLabel = "随机色子",
+        icon = Icons.Filled.Dns,
+        desc = "指定区间随机整数 · 可设结果上限/下限 · 一次性多抽 · 用于抽奖抽签"
+    ),
+    BMI_CALC(
+        title = "BMI 计算器",
+        shortLabel = "BMI",
+        icon = Icons.Filled.Speed,
+        desc = "身高体重一键得出 BMI 值 · 体重偏胖偏瘦 · 成年人标准范围"
+    ),
+    PASSWORD_GEN(
+        title = "密码生成器",
+        shortLabel = "密码生成",
+        icon = Icons.Filled.VpnKey,
+        desc = "可选字符组合 · 批量导出 · 本地生成不上传 · 可控长度 6-64 位"
+    ),
+    QRCODE_TEXT(
+        title = "文本二维码",
+        shortLabel = "文本二维码",
+        icon = Icons.Filled.Code,
+        desc = "文本/网址转二维码图片 · 可分享/保存到手机 · 本地生成不上传"
+    ),
+    COLOR_CARD(
+        title = "调色卡与取色",
+        shortLabel = "调色卡",
+        icon = Icons.Filled.FormatColorFill,
+        desc = "HEX/RGB/HSL 互转 · 提取主题色 · 复制颜色值 · 调出好看的高级色调"
     ),
 }
 
@@ -367,6 +402,11 @@ fun ToolboxScreen(
                                 ToolboxTab.TEXT_STATS -> TextStatsScreenView(context = LocalContext.current)
                                 ToolboxTab.RELATION_KIN -> RelationKinScreenView(context = LocalContext.current)
                                 ToolboxTab.FOOD_PICKER -> FoodPickerScreenView()
+                                ToolboxTab.RANDOM_NUMBER -> RandomNumberScreenView()
+                                ToolboxTab.BMI_CALC -> BmiCalculatorScreenView()
+                                ToolboxTab.PASSWORD_GEN -> PasswordGeneratorScreenView()
+                                ToolboxTab.QRCODE_TEXT -> QrCodeTextScreenView()
+                                ToolboxTab.COLOR_CARD -> ColorCardScreenView()
                             }
                         }
                     }
