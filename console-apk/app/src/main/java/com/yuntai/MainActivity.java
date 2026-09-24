@@ -251,34 +251,40 @@ public class MainActivity extends Activity {
     }
 
     private void buildPage(String key) {
-        currentTab = key;
-        if (pages.containsKey(key)) {
-            pageArea.removeAllViews();
-            pageArea.addView(pages.get(key));
-            if (admin != null) renderCachedPage(key);
+        try {
+            currentTab = key;
+            if (pages.containsKey(key)) {
+                pageArea.removeAllViews();
+                pageArea.addView(pages.get(key));
+                if (admin != null) renderCachedPage(key);
+                highlightTabs();
+                return;
+            }
+            LinearLayout page = new LinearLayout(this);
+            page.setOrientation(LinearLayout.VERTICAL);
+            page.setPadding(dp(12), dp(10), dp(12), dp(12));
+            page.setBackgroundColor(0xFF0F1220);
+
+            switch (key) {
+                case "home": buildHome(page); break;
+                case "soft": buildSoft(page); break;
+                case "skill": buildSkill(page); break;
+                case "settings": buildSettings(page); break;
+                case "update": buildUpdate(page); break;
+                case "other": buildOther(page); break;
+                case "apk": buildApk(page); break;
+            }
+            pages.put(key, page);
             highlightTabs();
-            return;
-        }
-        LinearLayout page = new LinearLayout(this);
-        page.setOrientation(LinearLayout.VERTICAL);
-        page.setPadding(dp(12), dp(10), dp(12), dp(12));
-        page.setBackgroundColor(0xFF0F1220);
 
-        switch (key) {
-            case "home": buildHome(page); break;
-            case "soft": buildSoft(page); break;
-            case "skill": buildSkill(page); break;
-            case "settings": buildSettings(page); break;
-            case "update": buildUpdate(page); break;
-            case "other": buildOther(page); break;
-            case "apk": buildApk(page); break;
+            pageArea.removeAllViews();
+            pageArea.addView(page);
+            if (admin != null) renderCachedPage(key);
+        } catch (Exception e) {
+            // 防闪退：单个页面构建失败只提示，不让整个 App 崩溃
+            log("buildPage(" + key + ") 失败: " + e);
+            toast("页面加载异常(" + key + ")：" + e.getMessage());
         }
-        pages.put(key, page);
-        highlightTabs();
-
-        pageArea.removeAllViews();
-        pageArea.addView(page);
-        if (admin != null) renderCachedPage(key);
     }
 
     /** 页面缓存渲染：切回页面时把最新云端数据填回表单 */
@@ -534,6 +540,8 @@ public class MainActivity extends Activity {
 
     private void renderSoftList() {
         if (admin == null) return;
+        // 防闪退：软件页签尚未构建时 softAd 为 null，直接跳过（进入页面时会再渲染）
+        if (softAd == null) return;
         softCache.clear();
         JSONArray arr = admin.optJSONArray("software");
         if (arr != null) {
@@ -643,6 +651,8 @@ public class MainActivity extends Activity {
 
     private void renderSkillList() {
         if (admin == null) return;
+        // 防闪退：Skill 页签尚未构建时 skillAd 为 null，直接跳过（进入页面时会再渲染）
+        if (skillAd == null) return;
         skillCache.clear();
         JSONArray arr = admin.optJSONArray("skills");
         if (arr != null) {
@@ -1235,22 +1245,33 @@ public class MainActivity extends Activity {
         token = tokenEt.getText().toString().trim();
         if (!silent) statusBar.setText("● 连接中…");
         new Thread(() -> {
-            boolean ok = readConfig();
+            boolean ok;
+            try {
+                ok = readConfig();
+            } catch (Exception e) {
+                log("readConfig 异常: " + e);
+                ok = false;
+            }
+            final boolean finalOk = ok;
             runOnUiThread(() -> {
-                if (ok) {
-                    // 防闪退：确保当前页签已构建（首次连接时页面可能还没创建）
-                    if (!pages.containsKey(currentTab)) buildPage(currentTab);
-                    statusBar.setText("● 已连接 " + source + " ｜ v" + admin.optJSONObject("version").optString("name", "?")
-                            + " (code " + admin.optJSONObject("version").optString("code", "?") + ")");
-                    if (sha.isEmpty() && !token.isEmpty()) statusBar.append("（只读镜像，写入需 API 可达）");
-                    if (sha.isEmpty() && token.isEmpty()) statusBar.append("（未填 Token，只读）");
-                    renderHomeLists();
-                    renderSoftList();
-                    renderSkillList();
-                    renderCachedPage(currentTab);
-                } else {
-                    statusBar.setText("● 连接失败");
-                    toast("连接失败：API 与全部镜像均不可达。\n请检查网络 / Token / 仓库名，或用「🔍 诊断」定位问题");
+                try {
+                    if (finalOk) {
+                        // 防闪退：确保当前页签已构建（首次连接时页面可能还没创建）
+                        if (!pages.containsKey(currentTab)) buildPage(currentTab);
+                        statusBar.setText("● 已连接 " + source + " ｜ v" + admin.optJSONObject("version").optString("name", "?")
+                                + " (code " + admin.optJSONObject("version").optString("code", "?") + ")");
+                        if (sha.isEmpty() && !token.isEmpty()) statusBar.append("（只读镜像，写入需 API 可达）");
+                        if (sha.isEmpty() && token.isEmpty()) statusBar.append("（未填 Token，只读）");
+                        // 只渲染当前页签（其余页签进入时再渲染），避免未构建页签的控件为 null
+                        renderCachedPage(currentTab);
+                    } else {
+                        statusBar.setText("● 连接失败");
+                        toast("连接失败：API 与全部镜像均不可达。\n请检查网络 / Token / 仓库名，或用「🔍 诊断」定位问题");
+                    }
+                } catch (Exception e) {
+                    log("连接回调异常: " + e);
+                    statusBar.setText("● 连接完成（有提示见下）");
+                    toast("连接处理异常：" + e.getMessage());
                 }
             });
         }).start();
