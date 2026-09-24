@@ -563,7 +563,7 @@ private fun androidx.compose.foundation.layout.RowScope.ToggleCell(label: String
                     .size(14.dp)
                     .clip(CircleShape)
                     .background(if (checked) JadeGreen else Color.White.copy(alpha = 0.7f))
-                    .border(1.dp, if (checked) JadeGreen else Color.Gray, CircleShape)
+                    .then(androidx.compose.foundation.border(1.dp, if (checked) JadeGreen else Color.Gray, CircleShape))
             ) {
                 if (checked) Text("✓", fontSize = 9.sp, color = Color.White, modifier = Modifier.padding(start = 2.dp))
             }
@@ -579,6 +579,7 @@ private fun androidx.compose.ui.Modifier.border(width: androidx.compose.ui.unit.
 /* ============================================================
  * 4) 文本二维码（v1.7.8）：纯本地，使用 zxing
  * ============================================================ */
+// v1.7.8：本文件内统一使用 Compose Color（android.graphics.Color 仅用于 Bitmap.setPixel） * ============================================================ */
 @Composable
 fun QrCodeTextScreenView() {
     val context = LocalContext.current
