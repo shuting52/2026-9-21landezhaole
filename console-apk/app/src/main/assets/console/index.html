@@ -277,7 +277,7 @@ const CONFIG_PATH   = "admin-data.json";
 // 控制台程序内置 versionCode（与 console-apk/app/build.gradle.kts 的 versionCode 保持一致）。
 // v1.0.12 修复：运行时优先读取原生桥回传的「真实已安装 versionCode」，
 // 只有浏览器环境取不到时才回退到该常量，彻底避免常量漏改导致更新判断失效。
-const CONSOLE_BUILTIN_VERSION = 13;
+const CONSOLE_BUILTIN_VERSION = 14;
 
 // 取当前控制台程序的真实版本号：APK 内用系统安装包 versionCode，浏览器回退内置常量
 function getLocalConsoleVersion(){
@@ -412,45 +412,72 @@ async function connect(){
   S.token = $("cfgToken").value.trim();
   S.owner = $("cfgOwner").value.trim();
   S.repo  = $("cfgRepo").value.trim();
+  saveCfg();
   if(!S.owner || !S.repo){ toast("请填写 Owner 和仓库名","err"); return; }
-  // v1.7.6 修复 401：token 为空时不再发起请求，直接引导粘贴 Token
-  if(!S.token){
-    $("connInfo").innerHTML = '<span class="status-dot fail"></span>401 认证失败：请先在顶部「配置区」粘贴你的 GitHub Token（Access Token）再连接';
-    setSub("缺少 Token");
-    toast("请粘贴 GitHub Token 后再连接","err");
-    $("cfgToken").focus();
-    return;
-  }
   setSub("正在连接…");
   $("connInfo").innerHTML = '<span class="status-dot idle"></span>连接云端仓库中…';
+  let d = null; let via = "api";
   try{
-    const d = await ghGet(CONFIG_PATH);
+    // 主路径：GitHub Contents API（有 Token 时配额 5000/小时，优先）
+    d = await ghGet(CONFIG_PATH);
+  }catch(e){
+    // 兜底：Token 为空/无效或 API 限流时，改用 CDN/raw 只读加载（无限频，加载必成功）
+    const tryCdn = async () => {
+      const cdnUrl = `https://cdn.jsdelivr.net/gh/${S.owner}/${S.repo}@main/${CONFIG_PATH}`;
+      const r = await fetch(cdnUrl);
+      if(!r.ok) throw new Error("CDN HTTP " + r.status);
+      return { content: btoa(unescape(encodeURIComponent(await r.text()))), sha: "" };
+    };
+    const tryRaw = async () => {
+      const rawUrl = `https://raw.githubusercontent.com/${S.owner}/${S.repo}/main/${CONFIG_PATH}`;
+      const r = await fetch(rawUrl);
+      if(!r.ok) throw new Error("raw HTTP " + r.status);
+      return { content: btoa(unescape(encodeURIComponent(await r.text()))), sha: "" };
+    };
+    try {
+      d = await tryCdn(); via = "cdn";
+    } catch(e2) {
+      try { d = await tryRaw(); via = "raw"; }
+      catch(e3) {
+        const msg = String((e && e.message) || e || "");
+        const is401 = msg.indexOf("401") >= 0 || msg.indexOf("Bad credentials") >= 0;
+        let hint = "";
+        if(is401) hint = "<br><b style='color:#f87171'>Token 无效或已过期（401）</b>：请在顶部配置区粘贴有效 GitHub Token。";
+        else if(!S.token) hint = "<br><b style='color:#f87171'>未填写 Token，且 CDN 直读不可达</b>：请检查网络，或粘贴 GitHub Token 后重试。";
+        else hint = "<br><b style='color:#f87171'>网络异常</b>：请检查网络连接后重试。";
+        $("connInfo").innerHTML = `<span class="status-dot fail"></span>加载失败：${esc(msg)}${hint}`;
+        setSub("连接失败");
+        toast("连接云端失败，请检查 Token 与网络","err");
+        return;
+      }
+    }
+  }
+  try{
     const txt = decodeURIComponent(escape(atob(d.content.replace(/\n/g,""))));
     S.admin = JSON.parse(txt);
-    S.sha   = d.sha;
+    S.sha   = d.sha || "";
     S.loaded = true;
     S.dirty = false;
-    setSub("已连接 · " + S.owner + "/" + S.repo);
+    setSub("已连接 · " + S.owner + "/" + S.repo + (via !== "api" ? "（" + via + " 只读）" : ""));
     const catCount = (S.admin.home?.categories || []).length;
     const vName = S.admin.version?.name || "1.0";
     const vCode = S.admin.version?.code || 1;
-    $("connInfo").innerHTML = `<span class="status-dot loaded"></span>成功加载 admin-data.json · ${catCount}个分类 · 当前发布版本 v${vName} (code:${vCode})`;
+    $("connInfo").innerHTML = `<span class="status-dot loaded"></span>成功加载 admin-data.json · ${catCount}个分类 · 当前发布版本 v${vName} (code:${vCode})` + (via !== "api" ? " <span style='opacity:.65'>（" + via + " 只读，保存/发布需粘贴 Token）</span>" : "");
     renderAll();
-    toast("云端数据加载成功","ok");
+    toast("云端数据加载成功" + (via !== "api" ? "（" + via + " 只读）" : ""),"ok");
     // 异步加载仓库已有 APK
     fetchRepoApks(false);
     // 控制台程序自更新检查（与本体软件更新完全分离，只在控制台程序内提示）
     checkConsoleUpdate();
-  }catch(e){
-    // v1.7.6 修复 401：区分 Token 无效与网络错误
-    const msg = (e.message||"").toString();
-    const is401 = msg.indexOf("401") >= 0 || msg.indexOf("Bad credentials") >= 0;
-    $("connInfo").innerHTML = is401
-      ? '<span class="status-dot fail"></span>401 认证失败：Token 无效或已过期，请更换有效 GitHub Token 后重试'
-      : '<span class="status-dot fail"></span>加载失败：' + e.message;
-    setSub(is401 ? "401 认证失败" : "连接失败");
-    toast(is401 ? "Token 无效或已过期（401），请检查后重试" : "连接云端失败："+e.message,"err");
-    if(is401){ try{ $("cfgToken").focus(); }catch(_e){} }
+    if(!S.token && via !== "api"){
+      setTimeout(function(){
+        toast("当前为只读模式，如需保存/发布请填写 Token 后点「连接」","err");
+      }, 1200);
+    }
+  }catch(e2){
+    $("connInfo").innerHTML = '<span class="status-dot fail"></span>数据解析失败：' + esc(String((e2&&e2.message)||e2));
+    setSub("连接失败");
+    toast("云端数据解析失败","err");
   }
 }
 
