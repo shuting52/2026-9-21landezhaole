@@ -4,17 +4,17 @@
     "name": "1.7.9",
     "changelog": [
       "叮咚～我们又又又更新啦！",
-      "工具箱新增 5 个实用小工具：单位换算/进制转换/日期计算/计算器/Emoji表情库",
+      "工具箱新增 5 个实用小工具：单位换算\/进制转换\/日期计算\/计算器\/Emoji表情库",
       "文本二维码优化：默认不再预填任何地址，由你自由输入",
-      "软件版块按钮升级：apk/zip/md 显示「安装」，网址显示「直达」，自动识别",
-      "软件版块新增多款免费短剧 App（红果/番茄/河马/NetShort）",
+      "软件版块按钮升级：apk\/zip\/md 显示「安装」，网址显示「直达」，自动识别",
+      "软件版块新增多款免费短剧 App（红果\/番茄\/河马\/NetShort）",
       "免费短剧分类扩充至 12 个站点",
       "Skill 视频播放修复：多镜像兜底下载，不再黑屏",
       "控制台闪退修复：页面构建与连接时序全面加固"
     ],
     "force": true,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.7.9-1790272221.apk",
-    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.7.9-1790272221.apk"
+    "apkUrl": "https:\/\/raw.githubusercontent.com\/shuting52\/2026-9-21landezhaole\/main\/dist\/apk\/landezhao-v1.7.9-1790272221.apk",
+    "apkUrlRaw": "https:\/\/raw.githubusercontent.com\/shuting52\/2026-9-21landezhaole\/main\/dist\/apk\/landezhao-v1.7.9-1790272221.apk"
   },
   "home": {
     "categories": [
@@ -45,8 +45,8 @@
           {
             "id": "site_new_loomi",
             "title": "Loomi",
-            "url": "https://loomi.live",
-            "icon": "https://loomi.live/favicon.ico",
+            "url": "https:\/\/loomi.live",
+            "icon": "https:\/\/loomi.live\/favicon.ico",
             "fallbackText": "LM",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -58,8 +58,8 @@
           {
             "id": "site_new_amz123",
             "title": "AMZ123 跨境卖家导航",
-            "url": "https://www.amz123.com/",
-            "icon": "https://www.amz123.com/favicon.ico",
+            "url": "https:\/\/www.amz123.com\/",
+            "icon": "https:\/\/www.amz123.com\/favicon.ico",
             "fallbackText": "AMZ",
             "badge": "HOT",
             "badgeType": "GOLD",
@@ -71,8 +71,8 @@
           {
             "id": "site_new_waclaw",
             "title": "WaClaw",
-            "url": "https://waclaw.ihuiwa.com",
-            "icon": "https://waclaw.ihuiwa.com/favicon.ico",
+            "url": "https:\/\/waclaw.ihuiwa.com",
+            "icon": "https:\/\/waclaw.ihuiwa.com\/favicon.ico",
             "fallbackText": "WC",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -84,8 +84,8 @@
           {
             "id": "site_new_dreammaker",
             "title": "DreamMaker",
-            "url": "https://dreammaker.vobile.com.cn/",
-            "icon": "https://dreammaker.vobile.com.cn/favicon.ico",
+            "url": "https:\/\/dreammaker.vobile.com.cn\/",
+            "icon": "https:\/\/dreammaker.vobile.com.cn\/favicon.ico",
             "fallbackText": "DM",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -97,8 +97,8 @@
           {
             "id": "site_new_onsolo",
             "title": "OnSolo",
-            "url": "https://onsolo.ai/",
-            "icon": "https://onsolo.ai/favicon.ico",
+            "url": "https:\/\/onsolo.ai\/",
+            "icon": "https:\/\/onsolo.ai\/favicon.ico",
             "fallbackText": "Solo",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -110,7 +110,7 @@
           {
             "id": "ai_-1",
             "title": "即梦AI",
-            "url": "https://jimeng.jianying.com/",
+            "url": "https:\/\/jimeng.jianying.com\/",
             "icon": "",
             "fallbackText": "即",
             "badge": "国内顶尖",
@@ -123,7 +123,7 @@
           {
             "id": "ai_-2",
             "title": "通义万相",
-            "url": "https://tongyi.aliyun.com/wan/generate",
+            "url": "https:\/\/tongyi.aliyun.com\/wan\/generate",
             "icon": "",
             "fallbackText": "万",
             "badge": "阿里出品",
@@ -136,7 +136,7 @@
           {
             "id": "ai_-3",
             "title": "chatgpt",
-            "url": "https://chatgpt.com/",
+            "url": "https:\/\/chatgpt.com\/",
             "icon": "",
             "fallbackText": "GPT",
             "badge": "OpenAI",
@@ -149,7 +149,7 @@
           {
             "id": "ai_-4",
             "title": "千问-阿里 AI 助手",
-            "url": "https://www.qianwen.com/",
+            "url": "https:\/\/www.qianwen.com\/",
             "icon": "",
             "fallbackText": "问",
             "badge": "阿里千问",
@@ -162,7 +162,7 @@
           {
             "id": "ai_-5",
             "title": "豆包",
-            "url": "https://www.doubao.com/",
+            "url": "https:\/\/www.doubao.com\/",
             "icon": "",
             "fallbackText": "豆",
             "badge": "字节跳动",
@@ -175,7 +175,7 @@
           {
             "id": "ai_-6",
             "title": "Dola",
-            "url": "https://www.dola.com/chat/",
+            "url": "https:\/\/www.dola.com\/chat\/",
             "icon": "",
             "fallbackText": "Dola",
             "badge": "AI助理",
@@ -188,7 +188,7 @@
           {
             "id": "ai_-7",
             "title": "Duck.ai",
-            "url": "https://duck.ai/",
+            "url": "https:\/\/duck.ai\/",
             "icon": "",
             "fallbackText": "Duck",
             "badge": "隐私保护",
@@ -201,7 +201,7 @@
           {
             "id": "ai_-8",
             "title": "库库AI",
-            "url": "https://kuku.baidu.com/",
+            "url": "https:\/\/kuku.baidu.com\/",
             "icon": "",
             "fallbackText": "库",
             "badge": "百度生态",
@@ -214,7 +214,7 @@
           {
             "id": "ai_-9",
             "title": "可灵",
-            "url": "https://klingai.com/app",
+            "url": "https:\/\/klingai.com\/app",
             "icon": "",
             "fallbackText": "可",
             "badge": "视频大模型",
@@ -227,7 +227,7 @@
           {
             "id": "ai_-10",
             "title": "海艺",
-            "url": "https://www.seaart.ai/zhCN",
+            "url": "https:\/\/www.seaart.ai\/zhCN",
             "icon": "",
             "fallbackText": "海",
             "badge": "二次元写实",
@@ -240,7 +240,7 @@
           {
             "id": "ai_-11",
             "title": "ComfyUI",
-            "url": "https://cloud.comfy.org/cloud/login",
+            "url": "https:\/\/cloud.comfy.org\/cloud\/login",
             "icon": "",
             "fallbackText": "Comfy",
             "badge": "云端免配",
@@ -253,7 +253,7 @@
           {
             "id": "ai_-12",
             "title": "Veo3",
-            "url": "https://labs.google/",
+            "url": "https:\/\/labs.google\/",
             "icon": "",
             "fallbackText": "Veo",
             "badge": "谷歌前沿",
@@ -266,7 +266,7 @@
           {
             "id": "ai_-13",
             "title": "ideogram",
-            "url": "https://ideogram.ai/t/explore",
+            "url": "https:\/\/ideogram.ai\/t\/explore",
             "icon": "",
             "fallbackText": "ideo",
             "badge": "文字排版",
@@ -279,7 +279,7 @@
           {
             "id": "ai_-14",
             "title": "Arena AI",
-            "url": "https://arena.ai/",
+            "url": "https:\/\/arena.ai\/",
             "icon": "",
             "fallbackText": "Arena",
             "badge": "大模型盲测",
@@ -292,7 +292,7 @@
           {
             "id": "ai_-15",
             "title": "LartAICineStudio",
-            "url": "https://ce.lartai.com/",
+            "url": "https:\/\/ce.lartai.com\/",
             "icon": "",
             "fallbackText": "Lart",
             "badge": "影视级AI",
@@ -305,7 +305,7 @@
           {
             "id": "ai_-16",
             "title": "Higgsfield",
-            "url": "https://higgsfield.ai/",
+            "url": "https:\/\/higgsfield.ai\/",
             "icon": "",
             "fallbackText": "Higgs",
             "badge": "特效运镜",
@@ -318,7 +318,7 @@
           {
             "id": "ai_-17",
             "title": "leonardo",
-            "url": "https://app.leonardo.ai/",
+            "url": "https:\/\/app.leonardo.ai\/",
             "icon": "",
             "fallbackText": "Leo",
             "badge": "游戏资产",
@@ -331,7 +331,7 @@
           {
             "id": "ai_-18",
             "title": "MindVideo AI",
-            "url": "https://www.mindvideo.ai/",
+            "url": "https:\/\/www.mindvideo.ai\/",
             "icon": "",
             "fallbackText": "Mind",
             "badge": "视频生成",
@@ -344,7 +344,7 @@
           {
             "id": "ai_-19",
             "title": "AI绘画",
-            "url": "https://mj.bandeyu.com/",
+            "url": "https:\/\/mj.bandeyu.com\/",
             "icon": "",
             "fallbackText": "绘",
             "badge": "MJ直连",
@@ -357,7 +357,7 @@
           {
             "id": "ai_-20",
             "title": "magnific",
-            "url": "https://www.magnific.com/app",
+            "url": "https:\/\/www.magnific.com\/app",
             "icon": "",
             "fallbackText": "Mag",
             "badge": "AI超分重绘",
@@ -370,7 +370,7 @@
           {
             "id": "ai_-21",
             "title": "堆友",
-            "url": "https://d.design/",
+            "url": "https:\/\/d.design\/",
             "icon": "",
             "fallbackText": "堆",
             "badge": "阿里设计",
@@ -383,7 +383,7 @@
           {
             "id": "ai_-22",
             "title": "Happy Horse",
-            "url": "https://happy-horse.art/auth/signin",
+            "url": "https:\/\/happy-horse.art\/auth\/signin",
             "icon": "",
             "fallbackText": "马",
             "badge": "AI创作",
@@ -396,7 +396,7 @@
           {
             "id": "ai_-23",
             "title": "Labnana",
-            "url": "https://labnana.com/zh",
+            "url": "https:\/\/labnana.com\/zh",
             "icon": "",
             "fallbackText": "Nana",
             "badge": "灵感实验室",
@@ -409,7 +409,7 @@
           {
             "id": "ai_-24",
             "title": "evolink",
-            "url": "https://evolink.ai/zh/gpt-image-2",
+            "url": "https:\/\/evolink.ai\/zh\/gpt-image-2",
             "icon": "",
             "fallbackText": "Evo",
             "badge": "GPT画图",
@@ -422,7 +422,7 @@
           {
             "id": "ai_-25",
             "title": "fal",
-            "url": "https://fal.ai/sandbox?op=video.text_to_video&models=",
+            "url": "https:\/\/fal.ai\/sandbox?op=video.text_to_video&models=",
             "icon": "",
             "fallbackText": "fal",
             "badge": "极速推理",
@@ -435,7 +435,7 @@
           {
             "id": "ai_-26",
             "title": "OiiOii",
-            "url": "https://www.oiioii.ai/home",
+            "url": "https:\/\/www.oiioii.ai\/home",
             "icon": "",
             "fallbackText": "Oii",
             "badge": "智能生图",
@@ -448,7 +448,7 @@
           {
             "id": "ai_-27",
             "title": "MantleGo",
-            "url": "https://www.mantlegoai.com/Home",
+            "url": "https:\/\/www.mantlegoai.com\/Home",
             "icon": "",
             "fallbackText": "Mantle",
             "badge": "AI工作台",
@@ -461,7 +461,7 @@
           {
             "id": "ai_-28",
             "title": "CreatOK爆款猎人",
-            "url": "https://www.creatok.ai/app/dashboard",
+            "url": "https:\/\/www.creatok.ai\/app\/dashboard",
             "icon": "",
             "fallbackText": "猎人",
             "badge": "爆款视频",
@@ -474,7 +474,7 @@
           {
             "id": "ai_-29",
             "title": "妙构",
-            "url": "https://www.miaogou.tech/zh",
+            "url": "https:\/\/www.miaogou.tech\/zh",
             "icon": "",
             "fallbackText": "妙",
             "badge": "创意架构",
@@ -487,7 +487,7 @@
           {
             "id": "ai_-30",
             "title": "Skild Art",
-            "url": "https://www.skildart.cn/",
+            "url": "https:\/\/www.skildart.cn\/",
             "icon": "",
             "fallbackText": "Skild",
             "badge": "设计美学",
@@ -500,7 +500,7 @@
           {
             "id": "ai_-31",
             "title": "FlowPix",
-            "url": "https://www.flowpix.club/",
+            "url": "https:\/\/www.flowpix.club\/",
             "icon": "",
             "fallbackText": "Flow",
             "badge": "动态图片",
@@ -513,7 +513,7 @@
           {
             "id": "ai_-32",
             "title": "Yapper",
-            "url": "https://yapper.so/dashboard",
+            "url": "https:\/\/yapper.so\/dashboard",
             "icon": "",
             "fallbackText": "Yap",
             "badge": "智能播客",
@@ -526,7 +526,7 @@
           {
             "id": "ai_-33",
             "title": "linkfox",
-            "url": "https://www.linkfox.com/",
+            "url": "https:\/\/www.linkfox.com\/",
             "icon": "",
             "fallbackText": "Fox",
             "badge": "跨境AI",
@@ -539,7 +539,7 @@
           {
             "id": "ai_-34",
             "title": "小云雀",
-            "url": "https://xyq.jianying.com/",
+            "url": "https:\/\/xyq.jianying.com\/",
             "icon": "",
             "fallbackText": "雀",
             "badge": "剪映出品",
@@ -552,7 +552,7 @@
           {
             "id": "ai_-35",
             "title": "图片工具",
-            "url": "https://magiceraser.org/",
+            "url": "https:\/\/magiceraser.org\/",
             "icon": "",
             "fallbackText": "擦",
             "badge": "智能擦除",
@@ -565,7 +565,7 @@
           {
             "id": "ai_-36",
             "title": "AI追光",
-            "url": "https://aizhuiguang.tech/",
+            "url": "https:\/\/aizhuiguang.tech\/",
             "icon": "",
             "fallbackText": "追光",
             "badge": "光影重绘",
@@ -578,7 +578,7 @@
           {
             "id": "ai_-37",
             "title": "灵猫去水印",
-            "url": "https://clearcat.lingxiangtools.top/",
+            "url": "https:\/\/clearcat.lingxiangtools.top\/",
             "icon": "",
             "fallbackText": "猫",
             "badge": "无水印提取",
@@ -591,7 +591,7 @@
           {
             "id": "ai_-38",
             "title": "123apps",
-            "url": "https://123apps.com/cn/",
+            "url": "https:\/\/123apps.com\/cn\/",
             "icon": "",
             "fallbackText": "123",
             "badge": "免费全能",
@@ -604,7 +604,7 @@
           {
             "id": "ai_-39",
             "title": "DiffMind",
-            "url": "https://app.diffmind.ai/zh",
+            "url": "https:\/\/app.diffmind.ai\/zh",
             "icon": "",
             "fallbackText": "Diff",
             "badge": "思维导图",
@@ -617,7 +617,7 @@
           {
             "id": "ai_-40",
             "title": "ChatGPT Plus",
-            "url": "https://bewild.ai/subscribe",
+            "url": "https:\/\/bewild.ai\/subscribe",
             "icon": "",
             "fallbackText": "Plus",
             "badge": "国内直充",
@@ -630,8 +630,8 @@
           {
             "id": "ai_add_claude",
             "title": "Claude",
-            "url": "https://claude.ai/",
-            "icon": "https://claude.ai/favicon.ico",
+            "url": "https:\/\/claude.ai\/",
+            "icon": "https:\/\/claude.ai\/favicon.ico",
             "fallbackText": "Cl",
             "badge": "Anthropic",
             "badgeType": "GOLD",
@@ -643,8 +643,8 @@
           {
             "id": "ai_add_perplexity",
             "title": "Perplexity",
-            "url": "https://www.perplexity.ai/",
-            "icon": "https://www.perplexity.ai/favicon.ico",
+            "url": "https:\/\/www.perplexity.ai\/",
+            "icon": "https:\/\/www.perplexity.ai\/favicon.ico",
             "fallbackText": "Pplx",
             "badge": "AI搜索",
             "badgeType": "BLUE",
@@ -656,8 +656,8 @@
           {
             "id": "ai_add_groq",
             "title": "Groq",
-            "url": "https://groq.com/",
-            "icon": "https://groq.com/favicon.ico",
+            "url": "https:\/\/groq.com\/",
+            "icon": "https:\/\/groq.com\/favicon.ico",
             "fallbackText": "Groq",
             "badge": "极速推理",
             "badgeType": "NEW",
@@ -669,8 +669,8 @@
           {
             "id": "ai_add_mistral",
             "title": "Mistral AI",
-            "url": "https://mistral.ai/",
-            "icon": "https://mistral.ai/favicon.ico",
+            "url": "https:\/\/mistral.ai\/",
+            "icon": "https:\/\/mistral.ai\/favicon.ico",
             "fallbackText": "Mis",
             "badge": "欧洲开源",
             "badgeType": "GOLD",
@@ -682,8 +682,8 @@
           {
             "id": "ai_add_together",
             "title": "Together AI",
-            "url": "https://www.together.ai/",
-            "icon": "https://www.together.ai/favicon.ico",
+            "url": "https:\/\/www.together.ai\/",
+            "icon": "https:\/\/www.together.ai\/favicon.ico",
             "fallbackText": "Tog",
             "badge": "云端推理",
             "badgeType": "BLUE",
@@ -695,8 +695,8 @@
           {
             "id": "ai_add_suno",
             "title": "Suno",
-            "url": "https://suno.com/",
-            "icon": "https://suno.com/favicon.ico",
+            "url": "https:\/\/suno.com\/",
+            "icon": "https:\/\/suno.com\/favicon.ico",
             "fallbackText": "Suno",
             "badge": "AI编曲",
             "badgeType": "ROSE",
@@ -708,8 +708,8 @@
           {
             "id": "ai_add_udio",
             "title": "Udio",
-            "url": "https://www.udio.com/",
-            "icon": "https://www.udio.com/favicon.ico",
+            "url": "https:\/\/www.udio.com\/",
+            "icon": "https:\/\/www.udio.com\/favicon.ico",
             "fallbackText": "Udio",
             "badge": "母带音乐",
             "badgeType": "GOLD",
@@ -721,8 +721,8 @@
           {
             "id": "ai_add_luma",
             "title": "Luma Dream Machine",
-            "url": "https://lumalabs.ai/dream-machine",
-            "icon": "https://lumalabs.ai/favicon.ico",
+            "url": "https:\/\/lumalabs.ai\/dream-machine",
+            "icon": "https:\/\/lumalabs.ai\/favicon.ico",
             "fallbackText": "Luma",
             "badge": "电影级运镜",
             "badgeType": "NEW",
@@ -734,8 +734,8 @@
           {
             "id": "ai_add_flux",
             "title": "Flux.1",
-            "url": "https://blackforestlabs.ai/",
-            "icon": "https://blackforestlabs.ai/favicon.ico",
+            "url": "https:\/\/blackforestlabs.ai\/",
+            "icon": "https:\/\/blackforestlabs.ai\/favicon.ico",
             "fallbackText": "Flux",
             "badge": "开源画质王",
             "badgeType": "GOLD",
@@ -747,8 +747,8 @@
           {
             "id": "ai_add_elevenlabs",
             "title": "ElevenLabs",
-            "url": "https://elevenlabs.io/",
-            "icon": "https://elevenlabs.io/favicon.ico",
+            "url": "https:\/\/elevenlabs.io\/",
+            "icon": "https:\/\/elevenlabs.io\/favicon.ico",
             "fallbackText": "11",
             "badge": "声音克隆",
             "badgeType": "ROSE",
@@ -760,8 +760,8 @@
           {
             "id": "ai_add_fishaudio",
             "title": "Fish Audio",
-            "url": "https://fish.audio/zh-CN/",
-            "icon": "https://fish.audio/favicon.ico",
+            "url": "https:\/\/fish.audio\/zh-CN\/",
+            "icon": "https:\/\/fish.audio\/favicon.ico",
             "fallbackText": "Fish",
             "badge": "免费克隆",
             "badgeType": "NEW",
@@ -773,8 +773,8 @@
           {
             "id": "ai_add_chattts",
             "title": "ChatTTS",
-            "url": "https://chattts.com/",
-            "icon": "https://chattts.com/favicon.ico",
+            "url": "https:\/\/chattts.com\/",
+            "icon": "https:\/\/chattts.com\/favicon.ico",
             "fallbackText": "Chat",
             "badge": "自然口语",
             "badgeType": "BLUE",
@@ -786,7 +786,7 @@
           {
             "id": "site_1790272498603_57",
             "title": "Jev (AI 开发者 API)",
-            "url": "https://jev.dev",
+            "url": "https:\/\/jev.dev",
             "badge": "HOT",
             "badgeType": "NEW",
             "desc": "面向开发者的轻量级 AI API 服务 · 注册送免费额度",
@@ -822,7 +822,7 @@
           {
             "id": "canvas_-1",
             "title": "京东云灵境",
-            "url": "https://lingjing.jdcloud.com/",
+            "url": "https:\/\/lingjing.jdcloud.com\/",
             "icon": "",
             "fallbackText": "京",
             "badge": "无限画布",
@@ -835,7 +835,7 @@
           {
             "id": "canvas_-2",
             "title": "万镜一刻",
-            "url": "https://www.yikeai.com/#/home",
+            "url": "https:\/\/www.yikeai.com\/#\/home",
             "icon": "",
             "fallbackText": "镜",
             "badge": "节点漫游",
@@ -848,7 +848,7 @@
           {
             "id": "canvas_-3",
             "title": "新片场",
-            "url": "https://aigc.xinpianchang.com/",
+            "url": "https:\/\/aigc.xinpianchang.com\/",
             "icon": "",
             "fallbackText": "新",
             "badge": "影视创作",
@@ -861,7 +861,7 @@
           {
             "id": "canvas_-4",
             "title": "flova.tv",
-            "url": "https://flova.tv/zh-CN",
+            "url": "https:\/\/flova.tv\/zh-CN",
             "icon": "",
             "fallbackText": "Flova",
             "badge": "视觉故事",
@@ -874,7 +874,7 @@
           {
             "id": "canvas_-5",
             "title": "LibTV",
-            "url": "https://www.liblib.tv/",
+            "url": "https:\/\/www.liblib.tv\/",
             "icon": "",
             "fallbackText": "Lib",
             "badge": "LoRA模型",
@@ -887,7 +887,7 @@
           {
             "id": "canvas_-6",
             "title": "AI应用聚合平台",
-            "url": "https://ccai.quantv.com/dashboard",
+            "url": "https:\/\/ccai.quantv.com\/dashboard",
             "icon": "",
             "fallbackText": "CC",
             "badge": "应用广场",
@@ -900,7 +900,7 @@
           {
             "id": "canvas_-7",
             "title": "RunningHub",
-            "url": "https://www.runninghub.cn/#/home",
+            "url": "https:\/\/www.runninghub.cn\/#\/home",
             "icon": "",
             "fallbackText": "Hub",
             "badge": "高算力节点",
@@ -913,7 +913,7 @@
           {
             "id": "canvas_-8",
             "title": "Seko",
-            "url": "https://seko.sensetime.com//",
+            "url": "https:\/\/seko.sensetime.com\/\/",
             "icon": "",
             "fallbackText": "Seko",
             "badge": "商汤出品",
@@ -926,7 +926,7 @@
           {
             "id": "canvas_-9",
             "title": "小影马",
-            "url": "https://yingma.tv/",
+            "url": "https:\/\/yingma.tv\/",
             "icon": "",
             "fallbackText": "马",
             "badge": "短视频AI",
@@ -939,7 +939,7 @@
           {
             "id": "canvas_-10",
             "title": "AI 音樂影片生成器",
-            "url": "https://app.edimakor.ai/tw/studio/ai-music-video-generator?from=tab",
+            "url": "https:\/\/app.edimakor.ai\/tw\/studio\/ai-music-video-generator?from=tab",
             "icon": "",
             "fallbackText": "MV",
             "badge": "音乐MV",
@@ -952,8 +952,8 @@
           {
             "id": "ai_add_pixso",
             "title": "Pixso",
-            "url": "https://pixso.cn/",
-            "icon": "https://pixso.cn/favicon.ico",
+            "url": "https:\/\/pixso.cn\/",
+            "icon": "https:\/\/pixso.cn\/favicon.ico",
             "fallbackText": "Pix",
             "badge": "协同设计",
             "badgeType": "GOLD",
@@ -965,8 +965,8 @@
           {
             "id": "ai_add_mastergo",
             "title": "MasterGo",
-            "url": "https://mastergo.com/",
-            "icon": "https://mastergo.com/favicon.ico",
+            "url": "https:\/\/mastergo.com\/",
+            "icon": "https:\/\/mastergo.com\/favicon.ico",
             "fallbackText": "MG",
             "badge": "国产设计",
             "badgeType": "BLUE",
@@ -978,8 +978,8 @@
           {
             "id": "site_edimakor_2026",
             "title": "Edimakor AI Studio",
-            "url": "https://app.edimakor.ai/tw/studio/home?from=tab",
-            "icon": "https://app.edimakor.ai/edimakor.ico",
+            "url": "https:\/\/app.edimakor.ai\/tw\/studio\/home?from=tab",
+            "icon": "https:\/\/app.edimakor.ai\/edimakor.ico",
             "fallbackText": "🎬",
             "badge": "新动态",
             "badgeType": "NEW",
@@ -1017,7 +1017,7 @@
           {
             "id": "prompts_-2",
             "title": "AIART.PICS",
-            "url": "https://aiart.pics/",
+            "url": "https:\/\/aiart.pics\/",
             "icon": "",
             "fallbackText": "Pics",
             "badge": "极客画廊",
@@ -1030,7 +1030,7 @@
           {
             "id": "prompts_-3",
             "title": "AI Prompt Library",
-            "url": "https://promptsref.com/",
+            "url": "https:\/\/promptsref.com\/",
             "icon": "",
             "fallbackText": "Lib",
             "badge": "提示词库",
@@ -1043,7 +1043,7 @@
           {
             "id": "prompts_-4",
             "title": "GPT Image 2提示词",
-            "url": "https://opennana.com/awesome-prompt-gallery?media_type=image",
+            "url": "https:\/\/opennana.com\/awesome-prompt-gallery?media_type=image",
             "icon": "",
             "fallbackText": "GPT",
             "badge": "生图咒语",
@@ -1056,7 +1056,7 @@
           {
             "id": "prompts_-5",
             "title": "youmind",
-            "url": "https://youmind.com/zh-CN/gpt-image-2-prompts",
+            "url": "https:\/\/youmind.com\/zh-CN\/gpt-image-2-prompts",
             "icon": "",
             "fallbackText": "Mind",
             "badge": "精选Prompt",
@@ -1069,7 +1069,7 @@
           {
             "id": "prompts_-6",
             "title": "AI工具",
-            "url": "https://familypro.io/en/gpt-image-2",
+            "url": "https:\/\/familypro.io\/en\/gpt-image-2",
             "icon": "",
             "fallbackText": "工具",
             "badge": "实用集锦",
@@ -1082,7 +1082,7 @@
           {
             "id": "prompts_-7",
             "title": "Vibe Shot Club",
-            "url": "https://vibeshot.club/gallery",
+            "url": "https:\/\/vibeshot.club\/gallery",
             "icon": "",
             "fallbackText": "Vibe",
             "badge": "氛围摄影",
@@ -1095,7 +1095,7 @@
           {
             "id": "prompts_-8",
             "title": "promptmart",
-            "url": "https://www.promptmart.cn/",
+            "url": "https:\/\/www.promptmart.cn\/",
             "icon": "",
             "fallbackText": "Mart",
             "badge": "提示词集市",
@@ -1108,7 +1108,7 @@
           {
             "id": "prompts_-9",
             "title": "CocoLoop AI社区",
-            "url": "https://www.cocoloop.cn/",
+            "url": "https:\/\/www.cocoloop.cn\/",
             "icon": "",
             "fallbackText": "Coco",
             "badge": "海量Skill",
@@ -1121,7 +1121,7 @@
           {
             "id": "prompts_-10",
             "title": "CocoLoop",
-            "url": "https://hub.cocoloop.cn/",
+            "url": "https:\/\/hub.cocoloop.cn\/",
             "icon": "",
             "fallbackText": "Hub",
             "badge": "工作流枢纽",
@@ -1134,7 +1134,7 @@
           {
             "id": "prompts_-11",
             "title": "updream",
-            "url": "https://www.updream.cn/",
+            "url": "https:\/\/www.updream.cn\/",
             "icon": "",
             "fallbackText": "up",
             "badge": "各类Skill",
@@ -1173,7 +1173,7 @@
           {
             "id": "magic_tool-1\\",
             "title": "地址生成器",
-            "url": "https://address.aixmb.cn/",
+            "url": "https:\/\/address.aixmb.cn\/",
             "icon": "",
             "fallbackText": "住",
             "badge": "真实地址",
@@ -1186,7 +1186,7 @@
           {
             "id": "magic_tool-2\\",
             "title": "CF",
-            "url": "https://dash.cloudflare.com/",
+            "url": "https:\/\/dash.cloudflare.com\/",
             "icon": "",
             "fallbackText": "CF",
             "badge": "网络安全",
@@ -1199,7 +1199,7 @@
           {
             "id": "magic_tool-3\\",
             "title": "GitHub",
-            "url": "https://github.com/",
+            "url": "https:\/\/github.com\/",
             "icon": "",
             "fallbackText": "Git",
             "badge": "全球开源",
@@ -1212,7 +1212,7 @@
           {
             "id": "magic_tool-4\\",
             "title": "Runable",
-            "url": "https://runable.com/",
+            "url": "https:\/\/runable.com\/",
             "icon": "",
             "fallbackText": "Run",
             "badge": "云端运行",
@@ -1225,7 +1225,7 @@
           {
             "id": "magic_tool-5\\",
             "title": "AI 工作市场",
-            "url": "https://www.runjobs.ai/zh/",
+            "url": "https:\/\/www.runjobs.ai\/zh\/",
             "icon": "",
             "fallbackText": "职",
             "badge": "自由职业",
@@ -1238,7 +1238,7 @@
           {
             "id": "magic_tool-6\\",
             "title": "X",
-            "url": "https://x.com/",
+            "url": "https:\/\/x.com\/",
             "icon": "",
             "fallbackText": "X",
             "badge": "全球推特",
@@ -1251,7 +1251,7 @@
           {
             "id": "magic_tool-7\\",
             "title": "Gemini",
-            "url": "https://gemini.google.com/app",
+            "url": "https:\/\/gemini.google.com\/app",
             "icon": "",
             "fallbackText": "G",
             "badge": "谷歌AI",
@@ -1264,7 +1264,7 @@
           {
             "id": "magic_tool-8\\",
             "title": "表答",
-            "url": "https://biaoda.me/",
+            "url": "https:\/\/biaoda.me\/",
             "icon": "",
             "fallbackText": "表",
             "badge": "正则语法",
@@ -1277,12 +1277,12 @@
           {
             "id": "magic_tool-9\\",
             "title": "cobalt",
-            "url": "https://cobalt.tools/",
+            "url": "https:\/\/cobalt.tools\/",
             "icon": "",
             "fallbackText": "Cob",
             "badge": "极速下载",
             "badgeType": "ROSE",
-            "desc": "纯净无广告提取YouTube/B站/推特高清音视频",
+            "desc": "纯净无广告提取YouTube\/B站\/推特高清音视频",
             "categoryId": "tools_magic",
             "subcatId": "daily",
             "highlights": ""
@@ -1290,7 +1290,7 @@
           {
             "id": "magic_tool-10\\",
             "title": "IP定位",
-            "url": "https://www.ipip.net/",
+            "url": "https:\/\/www.ipip.net\/",
             "icon": "",
             "fallbackText": "IP",
             "badge": "精准归属",
@@ -1303,7 +1303,7 @@
           {
             "id": "magic_tool-11\\",
             "title": "myip.ipip.net",
-            "url": "https://myip.ipip.net/",
+            "url": "https:\/\/myip.ipip.net\/",
             "icon": "",
             "fallbackText": "MyIP",
             "badge": "秒测出口",
@@ -1316,7 +1316,7 @@
           {
             "id": "magic_tool-12\\",
             "title": "UUID生成器",
-            "url": "https://www.uuidgenerator.net/version4",
+            "url": "https:\/\/www.uuidgenerator.net\/version4",
             "icon": "",
             "fallbackText": "UUID",
             "badge": "V4生成",
@@ -1329,7 +1329,7 @@
           {
             "id": "magic_tool-13\\",
             "title": "免费临时邮箱",
-            "url": "https://mail.cx/zh/",
+            "url": "https:\/\/mail.cx\/zh\/",
             "icon": "",
             "fallbackText": "邮",
             "badge": "防垃圾邮件",
@@ -1342,7 +1342,7 @@
           {
             "id": "magic_tool-14\\",
             "title": "atoms",
-            "url": "https://atoms.dev/zh/dashboard",
+            "url": "https:\/\/atoms.dev\/zh\/dashboard",
             "icon": "",
             "fallbackText": "Atom",
             "badge": "AI编程",
@@ -1355,7 +1355,7 @@
           {
             "id": "magic_tool-15\\",
             "title": "CREAO",
-            "url": "https://agent.creao.ai/rewards?tab=tasks",
+            "url": "https:\/\/agent.creao.ai\/rewards?tab=tasks",
             "icon": "",
             "fallbackText": "创",
             "badge": "激励任务",
@@ -1368,7 +1368,7 @@
           {
             "id": "magic_tool-16\\",
             "title": "Skywork",
-            "url": "https://skywork.ai/",
+            "url": "https:\/\/skywork.ai\/",
             "icon": "",
             "fallbackText": "天工",
             "badge": "昆仑万维",
@@ -1381,7 +1381,7 @@
           {
             "id": "magic_tool-17\\",
             "title": "365魔法工具",
-            "url": "https://databridgestackpro.com/",
+            "url": "https:\/\/databridgestackpro.com\/",
             "icon": "",
             "fallbackText": "365",
             "badge": "魔法网络",
@@ -1394,7 +1394,7 @@
           {
             "id": "magic_tool-18\\",
             "title": "在线网速测试",
-            "url": "http://www.wangsu8.com/",
+            "url": "http:\/\/www.wangsu8.com\/",
             "icon": "",
             "fallbackText": "测速",
             "badge": "网速检测",
@@ -1407,7 +1407,7 @@
           {
             "id": "magic_tool-19\\",
             "title": "Cloudflare EDT 导航",
-            "url": "https://bestcf.pages.dev/",
+            "url": "https:\/\/bestcf.pages.dev\/",
             "icon": "",
             "fallbackText": "EDT",
             "badge": "CF导航",
@@ -1420,7 +1420,7 @@
           {
             "id": "magic_tool-20\\",
             "title": "ping0.cc",
-            "url": "https://ping0.cc",
+            "url": "https:\/\/ping0.cc",
             "icon": "",
             "fallbackText": "Ping",
             "badge": "路由追踪",
@@ -1433,7 +1433,7 @@
           {
             "id": "magic_tool-22\\",
             "title": "Netlify",
-            "url": "https://app.netlify.com/",
+            "url": "https:\/\/app.netlify.com\/",
             "icon": "",
             "fallbackText": "Net",
             "badge": "前端托管",
@@ -1446,7 +1446,7 @@
           {
             "id": "magic_tool-23\\",
             "title": "MotionSites",
-            "url": "https://motionsites.ai/",
+            "url": "https:\/\/motionsites.ai\/",
             "icon": "",
             "fallbackText": "动",
             "badge": "动效设计",
@@ -1459,7 +1459,7 @@
           {
             "id": "magic_tool-24\\",
             "title": "小渝児工具箱 - 喜庆版",
-            "url": "https://xiaoyuer7758.vercel.app/",
+            "url": "https:\/\/xiaoyuer7758.vercel.app\/",
             "icon": "",
             "fallbackText": "渝",
             "badge": "百宝箱",
@@ -1472,7 +1472,7 @@
           {
             "id": "magic_tool-25\\",
             "title": "Link3",
-            "url": "https://link3.cc/user",
+            "url": "https:\/\/link3.cc\/user",
             "icon": "",
             "fallbackText": "Link",
             "badge": "个性主页",
@@ -1485,7 +1485,7 @@
           {
             "id": "magic_tool-26\\",
             "title": "4K工具下载器",
-            "url": "https://www.4kdownload.com/thanks-for-downloading?source=videodownloaderandroid",
+            "url": "https:\/\/www.4kdownload.com\/thanks-for-downloading?source=videodownloaderandroid",
             "icon": "",
             "fallbackText": "4K",
             "badge": "全网视频",
@@ -1498,7 +1498,7 @@
           {
             "id": "magic_tool-27\\",
             "title": "币安",
-            "url": "https://www.binance.com/zh-CN/download",
+            "url": "https:\/\/www.binance.com\/zh-CN\/download",
             "icon": "",
             "fallbackText": "币",
             "badge": "全球平台",
@@ -1511,7 +1511,7 @@
           {
             "id": "magic_tool-28\\",
             "title": "海量电视电影",
-            "url": "https://moovie.c2v2.com/",
+            "url": "https:\/\/moovie.c2v2.com\/",
             "icon": "",
             "fallbackText": "影",
             "badge": "家庭影院",
@@ -1524,7 +1524,7 @@
           {
             "id": "magic_tool-29\\",
             "title": "小红书",
-            "url": "https://www.xiaohongshu.com/",
+            "url": "https:\/\/www.xiaohongshu.com\/",
             "icon": "",
             "fallbackText": "红",
             "badge": "生活搜索",
@@ -1537,7 +1537,7 @@
           {
             "id": "magic_tool-30\\",
             "title": "YouTube",
-            "url": "https://www.youtube.com/",
+            "url": "https:\/\/www.youtube.com\/",
             "icon": "",
             "fallbackText": "油管",
             "badge": "全球视频",
@@ -1572,8 +1572,8 @@
           {
             "id": "sd_001",
             "title": "红果短剧",
-            "url": "https://www.hongguo.tv/",
-            "icon": "https://www.hongguo.tv/favicon.ico",
+            "url": "https:\/\/www.hongguo.tv\/",
+            "icon": "https:\/\/www.hongguo.tv\/favicon.ico",
             "fallbackText": "🍿",
             "badge": "新动态",
             "badgeType": "NEW",
@@ -1585,8 +1585,8 @@
           {
             "id": "sd_002",
             "title": "河马短剧",
-            "url": "https://www.hemashort.com/",
-            "icon": "https://www.hemashort.com/favicon.ico",
+            "url": "https:\/\/www.hemashort.com\/",
+            "icon": "https:\/\/www.hemashort.com\/favicon.ico",
             "fallbackText": "🦛",
             "badge": "新动态",
             "badgeType": "NEW",
@@ -1598,8 +1598,8 @@
           {
             "id": "sd_003",
             "title": "星芽短剧",
-            "url": "https://www.xingyashort.com/",
-            "icon": "https://www.xingyashort.com/favicon.ico",
+            "url": "https:\/\/www.xingyashort.com\/",
+            "icon": "https:\/\/www.xingyashort.com\/favicon.ico",
             "fallbackText": "⭐",
             "badge": "新动态",
             "badgeType": "NEW",
@@ -1611,8 +1611,8 @@
           {
             "id": "sd_004",
             "title": "番茄短剧",
-            "url": "https://fanqienovel.com/short-play",
-            "icon": "https://fanqienovel.com/favicon.ico",
+            "url": "https:\/\/fanqienovel.com\/short-play",
+            "icon": "https:\/\/fanqienovel.com\/favicon.ico",
             "fallbackText": "🍅",
             "badge": "新动态",
             "badgeType": "NEW",
@@ -1624,8 +1624,8 @@
           {
             "id": "sd_005",
             "title": "抖音短剧",
-            "url": "https://www.douyin.com/discover/short",
-            "icon": "https://www.douyin.com/favicon.ico",
+            "url": "https:\/\/www.douyin.com\/discover\/short",
+            "icon": "https:\/\/www.douyin.com\/favicon.ico",
             "fallbackText": "🎵",
             "badge": "新动态",
             "badgeType": "NEW",
@@ -1637,17 +1637,17 @@
           {
             "id": "site_1790272498602_5",
             "title": "NetShort 短剧",
-            "url": "https://netshort.com/zh",
+            "url": "https:\/\/netshort.com\/zh",
             "badge": "NEW",
             "badgeType": "NEW",
-            "desc": "高分热播短剧免费在线观看 · 霸总/赘婿/穿越/古装/AI短剧",
+            "desc": "高分热播短剧免费在线观看 · 霸总\/赘婿\/穿越\/古装\/AI短剧",
             "categoryId": "short_drama",
             "subcatId": "all"
           },
           {
             "id": "site_1790272498602_6",
             "title": "findshortdrama 大陆短剧",
-            "url": "https://www.findshortdrama.com/",
+            "url": "https:\/\/www.findshortdrama.com\/",
             "badge": "NEW",
             "badgeType": "NEW",
             "desc": "大陆短剧聚合推荐 · 每日更新 · 无需注册直接看",
@@ -1657,7 +1657,7 @@
           {
             "id": "site_1790272498602_7",
             "title": "腾讯视频微剧场",
-            "url": "https://v.qq.com/microsite/wetheater/index.html",
+            "url": "https:\/\/v.qq.com\/microsite\/wetheater\/index.html",
             "badge": "NEW",
             "badgeType": "NEW",
             "desc": "腾讯竖屏微短剧 · 制作精良横屏精品剧",
@@ -1667,17 +1667,17 @@
           {
             "id": "site_1790272498602_8",
             "title": "爱奇艺随刻",
-            "url": "https://suike.iqiyi.com/",
+            "url": "https:\/\/suike.iqiyi.com\/",
             "badge": "NEW",
             "badgeType": "NEW",
-            "desc": "分类详细 · 赘婿/战神/甜宠分得清清楚楚",
+            "desc": "分类详细 · 赘婿\/战神\/甜宠分得清清楚楚",
             "categoryId": "short_drama",
             "subcatId": "all"
           },
           {
             "id": "site_1790272498603_9",
             "title": "芒果TV 大芒短剧",
-            "url": "https://www.mgtv.com/",
+            "url": "https:\/\/www.mgtv.com\/",
             "badge": "NEW",
             "badgeType": "NEW",
             "desc": "甜宠唯美 · 画面每一帧都能当壁纸",
@@ -1687,7 +1687,7 @@
           {
             "id": "site_1790272498603_10",
             "title": "优酷竖屏剧场",
-            "url": "https://www.youku.com/",
+            "url": "https:\/\/www.youku.com\/",
             "badge": "NEW",
             "badgeType": "NEW",
             "desc": "独家剧很多 · 古装悬疑类特别准",
@@ -1697,7 +1697,7 @@
           {
             "id": "site_1790272498603_11",
             "title": "火山短剧",
-            "url": "https://www.huoshan.com/",
+            "url": "https:\/\/www.huoshan.com\/",
             "badge": "NEW",
             "badgeType": "NEW",
             "desc": "操作极简 · 全是各种爽剧不用动脑",
@@ -1737,7 +1737,7 @@
           {
             "id": "mov-1",
             "title": "看剧AI",
-            "url": "https://kanju.ai/?utm_source=WZ-buzhaole",
+            "url": "https:\/\/kanju.ai\/?utm_source=WZ-buzhaole",
             "icon": "",
             "fallbackText": "剧",
             "badge": "荐",
@@ -1750,7 +1750,7 @@
           {
             "id": "mov-2",
             "title": "懂片帝",
-            "url": "http://dongpian17.com/?utm_source=WZYY-bzldh",
+            "url": "http:\/\/dongpian17.com\/?utm_source=WZYY-bzldh",
             "icon": "",
             "fallbackText": "懂",
             "badge": "HOT",
@@ -1763,7 +1763,7 @@
           {
             "id": "mov-3",
             "title": "555影视",
-            "url": "https://wu5cn.com/?utm_source=bzl_237",
+            "url": "https:\/\/wu5cn.com\/?utm_source=bzl_237",
             "icon": "",
             "fallbackText": "5",
             "badge": "免VIP",
@@ -1776,7 +1776,7 @@
           {
             "id": "mov-4",
             "title": "硬核指南",
-            "url": "https://yinghezhinan.com/",
+            "url": "https:\/\/yinghezhinan.com\/",
             "icon": "",
             "fallbackText": "硬",
             "badge": "客观指南",
@@ -1789,7 +1789,7 @@
           {
             "id": "mov-5",
             "title": "千千影视",
-            "url": "https://qqys01.com/",
+            "url": "https:\/\/qqys01.com\/",
             "icon": "",
             "fallbackText": "千",
             "badge": "极速秒播",
@@ -1802,7 +1802,7 @@
           {
             "id": "mov-6",
             "title": "影视大全",
-            "url": "https://yingshidaquan.top/",
+            "url": "https:\/\/yingshidaquan.top\/",
             "icon": "",
             "fallbackText": "全",
             "badge": "海量合集",
@@ -1815,7 +1815,7 @@
           {
             "id": "mov-7",
             "title": "不卡顿影视",
-            "url": "https://www.yingshiso.top/",
+            "url": "https:\/\/www.yingshiso.top\/",
             "icon": "",
             "fallbackText": "卡",
             "badge": "超快专线",
@@ -1828,7 +1828,7 @@
           {
             "id": "mov-8",
             "title": "酷影聚搜索",
-            "url": "https://feikuju.com/",
+            "url": "https:\/\/feikuju.com\/",
             "icon": "",
             "fallbackText": "聚",
             "badge": "全网搜片",
@@ -1841,7 +1841,7 @@
           {
             "id": "mov-9",
             "title": "追影看片",
-            "url": "https://zhuiying.vip/",
+            "url": "https:\/\/zhuiying.vip\/",
             "icon": "",
             "fallbackText": "追",
             "badge": "每日更新",
@@ -1854,7 +1854,7 @@
           {
             "id": "mov-10",
             "title": "奇点影视",
-            "url": "https://www.qdys1.cc/",
+            "url": "https:\/\/www.qdys1.cc\/",
             "icon": "",
             "fallbackText": "奇",
             "badge": "蓝光画质",
@@ -1867,7 +1867,7 @@
           {
             "id": "mov-11",
             "title": "极光影视",
-            "url": "https://hellociqryx6e.com/",
+            "url": "https:\/\/hellociqryx6e.com\/",
             "icon": "",
             "fallbackText": "极",
             "badge": "蓝光",
@@ -1880,7 +1880,7 @@
           {
             "id": "mov-12",
             "title": "注视影视",
-            "url": "https://gazes.site/",
+            "url": "https:\/\/gazes.site\/",
             "icon": "",
             "fallbackText": "注",
             "badge": "影迷社区",
@@ -1893,7 +1893,7 @@
           {
             "id": "mov-13",
             "title": "66大片网",
-            "url": "https://www.66dpw.vip/",
+            "url": "https:\/\/www.66dpw.vip\/",
             "icon": "",
             "fallbackText": "66",
             "badge": "动作院线",
@@ -1906,7 +1906,7 @@
           {
             "id": "mov-14",
             "title": "荐片官网",
-            "url": "https://jianpian25.com/",
+            "url": "https:\/\/jianpian25.com\/",
             "icon": "",
             "fallbackText": "荐",
             "badge": "P2P直下",
@@ -1919,7 +1919,7 @@
           {
             "id": "mov-15",
             "title": "免费五五短剧",
-            "url": "https://www.duanju55.com/",
+            "url": "https:\/\/www.duanju55.com\/",
             "icon": "",
             "fallbackText": "短",
             "badge": "爆款短剧",
@@ -1932,7 +1932,7 @@
           {
             "id": "mov-16",
             "title": "免费在线看球",
-            "url": "https://www.88kq.me/",
+            "url": "https:\/\/www.88kq.me\/",
             "icon": "",
             "fallbackText": "球",
             "badge": "体育直播",
@@ -1945,7 +1945,7 @@
           {
             "id": "mov-17",
             "title": "剧OK",
-            "url": "https://juok5.top/",
+            "url": "https:\/\/juok5.top\/",
             "icon": "",
             "fallbackText": "OK",
             "badge": "省心追剧",
@@ -1958,7 +1958,7 @@
           {
             "id": "mov-19",
             "title": "搜剧AI",
-            "url": "https://souju.ai/?utm_source=WZYY-bzldh&utm_medium=shoulu",
+            "url": "https:\/\/souju.ai\/?utm_source=WZYY-bzldh&utm_medium=shoulu",
             "icon": "",
             "fallbackText": "搜",
             "badge": "AI找剧",
@@ -1971,7 +1971,7 @@
           {
             "id": "mov-20",
             "title": "4K在线",
-            "url": "https://www.bbibb.top/",
+            "url": "https:\/\/www.bbibb.top\/",
             "icon": "",
             "fallbackText": "4K",
             "badge": "真4K",
@@ -1984,7 +1984,7 @@
           {
             "id": "mov-21",
             "title": "迅雷电影天堂",
-            "url": "https://www.xl720.com/",
+            "url": "https:\/\/www.xl720.com\/",
             "icon": "",
             "fallbackText": "天",
             "badge": "BT磁力",
@@ -1997,7 +1997,7 @@
           {
             "id": "mov-22",
             "title": "悠悠MP4",
-            "url": "https://www.uump4.cc/",
+            "url": "https:\/\/www.uump4.cc\/",
             "icon": "",
             "fallbackText": "悠",
             "badge": "小巧MP4",
@@ -2010,7 +2010,7 @@
           {
             "id": "mov-23",
             "title": "老电影时光",
-            "url": "https://www.ldysg.com/",
+            "url": "https:\/\/www.ldysg.com\/",
             "icon": "",
             "fallbackText": "老",
             "badge": "怀旧胶片",
@@ -2023,7 +2023,7 @@
           {
             "id": "mov-24",
             "title": "美剧下载",
-            "url": "https://www.mjf2020.com/",
+            "url": "https:\/\/www.mjf2020.com\/",
             "icon": "",
             "fallbackText": "美",
             "badge": "生肉熟肉",
@@ -2036,7 +2036,7 @@
           {
             "id": "mov-25",
             "title": "爱努努",
-            "url": "https://video.ainunu.cc/",
+            "url": "https:\/\/video.ainunu.cc\/",
             "icon": "",
             "fallbackText": "努",
             "badge": "日韩欧美",
@@ -2049,7 +2049,7 @@
           {
             "id": "mov-26",
             "title": "4K指南",
-            "url": "https://4kzn.cc/",
+            "url": "https:\/\/4kzn.cc\/",
             "icon": "",
             "fallbackText": "指",
             "badge": "原盘REMUX",
@@ -2062,7 +2062,7 @@
           {
             "id": "mov-27",
             "title": "盘多多",
-            "url": "https://www.pansou.asia/",
+            "url": "https:\/\/www.pansou.asia\/",
             "icon": "",
             "fallbackText": "盘",
             "badge": "秒存网盘",
@@ -2075,7 +2075,7 @@
           {
             "id": "mov-28",
             "title": "夸夸搜索",
-            "url": "https://www.kkso.cc/",
+            "url": "https:\/\/www.kkso.cc\/",
             "icon": "",
             "fallbackText": "夸",
             "badge": "夸克秒存",
@@ -2088,7 +2088,7 @@
           {
             "id": "mov-29",
             "title": "未知搜索",
-            "url": "https://projext.run/",
+            "url": "https:\/\/projext.run\/",
             "icon": "",
             "fallbackText": "未",
             "badge": "全网磁力",
@@ -2101,7 +2101,7 @@
           {
             "id": "mov-30",
             "title": "汪盘搜索",
-            "url": "https://wangpan.xin/",
+            "url": "https:\/\/wangpan.xin\/",
             "icon": "",
             "fallbackText": "汪",
             "badge": "搜网盘",
@@ -2114,7 +2114,7 @@
           {
             "id": "mov-31",
             "title": "无名搜盘",
-            "url": "https://wmxz.click/",
+            "url": "https:\/\/wmxz.click\/",
             "icon": "",
             "fallbackText": "无",
             "badge": "网盘资源",
@@ -2127,7 +2127,7 @@
           {
             "id": "mov-32",
             "title": "剧多多",
-            "url": "https://www.judodo.cn/",
+            "url": "https:\/\/www.judodo.cn\/",
             "icon": "",
             "fallbackText": "多",
             "badge": "全网热播",
@@ -2140,7 +2140,7 @@
           {
             "id": "mov-33",
             "title": "西瓜动漫",
-            "url": "https://www.agekk.com/",
+            "url": "https:\/\/www.agekk.com\/",
             "icon": "",
             "fallbackText": "瓜",
             "badge": "热血番",
@@ -2153,7 +2153,7 @@
           {
             "id": "mov-34",
             "title": "漫本",
-            "url": "https://www.manben.com/",
+            "url": "https:\/\/www.manben.com\/",
             "icon": "",
             "fallbackText": "漫",
             "badge": "日漫韩漫",
@@ -2166,7 +2166,7 @@
           {
             "id": "mov-35",
             "title": "蜜柑计划",
-            "url": "https://mikanani.me/",
+            "url": "https:\/\/mikanani.me\/",
             "icon": "",
             "fallbackText": "蜜",
             "badge": "新番追更",
@@ -2179,7 +2179,7 @@
           {
             "id": "mov-36",
             "title": "诸神字幕组",
-            "url": "https://subs.kamigami.org/",
+            "url": "https:\/\/subs.kamigami.org\/",
             "icon": "",
             "fallbackText": "诸",
             "badge": "双语精校",
@@ -2192,7 +2192,7 @@
           {
             "id": "mov-37",
             "title": "AGE动漫",
-            "url": "http://www.age.tv/",
+            "url": "http:\/\/www.age.tv\/",
             "icon": "",
             "fallbackText": "A",
             "badge": "纯净无广",
@@ -2205,7 +2205,7 @@
           {
             "id": "mov-38",
             "title": "樱之空",
-            "url": "https://skr.skr3.cc:666/",
+            "url": "https:\/\/skr.skr3.cc:666\/",
             "icon": "",
             "fallbackText": "樱",
             "badge": "动漫音乐",
@@ -2244,7 +2244,7 @@
           {
             "id": "dis-1",
             "title": "美团外卖红包",
-            "url": "https://www.meituan.com",
+            "url": "https:\/\/www.meituan.com",
             "icon": "",
             "fallbackText": "团",
             "badge": "天天领券",
@@ -2257,7 +2257,7 @@
           {
             "id": "dis-2",
             "title": "京东外卖红包",
-            "url": "https://www.jd.com",
+            "url": "https:\/\/www.jd.com",
             "icon": "",
             "fallbackText": "京",
             "badge": "免配送费",
@@ -2270,7 +2270,7 @@
           {
             "id": "dis-3",
             "title": "饿了么红包",
-            "url": "https://www.ele.me",
+            "url": "https:\/\/www.ele.me",
             "icon": "",
             "fallbackText": "饿",
             "badge": "超级吃货",
@@ -2283,7 +2283,7 @@
           {
             "id": "dis-4",
             "title": "肯德基5折起",
-            "url": "https://www.kfc.com.cn",
+            "url": "https:\/\/www.kfc.com.cn",
             "icon": "",
             "fallbackText": "KFC",
             "badge": "疯狂星期四",
@@ -2296,7 +2296,7 @@
           {
             "id": "dis-5",
             "title": "瑞幸咖啡5折起",
-            "url": "https://m.lkcoffee.com",
+            "url": "https:\/\/m.lkcoffee.com",
             "icon": "",
             "fallbackText": "鹿",
             "badge": "咖啡立减",
@@ -2309,7 +2309,7 @@
           {
             "id": "dis-6",
             "title": "星巴克5折起",
-            "url": "https://www.starbucks.com.cn",
+            "url": "https:\/\/www.starbucks.com.cn",
             "icon": "",
             "fallbackText": "星",
             "badge": "星享好礼",
@@ -2322,7 +2322,7 @@
           {
             "id": "dis-7",
             "title": "滴滴打车红包",
-            "url": "https://www.didiglobal.com",
+            "url": "https:\/\/www.didiglobal.com",
             "icon": "",
             "fallbackText": "滴",
             "badge": "打车立减",
@@ -2335,7 +2335,7 @@
           {
             "id": "dis-8",
             "title": "花小猪打车红包",
-            "url": "https://www.huaxiaozhu.com",
+            "url": "https:\/\/www.huaxiaozhu.com",
             "icon": "",
             "fallbackText": "猪",
             "badge": "便宜打车",
@@ -2348,7 +2348,7 @@
           {
             "id": "dis-9",
             "title": "电影票8折起",
-            "url": "https://maoyan.com",
+            "url": "https:\/\/maoyan.com",
             "icon": "",
             "fallbackText": "票",
             "badge": "特惠看电影",
@@ -2361,7 +2361,7 @@
           {
             "id": "dis-10",
             "title": "特价景点门票",
-            "url": "https://www.qunar.com",
+            "url": "https:\/\/www.qunar.com",
             "icon": "",
             "fallbackText": "景",
             "badge": "5A景区",
@@ -2374,7 +2374,7 @@
           {
             "id": "dis-11",
             "title": "特价寄快递",
-            "url": "https://kuaidi100.com",
+            "url": "https:\/\/kuaidi100.com",
             "icon": "",
             "fallbackText": "递",
             "badge": "全网比价",
@@ -2413,7 +2413,7 @@
           {
             "id": "res-1",
             "title": "佛系软件",
-            "url": "https://foxirj.com/",
+            "url": "https:\/\/foxirj.com\/",
             "icon": "",
             "fallbackText": "佛",
             "badge": "纯净分享",
@@ -2426,7 +2426,7 @@
           {
             "id": "res-2",
             "title": "果核剥壳",
-            "url": "https://www.ghxi.com/",
+            "url": "https:\/\/www.ghxi.com\/",
             "icon": "",
             "fallbackText": "果",
             "badge": "知名良心",
@@ -2439,7 +2439,7 @@
           {
             "id": "res-3",
             "title": "吾爱破解",
-            "url": "https://www.52pojie.cn/",
+            "url": "https:\/\/www.52pojie.cn\/",
             "icon": "",
             "fallbackText": "爱",
             "badge": "国内顶流",
@@ -2452,7 +2452,7 @@
           {
             "id": "res-4",
             "title": "软仓",
-            "url": "https://www.ruancang.net/",
+            "url": "https:\/\/www.ruancang.net\/",
             "icon": "",
             "fallbackText": "仓",
             "badge": "设计必备",
@@ -2465,7 +2465,7 @@
           {
             "id": "res-5",
             "title": "MSDN原版系统",
-            "url": "https://msdn.itellyou.cn/",
+            "url": "https:\/\/msdn.itellyou.cn\/",
             "icon": "",
             "fallbackText": "MS",
             "badge": "官方纯净",
@@ -2478,7 +2478,7 @@
           {
             "id": "res-6",
             "title": "独特吧",
-            "url": "https://www.dute8.cn/",
+            "url": "https:\/\/www.dute8.cn\/",
             "icon": "",
             "fallbackText": "独",
             "badge": "黑科技",
@@ -2491,7 +2491,7 @@
           {
             "id": "res-7",
             "title": "小K网",
-            "url": "https://www.xkwo.com/",
+            "url": "https:\/\/www.xkwo.com\/",
             "icon": "",
             "fallbackText": "K",
             "badge": "实用补丁",
@@ -2504,7 +2504,7 @@
           {
             "id": "res-8",
             "title": "浏览器插件CRX",
-            "url": "https://www.crxsoso.com/",
+            "url": "https:\/\/www.crxsoso.com\/",
             "icon": "",
             "fallbackText": "CRX",
             "badge": "离线扩展",
@@ -2517,7 +2517,7 @@
           {
             "id": "res-9",
             "title": "壁纸吧",
-            "url": "https://www.bizhib.com/",
+            "url": "https:\/\/www.bizhib.com\/",
             "icon": "",
             "fallbackText": "吧",
             "badge": "精选大图",
@@ -2530,7 +2530,7 @@
           {
             "id": "res-10",
             "title": "免费4K壁纸",
-            "url": "https://haowallpaper.com/",
+            "url": "https:\/\/haowallpaper.com\/",
             "icon": "",
             "fallbackText": "4K",
             "badge": "超清原图",
@@ -2543,7 +2543,7 @@
           {
             "id": "res-11",
             "title": "高清壁纸大全",
-            "url": "https://www.3gbizhi.com/",
+            "url": "https:\/\/www.3gbizhi.com\/",
             "icon": "",
             "fallbackText": "壁",
             "badge": "每日美图",
@@ -2556,7 +2556,7 @@
           {
             "id": "res-12",
             "title": "日夸壁纸",
-            "url": "https://www.rikua.com/",
+            "url": "https:\/\/www.rikua.com\/",
             "icon": "",
             "fallbackText": "日",
             "badge": "治愈桌面",
@@ -2569,8 +2569,8 @@
           {
             "id": "res_add_iconfont",
             "title": "Iconfont",
-            "url": "https://www.iconfont.cn/",
-            "icon": "https://www.iconfont.cn/favicon.ico",
+            "url": "https:\/\/www.iconfont.cn\/",
+            "icon": "https:\/\/www.iconfont.cn\/favicon.ico",
             "fallbackText": "Icon",
             "badge": "阿里图标",
             "badgeType": "GOLD",
@@ -2582,8 +2582,8 @@
           {
             "id": "res_add_feather",
             "title": "Feather Icons",
-            "url": "https://feathericons.com/",
-            "icon": "https://feathericons.com/favicon.ico",
+            "url": "https:\/\/feathericons.com\/",
+            "icon": "https:\/\/feathericons.com\/favicon.ico",
             "fallbackText": "Fea",
             "badge": "极简矢量",
             "badgeType": "BLUE",
@@ -2595,8 +2595,8 @@
           {
             "id": "res_add_lucide",
             "title": "Lucide Icons",
-            "url": "https://lucide.dev/",
-            "icon": "https://lucide.dev/favicon.ico",
+            "url": "https:\/\/lucide.dev\/",
+            "icon": "https:\/\/lucide.dev\/favicon.ico",
             "fallbackText": "Luc",
             "badge": "现代图标",
             "badgeType": "NEW",
@@ -2608,8 +2608,8 @@
           {
             "id": "site_lark_wiki_2026",
             "title": "字节飞书·AI 短剧资源 Wiki",
-            "url": "https://bytedance.larkoffice.com/wiki/RXh5ww6EqighMdkVTMccm2d4n7e",
-            "icon": "https://bytedance.larkoffice.com/favicon.ico",
+            "url": "https:\/\/bytedance.larkoffice.com\/wiki\/RXh5ww6EqighMdkVTMccm2d4n7e",
+            "icon": "https:\/\/bytedance.larkoffice.com\/favicon.ico",
             "fallbackText": "📚",
             "badge": "新动态",
             "badgeType": "NEW",
@@ -2647,12 +2647,12 @@
           {
             "id": "mus-1",
             "title": "米兔音乐",
-            "url": "https://www.qqmp3.vip/",
+            "url": "https:\/\/www.qqmp3.vip\/",
             "icon": "",
             "fallbackText": "米",
             "badge": "全网搜歌",
             "badgeType": "ROSE",
-            "desc": "免费试听并下载全网热门高品质MP3/FLAC",
+            "desc": "免费试听并下载全网热门高品质MP3\/FLAC",
             "categoryId": "music",
             "subcatId": "lossless",
             "highlights": ""
@@ -2660,7 +2660,7 @@
           {
             "id": "mus-2",
             "title": "歌曲宝",
-            "url": "https://www.gequbao.com/",
+            "url": "https:\/\/www.gequbao.com\/",
             "icon": "",
             "fallbackText": "宝",
             "badge": "秒速下载",
@@ -2673,7 +2673,7 @@
           {
             "id": "mus-3",
             "title": "开开无损音乐",
-            "url": "https://www.kkws.cc/",
+            "url": "https:\/\/www.kkws.cc\/",
             "icon": "",
             "fallbackText": "开",
             "badge": "无损母带",
@@ -2686,7 +2686,7 @@
           {
             "id": "mus-4",
             "title": "糖果无损音乐",
-            "url": "https://www.tgws.cc/",
+            "url": "https:\/\/www.tgws.cc\/",
             "icon": "",
             "fallbackText": "糖",
             "badge": "经典粤语",
@@ -2699,7 +2699,7 @@
           {
             "id": "mus-5",
             "title": "24bit无损音乐网",
-            "url": "https://www.24bit.net/",
+            "url": "https:\/\/www.24bit.net\/",
             "icon": "",
             "fallbackText": "24",
             "badge": "Hi-Res",
@@ -2712,7 +2712,7 @@
           {
             "id": "mus-6",
             "title": "GD音乐台",
-            "url": "https://music.gdstudio.org/",
+            "url": "https:\/\/music.gdstudio.org\/",
             "icon": "",
             "fallbackText": "GD",
             "badge": "极简清爽",
@@ -2725,7 +2725,7 @@
           {
             "id": "mus-8",
             "title": "瑞丢网络电台",
-            "url": "https://radio5.cn/",
+            "url": "https:\/\/radio5.cn\/",
             "icon": "",
             "fallbackText": "瑞",
             "badge": "全球电台",
@@ -2738,7 +2738,7 @@
           {
             "id": "mus-9",
             "title": "思奥FM电台",
-            "url": "https://sao.fm/",
+            "url": "https:\/\/sao.fm\/",
             "icon": "",
             "fallbackText": "思",
             "badge": "白噪音舒缓",
@@ -2777,7 +2777,7 @@
           {
             "id": "nov-1",
             "title": "悦读",
-            "url": "https://yuedu.163.com",
+            "url": "https:\/\/yuedu.163.com",
             "icon": "",
             "fallbackText": "悦",
             "badge": "品质阅读",
@@ -2790,7 +2790,7 @@
           {
             "id": "nov-2",
             "title": "无限小说网",
-            "url": "https://wuxianbook.com/",
+            "url": "https:\/\/wuxianbook.com\/",
             "icon": "",
             "fallbackText": "无",
             "badge": "全本免更",
@@ -2803,7 +2803,7 @@
           {
             "id": "nov-3",
             "title": "金庸武侠网",
-            "url": "https://www.jinyongwx.com/",
+            "url": "https:\/\/www.jinyongwx.com\/",
             "icon": "",
             "fallbackText": "侠",
             "badge": "典藏武侠",
@@ -2816,7 +2816,7 @@
           {
             "id": "nov-4",
             "title": "哔哩轻小说",
-            "url": "https://www.linovelib.com/",
+            "url": "https:\/\/www.linovelib.com\/",
             "icon": "",
             "fallbackText": "轻",
             "badge": "日轻国轻",
@@ -2829,12 +2829,12 @@
           {
             "id": "nov-5",
             "title": "八零电子书",
-            "url": "https://www.txt80.cc/",
+            "url": "https:\/\/www.txt80.cc\/",
             "icon": "",
             "fallbackText": "80",
             "badge": "完结精选",
             "badgeType": "NEW",
-            "desc": "全本完结小说TXT/EPUB免费高速下载",
+            "desc": "全本完结小说TXT\/EPUB免费高速下载",
             "categoryId": "novel",
             "subcatId": "web_novel",
             "highlights": ""
@@ -2842,7 +2842,7 @@
           {
             "id": "nov-6",
             "title": "Z-Library镜像",
-            "url": "https://zh.101sat.ru/",
+            "url": "https:\/\/zh.101sat.ru\/",
             "icon": "",
             "fallbackText": "Z",
             "badge": "全球书库",
@@ -2855,12 +2855,12 @@
           {
             "id": "nov-7",
             "title": "鸠摩搜索",
-            "url": "https://www.jiumodiary.com/",
+            "url": "https:\/\/www.jiumodiary.com\/",
             "icon": "",
             "fallbackText": "鸠",
             "badge": "找电子书",
             "badgeType": "GOLD",
-            "desc": "全网电子书格式PDF/EPUB/MOBI极速搜",
+            "desc": "全网电子书格式PDF\/EPUB\/MOBI极速搜",
             "categoryId": "novel",
             "subcatId": "library",
             "highlights": ""
@@ -2868,7 +2868,7 @@
           {
             "id": "nov-8",
             "title": "识典古籍",
-            "url": "https://www.shidianguji.com/",
+            "url": "https:\/\/www.shidianguji.com\/",
             "icon": "",
             "fallbackText": "典",
             "badge": "字节开源",
@@ -2881,7 +2881,7 @@
           {
             "id": "nov-9",
             "title": "蜻蜓有声小说",
-            "url": "https://www.qtfm.cn/",
+            "url": "https:\/\/www.qtfm.cn\/",
             "icon": "",
             "fallbackText": "蜻",
             "badge": "声临其境",
@@ -2894,7 +2894,7 @@
           {
             "id": "nov-10",
             "title": "听友FM",
-            "url": "https://tingyou.fm/",
+            "url": "https:\/\/tingyou.fm\/",
             "icon": "",
             "fallbackText": "听",
             "badge": "播客连载",
@@ -2907,7 +2907,7 @@
           {
             "id": "nov-11",
             "title": "时光图书馆",
-            "url": "https://atimebook.com/",
+            "url": "https:\/\/atimebook.com\/",
             "icon": "",
             "fallbackText": "光",
             "badge": "名著全本",
@@ -2920,7 +2920,7 @@
           {
             "id": "nov-12",
             "title": "读者阁",
-            "url": "https://duzhege.cn/",
+            "url": "https:\/\/duzhege.cn\/",
             "icon": "",
             "fallbackText": "阁",
             "badge": "期刊杂志",
@@ -2959,7 +2959,7 @@
           {
             "id": "gam-1",
             "title": "霓虹游戏港",
-            "url": "https://www.sogay.xyz/",
+            "url": "https:\/\/www.sogay.xyz\/",
             "icon": "",
             "fallbackText": "霓",
             "badge": "大型单机",
@@ -2972,7 +2972,7 @@
           {
             "id": "gam-2",
             "title": "游仓酷",
-            "url": "https://quwan521.com/",
+            "url": "https:\/\/quwan521.com\/",
             "icon": "",
             "fallbackText": "游",
             "badge": "PC游戏",
@@ -2985,7 +2985,7 @@
           {
             "id": "gam-3",
             "title": "GameFreer资源网",
-            "url": "https://www.gamefreer.com/",
+            "url": "https:\/\/www.gamefreer.com\/",
             "icon": "",
             "fallbackText": "GF",
             "badge": "免米单机",
@@ -2998,7 +2998,7 @@
           {
             "id": "gam-4",
             "title": "梨子乐游戏",
-            "url": "https://lzlgo.com/",
+            "url": "https:\/\/lzlgo.com\/",
             "icon": "",
             "fallbackText": "梨",
             "badge": "热门大作",
@@ -3011,7 +3011,7 @@
           {
             "id": "gam-5",
             "title": "掌游网Switch",
-            "url": "https://www.switchxiazai.com/",
+            "url": "https:\/\/www.switchxiazai.com\/",
             "icon": "",
             "fallbackText": "掌",
             "badge": "掌机必备",
@@ -3024,7 +3024,7 @@
           {
             "id": "gam-6",
             "title": "小叽资源Steam",
-            "url": "https://steamzg.com/",
+            "url": "https:\/\/steamzg.com\/",
             "icon": "",
             "fallbackText": "叽",
             "badge": "Steam资源",
@@ -3037,7 +3037,7 @@
           {
             "id": "gam-7",
             "title": "老机库FC",
-            "url": "https://laojiku.com/",
+            "url": "https:\/\/laojiku.com\/",
             "icon": "",
             "fallbackText": "老",
             "badge": "红白机ROM",
@@ -3050,7 +3050,7 @@
           {
             "id": "gam-8",
             "title": "植物大战僵尸全集",
-            "url": "https://pan.quark.cn/s/3f82680fcb81",
+            "url": "https:\/\/pan.quark.cn\/s\/3f82680fcb81",
             "icon": "",
             "fallbackText": "PVZ",
             "badge": "童年经典",
@@ -3063,7 +3063,7 @@
           {
             "id": "gam-10",
             "title": "在线小霸王红白机",
-            "url": "https://www.yikm.net/",
+            "url": "https:\/\/www.yikm.net\/",
             "icon": "",
             "fallbackText": "红白",
             "badge": "童年回忆",
@@ -3076,7 +3076,7 @@
           {
             "id": "gam-11",
             "title": "在线玩红警",
-            "url": "https://game.ra2web.cn/",
+            "url": "https:\/\/game.ra2web.cn\/",
             "icon": "",
             "fallbackText": "红警",
             "badge": "联机对战",
@@ -3089,7 +3089,7 @@
           {
             "id": "gam-12",
             "title": "在线玩CS 1.6",
-            "url": "https://vpn.zongsang.com/",
+            "url": "https:\/\/vpn.zongsang.com\/",
             "icon": "",
             "fallbackText": "CS",
             "badge": "枪战神作",
@@ -3102,7 +3102,7 @@
           {
             "id": "gam-13",
             "title": "在线三国杀",
-            "url": "https://web.sanguosha.com/login/x/index",
+            "url": "https:\/\/web.sanguosha.com\/login\/x\/index",
             "icon": "",
             "fallbackText": "杀",
             "badge": "即点即玩",
@@ -3115,7 +3115,7 @@
           {
             "id": "gam-14",
             "title": "我的世界网页版",
-            "url": "https://mcjs.link/",
+            "url": "https:\/\/mcjs.link\/",
             "icon": "",
             "fallbackText": "MC",
             "badge": "免下载",
@@ -3128,7 +3128,7 @@
           {
             "id": "gam-15",
             "title": "Poki在线游戏",
-            "url": "https://poki.com/",
+            "url": "https:\/\/poki.com\/",
             "icon": "",
             "fallbackText": "Poki",
             "badge": "全球爆款",
@@ -3171,7 +3171,7 @@
           {
             "id": "too-1",
             "title": "DeepSeek",
-            "url": "https://chat.deepseek.com/",
+            "url": "https:\/\/chat.deepseek.com\/",
             "icon": "",
             "fallbackText": "深",
             "badge": "国产之光",
@@ -3184,7 +3184,7 @@
           {
             "id": "too-2",
             "title": "讯飞绘文",
-            "url": "https://turbodesk.xfyun.cn/",
+            "url": "https:\/\/turbodesk.xfyun.cn\/",
             "icon": "",
             "fallbackText": "绘",
             "badge": "图文排版",
@@ -3197,7 +3197,7 @@
           {
             "id": "too-3",
             "title": "AI视频创作",
-            "url": "https://www.liblib.art",
+            "url": "https:\/\/www.liblib.art",
             "icon": "",
             "fallbackText": "Lib",
             "badge": "视频创作",
@@ -3210,7 +3210,7 @@
           {
             "id": "too-4",
             "title": "AI简历生成",
-            "url": "https://upcv.tech/",
+            "url": "https:\/\/upcv.tech\/",
             "icon": "",
             "fallbackText": "履",
             "badge": "高薪模板",
@@ -3223,7 +3223,7 @@
           {
             "id": "too-6",
             "title": "PDF24 Tools",
-            "url": "https://tools.pdf24.org/zh/",
+            "url": "https:\/\/tools.pdf24.org\/zh\/",
             "icon": "",
             "fallbackText": "PDF",
             "badge": "免费全能",
@@ -3236,7 +3236,7 @@
           {
             "id": "too-7",
             "title": "文叔叔-传文件",
-            "url": "https://www.wenshushu.cn/",
+            "url": "https:\/\/www.wenshushu.cn\/",
             "icon": "",
             "fallbackText": "叔",
             "badge": "大文件免登",
@@ -3249,7 +3249,7 @@
           {
             "id": "too-8",
             "title": "局域网传文件LocalSend",
-            "url": "https://localsend.org/#/",
+            "url": "https:\/\/localsend.org\/#\/",
             "icon": "",
             "fallbackText": "Send",
             "badge": "开源免流量",
@@ -3262,7 +3262,7 @@
           {
             "id": "too-9",
             "title": "在线PS",
-            "url": "https://zaixianps.net/",
+            "url": "https:\/\/zaixianps.net\/",
             "icon": "",
             "fallbackText": "PS",
             "badge": "免安装",
@@ -3275,7 +3275,7 @@
           {
             "id": "too-10",
             "title": "在线一键抠图",
-            "url": "https://www.remove.bg/zh",
+            "url": "https:\/\/www.remove.bg\/zh",
             "icon": "",
             "fallbackText": "抠",
             "badge": "5秒抠图",
@@ -3288,7 +3288,7 @@
           {
             "id": "too-11",
             "title": "免费商用字体",
-            "url": "https://www.maoken.com/",
+            "url": "https:\/\/www.maoken.com\/",
             "icon": "",
             "fallbackText": "字",
             "badge": "免版权",
@@ -3301,7 +3301,7 @@
           {
             "id": "too-12",
             "title": "草料二维码",
-            "url": "https://cli.im/",
+            "url": "https:\/\/cli.im\/",
             "icon": "",
             "fallbackText": "草",
             "badge": "二维码生成",
@@ -3314,7 +3314,7 @@
           {
             "id": "too-13",
             "title": "帮小忙(腾讯)",
-            "url": "https://tool.browser.qq.com/",
+            "url": "https:\/\/tool.browser.qq.com\/",
             "icon": "",
             "fallbackText": "帮",
             "badge": "腾讯出品",
@@ -3327,7 +3327,7 @@
           {
             "id": "too-14",
             "title": "临时邮箱",
-            "url": "https://www.linshi-email.com/",
+            "url": "https:\/\/www.linshi-email.com\/",
             "icon": "",
             "fallbackText": "邮",
             "badge": "即用即丢",
@@ -3340,7 +3340,7 @@
           {
             "id": "too-15",
             "title": "全球物流查询",
-            "url": "https://www.17track.net/zh-cn",
+            "url": "https:\/\/www.17track.net\/zh-cn",
             "icon": "",
             "fallbackText": "17",
             "badge": "全球追踪",
@@ -3353,8 +3353,8 @@
           {
             "id": "too_add_raycast",
             "title": "Raycast",
-            "url": "https://www.raycast.com/",
-            "icon": "https://www.raycast.com/favicon.ico",
+            "url": "https:\/\/www.raycast.com\/",
+            "icon": "https:\/\/www.raycast.com\/favicon.ico",
             "fallbackText": "Ray",
             "badge": "极速启动",
             "badgeType": "GOLD",
@@ -3366,8 +3366,8 @@
           {
             "id": "too_add_obsidian",
             "title": "Obsidian",
-            "url": "https://obsidian.md/",
-            "icon": "https://obsidian.md/favicon.ico",
+            "url": "https:\/\/obsidian.md\/",
+            "icon": "https:\/\/obsidian.md\/favicon.ico",
             "fallbackText": "Obs",
             "badge": "第二大脑",
             "badgeType": "ROSE",
@@ -3379,8 +3379,8 @@
           {
             "id": "too_add_notion",
             "title": "Notion",
-            "url": "https://www.notion.so/",
-            "icon": "https://www.notion.so/favicon.ico",
+            "url": "https:\/\/www.notion.so\/",
+            "icon": "https:\/\/www.notion.so\/favicon.ico",
             "fallbackText": "Not",
             "badge": "全能办公",
             "badgeType": "BLUE",
@@ -3392,8 +3392,8 @@
           {
             "id": "too_add_eagle",
             "title": "Eagle",
-            "url": "https://eagle.cool/zh-CN/",
-            "icon": "https://eagle.cool/favicon.ico",
+            "url": "https:\/\/eagle.cool\/zh-CN\/",
+            "icon": "https:\/\/eagle.cool\/favicon.ico",
             "fallbackText": "Eag",
             "badge": "素材管家",
             "badgeType": "GOLD",
@@ -3405,21 +3405,21 @@
           {
             "id": "too_add_tinypng",
             "title": "TinyPNG",
-            "url": "https://tinypng.com/",
-            "icon": "https://tinypng.com/favicon.ico",
+            "url": "https:\/\/tinypng.com\/",
+            "icon": "https:\/\/tinypng.com\/favicon.ico",
             "fallbackText": "Tiny",
             "badge": "智能压缩",
             "badgeType": "NEW",
             "desc": "智能有损无损图片压缩算法，在保留高质量前提下极大缩减体积",
             "categoryId": "tools",
             "subcatId": "img_proc",
-            "highlights": "全球最知名的PNG/JPEG/WebP图片在线极限压缩服务；支持批量拖拽"
+            "highlights": "全球最知名的PNG\/JPEG\/WebP图片在线极限压缩服务；支持批量拖拽"
           },
           {
             "id": "too_add_squoosh",
             "title": "Squoosh",
-            "url": "https://squoosh.app/",
-            "icon": "https://squoosh.app/favicon.ico",
+            "url": "https:\/\/squoosh.app\/",
+            "icon": "https:\/\/squoosh.app\/favicon.ico",
             "fallbackText": "Sq",
             "badge": "谷歌压缩",
             "badgeType": "BLUE",
@@ -3457,7 +3457,7 @@
           {
             "id": "pc_-2",
             "title": "图吧工具箱",
-            "url": "http://www.tbtool.cn/",
+            "url": "http:\/\/www.tbtool.cn\/",
             "icon": "",
             "fallbackText": "图",
             "badge": "图拉丁神兵",
@@ -3470,7 +3470,7 @@
           {
             "id": "pc_-4",
             "title": "HelloWindows",
-            "url": "https://hellowindows.cn/",
+            "url": "https:\/\/hellowindows.cn\/",
             "icon": "",
             "fallbackText": "Win",
             "badge": "纯净镜像",
@@ -3483,7 +3483,7 @@
           {
             "id": "pc_-5",
             "title": "USB启动盘Rufus",
-            "url": "http://rufus.ie/zh/",
+            "url": "http:\/\/rufus.ie\/zh\/",
             "icon": "",
             "fallbackText": "Ruf",
             "badge": "极速制作",
@@ -3495,8 +3495,8 @@
           },
           {
             "id": "pc_-6",
-            "title": "CPU/显卡天梯榜",
-            "url": "https://gpu.exprank.com/",
+            "title": "CPU\/显卡天梯榜",
+            "url": "https:\/\/gpu.exprank.com\/",
             "icon": "",
             "fallbackText": "梯",
             "badge": "天梯排行",
@@ -3509,7 +3509,7 @@
           {
             "id": "pc_-7",
             "title": "显示器刷新率测试",
-            "url": "https://testufo.com/",
+            "url": "https:\/\/testufo.com\/",
             "icon": "",
             "fallbackText": "UFO",
             "badge": "屏幕检测",
@@ -3522,7 +3522,7 @@
           {
             "id": "pc_-8",
             "title": "在线键盘测试",
-            "url": "https://www.zfrontier.com/lab/keyboardTester",
+            "url": "https:\/\/www.zfrontier.com\/lab\/keyboardTester",
             "icon": "",
             "fallbackText": "键",
             "badge": "按键检测",
@@ -3535,7 +3535,7 @@
           {
             "id": "pc_-9",
             "title": "微信电脑版",
-            "url": "https://pc.weixin.qq.com/",
+            "url": "https:\/\/pc.weixin.qq.com\/",
             "icon": "",
             "fallbackText": "微",
             "badge": "官方正版",
@@ -3548,7 +3548,7 @@
           {
             "id": "pc_-10",
             "title": "QQ官方版",
-            "url": "https://im.qq.com/pcqq",
+            "url": "https:\/\/im.qq.com\/pcqq",
             "icon": "",
             "fallbackText": "QQ",
             "badge": "官方正版",
@@ -3561,7 +3561,7 @@
           {
             "id": "pc_-11",
             "title": "火绒安全",
-            "url": "https://www.huorong.cn/",
+            "url": "https:\/\/www.huorong.cn\/",
             "icon": "",
             "fallbackText": "火",
             "badge": "安静不打扰",
@@ -3574,7 +3574,7 @@
           {
             "id": "pc_-12",
             "title": "Everything搜索",
-            "url": "https://www.voidtools.com/zh-cn/",
+            "url": "https:\/\/www.voidtools.com\/zh-cn\/",
             "icon": "",
             "fallbackText": "Ev",
             "badge": "秒搜文件",
@@ -3587,7 +3587,7 @@
           {
             "id": "pc_-13",
             "title": "7-Zip解压",
-            "url": "https://www.7-zip.org/",
+            "url": "https:\/\/www.7-zip.org\/",
             "icon": "",
             "fallbackText": "7z",
             "badge": "开源解压",
@@ -3600,7 +3600,7 @@
           {
             "id": "pc_-14",
             "title": "PotPlayer播放器",
-            "url": "https://potplayer.daum.net",
+            "url": "https:\/\/potplayer.daum.net",
             "icon": "",
             "fallbackText": "Pot",
             "badge": "万能播片",
@@ -3613,7 +3613,7 @@
           {
             "id": "pc_-15",
             "title": "Steam游戏平台",
-            "url": "https://store.steampowered.com/about/",
+            "url": "https:\/\/store.steampowered.com\/about\/",
             "icon": "",
             "fallbackText": "Steam",
             "badge": "正版游戏",
@@ -3626,7 +3626,7 @@
           {
             "id": "pc_-16",
             "title": "谷歌Chrome",
-            "url": "https://www.google.cn/intl/zh-CN/chrome/",
+            "url": "https:\/\/www.google.cn\/intl\/zh-CN\/chrome\/",
             "icon": "",
             "fallbackText": "谷歌",
             "badge": "极速浏览",
@@ -3665,7 +3665,7 @@
           {
             "id": "exp-1",
             "title": "观影导航",
-            "url": "https://www.qhdh.top/",
+            "url": "https:\/\/www.qhdh.top\/",
             "icon": "",
             "fallbackText": "影",
             "badge": "影视大全",
@@ -3678,7 +3678,7 @@
           {
             "id": "exp-2",
             "title": "摸鱼导航",
-            "url": "https://www.moyudh.com/",
+            "url": "https:\/\/www.moyudh.com\/",
             "icon": "",
             "fallbackText": "鱼",
             "badge": "上班摸鱼",
@@ -3691,7 +3691,7 @@
           {
             "id": "exp-3",
             "title": "聚资源导航",
-            "url": "https://juzyw.com/",
+            "url": "https:\/\/juzyw.com\/",
             "icon": "",
             "fallbackText": "聚",
             "badge": "综合资源",
@@ -3704,7 +3704,7 @@
           {
             "id": "exp-4",
             "title": "信任的进化",
-            "url": "https://dccxi.com/",
+            "url": "https:\/\/dccxi.com\/",
             "icon": "",
             "fallbackText": "信",
             "badge": "博弈论互动",
@@ -3717,7 +3717,7 @@
           {
             "id": "exp-5",
             "title": "全景故宫",
-            "url": "https://pano.dpm.org.cn/#/",
+            "url": "https:\/\/pano.dpm.org.cn\/#\/",
             "icon": "",
             "fallbackText": "宫",
             "badge": "云游故宫",
@@ -3730,7 +3730,7 @@
           {
             "id": "exp-6",
             "title": "在线放烟花",
-            "url": "http://fangyanhua.top/",
+            "url": "http:\/\/fangyanhua.top\/",
             "icon": "",
             "fallbackText": "烟",
             "badge": "浪漫视觉",
@@ -3743,7 +3743,7 @@
           {
             "id": "exp-7",
             "title": "指尖陀螺",
-            "url": "https://ffffidget.com/",
+            "url": "https:\/\/ffffidget.com\/",
             "icon": "",
             "fallbackText": "陀",
             "badge": "减压旋转",
@@ -3756,7 +3756,7 @@
           {
             "id": "exp-8",
             "title": "捏泡泡",
-            "url": "https://bubblespop.netlify.app/",
+            "url": "https:\/\/bubblespop.netlify.app\/",
             "icon": "",
             "fallbackText": "泡",
             "badge": "解压捏捏",
@@ -3769,7 +3769,7 @@
           {
             "id": "exp-9",
             "title": "天空有多高",
-            "url": "https://www.secaibi.com/howbigisspace/",
+            "url": "https:\/\/www.secaibi.com\/howbigisspace\/",
             "icon": "",
             "fallbackText": "空",
             "badge": "宇宙科普",
@@ -3782,7 +3782,7 @@
           {
             "id": "exp-10",
             "title": "Trae 代码助手",
-            "url": "https://www.trae.cn",
+            "url": "https:\/\/www.trae.cn",
             "icon": "",
             "fallbackText": "Trae",
             "badge": "AI IDE",
@@ -3795,7 +3795,7 @@
           {
             "id": "exp-11",
             "title": "VsCode",
-            "url": "https://code.visualstudio.com/",
+            "url": "https:\/\/code.visualstudio.com\/",
             "icon": "",
             "fallbackText": "Code",
             "badge": "全能代码",
@@ -3808,7 +3808,7 @@
           {
             "id": "exp-12",
             "title": "Gitee 码云",
-            "url": "https://gitee.com/",
+            "url": "https:\/\/gitee.com\/",
             "icon": "",
             "fallbackText": "Gitee",
             "badge": "国内代码",
@@ -3821,7 +3821,7 @@
           {
             "id": "exp-13",
             "title": "Apifox 接口调试",
-            "url": "https://apifox.com/",
+            "url": "https:\/\/apifox.com\/",
             "icon": "",
             "fallbackText": "Api",
             "badge": "接口一体化",
@@ -3834,7 +3834,7 @@
           {
             "id": "exp-14",
             "title": "多地Ping测试",
-            "url": "https://kzisp.com/",
+            "url": "https:\/\/kzisp.com\/",
             "icon": "",
             "fallbackText": "Ping",
             "badge": "网络诊断",
@@ -3847,8 +3847,8 @@
           {
             "id": "exp_add_roadmap",
             "title": "Roadmap.sh",
-            "url": "https://roadmap.sh/",
-            "icon": "https://roadmap.sh/favicon.ico",
+            "url": "https:\/\/roadmap.sh\/",
+            "icon": "https:\/\/roadmap.sh\/favicon.ico",
             "fallbackText": "Road",
             "badge": "学习路线",
             "badgeType": "GOLD",
@@ -3860,8 +3860,8 @@
           {
             "id": "exp_add_producthunt",
             "title": "Product Hunt",
-            "url": "https://www.producthunt.com/",
-            "icon": "https://www.producthunt.com/favicon.ico",
+            "url": "https:\/\/www.producthunt.com\/",
+            "icon": "https:\/\/www.producthunt.com\/favicon.ico",
             "fallbackText": "PH",
             "badge": "全球首发",
             "badgeType": "ROSE",
@@ -3899,7 +3899,7 @@
           {
             "id": "par-1",
             "title": "看片神器",
-            "url": "https://追剧.cc",
+            "url": "https:\/\/追剧.cc",
             "icon": "",
             "fallbackText": "片",
             "badge": "追剧神器",
@@ -3912,7 +3912,7 @@
           {
             "id": "par-2",
             "title": "GPT国内直连",
-            "url": "https://oai.oooai.cc/list/#/register?inviter=XYY4ZL",
+            "url": "https:\/\/oai.oooai.cc\/list\/#\/register?inviter=XYY4ZL",
             "icon": "",
             "fallbackText": "直连",
             "badge": "国内免梯",
@@ -3925,7 +3925,7 @@
           {
             "id": "par-3",
             "title": "映像星球影视",
-            "url": "https://www.yxxq.top/?utm_source=zbl",
+            "url": "https:\/\/www.yxxq.top\/?utm_source=zbl",
             "icon": "",
             "fallbackText": "星",
             "badge": "超清剧集",
@@ -3938,7 +3938,7 @@
           {
             "id": "par-4",
             "title": "抖音游戏躺赚副业",
-            "url": "https://uuv1j2dzx2.feishu.cn/docx/XVq9dnbWBoVOlkxDiJucI9gUnFf?from=from_copylink",
+            "url": "https:\/\/uuv1j2dzx2.feishu.cn\/docx\/XVq9dnbWBoVOlkxDiJucI9gUnFf?from=from_copylink",
             "icon": "",
             "fallbackText": "副业",
             "badge": "经验干货",
@@ -3951,7 +3951,7 @@
           {
             "id": "par-5",
             "title": "AI对话绘画体",
-            "url": "https://www.lanhuohuo.cn/",
+            "url": "https:\/\/www.lanhuohuo.cn\/",
             "icon": "",
             "fallbackText": "画",
             "badge": "智能助手",
@@ -3964,7 +3964,7 @@
           {
             "id": "par-7",
             "title": "学术版codex",
-            "url": "https://qiewenpaper.com/app/agent?utm_source=daott",
+            "url": "https:\/\/qiewenpaper.com\/app\/agent?utm_source=daott",
             "icon": "",
             "fallbackText": "学",
             "badge": "论文润色",
@@ -3977,7 +3977,7 @@
           {
             "id": "par-8",
             "title": "号卡和宽带",
-            "url": "https://h5.yapingkeji.com/#/pages/sales_index/my_store?mall_id=hqSBva%2FCH6l%2FTh4DC92Btg%3D%3D",
+            "url": "https:\/\/h5.yapingkeji.com\/#\/pages\/sales_index\/my_store?mall_id=hqSBva%2FCH6l%2FTh4DC92Btg%3D%3D",
             "icon": "",
             "fallbackText": "卡",
             "badge": "超大流量",
@@ -3990,7 +3990,7 @@
           {
             "id": "par-9",
             "title": "黑料吃瓜群",
-            "url": "http://cg.8gws.com/#bzl",
+            "url": "http:\/\/cg.8gws.com\/#bzl",
             "icon": "",
             "fallbackText": "瓜",
             "badge": "网络热点",
@@ -4037,7 +4037,7 @@
           {
             "id": "aibot_tool_417",
             "title": "CakeGrowth(联盟营销)",
-            "url": "https://cakegrowth.cn/",
+            "url": "https:\/\/cakegrowth.cn\/",
             "icon": "",
             "fallbackText": "",
             "badge": "AI精选",
@@ -4050,7 +4050,7 @@
           {
             "id": "aibot_tool_418",
             "title": "Docmee",
-            "url": "https://docmee.cn/?source=ai-bot",
+            "url": "https:\/\/docmee.cn\/?source=ai-bot",
             "icon": "",
             "fallbackText": "",
             "badge": "AI精选",
@@ -4063,7 +4063,7 @@
           {
             "id": "aibot_tool_419",
             "title": "果核剥壳",
-            "url": "https://gongke.net/",
+            "url": "https:\/\/gongke.net\/",
             "icon": "",
             "fallbackText": "",
             "badge": "AI精选",
@@ -4076,7 +4076,7 @@
           {
             "id": "aibot_tool_420",
             "title": "必灵",
-            "url": "https://ibiling.cn/?from=ai-bot",
+            "url": "https:\/\/ibiling.cn\/?from=ai-bot",
             "icon": "",
             "fallbackText": "",
             "badge": "AI精选",
@@ -4089,7 +4089,7 @@
           {
             "id": "aibot_tool_421",
             "title": "LibTV",
-            "url": "https://libtv.cgref.cn/aibot",
+            "url": "https:\/\/libtv.cgref.cn\/aibot",
             "icon": "",
             "fallbackText": "",
             "badge": "AI精选",
@@ -4102,7 +4102,7 @@
           {
             "id": "aibot_tool_422",
             "title": "秘塔AI搜索",
-            "url": "https://metaso.cn/?s=aibot1",
+            "url": "https:\/\/metaso.cn\/?s=aibot1",
             "icon": "",
             "fallbackText": "",
             "badge": "AI搜索",
@@ -4115,7 +4115,7 @@
           {
             "id": "aibot_tool_423",
             "title": "VipCheap",
-            "url": "https://vipcheap.com/",
+            "url": "https:\/\/vipcheap.com\/",
             "icon": "",
             "fallbackText": "",
             "badge": "AI精选",
@@ -4128,7 +4128,7 @@
           {
             "id": "aibot_tool_424",
             "title": "蛙蛙写作",
-            "url": "https://wawawriter.cgref.cn/aibotbanner",
+            "url": "https:\/\/wawawriter.cgref.cn\/aibotbanner",
             "icon": "",
             "fallbackText": "",
             "badge": "办公写作",
@@ -4141,7 +4141,7 @@
           {
             "id": "aibot_tool_425",
             "title": "AiPPT",
-            "url": "https://www.aippt.cn/",
+            "url": "https:\/\/www.aippt.cn\/",
             "icon": "",
             "fallbackText": "",
             "badge": "办公写作",
@@ -4154,7 +4154,7 @@
           {
             "id": "aibot_tool_426",
             "title": "设计导航",
-            "url": "https://www.designkit.cn/?channel=10026",
+            "url": "https:\/\/www.designkit.cn\/?channel=10026",
             "icon": "",
             "fallbackText": "",
             "badge": "视觉设计",
@@ -4167,7 +4167,7 @@
           {
             "id": "aibot_tool_427",
             "title": "稿定",
-            "url": "https://www.gaoding.art/",
+            "url": "https:\/\/www.gaoding.art\/",
             "icon": "",
             "fallbackText": "",
             "badge": "AI精选",
@@ -4180,7 +4180,7 @@
           {
             "id": "aibot_tool_428",
             "title": "即刻",
-            "url": "https://okjk.co",
+            "url": "https:\/\/okjk.co",
             "icon": "",
             "fallbackText": "即",
             "badge": "同好社区",
@@ -4193,7 +4193,7 @@
           {
             "id": "aibot_tool_429",
             "title": "映技派",
-            "url": "https://www.yjpoo.com/",
+            "url": "https:\/\/www.yjpoo.com\/",
             "icon": "",
             "fallbackText": "",
             "badge": "AI精选",
@@ -4206,7 +4206,7 @@
           {
             "id": "aibot_tool_430",
             "title": "微博",
-            "url": "https://weibo.com",
+            "url": "https:\/\/weibo.com",
             "icon": "",
             "fallbackText": "",
             "badge": "社交热点",
@@ -4219,7 +4219,7 @@
           {
             "id": "aibot_tool_431",
             "title": "哔哩哔哩",
-            "url": "https://www.bilibili.com",
+            "url": "https:\/\/www.bilibili.com",
             "icon": "",
             "fallbackText": "",
             "badge": "弹幕视频",
@@ -4232,7 +4232,7 @@
           {
             "id": "aibot_tool_432",
             "title": "百度网盘",
-            "url": "https://pan.baidu.com",
+            "url": "https:\/\/pan.baidu.com",
             "icon": "",
             "fallbackText": "",
             "badge": "云存储",
@@ -4245,7 +4245,7 @@
           {
             "id": "aibot_tool_433",
             "title": "迅雷云盘",
-            "url": "https://pan.xunlei.com",
+            "url": "https:\/\/pan.xunlei.com",
             "icon": "",
             "fallbackText": "",
             "badge": "极速下载",
@@ -4258,8 +4258,8 @@
           {
             "id": "bot_add_dify",
             "title": "Dify.AI",
-            "url": "https://dify.ai/zh",
-            "icon": "https://dify.ai/favicon.ico",
+            "url": "https:\/\/dify.ai\/zh",
+            "icon": "https:\/\/dify.ai\/favicon.ico",
             "fallbackText": "Dify",
             "badge": "Agent开发",
             "badgeType": "GOLD",
@@ -4271,8 +4271,8 @@
           {
             "id": "bot_add_fastgpt",
             "title": "FastGPT",
-            "url": "https://fastgpt.in/",
-            "icon": "https://fastgpt.in/favicon.ico",
+            "url": "https:\/\/fastgpt.in\/",
+            "icon": "https:\/\/fastgpt.in\/favicon.ico",
             "fallbackText": "Fast",
             "badge": "知识库问答",
             "badgeType": "BLUE",
@@ -4284,12 +4284,12 @@
           {
             "id": "bot_add_flowise",
             "title": "Flowise",
-            "url": "https://flowiseai.com/",
-            "icon": "https://flowiseai.com/favicon.ico",
+            "url": "https:\/\/flowiseai.com\/",
+            "icon": "https:\/\/flowiseai.com\/favicon.ico",
             "fallbackText": "Flow",
             "badge": "低代码LLM",
             "badgeType": "NEW",
-            "desc": "开源低代码拖拽式LangChain/LlamaIndex工作流可视化平台",
+            "desc": "开源低代码拖拽式LangChain\/LlamaIndex工作流可视化平台",
             "categoryId": "ai_bot_ecosystem",
             "subcatId": "tools_all",
             "highlights": "像搭积木一样轻松组装各类AI智能体、记忆库与外部工具集成"
@@ -4331,8 +4331,8 @@
           {
             "id": "new_site_1",
             "title": "秒悟Meoo",
-            "url": "https://meoo.com/",
-            "icon": "https://meoo.com/favicon.ico",
+            "url": "https:\/\/meoo.com\/",
+            "icon": "https:\/\/meoo.com\/favicon.ico",
             "fallbackText": "Meoo",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4344,8 +4344,8 @@
           {
             "id": "new_site_2",
             "title": "v0.dev",
-            "url": "https://v0.dev/",
-            "icon": "https://v0.dev/favicon.ico",
+            "url": "https:\/\/v0.dev\/",
+            "icon": "https:\/\/v0.dev\/favicon.ico",
             "fallbackText": "v0",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4357,8 +4357,8 @@
           {
             "id": "new_site_3",
             "title": "讯飞星辰MaaS",
-            "url": "https://xinghuo.xfyun.cn/maas-home",
-            "icon": "https://xinghuo.xfyun.cn/favicon.ico",
+            "url": "https:\/\/xinghuo.xfyun.cn\/maas-home",
+            "icon": "https:\/\/xinghuo.xfyun.cn\/favicon.ico",
             "fallbackText": "星辰",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4370,21 +4370,21 @@
           {
             "id": "new_site_4",
             "title": "BigModel",
-            "url": "https://www.bigmodel.cn/",
-            "icon": "https://www.bigmodel.cn/favicon.ico",
+            "url": "https:\/\/www.bigmodel.cn\/",
+            "icon": "https:\/\/www.bigmodel.cn\/favicon.ico",
             "fallbackText": "GLM",
             "badge": "NEW",
             "badgeType": "NEW",
             "desc": "智谱AI大模型开放平台，提供GLM-4全系列多模态API",
             "categoryId": "coding_tools",
             "subcatId": "maas",
-            "highlights": "国内顶尖GLM-4/GLM-4V视觉与超长文本调用；高并发稳定接口，支持函数调用与代码解释器"
+            "highlights": "国内顶尖GLM-4\/GLM-4V视觉与超长文本调用；高并发稳定接口，支持函数调用与代码解释器"
           },
           {
             "id": "new_site_5",
             "title": "阿里云百炼",
-            "url": "https://bailian.console.aliyun.com/",
-            "icon": "https://bailian.console.aliyun.com/favicon.ico",
+            "url": "https:\/\/bailian.console.aliyun.com\/",
+            "icon": "https:\/\/bailian.console.aliyun.com\/favicon.ico",
             "fallbackText": "百炼",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4396,12 +4396,12 @@
           {
             "id": "new_site_6",
             "title": "Google AI Studio",
-            "url": "https://aistudio.google.com/",
-            "icon": "https://aistudio.google.com/favicon.ico",
+            "url": "https:\/\/aistudio.google.com\/",
+            "icon": "https:\/\/aistudio.google.com\/favicon.ico",
             "fallbackText": "AIS",
             "badge": "NEW",
             "badgeType": "NEW",
-            "desc": "谷歌官方Gemini 1.5 Pro/Flash模型快速原型与API构建平台",
+            "desc": "谷歌官方Gemini 1.5 Pro\/Flash模型快速原型与API构建平台",
             "categoryId": "coding_tools",
             "subcatId": "maas",
             "highlights": "支持200万超长Token上下文实验；官方API Key申请与代码生成导出；极速测试多模态音频与视频输入"
@@ -4409,8 +4409,8 @@
           {
             "id": "new_site_7",
             "title": "扣子-AI办公",
-            "url": "https://www.coze.cn/",
-            "icon": "https://www.coze.cn/favicon.ico",
+            "url": "https:\/\/www.coze.cn\/",
+            "icon": "https:\/\/www.coze.cn\/favicon.ico",
             "fallbackText": "扣子",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4422,8 +4422,8 @@
           {
             "id": "new_site_8",
             "title": "方舟 Coding Plan",
-            "url": "https://www.volcengine.com/product/ark",
-            "icon": "https://www.volcengine.com/favicon.ico",
+            "url": "https:\/\/www.volcengine.com\/product\/ark",
+            "icon": "https:\/\/www.volcengine.com\/favicon.ico",
             "fallbackText": "方舟",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4435,8 +4435,8 @@
           {
             "id": "new_site_9",
             "title": "ZenMux",
-            "url": "https://zenmux.ai/",
-            "icon": "https://zenmux.ai/favicon.ico",
+            "url": "https:\/\/zenmux.ai\/",
+            "icon": "https:\/\/zenmux.ai\/favicon.ico",
             "fallbackText": "ZM",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4448,8 +4448,8 @@
           {
             "id": "new_site_10",
             "title": "FastGPT",
-            "url": "https://fastgpt.cn/",
-            "icon": "https://fastgpt.cn/favicon.ico",
+            "url": "https:\/\/fastgpt.cn\/",
+            "icon": "https:\/\/fastgpt.cn\/favicon.ico",
             "fallbackText": "FGPT",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4461,8 +4461,8 @@
           {
             "id": "new_site_11",
             "title": "Zion",
-            "url": "https://www.functorz.com/",
-            "icon": "https://www.functorz.com/favicon.ico",
+            "url": "https:\/\/www.functorz.com\/",
+            "icon": "https:\/\/www.functorz.com\/favicon.ico",
             "fallbackText": "Zion",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4474,8 +4474,8 @@
           {
             "id": "new_site_12",
             "title": "n8n",
-            "url": "https://n8n.io/",
-            "icon": "https://n8n.io/favicon.ico",
+            "url": "https:\/\/n8n.io\/",
+            "icon": "https:\/\/n8n.io\/favicon.ico",
             "fallbackText": "n8n",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4487,8 +4487,8 @@
           {
             "id": "new_site_14",
             "title": "袋马",
-            "url": "https://www.daimax.cn/",
-            "icon": "https://www.daimax.cn/favicon.ico",
+            "url": "https:\/\/www.daimax.cn\/",
+            "icon": "https:\/\/www.daimax.cn\/favicon.ico",
             "fallbackText": "袋马",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4500,8 +4500,8 @@
           {
             "id": "new_site_15",
             "title": "秒哒",
-            "url": "https://www.miaoda.cn/",
-            "icon": "https://www.miaoda.cn/favicon.ico",
+            "url": "https:\/\/www.miaoda.cn\/",
+            "icon": "https:\/\/www.miaoda.cn\/favicon.ico",
             "fallbackText": "秒哒",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4513,8 +4513,8 @@
           {
             "id": "new_site_16",
             "title": "千问云",
-            "url": "https://www.qianwenai.com/",
-            "icon": "https://www.qianwenai.com/favicon.ico",
+            "url": "https:\/\/www.qianwenai.com\/",
+            "icon": "https:\/\/www.qianwenai.com\/favicon.ico",
             "fallbackText": "千问",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4526,8 +4526,8 @@
           {
             "id": "new_site_17",
             "title": "StreamLake",
-            "url": "https://streamlake.com/",
-            "icon": "https://streamlake.com/favicon.ico",
+            "url": "https:\/\/streamlake.com\/",
+            "icon": "https:\/\/streamlake.com\/favicon.ico",
             "fallbackText": "SL",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4539,8 +4539,8 @@
           {
             "id": "new_site_18",
             "title": "造化工坊",
-            "url": "https://zaohua.qq.com/",
-            "icon": "https://zaohua.qq.com/favicon.ico",
+            "url": "https:\/\/zaohua.qq.com\/",
+            "icon": "https:\/\/zaohua.qq.com\/favicon.ico",
             "fallbackText": "造化",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4552,8 +4552,8 @@
           {
             "id": "new_site_19",
             "title": "TArk元舟",
-            "url": "https://www.tarkcloud.com/zh-CN",
-            "icon": "https://www.tarkcloud.com/favicon.ico",
+            "url": "https:\/\/www.tarkcloud.com\/zh-CN",
+            "icon": "https:\/\/www.tarkcloud.com\/favicon.ico",
             "fallbackText": "元舟",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4565,8 +4565,8 @@
           {
             "id": "new_site_20",
             "title": "Playabl",
-            "url": "https://playabl.ai/",
-            "icon": "https://playabl.ai/favicon.ico",
+            "url": "https:\/\/playabl.ai\/",
+            "icon": "https:\/\/playabl.ai\/favicon.ico",
             "fallbackText": "PA",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4578,8 +4578,8 @@
           {
             "id": "new_site_21",
             "title": "AstraFlow星图",
-            "url": "https://www.ucloud.cn/site/active/astraflow",
-            "icon": "https://www.ucloud.cn/favicon.ico",
+            "url": "https:\/\/www.ucloud.cn\/site\/active\/astraflow",
+            "icon": "https:\/\/www.ucloud.cn\/favicon.ico",
             "fallbackText": "星图",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4591,8 +4591,8 @@
           {
             "id": "new_site_22",
             "title": "OpenRouter",
-            "url": "https://openrouter.ai/",
-            "icon": "https://openrouter.ai/favicon.ico",
+            "url": "https:\/\/openrouter.ai\/",
+            "icon": "https:\/\/openrouter.ai\/favicon.ico",
             "fallbackText": "OR",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4604,8 +4604,8 @@
           {
             "id": "new_site_23",
             "title": "SiliconFlow",
-            "url": "https://cloud.siliconflow.cn/",
-            "icon": "https://cloud.siliconflow.cn/favicon.ico",
+            "url": "https:\/\/cloud.siliconflow.cn\/",
+            "icon": "https:\/\/cloud.siliconflow.cn\/favicon.ico",
             "fallbackText": "硅基",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4617,8 +4617,8 @@
           {
             "id": "new_site_24",
             "title": "OfoxAI",
-            "url": "https://ofox.io/",
-            "icon": "https://ofox.io/favicon.ico",
+            "url": "https:\/\/ofox.io\/",
+            "icon": "https:\/\/ofox.io\/favicon.ico",
             "fallbackText": "Ofox",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4630,8 +4630,8 @@
           {
             "id": "new_site_25",
             "title": "QMuse",
-            "url": "https://www.qmusespace.com/",
-            "icon": "https://www.qmusespace.com/favicon.ico",
+            "url": "https:\/\/www.qmusespace.com\/",
+            "icon": "https:\/\/www.qmusespace.com\/favicon.ico",
             "fallbackText": "QM",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4643,8 +4643,8 @@
           {
             "id": "new_site_26",
             "title": "麦芽AI",
-            "url": "https://www.myaifast.com/",
-            "icon": "https://www.myaifast.com/favicon.ico",
+            "url": "https:\/\/www.myaifast.com\/",
+            "icon": "https:\/\/www.myaifast.com\/favicon.ico",
             "fallbackText": "麦芽",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4656,8 +4656,8 @@
           {
             "id": "new_site_27",
             "title": "Trickle AI",
-            "url": "https://trickle.so/",
-            "icon": "https://trickle.so/favicon.ico",
+            "url": "https:\/\/trickle.so\/",
+            "icon": "https:\/\/trickle.so\/favicon.ico",
             "fallbackText": "TK",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4669,8 +4669,8 @@
           {
             "id": "new_site_28",
             "title": "WorldClaw",
-            "url": "https://worldclaw.ai/",
-            "icon": "https://worldclaw.ai/favicon.ico",
+            "url": "https:\/\/worldclaw.ai\/",
+            "icon": "https:\/\/worldclaw.ai\/favicon.ico",
             "fallbackText": "WC",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4682,8 +4682,8 @@
           {
             "id": "new_site_29",
             "title": "TokenDance",
-            "url": "https://tokendance.space/",
-            "icon": "https://tokendance.space/favicon.ico",
+            "url": "https:\/\/tokendance.space\/",
+            "icon": "https:\/\/tokendance.space\/favicon.ico",
             "fallbackText": "TD",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4695,8 +4695,8 @@
           {
             "id": "new_site_30",
             "title": "MoMA",
-            "url": "https://ecloud.10086.cn/portal/product/MaaS",
-            "icon": "https://ecloud.10086.cn/favicon.ico",
+            "url": "https:\/\/ecloud.10086.cn\/portal\/product\/MaaS",
+            "icon": "https:\/\/ecloud.10086.cn\/favicon.ico",
             "fallbackText": "移动",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4708,8 +4708,8 @@
           {
             "id": "new_site_31",
             "title": "博查万象",
-            "url": "https://open.bochaai.com/",
-            "icon": "https://open.bochaai.com/favicon.ico",
+            "url": "https:\/\/open.bochaai.com\/",
+            "icon": "https:\/\/open.bochaai.com\/favicon.ico",
             "fallbackText": "博查",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4721,8 +4721,8 @@
           {
             "id": "new_site_32",
             "title": "B.AI",
-            "url": "https://b.ai/",
-            "icon": "https://b.ai/favicon.ico",
+            "url": "https:\/\/b.ai\/",
+            "icon": "https:\/\/b.ai\/favicon.ico",
             "fallbackText": "BAI",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4734,8 +4734,8 @@
           {
             "id": "new_site_33",
             "title": "灵光",
-            "url": "https://www.lingguang.com/chat",
-            "icon": "https://www.lingguang.com/favicon.ico",
+            "url": "https:\/\/www.lingguang.com\/chat",
+            "icon": "https:\/\/www.lingguang.com\/favicon.ico",
             "fallbackText": "灵光",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4747,8 +4747,8 @@
           {
             "id": "new_site_34",
             "title": "万小智",
-            "url": "https://wanxiaozhi.aliyun.com/",
-            "icon": "https://wanxiaozhi.aliyun.com/favicon.ico",
+            "url": "https:\/\/wanxiaozhi.aliyun.com\/",
+            "icon": "https:\/\/wanxiaozhi.aliyun.com\/favicon.ico",
             "fallbackText": "小智",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4760,8 +4760,8 @@
           {
             "id": "new_site_35",
             "title": "BASE44",
-            "url": "https://base44.com/",
-            "icon": "https://base44.com/favicon.ico",
+            "url": "https:\/\/base44.com\/",
+            "icon": "https:\/\/base44.com\/favicon.ico",
             "fallbackText": "B44",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4773,21 +4773,21 @@
           {
             "id": "new_site_36",
             "title": "英博云AI算力",
-            "url": "https://www.ebcloud.com/",
-            "icon": "https://www.ebcloud.com/favicon.ico",
+            "url": "https:\/\/www.ebcloud.com\/",
+            "icon": "https:\/\/www.ebcloud.com\/favicon.ico",
             "fallbackText": "英博",
             "badge": "NEW",
             "badgeType": "NEW",
             "desc": "高性价比高性能GPU云算力租赁与模型加速平台",
             "categoryId": "coding_tools",
             "subcatId": "maas",
-            "highlights": "提供A100/H800/4090等顶尖显卡即租即用；免运维高速网络互联，专为AI训练和渲染打造"
+            "highlights": "提供A100\/H800\/4090等顶尖显卡即租即用；免运维高速网络互联，专为AI训练和渲染打造"
           },
           {
             "id": "new_site_37",
             "title": "汇智Token工场",
-            "url": "https://www.agentsyun.com/",
-            "icon": "https://www.agentsyun.com/favicon.ico",
+            "url": "https:\/\/www.agentsyun.com\/",
+            "icon": "https:\/\/www.agentsyun.com\/favicon.ico",
             "fallbackText": "汇智",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4799,8 +4799,8 @@
           {
             "id": "new_site_38",
             "title": "Aippy",
-            "url": "https://aippy.ai/",
-            "icon": "https://aippy.ai/favicon.ico",
+            "url": "https:\/\/aippy.ai\/",
+            "icon": "https:\/\/aippy.ai\/favicon.ico",
             "fallbackText": "Aip",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4812,8 +4812,8 @@
           {
             "id": "new_site_39",
             "title": "快马InsCode",
-            "url": "https://www.inscode.net/",
-            "icon": "https://www.inscode.net/favicon.ico",
+            "url": "https:\/\/www.inscode.net\/",
+            "icon": "https:\/\/www.inscode.net\/favicon.ico",
             "fallbackText": "快马",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4825,8 +4825,8 @@
           {
             "id": "new_site_40",
             "title": "NoCode",
-            "url": "https://nocode.meituan.com/",
-            "icon": "https://nocode.meituan.com/favicon.ico",
+            "url": "https:\/\/nocode.meituan.com\/",
+            "icon": "https:\/\/nocode.meituan.com\/favicon.ico",
             "fallbackText": "NC",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4838,8 +4838,8 @@
           {
             "id": "new_site_41",
             "title": "Whacka",
-            "url": "https://whacka.app/",
-            "icon": "https://whacka.app/favicon.ico",
+            "url": "https:\/\/whacka.app\/",
+            "icon": "https:\/\/whacka.app\/favicon.ico",
             "fallbackText": "WK",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4851,8 +4851,8 @@
           {
             "id": "new_site_42",
             "title": "gapp.so",
-            "url": "https://gapp.so/",
-            "icon": "https://gapp.so/favicon.ico",
+            "url": "https:\/\/gapp.so\/",
+            "icon": "https:\/\/gapp.so\/favicon.ico",
             "fallbackText": "Gapp",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4864,21 +4864,21 @@
           {
             "id": "new_site_43",
             "title": "数眼智能AI",
-            "url": "https://shuyanai.com/",
-            "icon": "https://shuyanai.com/favicon.ico",
+            "url": "https:\/\/shuyanai.com\/",
+            "icon": "https:\/\/shuyanai.com\/favicon.ico",
             "fallbackText": "数眼",
             "badge": "NEW",
             "badgeType": "NEW",
             "desc": "专业面向企业数据可视化与智能BI分析的决策大模型系统",
             "categoryId": "coding_tools",
             "subcatId": "agent",
-            "highlights": "对话式生成复杂SQL与动态折线/柱状图表，让业务人员直接跟数据对话"
+            "highlights": "对话式生成复杂SQL与动态折线\/柱状图表，让业务人员直接跟数据对话"
           },
           {
             "id": "new_site_44",
             "title": "SophNet",
-            "url": "https://www.sophnet.com/",
-            "icon": "https://www.sophnet.com/favicon.ico",
+            "url": "https:\/\/www.sophnet.com\/",
+            "icon": "https:\/\/www.sophnet.com\/favicon.ico",
             "fallbackText": "Soph",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4890,8 +4890,8 @@
           {
             "id": "new_site_46",
             "title": "晨涧云",
-            "url": "https://www.mornai.cn/",
-            "icon": "https://www.mornai.cn/favicon.ico",
+            "url": "https:\/\/www.mornai.cn\/",
+            "icon": "https:\/\/www.mornai.cn\/favicon.ico",
             "fallbackText": "晨涧",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4903,8 +4903,8 @@
           {
             "id": "new_site_47",
             "title": "LLaMA-Factory Online",
-            "url": "https://www.llamafactory.online/",
-            "icon": "https://www.llamafactory.online/favicon.ico",
+            "url": "https:\/\/www.llamafactory.online\/",
+            "icon": "https:\/\/www.llamafactory.online\/favicon.ico",
             "fallbackText": "LF",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4916,8 +4916,8 @@
           {
             "id": "new_site_48",
             "title": "大模型实验室",
-            "url": "https://www.lab4ai.cn/",
-            "icon": "https://www.lab4ai.cn/favicon.ico",
+            "url": "https:\/\/www.lab4ai.cn\/",
+            "icon": "https:\/\/www.lab4ai.cn\/favicon.ico",
             "fallbackText": "Lab",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4929,8 +4929,8 @@
           {
             "id": "new_site_49",
             "title": "APIMart",
-            "url": "https://apimart.ai/",
-            "icon": "https://apimart.ai/favicon.ico",
+            "url": "https:\/\/apimart.ai\/",
+            "icon": "https:\/\/apimart.ai\/favicon.ico",
             "fallbackText": "AM",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4942,8 +4942,8 @@
           {
             "id": "new_site_50",
             "title": "DMXAPI",
-            "url": "https://dmxapi.cn/",
-            "icon": "https://dmxapi.cn/favicon.ico",
+            "url": "https:\/\/dmxapi.cn\/",
+            "icon": "https:\/\/dmxapi.cn\/favicon.ico",
             "fallbackText": "DMX",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4955,8 +4955,8 @@
           {
             "id": "new_site_51",
             "title": "小马算力",
-            "url": "https://www.tokenpony.cn/",
-            "icon": "https://www.tokenpony.cn/favicon.ico",
+            "url": "https:\/\/www.tokenpony.cn\/",
+            "icon": "https:\/\/www.tokenpony.cn\/favicon.ico",
             "fallbackText": "小马",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4968,8 +4968,8 @@
           {
             "id": "new_site_52",
             "title": "Refly",
-            "url": "https://refly.ai/",
-            "icon": "https://refly.ai/favicon.ico",
+            "url": "https:\/\/refly.ai\/",
+            "icon": "https:\/\/refly.ai\/favicon.ico",
             "fallbackText": "Refly",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4981,8 +4981,8 @@
           {
             "id": "new_site_53",
             "title": "搭叩",
-            "url": "https://dakou.iflow.cn/",
-            "icon": "https://dakou.iflow.cn/favicon.ico",
+            "url": "https:\/\/dakou.iflow.cn\/",
+            "icon": "https:\/\/dakou.iflow.cn\/favicon.ico",
             "fallbackText": "搭叩",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -4994,8 +4994,8 @@
           {
             "id": "new_site_54",
             "title": "CREAO",
-            "url": "https://creao.ai/",
-            "icon": "https://creao.ai/favicon.ico",
+            "url": "https:\/\/creao.ai\/",
+            "icon": "https:\/\/creao.ai\/favicon.ico",
             "fallbackText": "CRE",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5007,8 +5007,8 @@
           {
             "id": "new_site_55",
             "title": "Make",
-            "url": "https://www.make.com/",
-            "icon": "https://www.make.com/favicon.ico",
+            "url": "https:\/\/www.make.com\/",
+            "icon": "https:\/\/www.make.com\/favicon.ico",
             "fallbackText": "Make",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5020,8 +5020,8 @@
           {
             "id": "new_site_56",
             "title": "Wordware",
-            "url": "https://www.wordware.ai/",
-            "icon": "https://www.wordware.ai/favicon.ico",
+            "url": "https:\/\/www.wordware.ai\/",
+            "icon": "https:\/\/www.wordware.ai\/favicon.ico",
             "fallbackText": "WW",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5033,8 +5033,8 @@
           {
             "id": "new_site_57",
             "title": "天壤小白",
-            "url": "https://www.tianrang.com/",
-            "icon": "https://www.tianrang.com/favicon.ico",
+            "url": "https:\/\/www.tianrang.com\/",
+            "icon": "https:\/\/www.tianrang.com\/favicon.ico",
             "fallbackText": "天壤",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5046,8 +5046,8 @@
           {
             "id": "new_site_58",
             "title": "PPIO派欧云",
-            "url": "https://ppio.cn/",
-            "icon": "https://ppio.cn/favicon.ico",
+            "url": "https:\/\/ppio.cn\/",
+            "icon": "https:\/\/ppio.cn\/favicon.ico",
             "fallbackText": "派欧",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5059,8 +5059,8 @@
           {
             "id": "new_site_59",
             "title": "蚂蚁百宝箱Tbox",
-            "url": "https://tbox.alipay.com/",
-            "icon": "https://tbox.alipay.com/favicon.ico",
+            "url": "https:\/\/tbox.alipay.com\/",
+            "icon": "https:\/\/tbox.alipay.com\/favicon.ico",
             "fallbackText": "Tbox",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5072,12 +5072,12 @@
           {
             "id": "new_site_60",
             "title": "WaveSpeedAI",
-            "url": "https://wavespeed.ai/",
-            "icon": "https://wavespeed.ai/favicon.ico",
+            "url": "https:\/\/wavespeed.ai\/",
+            "icon": "https:\/\/wavespeed.ai\/favicon.ico",
             "fallbackText": "WS",
             "badge": "NEW",
             "badgeType": "NEW",
-            "desc": "专为超低延迟生图与视频生成的AI端侧/云端混合推理引擎",
+            "desc": "专为超低延迟生图与视频生成的AI端侧\/云端混合推理引擎",
             "categoryId": "coding_tools",
             "subcatId": "maas",
             "highlights": "毫秒级实时扩散模型生成算法，让交互式AI视觉体验如丝般顺滑"
@@ -5085,8 +5085,8 @@
           {
             "id": "new_site_61",
             "title": "模力方舟",
-            "url": "https://ai.gitee.com/",
-            "icon": "https://ai.gitee.com/favicon.ico",
+            "url": "https:\/\/ai.gitee.com\/",
+            "icon": "https:\/\/ai.gitee.com\/favicon.ico",
             "fallbackText": "模力",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5098,8 +5098,8 @@
           {
             "id": "new_site_62",
             "title": "LongCat开放平台",
-            "url": "https://longcat.chat/platform/",
-            "icon": "https://longcat.chat/favicon.ico",
+            "url": "https:\/\/longcat.chat\/platform\/",
+            "icon": "https:\/\/longcat.chat\/favicon.ico",
             "fallbackText": "LC",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5111,8 +5111,8 @@
           {
             "id": "new_site_63",
             "title": "X-All in one",
-            "url": "https://www.x-aio.com/",
-            "icon": "https://www.x-aio.com/favicon.ico",
+            "url": "https:\/\/www.x-aio.com\/",
+            "icon": "https:\/\/www.x-aio.com\/favicon.ico",
             "fallbackText": "AIO",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5124,8 +5124,8 @@
           {
             "id": "new_site_64",
             "title": "无问芯穹",
-            "url": "https://cloud.infini-ai.com/platform/ai",
-            "icon": "https://cloud.infini-ai.com/favicon.ico",
+            "url": "https:\/\/cloud.infini-ai.com\/platform\/ai",
+            "icon": "https:\/\/cloud.infini-ai.com\/favicon.ico",
             "fallbackText": "无问",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5137,8 +5137,8 @@
           {
             "id": "new_site_65",
             "title": "胜算云",
-            "url": "https://www.shengsuanyun.com/",
-            "icon": "https://www.shengsuanyun.com/favicon.ico",
+            "url": "https:\/\/www.shengsuanyun.com\/",
+            "icon": "https:\/\/www.shengsuanyun.com\/favicon.ico",
             "fallbackText": "胜算",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5150,8 +5150,8 @@
           {
             "id": "new_site_67",
             "title": "文心智能体平台",
-            "url": "https://agents.baidu.com/",
-            "icon": "https://agents.baidu.com/favicon.ico",
+            "url": "https:\/\/agents.baidu.com\/",
+            "icon": "https:\/\/agents.baidu.com\/favicon.ico",
             "fallbackText": "文心",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5163,8 +5163,8 @@
           {
             "id": "new_site_68",
             "title": "SkyAgents",
-            "url": "https://model-platform-skyagents.tiangong.cn/home/agent",
-            "icon": "https://model-platform-skyagents.tiangong.cn/favicon.ico",
+            "url": "https:\/\/model-platform-skyagents.tiangong.cn\/home\/agent",
+            "icon": "https:\/\/model-platform-skyagents.tiangong.cn\/favicon.ico",
             "fallbackText": "天工",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5176,8 +5176,8 @@
           {
             "id": "new_site_69",
             "title": "言犀智能体平台",
-            "url": "https://yanxi.jd.com/",
-            "icon": "https://yanxi.jd.com/favicon.ico",
+            "url": "https:\/\/yanxi.jd.com\/",
+            "icon": "https:\/\/yanxi.jd.com\/favicon.ico",
             "fallbackText": "言犀",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5189,8 +5189,8 @@
           {
             "id": "new_site_70",
             "title": "魔乐社区",
-            "url": "https://modelers.cn/",
-            "icon": "https://modelers.cn/favicon.ico",
+            "url": "https:\/\/modelers.cn\/",
+            "icon": "https:\/\/modelers.cn\/favicon.ico",
             "fallbackText": "魔乐",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5202,8 +5202,8 @@
           {
             "id": "new_site_71",
             "title": "BetterYeah AI",
-            "url": "https://www.betteryeah.com/",
-            "icon": "https://www.betteryeah.com/favicon.ico",
+            "url": "https:\/\/www.betteryeah.com\/",
+            "icon": "https:\/\/www.betteryeah.com\/favicon.ico",
             "fallbackText": "BY",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5215,8 +5215,8 @@
           {
             "id": "new_site_72",
             "title": "飞桨PaddlePaddle",
-            "url": "https://www.paddlepaddle.org.cn/",
-            "icon": "https://www.paddlepaddle.org.cn/favicon.ico",
+            "url": "https:\/\/www.paddlepaddle.org.cn\/",
+            "icon": "https:\/\/www.paddlepaddle.org.cn\/favicon.ico",
             "fallbackText": "飞桨",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5228,8 +5228,8 @@
           {
             "id": "new_site_73",
             "title": "昇思MindSpore",
-            "url": "https://www.mindspore.cn/",
-            "icon": "https://www.mindspore.cn/favicon.ico",
+            "url": "https:\/\/www.mindspore.cn\/",
+            "icon": "https:\/\/www.mindspore.cn\/favicon.ico",
             "fallbackText": "昇思",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5241,8 +5241,8 @@
           {
             "id": "new_site_74",
             "title": "PyTorch",
-            "url": "https://pytorch.org/",
-            "icon": "https://pytorch.org/favicon.ico",
+            "url": "https:\/\/pytorch.org\/",
+            "icon": "https:\/\/pytorch.org\/favicon.ico",
             "fallbackText": "PT",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5254,8 +5254,8 @@
           {
             "id": "new_site_75",
             "title": "Gumloop",
-            "url": "https://www.gumloop.com/",
-            "icon": "https://www.gumloop.com/favicon.ico",
+            "url": "https:\/\/www.gumloop.com\/",
+            "icon": "https:\/\/www.gumloop.com\/favicon.ico",
             "fallbackText": "GL",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5267,8 +5267,8 @@
           {
             "id": "new_site_76",
             "title": "TensorFlow",
-            "url": "https://www.tensorflow.org/",
-            "icon": "https://www.tensorflow.org/favicon.ico",
+            "url": "https:\/\/www.tensorflow.org\/",
+            "icon": "https:\/\/www.tensorflow.org\/favicon.ico",
             "fallbackText": "TF",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5280,8 +5280,8 @@
           {
             "id": "new_site_77",
             "title": "Apache MXNet",
-            "url": "https://mxnet.apache.org/",
-            "icon": "https://mxnet.apache.org/favicon.ico",
+            "url": "https:\/\/mxnet.apache.org\/",
+            "icon": "https:\/\/mxnet.apache.org\/favicon.ico",
             "fallbackText": "MX",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5293,8 +5293,8 @@
           {
             "id": "new_site_78",
             "title": "Scikit-learn",
-            "url": "https://scikit-learn.org/",
-            "icon": "https://scikit-learn.org/favicon.ico",
+            "url": "https:\/\/scikit-learn.org\/",
+            "icon": "https:\/\/scikit-learn.org\/favicon.ico",
             "fallbackText": "SKL",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5306,8 +5306,8 @@
           {
             "id": "new_site_79",
             "title": "MLX",
-            "url": "https://ml-explore.github.io/mlx/build/html/index.html",
-            "icon": "https://ml-explore.github.io/favicon.ico",
+            "url": "https:\/\/ml-explore.github.io\/mlx\/build\/html\/index.html",
+            "icon": "https:\/\/ml-explore.github.io\/favicon.ico",
             "fallbackText": "MLX",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5319,8 +5319,8 @@
           {
             "id": "new_site_80",
             "title": "Label Studio",
-            "url": "https://labelstud.io/",
-            "icon": "https://labelstud.io/favicon.ico",
+            "url": "https:\/\/labelstud.io\/",
+            "icon": "https:\/\/labelstud.io\/favicon.ico",
             "fallbackText": "LS",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5332,8 +5332,8 @@
           {
             "id": "new_site_81",
             "title": "Chunkr",
-            "url": "https://lumina.sh/",
-            "icon": "https://lumina.sh/favicon.ico",
+            "url": "https:\/\/lumina.sh\/",
+            "icon": "https:\/\/lumina.sh\/favicon.ico",
             "fallbackText": "CK",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5345,8 +5345,8 @@
           {
             "id": "new_site_82",
             "title": "Vercel AI SDK",
-            "url": "https://sdk.vercel.ai/docs",
-            "icon": "https://sdk.vercel.ai/favicon.ico",
+            "url": "https:\/\/sdk.vercel.ai\/docs",
+            "icon": "https:\/\/sdk.vercel.ai\/favicon.ico",
             "fallbackText": "SDK",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5358,12 +5358,12 @@
           {
             "id": "new_site_83",
             "title": "Keras",
-            "url": "https://keras.io/",
-            "icon": "https://keras.io/favicon.ico",
+            "url": "https:\/\/keras.io\/",
+            "icon": "https:\/\/keras.io\/favicon.ico",
             "fallbackText": "KR",
             "badge": "NEW",
             "badgeType": "NEW",
-            "desc": "优雅高层神经网络API，Keras 3支持JAX/PyTorch/TensorFlow多后端",
+            "desc": "优雅高层神经网络API，Keras 3支持JAX\/PyTorch\/TensorFlow多后端",
             "categoryId": "coding_tools",
             "subcatId": "framework",
             "highlights": "以人为本的设计理念，写一次代码即可在任意主流底层计算后端上无缝运行"
@@ -5371,8 +5371,8 @@
           {
             "id": "new_site_84",
             "title": "Caffe",
-            "url": "https://caffe.berkeleyvision.org/",
-            "icon": "https://caffe.berkeleyvision.org/favicon.ico",
+            "url": "https:\/\/caffe.berkeleyvision.org\/",
+            "icon": "https:\/\/caffe.berkeleyvision.org\/favicon.ico",
             "fallbackText": "CF",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5384,8 +5384,8 @@
           {
             "id": "new_site_85",
             "title": "NumPy",
-            "url": "https://numpy.org/",
-            "icon": "https://numpy.org/favicon.ico",
+            "url": "https:\/\/numpy.org\/",
+            "icon": "https:\/\/numpy.org\/favicon.ico",
             "fallbackText": "NP",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5397,8 +5397,8 @@
           {
             "id": "new_site_86",
             "title": "DL4J",
-            "url": "https://deeplearning4j.konduit.ai/",
-            "icon": "https://deeplearning4j.konduit.ai/favicon.ico",
+            "url": "https:\/\/deeplearning4j.konduit.ai\/",
+            "icon": "https:\/\/deeplearning4j.konduit.ai\/favicon.ico",
             "fallbackText": "DL4J",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5410,21 +5410,21 @@
           {
             "id": "new_site_87",
             "title": "JAX",
-            "url": "https://jax.readthedocs.io/en/latest",
-            "icon": "https://jax.readthedocs.io/favicon.ico",
+            "url": "https:\/\/jax.readthedocs.io\/en\/latest",
+            "icon": "https:\/\/jax.readthedocs.io\/favicon.ico",
             "fallbackText": "JAX",
             "badge": "NEW",
             "badgeType": "NEW",
             "desc": "谷歌开源的可组合高性能自动微分与XLA硬件编译加速库",
             "categoryId": "coding_tools",
             "subcatId": "framework",
-            "highlights": "函数式编程范式，TPU/GPU自动向量化与并行加速，被诸多尖端大模型科研实验室广泛采用"
+            "highlights": "函数式编程范式，TPU\/GPU自动向量化与并行加速，被诸多尖端大模型科研实验室广泛采用"
           },
           {
             "id": "new_site_88",
             "title": "NLTK",
-            "url": "https://www.nltk.org/",
-            "icon": "https://www.nltk.org/favicon.ico",
+            "url": "https:\/\/www.nltk.org\/",
+            "icon": "https:\/\/www.nltk.org\/favicon.ico",
             "fallbackText": "NLTK",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5436,8 +5436,8 @@
           {
             "id": "new_site_89",
             "title": "LangChain",
-            "url": "https://docs.langchain.com/docs/",
-            "icon": "https://docs.langchain.com/favicon.ico",
+            "url": "https:\/\/docs.langchain.com\/docs\/",
+            "icon": "https:\/\/docs.langchain.com\/favicon.ico",
             "fallbackText": "LC",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5449,8 +5449,8 @@
           {
             "id": "new_site_90",
             "title": "Lightning AI",
-            "url": "https://lightning.ai/",
-            "icon": "https://lightning.ai/favicon.ico",
+            "url": "https:\/\/lightning.ai\/",
+            "icon": "https:\/\/lightning.ai\/favicon.ico",
             "fallbackText": "LAI",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5462,12 +5462,12 @@
           {
             "id": "new_site_91",
             "title": "Leap",
-            "url": "https://www.tryleap.ai/",
-            "icon": "https://www.tryleap.ai/favicon.ico",
+            "url": "https:\/\/www.tryleap.ai\/",
+            "icon": "https:\/\/www.tryleap.ai\/favicon.ico",
             "fallbackText": "Leap",
             "badge": "NEW",
             "badgeType": "NEW",
-            "desc": "零代码微调与多模态AI图像/音频API生产集成平台",
+            "desc": "零代码微调与多模态AI图像\/音频API生产集成平台",
             "categoryId": "coding_tools",
             "subcatId": "agent",
             "highlights": "快速将专属人物面孔或商品风格训练成私有模型，并通过标准REST API对外调用"
@@ -5475,8 +5475,8 @@
           {
             "id": "new_site_92",
             "title": "ChatDev",
-            "url": "https://chatdev.modelbest.cn/",
-            "icon": "https://chatdev.modelbest.cn/favicon.ico",
+            "url": "https:\/\/chatdev.modelbest.cn\/",
+            "icon": "https:\/\/chatdev.modelbest.cn\/favicon.ico",
             "fallbackText": "CD",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5488,8 +5488,8 @@
           {
             "id": "new_site_93",
             "title": "Anakin.ai",
-            "url": "https://anakin.ai/zh-cn",
-            "icon": "https://anakin.ai/favicon.ico",
+            "url": "https:\/\/anakin.ai\/zh-cn",
+            "icon": "https:\/\/anakin.ai\/favicon.ico",
             "fallbackText": "AK",
             "badge": "NEW",
             "badgeType": "NEW",
@@ -5501,8 +5501,8 @@
           {
             "id": "code_site_2",
             "title": "码上飞",
-            "url": "https://codeflying.cgref.cn/aibot",
-            "icon": "https://codeflying.cgref.cn/favicon.ico",
+            "url": "https:\/\/codeflying.cgref.cn\/aibot",
+            "icon": "https:\/\/codeflying.cgref.cn\/favicon.ico",
             "fallbackText": "码上飞",
             "badge": "AI出码",
             "badgeType": "GOLD",
@@ -5514,8 +5514,8 @@
           {
             "id": "code_site_3",
             "title": "代码小浣熊",
-            "url": "https://www.xiaohuanxiong.com/",
-            "icon": "https://www.xiaohuanxiong.com/favicon.ico",
+            "url": "https:\/\/www.xiaohuanxiong.com\/",
+            "icon": "https:\/\/www.xiaohuanxiong.com\/favicon.ico",
             "fallbackText": "浣熊",
             "badge": "智能代码",
             "badgeType": "ROSE",
@@ -5527,8 +5527,8 @@
           {
             "id": "code_site_4",
             "title": "Codex",
-            "url": "https://openai.com/codex/",
-            "icon": "https://openai.com/favicon.ico",
+            "url": "https:\/\/openai.com\/codex\/",
+            "icon": "https:\/\/openai.com\/favicon.ico",
             "fallbackText": "Codex",
             "badge": "OpenAI",
             "badgeType": "BLUE",
@@ -5540,8 +5540,8 @@
           {
             "id": "code_site_5",
             "title": "Claude Code",
-            "url": "https://www.anthropic.com/claude-code",
-            "icon": "https://www.anthropic.com/favicon.ico",
+            "url": "https:\/\/www.anthropic.com\/claude-code",
+            "icon": "https:\/\/www.anthropic.com\/favicon.ico",
             "fallbackText": "Claude",
             "badge": "Agentic",
             "badgeType": "GOLD",
@@ -5553,8 +5553,8 @@
           {
             "id": "code_site_6",
             "title": "OpenCode",
-            "url": "https://opencode.ai/",
-            "icon": "https://opencode.ai/favicon.ico",
+            "url": "https:\/\/opencode.ai\/",
+            "icon": "https:\/\/opencode.ai\/favicon.ico",
             "fallbackText": "Open",
             "badge": "开源Agent",
             "badgeType": "NEW",
@@ -5566,8 +5566,8 @@
           {
             "id": "code_site_7",
             "title": "Agent.Space",
-            "url": "https://agentspace.cgref.cn/s/omkl2mve4d",
-            "icon": "https://agentspace.cgref.cn/favicon.ico",
+            "url": "https:\/\/agentspace.cgref.cn\/s\/omkl2mve4d",
+            "icon": "https:\/\/agentspace.cgref.cn\/favicon.ico",
             "fallbackText": "Space",
             "badge": "Agent空间",
             "badgeType": "BLUE",
@@ -5579,8 +5579,8 @@
           {
             "id": "code_site_8",
             "title": "Qoder",
-            "url": "https://qoder.com/",
-            "icon": "https://qoder.com/favicon.ico",
+            "url": "https:\/\/qoder.com\/",
+            "icon": "https:\/\/qoder.com\/favicon.ico",
             "fallbackText": "Qoder",
             "badge": "极速补全",
             "badgeType": "GOLD",
@@ -5592,8 +5592,8 @@
           {
             "id": "code_site_9",
             "title": "Kimi Code",
-            "url": "https://www.kimi.com/code",
-            "icon": "https://www.kimi.com/favicon.ico",
+            "url": "https:\/\/www.kimi.com\/code",
+            "icon": "https:\/\/www.kimi.com\/favicon.ico",
             "fallbackText": "Kimi",
             "badge": "超长",
             "badgeType": "ROSE",
@@ -5605,8 +5605,8 @@
           {
             "id": "code_site_10",
             "title": "Kilo Code",
-            "url": "https://kilo.ai/",
-            "icon": "https://kilo.ai/favicon.ico",
+            "url": "https:\/\/kilo.ai\/",
+            "icon": "https:\/\/kilo.ai\/favicon.ico",
             "fallbackText": "Kilo",
             "badge": "开发",
             "badgeType": "NEW",
@@ -5618,8 +5618,8 @@
           {
             "id": "code_site_11",
             "title": "Google Antigravity",
-            "url": "https://antigravity.google/",
-            "icon": "https://antigravity.google/favicon.ico",
+            "url": "https:\/\/antigravity.google\/",
+            "icon": "https:\/\/antigravity.google\/favicon.ico",
             "fallbackText": "Anti",
             "badge": "Google",
             "badgeType": "BLUE",
@@ -5631,8 +5631,8 @@
           {
             "id": "code_site_12",
             "title": "Kiro",
-            "url": "https://kiro.dev/",
-            "icon": "https://kiro.dev/favicon.ico",
+            "url": "https:\/\/kiro.dev\/",
+            "icon": "https:\/\/kiro.dev\/favicon.ico",
             "fallbackText": "Kiro",
             "badge": "DevTools",
             "badgeType": "GOLD",
@@ -5644,8 +5644,8 @@
           {
             "id": "code_site_13",
             "title": "Cursor",
-            "url": "https://www.cursor.com/",
-            "icon": "https://www.cursor.com/favicon.ico",
+            "url": "https:\/\/www.cursor.com\/",
+            "icon": "https:\/\/www.cursor.com\/favicon.ico",
             "fallbackText": "Cursor",
             "badge": "爆款IDE",
             "badgeType": "BLUE",
@@ -5657,8 +5657,8 @@
           {
             "id": "code_site_14",
             "title": "Cline",
-            "url": "https://cline.bot/",
-            "icon": "https://cline.bot/favicon.ico",
+            "url": "https:\/\/cline.bot\/",
+            "icon": "https:\/\/cline.bot\/favicon.ico",
             "fallbackText": "Cline",
             "badge": "自主Agent",
             "badgeType": "NEW",
@@ -5670,8 +5670,8 @@
           {
             "id": "code_site_15",
             "title": "MiMo Code",
-            "url": "https://mimo.xiaomi.com/mimocode",
-            "icon": "https://mimo.xiaomi.com/favicon.ico",
+            "url": "https:\/\/mimo.xiaomi.com\/mimocode",
+            "icon": "https:\/\/mimo.xiaomi.com\/favicon.ico",
             "fallbackText": "MiMo",
             "badge": "小米出品",
             "badgeType": "GOLD",
@@ -5683,8 +5683,8 @@
           {
             "id": "code_site_16",
             "title": "YouWare",
-            "url": "https://www.youware.com/",
-            "icon": "https://www.youware.com/favicon.ico",
+            "url": "https:\/\/www.youware.com\/",
+            "icon": "https:\/\/www.youware.com\/favicon.ico",
             "fallbackText": "YW",
             "badge": "低代码AI",
             "badgeType": "ROSE",
@@ -5696,8 +5696,8 @@
           {
             "id": "code_site_17",
             "title": "ZCode",
-            "url": "https://zcode-ai.com/",
-            "icon": "https://zcode-ai.com/favicon.ico",
+            "url": "https:\/\/zcode-ai.com\/",
+            "icon": "https:\/\/zcode-ai.com\/favicon.ico",
             "fallbackText": "ZCode",
             "badge": "AI重构",
             "badgeType": "BLUE",
@@ -5709,8 +5709,8 @@
           {
             "id": "code_site_18",
             "title": "CodeBuddy IDE",
-            "url": "https://www.codebuddy.ai/",
-            "icon": "https://www.codebuddy.ai/favicon.ico",
+            "url": "https:\/\/www.codebuddy.ai\/",
+            "icon": "https:\/\/www.codebuddy.ai\/favicon.ico",
             "fallbackText": "Buddy",
             "badge": "AI伴侣",
             "badgeType": "GOLD",
@@ -5722,8 +5722,8 @@
           {
             "id": "code_site_19",
             "title": "Lovable",
-            "url": "https://lovable.dev/",
-            "icon": "https://lovable.dev/favicon.ico",
+            "url": "https:\/\/lovable.dev\/",
+            "icon": "https:\/\/lovable.dev\/favicon.ico",
             "fallbackText": "Love",
             "badge": "全栈构建",
             "badgeType": "ROSE",
@@ -5735,8 +5735,8 @@
           {
             "id": "code_site_20",
             "title": "CatPaw",
-            "url": "https://catpaw.meituan.com/",
-            "icon": "https://catpaw.meituan.com/favicon.ico",
+            "url": "https:\/\/catpaw.meituan.com\/",
+            "icon": "https:\/\/catpaw.meituan.com\/favicon.ico",
             "fallbackText": "猫爪",
             "badge": "美团出品",
             "badgeType": "GOLD",
@@ -5748,8 +5748,8 @@
           {
             "id": "code_site_21",
             "title": "网易CodeWave",
-            "url": "https://codewave.163.com/",
-            "icon": "https://codewave.163.com/favicon.ico",
+            "url": "https:\/\/codewave.163.com\/",
+            "icon": "https:\/\/codewave.163.com\/favicon.ico",
             "fallbackText": "网易",
             "badge": "低代码",
             "badgeType": "BLUE",
@@ -5761,8 +5761,8 @@
           {
             "id": "code_site_22",
             "title": "Augment Code",
-            "url": "https://www.augmentcode.com/",
-            "icon": "https://www.augmentcode.com/favicon.ico",
+            "url": "https:\/\/www.augmentcode.com\/",
+            "icon": "https:\/\/www.augmentcode.com\/favicon.ico",
             "fallbackText": "Aug",
             "badge": "超大仓库",
             "badgeType": "GOLD",
@@ -5774,8 +5774,8 @@
           {
             "id": "code_site_23",
             "title": "AgnesCode",
-            "url": "https://agnes-ai.com/agnescode",
-            "icon": "https://agnes-ai.com/favicon.ico",
+            "url": "https:\/\/agnes-ai.com\/agnescode",
+            "icon": "https:\/\/agnes-ai.com\/favicon.ico",
             "fallbackText": "Agnes",
             "badge": "AI开发",
             "badgeType": "NEW",
@@ -5787,8 +5787,8 @@
           {
             "id": "code_site_24",
             "title": "MonkeyCode",
-            "url": "https://monkeycode.com/",
-            "icon": "https://monkeycode.com/favicon.ico",
+            "url": "https:\/\/monkeycode.com\/",
+            "icon": "https:\/\/monkeycode.com\/favicon.ico",
             "fallbackText": "Monkey",
             "badge": "趣味编程",
             "badgeType": "ROSE",
@@ -5800,8 +5800,8 @@
           {
             "id": "code_site_25",
             "title": "腾讯云AI代码助手",
-            "url": "https://copilot.tencent.com/",
-            "icon": "https://copilot.tencent.com/favicon.ico",
+            "url": "https:\/\/copilot.tencent.com\/",
+            "icon": "https:\/\/copilot.tencent.com\/favicon.ico",
             "fallbackText": "腾讯",
             "badge": "腾讯出品",
             "badgeType": "BLUE",
@@ -5813,8 +5813,8 @@
           {
             "id": "code_site_27",
             "title": "iFlyCode",
-            "url": "https://iflycode.xfyun.cn/",
-            "icon": "https://iflycode.xfyun.cn/favicon.ico",
+            "url": "https:\/\/iflycode.xfyun.cn\/",
+            "icon": "https:\/\/iflycode.xfyun.cn\/favicon.ico",
             "fallbackText": "讯飞",
             "badge": "讯飞星火",
             "badgeType": "ROSE",
@@ -5826,8 +5826,8 @@
           {
             "id": "code_site_28",
             "title": "文心快码",
-            "url": "https://comate.baidu.com/",
-            "icon": "https://comate.baidu.com/favicon.ico",
+            "url": "https:\/\/comate.baidu.com\/",
+            "icon": "https:\/\/comate.baidu.com\/favicon.ico",
             "fallbackText": "快码",
             "badge": "百度出品",
             "badgeType": "BLUE",
@@ -5839,8 +5839,8 @@
           {
             "id": "code_site_29",
             "title": "MarsCode",
-            "url": "https://www.marscode.cn/",
-            "icon": "https://www.marscode.cn/favicon.ico",
+            "url": "https:\/\/www.marscode.cn\/",
+            "icon": "https:\/\/www.marscode.cn\/favicon.ico",
             "fallbackText": "火星",
             "badge": "豆包驱动",
             "badgeType": "GOLD",
@@ -5852,8 +5852,8 @@
           {
             "id": "code_site_30",
             "title": "Fitten Code",
-            "url": "https://code.fittentech.com/",
-            "icon": "https://code.fittentech.com/favicon.ico",
+            "url": "https:\/\/code.fittentech.com\/",
+            "icon": "https:\/\/code.fittentech.com\/favicon.ico",
             "fallbackText": "非腾",
             "badge": "极速轻量",
             "badgeType": "NEW",
@@ -5865,8 +5865,8 @@
           {
             "id": "code_orig_firebase",
             "title": "Firebase Studio",
-            "url": "https://firebase.studio/",
-            "icon": "https://firebase.studio/favicon.ico",
+            "url": "https:\/\/firebase.studio\/",
+            "icon": "https:\/\/firebase.studio\/favicon.ico",
             "fallbackText": "Studio",
             "badge": "云端开发",
             "badgeType": "GOLD",
@@ -5878,8 +5878,8 @@
           {
             "id": "code_orig_windsurf",
             "title": "Windsurf",
-            "url": "https://windsurf.com/",
-            "icon": "https://windsurf.com/favicon.ico",
+            "url": "https:\/\/windsurf.com\/",
+            "icon": "https:\/\/windsurf.com\/favicon.ico",
             "fallbackText": "Wind",
             "badge": "Agent",
             "badgeType": "NEW",
@@ -5891,8 +5891,8 @@
           {
             "id": "code_orig_bolt",
             "title": "Bolt.new",
-            "url": "https://bolt.new/",
-            "icon": "https://bolt.new/favicon.ico",
+            "url": "https:\/\/bolt.new\/",
+            "icon": "https:\/\/bolt.new\/favicon.ico",
             "fallbackText": "Bolt",
             "badge": "容器",
             "badgeType": "BLUE",
@@ -5904,8 +5904,8 @@
           {
             "id": "code_orig_infcode",
             "title": "InfCode",
-            "url": "https://www.tokfinity.com/infcode",
-            "icon": "https://www.tokfinity.com/favicon.ico",
+            "url": "https:\/\/www.tokfinity.com\/infcode",
+            "icon": "https:\/\/www.tokfinity.com\/favicon.ico",
             "fallbackText": "Inf",
             "badge": "无限代码",
             "badgeType": "ROSE",
@@ -5917,8 +5917,8 @@
           {
             "id": "code_add_ollama",
             "title": "Ollama",
-            "url": "https://ollama.com/",
-            "icon": "https://ollama.com/favicon.ico",
+            "url": "https:\/\/ollama.com\/",
+            "icon": "https:\/\/ollama.com\/favicon.ico",
             "fallbackText": "Oll",
             "badge": "本地模型",
             "badgeType": "GOLD",
@@ -5930,8 +5930,8 @@
           {
             "id": "code_add_lmstudio",
             "title": "LM Studio",
-            "url": "https://lmstudio.ai/",
-            "icon": "https://lmstudio.ai/favicon.ico",
+            "url": "https:\/\/lmstudio.ai\/",
+            "icon": "https:\/\/lmstudio.ai\/favicon.ico",
             "fallbackText": "LMS",
             "badge": "桌面模型",
             "badgeType": "BLUE",
@@ -5943,8 +5943,8 @@
           {
             "id": "code_add_jan",
             "title": "Jan AI",
-            "url": "https://jan.ai/",
-            "icon": "https://jan.ai/favicon.ico",
+            "url": "https:\/\/jan.ai\/",
+            "icon": "https:\/\/jan.ai\/favicon.ico",
             "fallbackText": "Jan",
             "badge": "离线优先",
             "badgeType": "NEW",
@@ -5956,8 +5956,8 @@
           {
             "id": "code_add_cherry",
             "title": "Cherry Studio",
-            "url": "https://cherry-ai.com/",
-            "icon": "https://cherry-ai.com/favicon.ico",
+            "url": "https:\/\/cherry-ai.com\/",
+            "icon": "https:\/\/cherry-ai.com\/favicon.ico",
             "fallbackText": "Che",
             "badge": "多端聚合",
             "badgeType": "ROSE",
@@ -5969,12 +5969,12 @@
           {
             "id": "code_add_chatbox",
             "title": "Chatbox",
-            "url": "https://chatboxai.app/zh",
-            "icon": "https://chatboxai.app/favicon.ico",
+            "url": "https:\/\/chatboxai.app\/zh",
+            "icon": "https:\/\/chatboxai.app\/favicon.ico",
             "fallbackText": "CB",
             "badge": "全平台",
             "badgeType": "BLUE",
-            "desc": "支持Windows/Mac/Android全平台的跨平台AI对话与代码办公桌面端",
+            "desc": "支持Windows\/Mac\/Android全平台的跨平台AI对话与代码办公桌面端",
             "categoryId": "coding_tools",
             "subcatId": "assistant",
             "highlights": "跨端数据同步；支持图像识别与代码高亮高保真渲染；办公好帮手"
@@ -5982,8 +5982,8 @@
           {
             "id": "code_add_aider",
             "title": "Aider",
-            "url": "https://aider.chat/",
-            "icon": "https://aider.chat/favicon.ico",
+            "url": "https:\/\/aider.chat\/",
+            "icon": "https:\/\/aider.chat\/favicon.ico",
             "fallbackText": "Aid",
             "badge": "终端结对",
             "badgeType": "GOLD",
@@ -5995,8 +5995,8 @@
           {
             "id": "code_add_devin",
             "title": "Devin",
-            "url": "https://preview.devin.ai/",
-            "icon": "https://preview.devin.ai/favicon.ico",
+            "url": "https:\/\/preview.devin.ai\/",
+            "icon": "https:\/\/preview.devin.ai\/favicon.ico",
             "fallbackText": "Dev",
             "badge": "自主工程师",
             "badgeType": "ROSE",
@@ -6008,8 +6008,8 @@
           {
             "id": "code_add_zed",
             "title": "Zed Editor",
-            "url": "https://zed.dev/",
-            "icon": "https://zed.dev/favicon.ico",
+            "url": "https:\/\/zed.dev\/",
+            "icon": "https:\/\/zed.dev\/favicon.ico",
             "fallbackText": "Zed",
             "badge": "Rust极速",
             "badgeType": "NEW",
@@ -6021,8 +6021,8 @@
           {
             "id": "code_add_regex101",
             "title": "Regex101",
-            "url": "https://regex101.com/",
-            "icon": "https://regex101.com/favicon.ico",
+            "url": "https:\/\/regex101.com\/",
+            "icon": "https:\/\/regex101.com\/favicon.ico",
             "fallbackText": "Reg",
             "badge": "正则神器",
             "badgeType": "GOLD",
@@ -6034,8 +6034,8 @@
           {
             "id": "code_add_cyberchef",
             "title": "CyberChef",
-            "url": "https://gchq.github.io/CyberChef/",
-            "icon": "https://gchq.github.io/CyberChef/images/cyberchef-128x128.png",
+            "url": "https:\/\/gchq.github.io\/CyberChef\/",
+            "icon": "https:\/\/gchq.github.io\/CyberChef\/images\/cyberchef-128x128.png",
             "fallbackText": "Chef",
             "badge": "网络军刀",
             "badgeType": "BLUE",
@@ -6047,12 +6047,12 @@
           {
             "id": "code_add_caniuse",
             "title": "Can I use",
-            "url": "https://caniuse.com/",
-            "icon": "https://caniuse.com/favicon.ico",
+            "url": "https:\/\/caniuse.com\/",
+            "icon": "https:\/\/caniuse.com\/favicon.ico",
             "fallbackText": "Can",
             "badge": "前端兼容",
             "badgeType": "ROSE",
-            "desc": "Web前端开发必备的浏览器特性与CSS/HTML5兼容性速查表",
+            "desc": "Web前端开发必备的浏览器特性与CSS\/HTML5兼容性速查表",
             "categoryId": "coding_tools",
             "subcatId": "assistant",
             "highlights": "精准展示全球与中国主流浏览器版本支持率；前端架构选型必备参考"
@@ -6060,8 +6060,8 @@
           {
             "id": "code_add_carbon",
             "title": "Carbon",
-            "url": "https://carbon.now.sh/",
-            "icon": "https://carbon.now.sh/favicon.ico",
+            "url": "https:\/\/carbon.now.sh\/",
+            "icon": "https:\/\/carbon.now.sh\/favicon.ico",
             "fallbackText": "Car",
             "badge": "代码截图",
             "badgeType": "GOLD",
@@ -6074,154 +6074,16 @@
       }
     ]
   },
-  "software": [
-    {
-      "id": "sw_mudu2q27u97w",
-      "type": "software",
-      "title": "豆包去水印助手",
-      "desc": "豆包视频/图片去水印助手",
-      "url": "",
-      "author": "陈淑婷",
-      "badge": "最新版",
-      "tags": "软件 安装包 APK",
-      "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/1790151569803_豆包去水印助手_3.6.apk",
-      "previewUrl": "",
-      "iconUrl": "https://www.google.com/s2/favicons?domain=raw.githubusercontent.com&sz=128",
-      "mode": "file"
-    },
-    {
-      "id": "sw_1790272498603_1",
-      "type": "software",
-      "title": "红果短剧",
-      "desc": "免费短剧聚合平台 · 每日更新海量剧集",
-      "author": "懒得找了官方推荐",
-      "badge": "官方推荐",
-      "tags": "短剧 免费 官方",
-      "url": "https://www.hongguo.tv/",
-      "apkUrl": "",
-      "fileUrl": "https://www.hongguo.tv/",
-      "iconUrl": "",
-      "previewUrl": "",
-      "mode": "url"
-    },
-    {
-      "id": "sw_1790272498603_2",
-      "type": "software",
-      "title": "番茄短剧",
-      "desc": "番茄小说短剧版块 · 原著小说无缝衔接",
-      "author": "懒得找了官方推荐",
-      "badge": "热门",
-      "tags": "短剧 免费 番茄",
-      "url": "https://fanqienovel.com/short-play",
-      "apkUrl": "",
-      "fileUrl": "https://fanqienovel.com/short-play",
-      "iconUrl": "",
-      "previewUrl": "",
-      "mode": "url"
-    },
-    {
-      "id": "sw_1790272498603_3",
-      "type": "software",
-      "title": "河马剧场",
-      "desc": "高品质短剧平台 · 微短剧/网络短剧",
-      "author": "懒得找了官方推荐",
-      "badge": "精品",
-      "tags": "短剧 剧场 官方",
-      "url": "https://www.hemashort.com/",
-      "apkUrl": "",
-      "fileUrl": "https://www.hemashort.com/",
-      "iconUrl": "",
-      "previewUrl": "",
-      "mode": "url"
-    },
-    {
-      "id": "sw_1790272498603_4",
-      "type": "software",
-      "title": "NetShort 短剧",
-      "desc": "高分热播短剧免费在线观看",
-      "author": "懒得找了官方推荐",
-      "badge": "精选",
-      "tags": "短剧 免费 在线",
-      "url": "https://netshort.com/zh",
-      "apkUrl": "",
-      "fileUrl": "https://netshort.com/zh",
-      "iconUrl": "",
-      "previewUrl": "",
-      "mode": "url"
-    }
-  ],
-  "skills": [
-    {
-      "id": "sk_mudmeqslzi71",
-      "type": "skill",
-      "promptType": "skill",
-      "title": "夏林果真人IP封面",
-      "desc": "真人IP短视频封面",
-      "prompt": "",
-      "url": "",
-      "author": "开源～小红书博主",
-      "badge": "爆款推荐",
-      "tags": "技能 资源包 ZIP",
-      "previewUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790138774029_Screenshot_2026_0923_124605.png",
-      "mediaUrl": "",
-      "iconUrl": "",
-      "mode": "file"
-    },
-    {
-      "id": "sk_mudpwcbwi8am",
-      "type": "skill",
-      "promptType": "prompt_video",
-      "title": "系统桌面趣味视频",
-      "desc": "",
-      "prompt": "参考提示：创建一个高端的 16:9 macOS 桌面截图，以汤姆和杰瑞为主角。\n\n构建一个原创的电影式卡通客厅环境，在日落时分，一侧窗户透入温暖的光线，木质地板，舒适的家具，柔和的阴影，散落着调皮的物件，以及微妙的氛围深度。\n\n将汤姆和杰瑞一起放置在右侧，在一个富有表现力的调皮时刻，保留他们经典卡通外观、比例、颜色、面部表情、服装/细节以及原始 2D 动画美学。\n\n汤姆应该戏剧性地做出反应，而杰瑞显得调皮捣蛋，创造一个自然的叙事时刻。保持两个角色完全可见，避免裁剪脸部、手、尾巴或重要细节。\n\n使用温暖的金橙色照明，混合深棕色、奶油色、柔和的红色和柔和的蓝色点缀。添加微妙的电影式照明和深度，同时保持艺术作品明显的卡通风格。\n\n左侧预留用于桌面快捷方式。添加正好 18 个应用程序，分成三列六行：\n\nChrome | Safari | Gmail  \nYouTube | Spotify | Discord  \nSlack | Zoom | Microsoft Teams  \nNotion | Word | Excel  \nInstagram | Reddit | Netflix  \nSteam | Dropbox | Google Drive  \n\n使用干净、可识别的应用程序标志，相同尺寸、宽裕间距和清晰的白色标签。\n\n在顶部添加一个逼真的半透明 macOS 菜单栏：  \nApple 标志、访达、文件、编辑、查看、前往、窗口、帮助  \n右侧带有 Wi-Fi、电池、控制图标和时钟。\n\n在底部添加一个浮动的半透明 Dock，向左侧定位，以免阻挡汤姆和杰瑞。\n\nDock：  \n访达、Safari、信息、邮件、照片、日历、系统设置、分隔符、下载、废纸篓。\n\n最终风格：高端动画电影艺术作品结合逼真的 macOS 界面，电影式构图，干净的字体，强烈的角色融合，精致的照明，详细的环境，以及平衡的负空间。\n\n无笔记本电脑、显示器、键盘、鼠标、打开的应用程序、额外角色、重复图标、大标题、广告、横幅或水印。\n\n输出一张完成的超高分辨率 16:9 边缘到边缘桌面图像。",
-      "author": "来源于推特博主的提示词",
-      "badge": "Seedance2.5/wan3.0",
-      "tags": "趣味视频",
-      "previewUrl": "",
-      "mediaUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790144629204_L17YSsxs5pSxTVeD.mp4",
-      "url": "",
-      "mode": "file"
-    },
-    {
-      "id": "sk_mudqw21fbnc1",
-      "type": "skill",
-      "promptType": "prompt_video",
-      "title": "卡点换装",
-      "desc": "将衣服和人物图丢给豆包，",
-      "prompt": "真人实拍风格，一位美丽少女，皮肤白皙，正随着Future House风格的DJ舞曲俏皮地舞动，舞蹈动作包含俏皮的摆胯、手臂波浪步和定点pose，且与音乐节拍完全吻合；镜头会跟着音乐节拍前后推拉运镜，顶部有柔和的聚光灯打下来照亮少女，整体光影柔和、氛围感强，画面比例为9:16。排除：模糊，低清，噪点，水印，文字，logo，扭曲，变形，五官崩坏，动作僵硬，画面抖动，比例失调。边跳边卡点换装后面服装，9:16",
-      "author": "来源于推特博主分享",
-      "badge": "Seedance2.5/H3/wan3.0",
-      "tags": "",
-      "previewUrl": "",
-      "mediaUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790146298025_卡点换装.mp4",
-      "url": "",
-      "mode": "file"
-    },
-    {
-      "id": "sk_mudu7wp984zr",
-      "type": "skill",
-      "promptType": "skill",
-      "title": "生日祝福Skill",
-      "desc": "将下载的文件解压，丢给豆包工作模式。输入\"加载\"即可",
-      "prompt": "",
-      "url": "",
-      "author": "陈淑婷",
-      "badge": "爆款推荐",
-      "tags": "生日模版",
-      "previewUrl": "",
-      "mediaUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790151820542_生日祝福.zip",
-      "iconUrl": "",
-      "mode": "file"
-    }
-  ],
+  "software": [],
+  "skills": [],
   "settings": {
     "appName": "懒得找了",
     "slogan": "精选AI工具导航、Prompt效果图预览与手机应用无限多开分身百宝箱",
     "aboutText": "「懒得找了」致力于打造一个纯净、聚合、高效的资源与工具导航平台。让大家不用再到处求资源、不用忍受满屏广告垃圾，一键直达互联网精品！",
-    "contactQQ": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1789978873367_qr_friend_qq.jpg",
-    "contactWechat": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1789978883487_qr_friend_wechat.jpg",
-    "contactAlipay": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1789978892386_qr_feed_alipay.jpg",
-    "qqGroupUrl": "https://qm.qq.com/q/BnUzn164u21Cu1dG7vAVYJqU_4hw0COArsGrrBOIc0vxu7ES6gOJcYyrpu2JgkVs",
+    "contactQQ": "https:\/\/raw.githubusercontent.com\/shuting52\/2026-9-21landezhaole\/main\/dist\/uploads\/1789978873367_qr_friend_qq.jpg",
+    "contactWechat": "https:\/\/raw.githubusercontent.com\/shuting52\/2026-9-21landezhaole\/main\/dist\/uploads\/1789978883487_qr_friend_wechat.jpg",
+    "contactAlipay": "https:\/\/raw.githubusercontent.com\/shuting52\/2026-9-21landezhaole\/main\/dist\/uploads\/1789978892386_qr_feed_alipay.jpg",
+    "qqGroupUrl": "https:\/\/qm.qq.com\/q\/BnUzn164u21Cu1dG7vAVYJqU_4hw0COArsGrrBOIc0vxu7ES6gOJcYyrpu2JgkVs",
     "qqGroupUin": "439211347",
     "officialWebsite": "",
     "feedbackEmail": "",
@@ -6237,16 +6099,16 @@
   "splash": {
     "type": "default",
     "customHtml": "",
-    "mediaUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790087851940_L17YSsxs5pSxTVeD.mp4",
+    "mediaUrl": "https:\/\/raw.githubusercontent.com\/shuting52\/2026-9-21landezhaole\/main\/dist\/uploads\/1790087851940_L17YSsxs5pSxTVeD.mp4",
     "durationSeconds": 5,
     "bgColor": "#0b0b1a"
   },
   "welcome": {
-    "enabled": true,
+    "enabled": false,
     "title": "",
     "content": "为期一周不断迭代优化的新版本终于上线啦～\n新应用可能存在小Bug，欢迎宝贝们及时反馈\n收录站资源丰富，很多资源都可以白嫖哦\n发现Bug请第一时间反馈，我会尽快处理",
     "welcomeText": "嗨～欢迎回家！愿你在这里发现更多宝藏！",
-    "imageUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790152223860_Screenshot_20260919_200948.jpg",
+    "imageUrl": "https:\/\/raw.githubusercontent.com\/shuting52\/2026-9-21landezhaole\/main\/dist\/uploads\/1790152223860_Screenshot_20260919_200948.jpg",
     "buttonText": "开始体验",
     "ratio": "standard"
   },
@@ -6397,10 +6259,10 @@
   "console": {
     "version": "2.0.2",
     "code": 22,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v2.0.2-1790272221.apk"
+    "apkUrl": "https:\/\/raw.githubusercontent.com\/shuting52\/2026-9-21landezhaole\/main\/dist\/console\/console-apk-v2.0.2-1790272221.apk"
   },
   "ipMonitor": {
     "enabled": false,
-    "url": "https://myip.ipip.net/"
+    "url": "https:\/\/myip.ipip.net\/"
   }
 }
