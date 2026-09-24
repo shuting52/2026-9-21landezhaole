@@ -16,6 +16,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.R
 import com.example.data.remote.UpdateDialogDto
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
@@ -58,6 +60,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
@@ -128,10 +131,11 @@ fun AppUpdateDialog(
     val customHtml = update?.customHtml?.takeIf { it.isNotBlank() }
 
     /**
-     * 安装新版本 APK：
+     * 安装新版本 APK（v1.7.5 参照 AppUpdater 升级）：
      * 1. 安装前对比「已安装旧版本」与「新 APK」签名：不一致时自动引导卸载旧版本（跳系统卸载页），
      *    卸载完成后从保存的安装包重新安装，避免 INSTALL_FAILED_UPDATE_INCOMPATIBLE 安装失败。
-     * 2. 签名一致 → 走系统安装器覆盖安装（保留数据，无需卸载）。
+     * 2. 签名一致 → 优先 PackageInstaller 系统安装会话（原子化替换旧版本、保留数据），
+     *    失败再回退 FileProvider + 系统安装器覆盖安装。
      */
     fun installApk(file: File) {
         try {
@@ -176,14 +180,10 @@ fun AppUpdateDialog(
                 return
             }
 
-            // 签名一致（或全新安装）：系统安装器覆盖安装
-            val uri = FileProvider.getUriForFile(context, context.packageName + ".fileprovider", file)
-            val intent = Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(uri, "application/vnd.android.package-archive")
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            // 签名一致（或全新安装）：优先 PackageInstaller 系统会话，失败回退 FileProvider
+            if (!installViaPackageInstaller(context, file)) {
+                installViaFileProvider(context, file)
             }
-            context.startActivity(intent)
             onUpdateFinished()
         } catch (e: Exception) {
             Toast.makeText(context, "自动安装被拦截，请到系统设置允许安装未知应用后重试", Toast.LENGTH_LONG).show()
@@ -503,68 +503,95 @@ fun AppUpdateDialog(
                     onClick = { closeUpdate() }
                 )
                 .testTag("uiverse_dialog_mask"),
-            contentAlignment = Alignment.BottomCenter
+            contentAlignment = Alignment.Center
         ) {
-            // 底部滑入动画：从底部缓缓升起并淡入（动态卡通弹窗）
+            // v1.7.5：中间呈现动画——缩放淡入 + 轻微上浮（适配所有机型，避免底部弹窗误触返回键）
             var appear by remember { mutableStateOf(false) }
             LaunchedEffect(Unit) { appear = true }
-            val slideY by animateFloatAsState(
-                targetValue = if (appear) 0f else 120f,
-                animationSpec = tween(durationMillis = 450),
-                label = "slideY"
+            val dialogScale by animateFloatAsState(
+                targetValue = if (appear) 1f else 0.82f,
+                animationSpec = tween(durationMillis = 380, easing = FastOutSlowInEasing),
+                label = "dialogScale"
             )
             val fadeAlpha by animateFloatAsState(
                 targetValue = if (appear) 1f else 0f,
-                animationSpec = tween(durationMillis = 400),
+                animationSpec = tween(durationMillis = 320),
                 label = "fadeAlpha"
             )
-            // 顶部卡通表情摇摆动画
+            val riseY by animateFloatAsState(
+                targetValue = if (appear) 0f else 40f,
+                animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing),
+                label = "riseY"
+            )
+            // 顶部卡通表情摇摆动画（持续在动）
             val bounce by androidx.compose.animation.core.rememberInfiniteTransition(label = "bounce")
                 .animateFloat(
-                    initialValue = -6f,
-                    targetValue = 6f,
+                    initialValue = -8f,
+                    targetValue = 8f,
                     animationSpec = androidx.compose.animation.core.infiniteRepeatable(
-                        animation = androidx.compose.animation.core.tween(700),
+                        animation = androidx.compose.animation.core.tween(650),
                         repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
                     ),
                     label = "bounce"
                 )
+            // 星星眨闪 + 火箭上下跳动（动态卡通）
+            val twinkle by androidx.compose.animation.core.rememberInfiniteTransition(label = "twinkle")
+                .animateFloat(
+                    initialValue = 0.35f,
+                    targetValue = 1f,
+                    animationSpec = androidx.compose.animation.core.infiniteRepeatable(
+                        animation = androidx.compose.animation.core.tween(520),
+                        repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
+                    ),
+                    label = "twinkle"
+                )
+            val rocketFloat by androidx.compose.animation.core.rememberInfiniteTransition(label = "rocketFloat")
+                .animateFloat(
+                    initialValue = -6f,
+                    targetValue = 5f,
+                    animationSpec = androidx.compose.animation.core.infiniteRepeatable(
+                        animation = androidx.compose.animation.core.tween(900, easing = FastOutSlowInEasing),
+                        repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
+                    ),
+                    label = "rocketFloat"
+                )
 
-            // 底部卡通卡片容器
+            // 中间卡通卡片容器（全动画）
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 40.dp)
+                    .fillMaxWidth(0.9f)
                     .graphicsLayer {
-                        translationY = slideY * density
+                        scaleX = dialogScale
+                        scaleY = dialogScale
                         alpha = fadeAlpha
+                        translationY = riseY * density
                     }
             ) {
-                // 卡通顶部装饰：摇摆火箭 + 星星
+                // 卡通顶部装饰：跳跃火箭 + 眨闪星星 + 摇摆小怪兽（居中于卡片上方）
                 Row(
                     modifier = Modifier
                         .align(Alignment.TopCenter)
-                        .offset(y = -34.dp)
+                        .offset(y = -32.dp)
                         .graphicsLayer { rotationZ = bounce },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("🚀", fontSize = 30.sp)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("✨", fontSize = 18.sp)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("🎉", fontSize = 26.sp)
+                    Text("✨", fontSize = 18.sp, modifier = Modifier.graphicsLayer { alpha = twinkle })
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("?", fontSize = 40.sp, modifier = Modifier.graphicsLayer { translationY = rocketFloat * density })
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("✨", fontSize = 18.sp, modifier = Modifier.graphicsLayer { alpha = twinkle })
                 }
-                // White Rounded Card（底部全宽、顶部大圆角）
+                // 中间白色圆角卡片（全圆角、居中呈现）
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .shadow(
-                            elevation = 10.dp,
-                            shape = RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp),
-                            ambientColor = Color(0x4D3C4043),
-                            spotColor = Color(0x263C4043)
+                            elevation = 18.dp,
+                            shape = RoundedCornerShape(26.dp),
+                            ambientColor = Color(0x663C4043),
+                            spotColor = Color(0x333C4043)
                         )
-                        .clip(RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp))
+                        .clip(RoundedCornerShape(26.dp))
                         .background(Color.White)
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
@@ -576,15 +603,16 @@ fun AppUpdateDialog(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 36.dp, start = 24.dp, end = 24.dp, bottom = 24.dp),
+                            .padding(horizontal = 22.dp, vertical = 22.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Title
+                        // Title（居中呈现）
                         Text(
-                            text = if (cloudTitle.isNotBlank()) cloudTitle else "Your privacy is important to us",
-                            fontSize = 14.5.sp,
+                            text = if (cloudTitle.isNotBlank()) cloudTitle else "发现新版本",
+                            fontSize = 15.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = Color(0xFF3F3F46),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .testTag("uiverse_title")
@@ -636,23 +664,24 @@ fun AppUpdateDialog(
                             }
                         }
 
-                        // Progress Bar (During download)
+                        // Progress Bar (During download) —— v1.7.5 全动画：流光进度条 + 大号百分比
                         if (isUpdating) {
                             Spacer(modifier = Modifier.height(14.dp))
                             Column(modifier = Modifier.fillMaxWidth()) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = if (progress < 100f) "正在极速下载..." else "下载完成，准备就绪",
+                                        text = if (progress < 100f) "正在极速下载..." else "下载完成，准备安装",
                                         fontSize = 11.sp,
                                         color = Color(0xFF71717A)
                                     )
                                     Text(
                                         text = "${progress.toInt()}%",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.Black,
                                         color = Color(0xFF634647)
                                     )
                                 }
@@ -660,8 +689,8 @@ fun AppUpdateDialog(
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(6.dp)
-                                        .clip(RoundedCornerShape(3.dp))
+                                        .height(10.dp)
+                                        .clip(RoundedCornerShape(5.dp))
                                         .background(Color(0xFFEAB789).copy(alpha = 0.35f))
                                 ) {
                                     val animProgress by animateFloatAsState(
@@ -669,12 +698,45 @@ fun AppUpdateDialog(
                                         animationSpec = tween(durationMillis = 200),
                                         label = "progress"
                                     )
+                                    // 已下载进度（渐变填充）
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth(fraction = animProgress.coerceIn(0f, 1f))
                                             .fillMaxHeight()
-                                            .clip(RoundedCornerShape(3.dp))
-                                            .background(Color(0xFFDDAD81))
+                                            .clip(RoundedCornerShape(5.dp))
+                                            .background(
+                                                Brush.horizontalGradient(
+                                                    listOf(Color(0xFF8D5CFF), Color(0xFFFF6EC7), Color(0xFFDDAD81))
+                                                )
+                                            )
+                                    )
+                                    // 流光高光动画：一条斜向亮带反复扫过进度条
+                                    val shineOffset by androidx.compose.animation.core.rememberInfiniteTransition(label = "shine")
+                                        .animateFloat(
+                                            initialValue = -0.6f,
+                                            targetValue = 1.4f,
+                                            animationSpec = androidx.compose.animation.core.infiniteRepeatable(
+                                                animation = androidx.compose.animation.core.tween(1400, easing = androidx.compose.animation.core.LinearEasing),
+                                                repeatMode = androidx.compose.animation.core.RepeatMode.Restart
+                                            ),
+                                            label = "shineOffset"
+                                        )
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .fillMaxHeight()
+                                            .graphicsLayer {
+                                                translationX = shineOffset * size.width
+                                            }
+                                            .background(
+                                                Brush.horizontalGradient(
+                                                    colors = listOf(
+                                                        Color.Transparent,
+                                                        Color.White.copy(alpha = 0.65f),
+                                                        Color.Transparent
+                                                    )
+                                                )
+                                            )
                                     )
                                 }
                             }
@@ -769,8 +831,8 @@ fun AppUpdateDialog(
                     }
                 }
 
-                // 底部安全区域留白
-                Spacer(modifier = Modifier.height(12.dp))
+                // 底部留白
+                Spacer(modifier = Modifier.height(6.dp))
             }
         }
     }
@@ -887,6 +949,56 @@ private const val UIVERSE_UPDATE_HTML = """<!-- From Uiverse.io by ilkhoeri -->
 
 
 // ============ 顶层辅助函数（APK 签名对比，供更新弹窗使用） ============
+
+/**
+ * PackageInstaller 系统安装会话（v1.7.5 参照 AppUpdater）：
+ * 由系统原子化完成「卸载旧版本 + 安装新版本」替换，签名一致时自动覆盖、数据保留。
+ * @return 是否成功提交会话
+ */
+private fun installViaPackageInstaller(context: Context, apkFile: File): Boolean {
+    return try {
+        val packageInstaller = context.packageManager.packageInstaller
+        val params = android.content.pm.PackageInstaller.SessionParams(
+            android.content.pm.PackageInstaller.SessionParams.MODE_FULL_INSTALL
+        )
+        params.setAppPackageName(context.packageName)
+        val sessionId = packageInstaller.createSession(params)
+        val session = packageInstaller.openSession(sessionId)
+        try {
+            session.openWrite("lzdz_update.apk", 0, apkFile.length()).use { out ->
+                apkFile.inputStream().use { input -> input.copyTo(out) }
+            }
+        } finally {
+            session.close()
+        }
+        val receiverIntent = Intent(context, UpdateInstallReceiver::class.java)
+        val pending = android.app.PendingIntent.getBroadcast(
+            context,
+            100,
+            receiverIntent,
+            android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
+        )
+        session.commit(pending.intentSender)
+        true
+    } catch (e: Exception) {
+        false
+    }
+}
+
+/** FileProvider + 系统安装器（最通用的兑底方案） */
+private fun installViaFileProvider(context: Context, file: File) {
+    try {
+        val uri = FileProvider.getUriForFile(context, context.packageName + ".fileprovider", file)
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, "application/vnd.android.package-archive")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        Toast.makeText(context, "自动安装被拦截，请到系统设置允许安装未知应用后重试", Toast.LENGTH_LONG).show()
+    }
+}
 
 /** 提取 APK 签名证书 SHA-256（十六进制小写） */
 private fun apkSigningHash(context: Context, file: File): String? {
