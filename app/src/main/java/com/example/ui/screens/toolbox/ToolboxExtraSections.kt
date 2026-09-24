@@ -1130,37 +1130,40 @@ fun CalculatorScreenView() {
     var result by remember { mutableStateOf("") }
 
     fun evalExpr(s: String): Double {
+        // 用标准递归下降求值，避免局部函数前向引用问题
+        val src = s
         var i = 0
-        fun peek(): Char = if (i < s.length) s[i] else '\u0000'
-        fun skipWs() { while (i < s.length && s[i].isWhitespace()) i++ }
+        fun peek(): Char = if (i < src.length) src[i] else '\u0000'
+        fun skipWs() { while (i < src.length && src[i].isWhitespace()) i++ }
         fun parseNumber(): Double {
             skipWs(); val start = i
-            while (i < s.length && (s[i].isDigit() || s[i] == '.')) i++
-            return s.substring(start, i).toDouble()
+            while (i < src.length && (src[i].isDigit() || src[i] == '.')) i++
+            return src.substring(start, i).toDouble()
         }
         fun parsePrimary(): Double {
             skipWs()
-            if (peek() == '(') { i++; val v = parseExpr(); skipWs(); if (peek() == ')') i++; return v }
+            if (peek() == '(') { i++; val v = parseAdd(); skipWs(); if (peek() == ')') i++; return v }
             return parseNumber()
         }
-        fun parseTerm(): Double {
+        fun parseMul(): Double {
             var v = parsePrimary(); skipWs()
             while (peek() == '*' || peek() == '/') { val op = peek(); i++; val r = parsePrimary(); v = if (op == '*') v * r else v / r; skipWs() }
             return v
         }
-        fun parseExpr(): Double {
-            var v = parseTerm(); skipWs()
-            while (peek() == '+' || peek() == '-') { val op = peek(); i++; val r = parseTerm(); v = if (op == '+') v + r else v - r; skipWs() }
+        fun parseAdd(): Double {
+            var v = parseMul(); skipWs()
+            while (peek() == '+' || peek() == '-') { val op = peek(); i++; val r = parseMul(); v = if (op == '+') v + r else v - r; skipWs() }
             return v
         }
-        return parseExpr()
+        return parseAdd()
     }
 
     fun calc(): String {
         if (expr.isBlank()) return ""
         return try {
             val v = evalExpr(expr.replace("×", "*").replace("÷", "/"))
-            if (v == v.toLong() && kotlin.math.abs(v) < 1e15) v.toLong().toString() else v.toString()
+            val asLong = v.toLong()
+            if (v == asLong.toDouble() && kotlin.math.abs(v) < 1e15) asLong.toString() else v.toString()
         } catch (e: Exception) { "错误" }
     }
 
