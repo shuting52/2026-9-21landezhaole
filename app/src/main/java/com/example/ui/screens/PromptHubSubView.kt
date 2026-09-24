@@ -6,6 +6,7 @@ import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -226,7 +227,60 @@ private fun CloudPromptCard(
     ) {
         Column {
             // 可视化预览：视频提示词优先播放演示视频（失败时回退预览图，避免黑屏），图片提示词展示预览图
-            if (isVideo && prompt.mediaUrl.isNotBlank()) {
+            // v1.7.6 修复视频预览延迟：有预览图时默认显示预览图（AsyncImage 即时加载），点击后才打开全屏播放视频（带声音），
+            // 列表不再内嵌 VideoView 预加载——彻底解决预览卡顿/多视频同时缓冲问题
+            if (isVideo && prompt.mediaUrl.isNotBlank() && prompt.previewUrl.isNotBlank()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(170.dp)
+                        .clip(RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp))
+                        .clickable { onImageClick() }
+                ) {
+                    AsyncImage(
+                        model = prompt.previewUrl,
+                        contentDescription = prompt.title,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                    // 底部渐变遮罩 + 播放按钮角标
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f))
+                                )
+                            )
+                    )
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .size(52.dp)
+                            .clip(CircleShape)
+                            .background(Color.Black.copy(alpha = 0.55f))
+                            .border(1.5.dp, Color.White.copy(alpha = 0.8f), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("▶", color = Color.White, fontSize = 22.sp)
+                    }
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color.Black.copy(alpha = 0.5f),
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp)
+                    ) {
+                        Text(
+                            text = "? 视频 · 点击播放（带声音）",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                        )
+                    }
+                }
+            } else if (isVideo && prompt.mediaUrl.isNotBlank()) {
                 var videoFailed by remember { mutableStateOf(false) }
                 if (!videoFailed) {
                     // v1.7.4 单视频播放方案：

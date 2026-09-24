@@ -8,6 +8,7 @@ import android.os.Environment
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -288,61 +290,75 @@ private fun ResourceFileCard(
             if (res.previewUrl.isNotBlank() || res.mediaUrl.isNotBlank()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 if (res.mediaUrl.isNotBlank()) {
-                    // 视频预览（静音循环自动播放，点击可全屏/暂停；失败回退预览图避免黑屏）
-                    var videoFailed by remember { mutableStateOf(false) }
-                    if (!videoFailed) {
-                        AndroidView(
-                            factory = { ctx ->
-                                android.widget.VideoView(ctx).apply {
-                                    setVideoURI(Uri.parse(res.mediaUrl))
-                                    setOnPreparedListener { mp ->
-                                        mp.isLooping = true
-                                        // v1.7.3：视频支持声音播放，自动播放带声音
-                                        mp.setVolume(1f, 1f)
-                                        mp.start()
-                                    }
-                                    setOnErrorListener { mp, what, extra ->
-                                        videoFailed = true
-                                        true
-                                    }
-                                    setOnClickListener {
-                                        if (isPlaying) pause() else start()
-                                    }
-                                    layoutParams = android.view.ViewGroup.LayoutParams(
-                                        android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-                                        android.view.ViewGroup.LayoutParams.MATCH_PARENT
-                                    )
-                                }
-                            },
+                    // v1.7.6 修复视频预览延迟：有预览图时默认显示预览图（即时加载），点击后调系统播放器播放带声音；
+                    // 列表不再内嵌 VideoView 预加载，彻底解决预览卡顿
+                    if (res.previewUrl.isNotBlank()) {
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(160.dp)
                                 .clip(RoundedCornerShape(10.dp))
-                        )
-                    } else if (res.previewUrl.isNotBlank()) {
-                        coil.compose.AsyncImage(
-                            model = res.previewUrl,
-                            contentDescription = res.title,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(120.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                        )
+                                .clickable {
+                                    try {
+                                        val vintent = Intent(Intent.ACTION_VIEW, Uri.parse(res.mediaUrl))
+                                        vintent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        context.startActivity(vintent)
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "无法播放视频", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                        ) {
+                            coil.compose.AsyncImage(
+                                model = res.previewUrl,
+                                contentDescription = res.title,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        Brush.verticalGradient(
+                                            listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f))
+                                        )
+                                    )
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.Center)
+                                    .size(48.dp)
+                                    .clip(RoundedCornerShape(24.dp))
+                                    .background(Color.Black.copy(alpha = 0.55f))
+                                    .border(1.5.dp, Color.White.copy(alpha = 0.8f), RoundedCornerShape(24.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("▶", color = Color.White, fontSize = 20.sp)
+                            }
+                        }
                     } else {
+                        // 无预览图：点击直接调系统播放器
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(70.dp)
                                 .background(Color(0xFF1E1E24))
-                                .clip(RoundedCornerShape(10.dp)),
+                                .clip(RoundedCornerShape(10.dp))
+                                .clickable {
+                                    try {
+                                        val vintent = Intent(Intent.ACTION_VIEW, Uri.parse(res.mediaUrl))
+                                        vintent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        context.startActivity(vintent)
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "无法播放视频", Toast.LENGTH_SHORT).show()
+                                    }
+                                },
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "视频暂不支持内嵌预览，点击卡片直接下载查看",
-                                fontSize = 11.sp,
-                                color = Color.White.copy(alpha = 0.75f),
-                                modifier = Modifier.padding(horizontal = 16.dp)
+                                text = "▶ 点击播放视频（带声音）",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White.copy(alpha = 0.85f)
                             )
                         }
                     }
