@@ -95,7 +95,9 @@ fun CartoonUpdateDialog(
     onDismiss: () -> Unit,
     onRetry: () -> Unit,
     onDone: () -> Unit,
-    onRestartApp: (() -> Unit)? = null
+    onRestartApp: (() -> Unit)? = null,
+    // v1.7.8：官方群按钮回调（强制更新弹窗内提供“官方群”入口）
+    onOpenGroup: (() -> Unit)? = null
 ) {
     val info = (state as? CartoonUpdateState.Found)?.info
     val isForce = info?.forceUpdate == true
@@ -225,10 +227,12 @@ fun CartoonUpdateDialog(
                 }
 
                 CartoonUpdateState.NeedInstallPermission -> {
+                    // v1.7.8：强制更新时不允许「暂不更新」跳过，只能去开权限或继续
                     NeedPermissionSection(
                         onOpenSettings = onOpenInstallSettings,
                         onInstall = onInstall,
-                        onDismiss = onDismiss
+                        onDismiss = onDismiss,
+                        force = isForce
                     )
                 }
 
@@ -241,7 +245,7 @@ fun CartoonUpdateDialog(
                 }
 
                 is CartoonUpdateState.Found -> {
-                    // 默认：稍后再说 / 立即更新
+                    // v1.7.8：强制更新时无“稍后再说”，只有【立即更新】；下方附【官方群】入口
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         if (!isForce) {
                             GradientButton(
@@ -257,6 +261,15 @@ fun CartoonUpdateDialog(
                             modifier = Modifier.weight(if (isForce) 1f else 1.35f),
                             onClick = onStartDownload,
                             pulsing = true
+                        )
+                    }
+                    // 官方群按钮（可选）：点击跳转官方 QQ 群
+                    if (onOpenGroup != null) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        TextButtonGhost(
+                            text = "💬 官方群 · 遇到问题来反馈",
+                            onClick = onOpenGroup,
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
                 }
@@ -952,7 +965,8 @@ private fun ErrorSection(
 private fun NeedPermissionSection(
     onOpenSettings: () -> Unit,
     onInstall: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    force: Boolean = false
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
@@ -978,7 +992,10 @@ private fun NeedPermissionSection(
         )
         Spacer(modifier = Modifier.height(6.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            TextButtonGhost(text = "暂不更新", onClick = onDismiss, modifier = Modifier.weight(1f))
+            // v1.7.8：强制更新时隐藏「暂不更新」，只能去开权限或继续安装
+            if (!force) {
+                TextButtonGhost(text = "暂不更新", onClick = onDismiss, modifier = Modifier.weight(1f))
+            }
             GradientButton(
                 text = "重新安装",
                 gradient = listOf(CuteGreen, CuteCyan),
