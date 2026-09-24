@@ -582,7 +582,8 @@ private fun androidx.compose.foundation.layout.RowScope.ToggleCell(label: String
 @Composable
 fun QrCodeTextScreenView() {
     val context = LocalContext.current
-    var text by remember { mutableStateOf("https://github.com/shuting52/2026-9-21landezhaole") }
+    // v1.7.9：默认不再填任何地址（避免泄露/误解），留空由用户输入
+    var text by remember { mutableStateOf("") }
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
     val scope = rememberCoroutineScope()
 
@@ -889,4 +890,383 @@ private fun rgbToHsl(r: Int, g: Int, b: Int): Triple<Float, Float, Float> {
         h /= 6f
     }
     return Triple(h * 360f, s, l)
+}
+
+/* ============================================================
+ * 5) 单位换算器（v1.7.9 新增）：长度/重量/温度/面积/体积
+ * ============================================================ */
+@Composable
+fun UnitConverterScreenView() {
+    val context = LocalContext.current
+    val types = listOf("长度", "重量", "温度", "面积", "体积")
+    var typeIdx by remember { mutableStateOf(0) }
+    var fromVal by remember { mutableStateOf("1") }
+    var fromIdx by remember { mutableStateOf(0) }
+    var toIdx by remember { mutableStateOf(1) }
+
+    fun units(): List<Pair<String, Double>> = when (types[typeIdx]) {
+        "长度" -> listOf("毫米" to 0.001, "厘米" to 0.01, "米" to 1.0, "千米" to 1000.0,
+            "英寸" to 0.0254, "英尺" to 0.3048, "码" to 0.9144, "英里" to 1609.344)
+        "重量" -> listOf("毫克" to 0.000001, "克" to 0.001, "千克" to 1.0, "吨" to 1000.0,
+            "盎司" to 0.0283495, "磅" to 0.453592)
+        "温度" -> listOf("摄氏度" to -1.0, "华氏度" to -2.0, "开尔文" to -3.0)
+        "面积" -> listOf("平方厘米" to 0.0001, "平方米" to 1.0, "公顷" to 10000.0,
+            "平方千米" to 1000000.0, "亩" to 666.6667, "英亩" to 4046.856)
+        else -> listOf("毫升" to 0.001, "升" to 1.0, "立方米" to 1000.0,
+            "立方厘米" to 0.000001, "加仑(美)" to 3.78541, "品脱(英)" to 0.568261)
+    }
+
+    fun convert(v: Double, from: Double, to: Double): Double {
+        if (types[typeIdx] != "温度") return v * from / to
+        val celsius = when (from) {
+            -2.0 -> (v - 32.0) * 5.0 / 9.0
+            -3.0 -> v - 273.15
+            else -> v
+        }
+        return when (to) {
+            -2.0 -> celsius * 9.0 / 5.0 + 32.0
+            -3.0 -> celsius + 273.15
+            else -> celsius
+        }
+    }
+
+    LazyColumn(Modifier.fillMaxSize().padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        item {
+            Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.6f)),
+                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.8f)), modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(14.dp)) {
+                    Text("📏 单位换算器", fontSize = 16.sp, fontWeight = FontWeight.Black)
+                    Text("长度/重量/温度/面积/体积 · 本地离线换算", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+        item {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                types.forEachIndexed { i, t ->
+                    Surface(
+                        onClick = { typeIdx = i; fromIdx = 0; toIdx = 1 },
+                        shape = RoundedCornerShape(20), color = if (i == typeIdx) Color(0xFF6366F1) else Color.White.copy(alpha = 0.7f),
+                        modifier = Modifier.weight(1f)
+                    ) { Text(t, textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.padding(vertical = 8.dp), fontSize = 12.sp, fontWeight = FontWeight.Bold) }
+                }
+            }
+        }
+        item {
+            OutlinedTextField(value = fromVal, onValueChange = { fromVal = it.filter { c -> c.isDigit() || c == '.' } },
+                label = { Text("数值") }, modifier = Modifier.fillMaxWidth())
+        }
+        item {
+            val us = units()
+            val fLabel = if (fromIdx < us.size) us[fromIdx].first else us[0].first
+            val tLabel = if (toIdx < us.size) us[toIdx].first else us[1].first
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(value = fLabel, onValueChange = {}, readOnly = true, label = { Text("从") }, modifier = Modifier.weight(1f))
+                OutlinedTextField(value = tLabel, onValueChange = {}, readOnly = true, label = { Text("到") }, modifier = Modifier.weight(1f))
+            }
+            Spacer(Modifier.height(6.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                androidx.compose.material3.Button(onClick = { if (fromIdx < us.size - 1) fromIdx++ }, modifier = Modifier.weight(1f)) { Text("从▲") }
+                androidx.compose.material3.Button(onClick = { if (fromIdx > 0) fromIdx-- }, modifier = Modifier.weight(1f)) { Text("从▼") }
+                androidx.compose.material3.Button(onClick = { if (toIdx < us.size - 1) toIdx++ }, modifier = Modifier.weight(1f)) { Text("到▲") }
+                androidx.compose.material3.Button(onClick = { if (toIdx > 0) toIdx-- }, modifier = Modifier.weight(1f)) { Text("到▼") }
+            }
+        }
+        item {
+            val us = units()
+            val result = try {
+                val v = fromVal.toDoubleOrNull() ?: 0.0
+                val f = if (fromIdx < us.size) us[fromIdx].second else 1.0
+                val t = if (toIdx < us.size) us[toIdx].second else 1.0
+                convert(v, f, t)
+            } catch (e: Exception) { 0.0 }
+            Surface(color = Color(0xFFE8F5E9), shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(14.dp)) {
+                    Text("= $result ${if (toIdx < us.size) us[toIdx].first else ""}", fontSize = 18.sp, fontWeight = FontWeight.Black)
+                    Text("（${if (fromIdx < us.size) us[fromIdx].first else ""} → ${if (toIdx < us.size) us[toIdx].first else ""}）", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+    }
+}
+
+/* ============================================================
+ * 6) 进制转换器（v1.7.9 新增）：2/8/10/16 互转
+ * ============================================================ */
+@Composable
+fun BaseConverterScreenView() {
+    val context = LocalContext.current
+    val radices = listOf(2 to "二进制", 8 to "八进制", 10 to "十进制", 16 to "十六进制")
+    var input by remember { mutableStateOf("255") }
+    var fromRadix by remember { mutableStateOf(10) }
+    fun toValue(s: String, radix: Int): Long? = try { s.trim().toLong(radix) } catch (e: Exception) { null }
+
+    LazyColumn(Modifier.fillMaxSize().padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        item {
+            Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.6f)),
+                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.8f)), modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(14.dp)) {
+                    Text("🔢 进制转换", fontSize = 16.sp, fontWeight = FontWeight.Black)
+                    Text("2/8/10/16 进制互转 · 输入合法字符自动计算", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+        item {
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
+                radices.forEach { (r, name) ->
+                    Surface(onClick = { fromRadix = r }, shape = RoundedCornerShape(20),
+                        color = if (r == fromRadix) Color(0xFF6366F1) else Color.White.copy(alpha = 0.7f),
+                        modifier = Modifier.weight(1f)) {
+                        Text(name, textAlign = androidx.compose.ui.text.style.TextAlign.Center, modifier = Modifier.padding(vertical = 8.dp), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+        item {
+            OutlinedTextField(value = input, onValueChange = { input = it.take(40) },
+                label = { Text("输入 ${radices.first { r -> r.first == fromRadix }.second} 数值") }, modifier = Modifier.fillMaxWidth())
+        }
+        item {
+            val value = toValue(input, fromRadix)
+            if (value == null) {
+                Text("❌ 输入包含该进制下的非法字符", color = Color(0xFFEF4444), fontSize = 13.sp)
+            } else {
+                radices.forEach { (r, name) ->
+                    val s = when (r) {
+                        2 -> java.lang.Long.toBinaryString(value)
+                        8 -> java.lang.Long.toOctalString(value)
+                        10 -> value.toString()
+                        else -> java.lang.Long.toHexString(value).uppercase()
+                    }
+                    Surface(color = if (r == fromRadix) Color(0xFFE8F5E9) else Color.White.copy(alpha = 0.7f),
+                        shape = RoundedCornerShape(10.dp), modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)) {
+                        Row(Modifier.padding(horizontal = 12.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Text("$name", fontWeight = FontWeight.Bold, fontSize = 13.sp, modifier = Modifier.weight(1f))
+                            Text(s, fontWeight = FontWeight.Black, fontSize = 15.sp)
+                            IconButton(onClick = {
+                                val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                cm.setPrimaryClip(ClipData.newPlainText("进制结果", s))
+                                Toast.makeText(context, "已复制 $s", Toast.LENGTH_SHORT).show()
+                            }) { Icon(Icons.Filled.ContentCopy, contentDescription = "复制", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp)) }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+/* ============================================================
+ * 7) 日期计算器（v1.7.9 新增）：日期差 / 加减天数 / 星期
+ * ============================================================ */
+@Composable
+fun DateCalcScreenView() {
+    val context = LocalContext.current
+    var date1 by remember { mutableStateOf("2026-09-01") }
+    var date2 by remember { mutableStateOf("2026-09-25") }
+    var addDays by remember { mutableStateOf("30") }
+    var baseDate by remember { mutableStateOf("2026-09-01") }
+    val fmt = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.CHINA)
+
+    fun parse(s: String): java.util.Calendar? = try {
+        val d = fmt.parse(s) ?: return null
+        java.util.Calendar.getInstance().apply { time = d }
+    } catch (e: Exception) { null }
+
+    val days = parse(date1)?.let { a -> parse(date2)?.let { b ->
+        (b.timeInMillis - a.timeInMillis) / 86400000L
+    } }
+
+    LazyColumn(Modifier.fillMaxSize().padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        item {
+            Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.6f)),
+                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.8f)), modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(14.dp)) {
+                    Text("📅 日期计算", fontSize = 16.sp, fontWeight = FontWeight.Black)
+                    Text("两个日期相差几天 · 日期加减天数 · 星期查询", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+        item {
+            OutlinedTextField(value = date1, onValueChange = { date1 = it }, label = { Text("日期一 (yyyy-MM-dd)") }, modifier = Modifier.fillMaxWidth())
+            Spacer(Modifier.height(6.dp))
+            OutlinedTextField(value = date2, onValueChange = { date2 = it }, label = { Text("日期二 (yyyy-MM-dd)") }, modifier = Modifier.fillMaxWidth())
+        }
+        item {
+            Surface(color = Color(0xFFE8F5E9), shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(14.dp)) {
+                    Text("相差：${days ?: "--"} 天", fontSize = 18.sp, fontWeight = FontWeight.Black)
+                    val week = arrayOf("日", "一", "二", "三", "四", "五", "六")
+                    val w1 = parse(date1)?.get(java.util.Calendar.DAY_OF_WEEK)
+                    val w2 = parse(date2)?.get(java.util.Calendar.DAY_OF_WEEK)
+                    Text("$date1 星期${w1?.let { week[it - 1] } ?: "?"} · $date2 星期${w2?.let { week[it - 1] } ?: "?"}", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+        item {
+            OutlinedTextField(value = baseDate, onValueChange = { baseDate = it }, label = { Text("基准日期") }, modifier = Modifier.fillMaxWidth())
+            Spacer(Modifier.height(6.dp))
+            OutlinedTextField(value = addDays, onValueChange = { addDays = it.filter { c -> c.isDigit() || c == '-' } }, label = { Text("加减天数 (可负)") }, modifier = Modifier.fillMaxWidth())
+        }
+        item {
+            val result = try {
+                val c = parse(baseDate)
+                if (c != null) { c.add(java.util.Calendar.DAY_OF_YEAR, addDays.toInt()); fmt.format(c.time) } else null
+            } catch (e: Exception) { null }
+            Surface(color = Color(0xFFFFF8E1), shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
+                Text("$baseDate ${if (addDays.startsWith("-")) "" else "+"}${addDays} 天 = $result", modifier = Modifier.padding(14.dp), fontSize = 15.sp, fontWeight = FontWeight.Bold)
+            }
+        }
+    }
+}
+
+/* ============================================================
+ * 8) 简易计算器（v1.7.9 新增）：四则运算（含括号）求值
+ * ============================================================ */
+@Composable
+fun CalculatorScreenView() {
+    val context = LocalContext.current
+    var expr by remember { mutableStateOf("") }
+    var result by remember { mutableStateOf("") }
+
+    fun evalExpr(s: String): Double {
+        var i = 0
+        fun peek(): Char = if (i < s.length) s[i] else '\u0000'
+        fun skipWs() { while (i < s.length && s[i].isWhitespace()) i++ }
+        fun parseNumber(): Double {
+            skipWs(); val start = i
+            while (i < s.length && (s[i].isDigit() || s[i] == '.')) i++
+            return s.substring(start, i).toDouble()
+        }
+        fun parsePrimary(): Double {
+            skipWs()
+            if (peek() == '(') { i++; val v = parseExpr(); skipWs(); if (peek() == ')') i++; return v }
+            return parseNumber()
+        }
+        fun parseTerm(): Double {
+            var v = parsePrimary(); skipWs()
+            while (peek() == '*' || peek() == '/') { val op = peek(); i++; val r = parsePrimary(); v = if (op == '*') v * r else v / r; skipWs() }
+            return v
+        }
+        fun parseExpr(): Double {
+            var v = parseTerm(); skipWs()
+            while (peek() == '+' || peek() == '-') { val op = peek(); i++; val r = parseTerm(); v = if (op == '+') v + r else v - r; skipWs() }
+            return v
+        }
+        return parseExpr()
+    }
+
+    fun calc(): String {
+        if (expr.isBlank()) return ""
+        return try {
+            val v = evalExpr(expr.replace("×", "*").replace("÷", "/"))
+            if (v == v.toLong() && kotlin.math.abs(v) < 1e15) v.toLong().toString() else v.toString()
+        } catch (e: Exception) { "错误" }
+    }
+
+    val buttons = listOf(
+        listOf("7", "8", "9", "÷"), listOf("4", "5", "6", "×"),
+        listOf("1", "2", "3", "-"), listOf("C", "0", ".", "+"), listOf("(", ")", "=", "⌫")
+    )
+
+    LazyColumn(Modifier.fillMaxSize().padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        item {
+            Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.6f)),
+                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.8f)), modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(14.dp)) {
+                    Text("🧮 简易计算器", fontSize = 16.sp, fontWeight = FontWeight.Black)
+                    Text("四则运算 + 括号 · 本地计算 · 支持小数", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+        item {
+            Surface(color = Color(0xFFF3F4F6), shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(14.dp)) {
+                    Text(if (expr.isBlank()) "0" else expr, fontSize = 20.sp, fontWeight = FontWeight.Black,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.End, modifier = Modifier.fillMaxWidth())
+                    Text("= ${if (result.isBlank()) "…" else result}", fontSize = 16.sp, color = Color(0xFF6366F1),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.End, modifier = Modifier.fillMaxWidth())
+                }
+            }
+        }
+        buttons.forEach { row ->
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                    row.forEach { b ->
+                        Surface(
+                            onClick = {
+                                when (b) {
+                                    "C" -> { expr = ""; result = "" }
+                                    "⌫" -> { expr = expr.dropLast(1) }
+                                    "=" -> { result = calc() }
+                                    else -> { expr += b; result = calc() }
+                                }
+                            },
+                            shape = RoundedCornerShape(10.dp),
+                            color = if (b == "=") Color(0xFF6366F1) else Color.White.copy(alpha = 0.8f),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(b, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                modifier = Modifier.padding(vertical = 12.dp), fontSize = 16.sp,
+                                fontWeight = FontWeight.Black, color = if (b == "=") Color.White else MaterialTheme.colorScheme.onSurface)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/* ============================================================
+ * 9) Emoji 表情库（v1.7.9 新增）：常用表情一键复制
+ * ============================================================ */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+fun EmojiPickerScreenView() {
+    val context = LocalContext.current
+    val groups = listOf(
+        "😀😁😂🤣😃😄😅😆😉😊😋😎😍🥰😘😜🤪😝🤑🤗🤔🤨🤯😳🥺😢😭😤😡🤬😱😴🤤😷🤒🤕🤢🤮🥶🥵🤠🤡🤥😇",
+        "❤️🧡💛💚💙💜🖤🤍🤎💔💕💞💓💗💖💘💝💟",
+        "👍👎👊✊🤛🤜🤝👏🙌🙏💪✌️🤞🖖🤙👌🤘🫶🖐️🤲",
+        "🐶🐱🐭🐹🐰🦊🐻🐼🐨🐯🦁🐮🐷🐸🐵🐔🐧🐦🐤🦆🦅🦉🦋🐝🐢🐍🐙🦀🐠🐬🐳🦄🐴🦓🐘🐪🦒🦘",
+        "🍎🍐🍊🍋🍌🍉🍇🍓🫐🍈🍒🍑🥭🍍🥥🥝🍅🍆🥑🥦🥒🌽🥕🥔🍞🥐🥖🧀🥚🍳🥞🍔🍟🍕🌭🥪🌮🌯🍣🍤🍜🍲🍰🎂🍦🍩🍪☕🍵",
+        "⚽🏀🏈⚾🎾🏐🏉🎱🏓🏸🥊🥋⛳🏹🎣🥇🥈🥉🏆🏅🎽🚴🚵🏇",
+        "🚗🚕🚙🚌🚎🏎️🚓🚑🚒🚐🚚🚛🚜🚲🛵🏍️✈️🚀🛸🚁⛵🚢🚂🚄🚇🚉",
+        "🏠🏡🏢🏣🏥🏦🏪🏫🏬🏭🏯🏰💒🏘️🗽🗼⛲🎡🎢🎠🌋🗻🏕️🏖️🏝️🌄🌅🌇🌆🌃🌉🌁",
+        "🎉🎊🎁🎈🎆🎇✨🎃🎄🎅🤶🦌🎀🎗️🎟️🎬🎤🎧🎷🎸🎹🎺🥁🎨🏆",
+        "🔥💧☀️🌙⭐🌟💫⚡❄️🌈☁️🌤️🌧️🌩️🌪️🌊🌋🌲🌴🌹🌷🌻🌸💐"
+    )
+    LazyColumn(Modifier.fillMaxSize().padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        item {
+            Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.6f)),
+                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.8f)), modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(14.dp)) {
+                    Text("😀 Emoji 表情库", fontSize = 16.sp, fontWeight = FontWeight.Black)
+                    Text("点击任意表情一键复制 · 分 10 大类 · 聊天斗图不发愁", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+        groups.forEach { group ->
+            item {
+                val emojis = group.toCharArray().joinToString("") { it.toString() }
+                val list = emojis.split("").filter { it.isNotEmpty() && it.isNotBlank() }
+                Card(shape = RoundedCornerShape(14.dp), colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.55f)),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.6f)), modifier = Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(10.dp)) {
+                        androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            list.forEach { e ->
+                                Surface(onClick = {
+                                    val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    cm.setPrimaryClip(ClipData.newPlainText("emoji", e))
+                                    Toast.makeText(context, "已复制 $e", Toast.LENGTH_SHORT).show()
+                                }, shape = RoundedCornerShape(8.dp), color = Color.White.copy(alpha = 0.7f)) {
+                                    Text(e, fontSize = 20.sp, modifier = Modifier.padding(6.dp))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
