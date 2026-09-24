@@ -228,6 +228,56 @@ fun AppUpdateDialog(
         Toast.makeText(context, "打开 QQ 群失败，请手动搜索群号：$groupNumber", Toast.LENGTH_LONG).show()
     }
 
+    /** 同步执行单次下载，返回保存好的 File。本函数会跑在 IO 线程里
+     *  v1.7.8：移到 startRealDownload 之前定义（Kotlin 局部函数不支持前向引用） */
+    suspend fun downloadWithProgress(url: String, onProgress: suspend (Float) -> Unit): File {
+        return kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            val client = okhttp3.OkHttpClient.Builder()
+                .connectTimeout(20, TimeUnit.SECONDS)
+                .readTimeout(120, TimeUnit.SECONDS)
+                .followRedirects(true)
+                .followSslRedirects(true)
+                .retryOnConnectionFailure(true)
+                .build()
+            val request = okhttp3.Request.Builder()
+                .url(url)
+                .header("User-Agent", "Mozilla/5.0 (Linux; Android) LzdzUpdater/1.7.8")
+                .header("Accept", "*/*")
+                .build()
+            client.newCall(request).execute().use { resp ->
+                if (!resp.isSuccessful) throw Exception("HTTP ${resp.code}")
+                val body = resp.body ?: throw Exception("无响应体")
+                val total = body.contentLength()
+                val dir = File(context.cacheDir, "update")
+                dir.mkdirs()
+                val file = File(dir, "latest.apk")
+                body.byteStream().use { input ->
+                    file.outputStream().use { output ->
+                        val buf = ByteArray(16 * 1024)
+                        var downloaded = 0L
+                        var lastEmit = 0L
+                        while (true) {
+                            val n = input.read(buf)
+                            if (n <= 0) break
+                            output.write(buf, 0, n)
+                            downloaded += n
+                            if (total > 0) {
+                                val now = System.currentTimeMillis()
+                                if (now - lastEmit > 120 || downloaded == total) {
+                                    lastEmit = now
+                                    val frac = (downloaded.toFloat() / total.toFloat()).coerceIn(0f, 1f)
+                                    kotlinx.coroutines.runBlocking { onProgress(frac) }
+                                }
+                            }
+                        }
+                        output.flush()
+                    }
+                }
+                file
+            }
+        }
+    }
+
     /**
      * 进度条直接下载 + 安装（v1.7.8 升级版）
      * - 多源：原 URL → jsDelivr CDN → GitHub 镜像 → gitee 镜像（每个独立重试 2 次）
@@ -333,55 +383,6 @@ fun AppUpdateDialog(
                 isUpdating = false
                 onUpdateFinished()
                 onDismiss()
-            }
-        }
-    }
-
-    /** 同步执行单次下载，返回保存好的 File。本函数会跑在 IO 线程里 */
-    suspend fun downloadWithProgress(url: String, onProgress: suspend (Float) -> Unit): File {
-        return kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-            val client = okhttp3.OkHttpClient.Builder()
-                .connectTimeout(20, TimeUnit.SECONDS)
-                .readTimeout(120, TimeUnit.SECONDS)
-                .followRedirects(true)
-                .followSslRedirects(true)
-                .retryOnConnectionFailure(true)
-                .build()
-            val request = okhttp3.Request.Builder()
-                .url(url)
-                .header("User-Agent", "Mozilla/5.0 (Linux; Android) LzdzUpdater/1.7.8")
-                .header("Accept", "*/*")
-                .build()
-            client.newCall(request).execute().use { resp ->
-                if (!resp.isSuccessful) throw Exception("HTTP ${resp.code}")
-                val body = resp.body ?: throw Exception("无响应体")
-                val total = body.contentLength()
-                val dir = File(context.cacheDir, "update")
-                dir.mkdirs()
-                val file = File(dir, "latest.apk")
-                body.byteStream().use { input ->
-                    file.outputStream().use { output ->
-                        val buf = ByteArray(16 * 1024)
-                        var downloaded = 0L
-                        var lastEmit = 0L
-                        while (true) {
-                            val n = input.read(buf)
-                            if (n <= 0) break
-                            output.write(buf, 0, n)
-                            downloaded += n
-                            if (total > 0) {
-                                val now = System.currentTimeMillis()
-                                if (now - lastEmit > 120 || downloaded == total) {
-                                    lastEmit = now
-                                    val frac = (downloaded.toFloat() / total.toFloat()).coerceIn(0f, 1f)
-                                    kotlinx.coroutines.runBlocking { onProgress(frac) }
-                                }
-                            }
-                        }
-                        output.flush()
-                    }
-                }
-                file
             }
         }
     }
