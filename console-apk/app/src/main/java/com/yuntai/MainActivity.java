@@ -2,11 +2,20 @@ package com.yuntai;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageInstaller;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Base64;
 import android.view.Gravity;
 import android.view.View;
@@ -19,6 +28,7 @@ import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,17 +38,23 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 懒得找了 · 本体维护控制台（原生版 v2.0.0）
@@ -73,6 +89,10 @@ public class MainActivity extends Activity {
     // ---- 控件类型 ----
     private static final int T_EDIT = 0, T_TEXT = 1, T_CHECK = 2, T_SPIN = 3;
 
+    // ---- 备份/导入 请求码 ----
+    private static final int PICK_IMPORT_JSON = 200;
+    private static final int CREATE_BACKUP_JSON = 201;
+
     // ---- 表单字段描述 ----
     static class FieldSpec {
         String label; int type; String[] opts; String path; boolean numeric;
@@ -97,6 +117,7 @@ public class MainActivity extends Activity {
     private final List<JSONObject> skillCache = new ArrayList<>();
     private final List<JSONObject> apkCache = new ArrayList<>();
     private int selCat = -1, selSite = -1, selSoft = -1, selSkill = -1, selApk = -1;
+    private int selSubcat = -1;
 
     // ---- UI ----
     private EditText tokenEt;
@@ -159,6 +180,30 @@ public class MainActivity extends Activity {
         conn.setLayoutParams(lpc);
         conn.setOnClickListener(v -> doConnect(false));
         top.addView(conn);
+
+        Button bBackup = new Button(this);
+        bBackup.setText("⬇");
+        bBackup.setTextSize(13);
+        bBackup.setTextColor(0xFF0F172A);
+        bBackup.setBackgroundColor(0xFFA5B4FC);
+        bBackup.setAllCaps(false);
+        LinearLayout.LayoutParams lpb = new LinearLayout.LayoutParams(dp(44), dp(40));
+        lpb.leftMargin = dp(6);
+        bBackup.setLayoutParams(lpb);
+        bBackup.setOnClickListener(v -> backupJson());
+        top.addView(bBackup);
+
+        Button bImport = new Button(this);
+        bImport.setText("⬆");
+        bImport.setTextSize(13);
+        bImport.setTextColor(0xFF0F172A);
+        bImport.setBackgroundColor(0xFF6EE7B7);
+        bImport.setAllCaps(false);
+        LinearLayout.LayoutParams lpi = new LinearLayout.LayoutParams(dp(44), dp(40));
+        lpi.leftMargin = dp(6);
+        bImport.setLayoutParams(lpi);
+        bImport.setOnClickListener(v -> pickFile(PICK_IMPORT_JSON));
+        top.addView(bImport);
         root.addView(top);
 
         statusBar = new TextView(this);
@@ -325,6 +370,13 @@ public class MainActivity extends Activity {
         addBtn(catBtns, "－ 删除分类", v -> delCat());
         page.addView(catBtns);
 
+        LinearLayout catBtns2 = row();
+        addBtn(catBtns2, "＋ 子分类", v -> dlgSubcat(-1));
+        addBtn(catBtns2, "✎ 子分类", v -> dlgSubcat(selSubcat));
+        addBtn(catBtns2, "⬆ 上移分类", v -> moveCat(-1));
+        addBtn(catBtns2, "⬇ 下移分类", v -> moveCat(1));
+        page.addView(catBtns2);
+
         TextView t2 = secTitle("—— 该分类下的站点 ——");
         page.addView(t2);
 
@@ -343,6 +395,13 @@ public class MainActivity extends Activity {
         addBtn(siteBtns, "✎ 编辑站点", v -> dlgSite(selSite));
         addBtn(siteBtns, "－ 删除站点", v -> delSite());
         page.addView(siteBtns);
+
+        LinearLayout siteBtns2 = row();
+        addBtn(siteBtns2, "⬆ 上移", v -> moveSite(-1));
+        addBtn(siteBtns2, "⬇ 下移", v -> moveSite(1));
+        addBtn(siteBtns2, "🌟 一键收录", v -> dlgCollect());
+        addBtn(siteBtns2, "🔁 全库去重", v -> dedupAllSites());
+        page.addView(siteBtns2);
     }
 
     private void renderHomeLists() {
@@ -500,6 +559,236 @@ public class MainActivity extends Activity {
             if (home == null) { home = new JSONObject(); admin.put("home", home); }
             home.put("categories", cats);
         } catch (Exception ignored) { }
+    }
+
+    // ============================================================
+    // 首页进阶：子分类 / 上下移 / 一键收录 / 全库去重（旧版控制台交互迁移）
+    // ============================================================
+
+    private void dlgSubcat(final int idx) {
+        if (selCat < 0 || selCat >= catCache.size()) { toast("请先选择上方分类"); return; }
+        final JSONObject cat = catCache.get(selCat);
+        JSONArray subs = cat.optJSONArray("subcategories");
+        final List<JSONObject> list = new ArrayList<>();
+        if (subs != null) {
+            for (int i = 0; i < subs.length(); i++) {
+                JSONObject s = subs.optJSONObject(i);
+                if (s != null) list.add(s);
+            }
+        }
+        final JSONObject s = (idx >= 0 && idx < list.size()) ? list.get(idx) : new JSONObject();
+        LinearLayout fm = new LinearLayout(this);
+        fm.setOrientation(LinearLayout.VERTICAL);
+        EditText idE = le(fm, "子分类 ID（英文，如 all）", s.optString("id", idx < 0 ? "" : ""));
+        EditText nmE = le(fm, "子分类名称", s.optString("name", ""));
+        new AlertDialog.Builder(this)
+            .setTitle(idx < 0 ? "＋ 新增子分类" : "✎ 编辑子分类")
+            .setView(fm)
+            .setPositiveButton("保存", (d, w) -> {
+                try {
+                    if (idx < 0) {
+                        JSONObject ns = new JSONObject();
+                        ns.put("id", idE.getText().toString().trim().isEmpty() ? "sub_" + System.currentTimeMillis() : idE.getText().toString().trim());
+                        ns.put("name", nmE.getText().toString().trim());
+                        JSONArray arr = cat.optJSONArray("subcategories");
+                        if (arr == null) { arr = new JSONArray(); cat.put("subcategories", arr); }
+                        arr.put(ns);
+                    } else {
+                        s.put("id", idE.getText().toString().trim());
+                        s.put("name", nmE.getText().toString().trim());
+                    }
+                    collectCatFromCache();
+                    renderHomeLists();
+                    toast("子分类已保存，点「⚡ 应用」同步");
+                } catch (Exception e) { toast("保存失败: " + e.getMessage()); }
+            })
+            .setNegativeButton("取消", null)
+            .show();
+    }
+
+    private void moveCat(int dir) {
+        if (selCat < 0 || selCat >= catCache.size()) { toast("请先选择分类"); return; }
+        int to = selCat + dir;
+        if (to < 0 || to >= catCache.size()) { toast("已在最" + (dir < 0 ? "上" : "下") + "边"); return; }
+        JSONObject tmp = catCache.get(selCat);
+        catCache.set(selCat, catCache.get(to));
+        catCache.set(to, tmp);
+        selCat = to;
+        collectCatFromCache();
+        renderHomeLists();
+        toast("分类已移动，点「⚡ 应用」同步");
+    }
+
+    private void moveSite(int dir) {
+        if (selCat < 0 || selSite < 0 || selSite >= siteCache.size()) { toast("请先选择站点"); return; }
+        int to = selSite + dir;
+        if (to < 0 || to >= siteCache.size()) { toast("已在最" + (dir < 0 ? "上" : "下") + "边"); return; }
+        JSONObject tmp = siteCache.get(selSite);
+        siteCache.set(selSite, siteCache.get(to));
+        siteCache.set(to, tmp);
+        selSite = to;
+        collectCatFromCache();
+        renderHomeLists();
+        toast("站点已移动，点「⚡ 应用」同步");
+    }
+
+    /** 一键收录：多行 URL → 自动分类 + 自动图标 + 去重（旧版 🌟 一键收录并同步本体） */
+    private void dlgCollect() {
+        if (admin == null) { toast("请先连接云端"); return; }
+        LinearLayout fm = new LinearLayout(this);
+        fm.setOrientation(LinearLayout.VERTICAL);
+        final EditText urlsE = new EditText(this);
+        urlsE.setHint("每行一个 URL，支持批量（如 https://chatgpt.com）");
+        urlsE.setTextColor(Color.WHITE);
+        urlsE.setHintTextColor(0xFF64748B);
+        urlsE.setBackgroundColor(0xFF1E2438);
+        urlsE.setGravity(Gravity.TOP);
+        urlsE.setMinHeight(dp(140));
+        urlsE.setTextSize(13);
+        urlsE.setPadding(dp(8), dp(6), dp(8), dp(6));
+        fm.addView(urlsE, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(150)));
+        new AlertDialog.Builder(this)
+            .setTitle("🌟 一键收录站点")
+            .setMessage("自动识别分类（按关键词匹配）· 自动获取图标 · 自动去重")
+            .setView(fm)
+            .setPositiveButton("收录", (d, w) -> collectSites(urlsE.getText().toString()))
+            .setNegativeButton("取消", null)
+            .show();
+    }
+
+    private void collectSites(String raw) {
+        String[] lines = raw.split("\n");
+        int added = 0, dup = 0;
+        try {
+            for (String ln : lines) {
+                String u = ln.trim();
+                if (u.isEmpty()) continue;
+                if (!u.startsWith("http")) u = "https://" + u;
+                if (dupCheck(u)) { dup++; continue; }
+                JSONObject ns = new JSONObject();
+                String domain = domainOf(u);
+                ns.put("id", "site_" + System.currentTimeMillis() + "_" + added);
+                ns.put("title", domain);
+                ns.put("url", u);
+                ns.put("icon", "https://" + domain + "/favicon.ico");
+                ns.put("fallbackText", domain.length() > 3 ? domain.substring(0, 3).toUpperCase() : domain.toUpperCase());
+                ns.put("badge", "NEW");
+                ns.put("badgeType", "NEW");
+                ns.put("desc", "");
+                ns.put("categoryId", "");
+                ns.put("subcatId", "all");
+                ns.put("highlights", "");
+                // 自动分类：按 URL/域名关键词匹配现有分类
+                JSONObject target = autoPickCategory(domain + " " + u);
+                if (target == null) {
+                    JSONArray cats = admin.optJSONObject("home").optJSONArray("categories");
+                    target = (cats != null && cats.length() > 0) ? cats.optJSONObject(0) : null;
+                }
+                if (target != null) {
+                    ns.put("categoryId", target.optString("id", ""));
+                    JSONArray cards = target.optJSONArray("cards");
+                    if (cards == null) { cards = new JSONArray(); target.put("cards", cards); }
+                    cards.put(ns);
+                } else {
+                    toast("仓库暂无分类，请先新增分类");
+                    return;
+                }
+                added++;
+            }
+            collectCatFromCache();
+            renderHomeLists();
+            toast("收录完成：新增 " + added + " 个，跳过重复 " + dup + " 个（点「⚡ 应用」同步）");
+        } catch (Exception e) {
+            toast("收录失败: " + e.getMessage());
+        }
+    }
+
+    /** 按关键词自动匹配分类（收录时使用） */
+    private JSONObject autoPickCategory(String keyword) {
+        try {
+            String k = keyword.toLowerCase(Locale.ROOT);
+            JSONArray cats = admin.optJSONObject("home").optJSONArray("categories");
+            if (cats == null) return null;
+            JSONObject best = null;
+            for (int i = 0; i < cats.length(); i++) {
+                JSONObject c = cats.optJSONObject(i);
+                if (c == null) continue;
+                String name = (c.optString("name", "") + " " + c.optString("desc", "")).toLowerCase(Locale.ROOT);
+                String[] keys = name.split("[\\s,，、;；|/]");
+                for (String key : keys) {
+                    if (key.length() >= 2 && k.contains(key)) { best = c; break; }
+                }
+                if (best != null) break;
+            }
+            return best;
+        } catch (Exception e) { return null; }
+    }
+
+    private static String domainOf(String url) {
+        try {
+            java.net.URI uri = new java.net.URI(url);
+            String host = uri.getHost();
+            if (host == null) return "site";
+            return host.replaceFirst("^(www\\.)", "");
+        } catch (Exception e) { return "site"; }
+    }
+
+    /** 全库去重：扫描所有分类的站点，按 URL 去重（旧版 🔁 一键去重） */
+    private void dedupAllSites() {
+        if (admin == null) { toast("请先连接云端"); return; }
+        try {
+            JSONArray cats = admin.optJSONObject("home").optJSONArray("categories");
+            if (cats == null) { toast("无分类"); return; }
+            Set<String> seen = new HashSet<>();
+            int removed = 0;
+            for (int i = 0; i < cats.length(); i++) {
+                JSONObject c = cats.optJSONObject(i);
+                if (c == null) continue;
+                JSONArray cards = c.optJSONArray("cards");
+                if (cards == null) continue;
+                JSONArray keep = new JSONArray();
+                for (int j = 0; j < cards.length(); j++) {
+                    JSONObject card = cards.optJSONObject(j);
+                    if (card == null) continue;
+                    String url = card.optString("url", "").trim();
+                    if (url.isEmpty()) { keep.put(card); continue; }
+                    if (seen.add(normUrl(url))) { keep.put(card); } else { removed++; }
+                }
+                c.put("cards", keep);
+            }
+            collectCatFromCache();
+            renderHomeLists();
+            toast("去重完成：移除重复站点 " + removed + " 个（点「⚡ 应用」同步）");
+        } catch (Exception e) {
+            toast("去重失败: " + e.getMessage());
+        }
+    }
+
+    /** URL 规范化（去 https:// 前缀、www、尾斜杠、大小写） */
+    private static String normUrl(String url) {
+        String s = url.trim().toLowerCase(Locale.ROOT);
+        s = s.replaceFirst("^https?://", "");
+        s = s.replaceFirst("^www\\.", "");
+        while (s.endsWith("/")) s = s.substring(0, s.length() - 1);
+        return s;
+    }
+
+    private boolean dupCheck(String url) {
+        String n = normUrl(url);
+        JSONArray cats = admin.optJSONObject("home").optJSONArray("categories");
+        if (cats == null) return false;
+        for (int i = 0; i < cats.length(); i++) {
+            JSONObject c = cats.optJSONObject(i);
+            if (c == null) continue;
+            JSONArray cards = c.optJSONArray("cards");
+            if (cards == null) continue;
+            for (int j = 0; j < cards.length(); j++) {
+                JSONObject card = cards.optJSONObject(j);
+                if (card != null && normUrl(card.optString("url", "")).equals(n)) return true;
+            }
+        }
+        return false;
     }
 
     private JSONArray ensureCatArray() {
@@ -750,6 +1039,11 @@ public class MainActivity extends Activity {
         specs.add(new FieldSpec("QQ 二维码URL", T_EDIT, null, "settings.contactQQ", false));
         specs.add(new FieldSpec("支付宝二维码URL", T_EDIT, null, "settings.contactAlipay", false));
         specs.add(new FieldSpec("关于我们", T_TEXT, null, "settings.aboutText", false));
+        specs.add(new FieldSpec("品牌 Logo URL", T_EDIT, null, "settings.logoUrl", false));
+        specs.add(new FieldSpec("自定义主题 CSS", T_TEXT, null, "settings.customThemeCss", false));
+        specs.add(new FieldSpec("自定义主题 HTML", T_TEXT, null, "settings.customThemeHtml", false));
+        specs.add(new FieldSpec("安全加固-开启", T_CHECK, null, "settings.security.enabled", false));
+        specs.add(new FieldSpec("安全加固-期望签名SHA", T_TEXT, null, "settings.security.expectedSha", false));
         List<Field> fs = buildFields(page, specs);
         pageFields.put("settings", fs);
     }
@@ -806,7 +1100,98 @@ public class MainActivity extends Activity {
         mspecs.add(new FieldSpec("图标", T_EDIT, null, "marquee.icon", false));
         mspecs.add(new FieldSpec("默认公告", T_TEXT, null, "marquee.defaultText", false));
         fs.addAll(buildFields(page, mspecs));
+        fs.addAll(buildFields(page, new ArrayList<FieldSpec>() {{
+            add(new FieldSpec("—— 跑马灯时间段（24小时轮播）——", T_EDIT, null, "marquee._section_flag_", false));
+        }}));
+        // 时间段管理按钮：打开对话框逐条编辑 segments
+        LinearLayout segRow = row();
+        addBtn(segRow, "⏰ 管理时间段", v -> dlgMarqueeSegments());
+        page.addView(segRow);
+        fs.addAll(buildFields(page, new ArrayList<FieldSpec>() {{
+            add(new FieldSpec("—— IP 定位监控 ——", T_EDIT, null, "ipMonitor._section_flag_", false));
+        }}));
+        List<FieldSpec> ispecs = new ArrayList<>();
+        ispecs.add(new FieldSpec("启用", T_CHECK, null, "ipMonitor.enabled", false));
+        ispecs.add(new FieldSpec("定位 URL", T_EDIT, null, "ipMonitor.url", false));
+        fs.addAll(buildFields(page, ispecs));
         pageFields.put("other", fs);
+    }
+
+    // ============================================================
+    // 跑马灯时间段管理（旧版交互：24小时北京时间轮播）
+    // ============================================================
+    private void dlgMarqueeSegments() {
+        if (admin == null) { toast("请先连接云端"); return; }
+        final JSONObject mq = admin.optJSONObject("marquee");
+        if (mq == null) { toast("云端暂无 marquee 配置"); return; }
+        JSONArray segs = mq.optJSONArray("segments");
+        final List<JSONObject> list = new ArrayList<>();
+        if (segs != null) {
+            for (int i = 0; i < segs.length(); i++) {
+                JSONObject s = segs.optJSONObject(i);
+                if (s != null) list.add(s);
+            }
+        }
+        LinearLayout fm = new LinearLayout(this);
+        fm.setOrientation(LinearLayout.VERTICAL);
+        TextView tip = new TextView(this);
+        tip.setText("当前 " + list.size() + " 个时间段。\n每行格式：开始小时-结束小时|文案（如 8-12|早安公告）");
+        tip.setTextSize(12);
+        tip.setTextColor(0xFF94A3B8);
+        fm.addView(tip);
+        final EditText segE = new EditText(this);
+        segE.setTextColor(Color.WHITE);
+        segE.setHintTextColor(0xFF64748B);
+        segE.setBackgroundColor(0xFF1E2438);
+        segE.setGravity(Gravity.TOP);
+        segE.setMinHeight(dp(140));
+        segE.setTextSize(13);
+        segE.setPadding(dp(8), dp(6), dp(8), dp(6));
+        StringBuilder sb = new StringBuilder();
+        for (JSONObject s : list) {
+            sb.append(s.optInt("start", 0)).append("-").append(s.optInt("end", 23))
+              .append("|").append(s.optString("text", "")).append("\n");
+        }
+        segE.setText(sb.toString());
+        fm.addView(segE, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(160)));
+        new AlertDialog.Builder(this)
+            .setTitle("⏰ 跑马灯时间段管理")
+            .setView(fm)
+            .setPositiveButton("保存", (d, w) -> {
+                try {
+                    JSONArray out = new JSONArray();
+                    String[] lines = segE.getText().toString().split("\n");
+                    for (String ln : lines) {
+                        String t = ln.trim();
+                        if (t.isEmpty()) continue;
+                        int bar = t.indexOf('|');
+                        String range = bar >= 0 ? t.substring(0, bar).trim() : t.trim();
+                        String text = bar >= 0 ? t.substring(bar + 1).trim() : "";
+                        int dash = range.indexOf('-');
+                        int start = 0, end = 23;
+                        try {
+                            if (dash > 0) {
+                                start = Integer.parseInt(range.substring(0, dash).trim());
+                                end = Integer.parseInt(range.substring(dash + 1).trim());
+                            } else {
+                                start = Integer.parseInt(range.trim());
+                                end = start;
+                            }
+                        } catch (Exception ignored) { }
+                        JSONObject seg = new JSONObject();
+                        seg.put("start", Math.max(0, Math.min(start, 23)));
+                        seg.put("end", Math.max(0, Math.min(end, 23)));
+                        seg.put("text", text);
+                        out.put(seg);
+                    }
+                    mq.put("segments", out);
+                    admin.put("marquee", mq);
+                    toast("时间段已保存（点「⚡ 应用」同步）");
+                } catch (Exception e) { toast("保存失败: " + e.getMessage()); }
+            })
+            .setNegativeButton("取消", null)
+            .show();
     }
 
     // ============================================================
@@ -1264,6 +1649,8 @@ public class MainActivity extends Activity {
                         if (sha.isEmpty() && token.isEmpty()) statusBar.append("（未填 Token，只读）");
                         // 只渲染当前页签（其余页签进入时再渲染），避免未构建页签的控件为 null
                         renderCachedPage(currentTab);
+                        // 控制台自更新检查（与本体软件更新完全分离）
+                        checkConsoleUpdate();
                     } else {
                         statusBar.setText("● 连接失败");
                         toast("连接失败：API 与全部镜像均不可达。\n请检查网络 / Token / 仓库名，或用「🔍 诊断」定位问题");
@@ -1425,6 +1812,118 @@ public class MainActivity extends Activity {
     }
 
     // ============================================================
+    // 控制台自更新（旧版交互：🔍 本机检查控制台更新，下载并自动安装新控制台 APK）
+    // ============================================================
+    private void checkConsoleUpdate() {
+        try {
+            JSONObject con = admin == null ? null : admin.optJSONObject("console");
+            if (con == null) return;
+            int cloudCode = con.optInt("code", 0);
+            String apkUrl = con.optString("apkUrl", "");
+            if (cloudCode <= 0 || apkUrl.isEmpty()) return;
+            final int localCode = getLocalConsoleVersionCode();
+            if (cloudCode <= localCode) return;
+            final String ver = con.optString("version", String.valueOf(cloudCode));
+            confirm("发现控制台程序新版本 v" + ver + "（当前 code:" + localCode + " → 最新 code:" + cloudCode + "）\n\n" +
+                "控制台程序更新与本体软件完全分离。点击确认将下载并自动安装新版本，替换当前控制台。", () -> doConsoleUpdate(apkUrl, ver));
+        } catch (Exception e) {
+            log("checkConsoleUpdate 失败: " + e);
+        }
+    }
+
+    /** 读取当前控制台真实安装版本号（兼容 BuildConfig 缺失场景） */
+    private int getLocalConsoleVersionCode() {
+        try {
+            return getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
+        } catch (Exception e) { return 0; }
+    }
+
+    private void doConsoleUpdate(final String apkUrl, final String ver) {
+        // 首次安装新版本需要「允许安装未知应用」权限：未授权先引导一次
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !getPackageManager().canRequestPackageInstalls()) {
+            toast("请先允许安装未知应用（仅首次需要）");
+            try {
+                startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                        Uri.parse("package:" + getPackageName())));
+            } catch (Exception e) { toast("无法打开设置：" + e.getMessage()); }
+            return;
+        }
+        statusBar.setText("● 正在下载控制台新版本…");
+        new Thread(() -> {
+            try {
+                final File apk = downloadToFile(apkUrl, "console-update.apk");
+                runOnUiThread(() -> {
+                    statusBar.setText("● 正在安装控制台新版本…");
+                    boolean ok = installConsoleApk(apk);
+                    if (ok) toast("已提交安装，稍后完成");
+                    else toast("安装失败，请到系统设置手动安装");
+                });
+            } catch (Exception e) {
+                runOnUiThread(() -> { statusBar.setText("● 控制台更新失败"); toast("控制台更新失败：" + e.getMessage()); });
+            }
+        }).start();
+    }
+
+    private File downloadToFile(String url, String name) throws Exception {
+        HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
+        c.setConnectTimeout(20000);
+        c.setReadTimeout(120000);
+        c.setInstanceFollowRedirects(true);
+        c.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android) YuntaiConsole/2.0");
+        int code = c.getResponseCode();
+        if (code < 200 || code >= 300) throw new Exception("HTTP " + code);
+        File dir = new File(getCacheDir(), "console_update");
+        if (!dir.exists()) dir.mkdirs();
+        File f = new File(dir, name);
+        InputStream in = c.getInputStream();
+        FileOutputStream out = new FileOutputStream(f);
+        byte[] buf = new byte[32768];
+        int n;
+        while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+        out.flush(); out.close(); in.close(); c.disconnect();
+        return f;
+    }
+
+    /** 系统 PackageInstaller 安装（原子替换、保留数据） */
+    private boolean installConsoleApk(File apkFile) {
+        try {
+            PackageInstaller pi = getPackageManager().getPackageInstaller();
+            PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(
+                    PackageInstaller.SessionParams.MODE_FULL_INSTALL);
+            params.setAppPackageName("com.yuntai");
+            int id = pi.createSession(params);
+            PackageInstaller.Session session = pi.openSession(id);
+            OutputStream out = session.openWrite("console.apk", 0, apkFile.length());
+            FileInputStream fis = new FileInputStream(apkFile);
+            byte[] buf = new byte[32768];
+            int n;
+            while ((n = fis.read(buf)) > 0) out.write(buf, 0, n);
+            fis.close();
+            out.close();
+            session.close();
+            Intent receiver = new Intent(this, ConsoleInstallReceiver.class);
+            PendingIntent pending = PendingIntent.getBroadcast(this, 100, receiver,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            session.commit(pending.getIntentSender());
+            return true;
+        } catch (Exception e) {
+            log("installConsoleApk 失败: " + e);
+            return false;
+        }
+    }
+
+    /** 控制台安装结果广播接收器 */
+    public static class ConsoleInstallReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE);
+            Toast.makeText(context,
+                    status == PackageInstaller.STATUS_SUCCESS ? "控制台更新成功！" : "控制台安装失败（" + intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE) + "）",
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+    // ============================================================
     // APK 仓库操作
     // ============================================================
     private void loadApkRepo(final boolean manual) {
@@ -1510,6 +2009,53 @@ public class MainActivity extends Activity {
     }
 
     // ============================================================
+    // 备份 / 导入 JSON（旧版交互：⬇️ 备份 / ⬆️ 导入）
+    // ============================================================
+    private void backupJson() {
+        if (admin == null) { toast("请先连接云端再备份"); return; }
+        try {
+            Intent i = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+            i.addCategory(Intent.CATEGORY_OPENABLE);
+            i.setType("application/json");
+            i.putExtra(Intent.EXTRA_TITLE, "admin-data-" + now().replaceAll("[: ]", "-") + ".json");
+            startActivityForResult(i, CREATE_BACKUP_JSON);
+        } catch (Exception e) {
+            toast("无法打开保存器：" + e.getMessage());
+        }
+    }
+
+    private void importJson(Uri uri) {
+        try {
+            InputStream in = getContentResolver().openInputStream(uri);
+            ByteArrayOutputStream bo = new ByteArrayOutputStream();
+            byte[] buf = new byte[16384];
+            int n;
+            while ((n = in.read(buf)) > 0) bo.write(buf, 0, n);
+            in.close();
+            String txt = bo.toString("UTF-8");
+            if (looksLikeHtml(txt)) { toast("导入失败：文件不是 JSON（疑似被拦截）"); return; }
+            JSONObject obj = new JSONObject(txt);
+            if (!obj.has("home") && !obj.has("version")) { toast("导入失败：不是 admin-data.json 结构"); return; }
+            admin = obj;
+            ensureDefaults();
+            sha = "";
+            collectCatFromCache();
+            renderAll();
+            toast("导入成功！请点「⚡ 应用」推送云端");
+        } catch (Exception e) {
+            toast("导入失败：" + e.getMessage());
+        }
+    }
+
+    private void renderAll() {
+        try {
+            for (String k : new String[]{"home", "soft", "skill", "settings", "update", "other", "apk"}) {
+                if (pages.containsKey(k)) renderCachedPage(k);
+            }
+        } catch (Exception e) { log("renderAll 失败: " + e); }
+    }
+
+    // ============================================================
     // SAF 文件选择与上传
     // ============================================================
     private void pickFile(int req) {
@@ -1531,6 +2077,21 @@ public class MainActivity extends Activity {
         final String name = queryName(uri);
         if (requestCode == PICK_APK_REPO) uploadToRepo(uri, name, null);
         else if (requestCode == PICK_APK_FOR_SOFT) uploadToRepo(uri, name, selSoft);
+        else if (requestCode == PICK_IMPORT_JSON) importJson(uri);
+        else if (requestCode == CREATE_BACKUP_JSON) exportJsonTo(uri);
+    }
+
+    private void exportJsonTo(Uri uri) {
+        try {
+            String json = admin.toString(2);
+            OutputStream out = getContentResolver().openOutputStream(uri);
+            out.write(json.getBytes("UTF-8"));
+            out.flush();
+            out.close();
+            toast("✅ 备份成功");
+        } catch (Exception e) {
+            toast("备份失败：" + e.getMessage());
+        }
     }
 
     private String queryName(Uri uri) {
