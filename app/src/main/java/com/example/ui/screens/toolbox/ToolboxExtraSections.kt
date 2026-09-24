@@ -1130,32 +1130,7 @@ fun CalculatorScreenView() {
     var result by remember { mutableStateOf("") }
 
     fun evalExpr(s: String): Double {
-        // 用标准递归下降求值，避免局部函数前向引用问题
-        val src = s
-        var i = 0
-        fun peek(): Char = if (i < src.length) src[i] else '\u0000'
-        fun skipWs() { while (i < src.length && src[i].isWhitespace()) i++ }
-        fun parseNumber(): Double {
-            skipWs(); val start = i
-            while (i < src.length && (src[i].isDigit() || src[i] == '.')) i++
-            return src.substring(start, i).toDouble()
-        }
-        fun parsePrimary(): Double {
-            skipWs()
-            if (peek() == '(') { i++; val v = parseAdd(); skipWs(); if (peek() == ')') i++; return v }
-            return parseNumber()
-        }
-        fun parseMul(): Double {
-            var v = parsePrimary(); skipWs()
-            while (peek() == '*' || peek() == '/') { val op = peek(); i++; val r = parsePrimary(); v = if (op == '*') v * r else v / r; skipWs() }
-            return v
-        }
-        fun parseAdd(): Double {
-            var v = parseMul(); skipWs()
-            while (peek() == '+' || peek() == '-') { val op = peek(); i++; val r = parseMul(); v = if (op == '+') v + r else v - r; skipWs() }
-            return v
-        }
-        return parseAdd()
+        return evalExprImpl(s)
     }
 
     fun calc(): String {
@@ -1273,3 +1248,33 @@ fun EmojiPickerScreenView() {
         }
     }
 }
+
+/* 计算器表达式求值（顶层实现：用状态类 + 显式递归，成员函数天然支持互相引用） */
+private class ExprParser(val src: String) {
+    var i = 0
+    fun peek(): Char = if (i < src.length) src[i] else '\u0000'
+    fun skipWs() { while (i < src.length && src[i].isWhitespace()) i++ }
+    fun parseNumber(): Double {
+        skipWs(); val start = i
+        while (i < src.length && (src[i].isDigit() || src[i] == '.')) i++
+        return src.substring(start, i).toDouble()
+    }
+    fun parsePrimary(): Double {
+        skipWs()
+        if (peek() == '(') { i++; val v = parseAdd(); skipWs(); if (peek() == ')') i++; return v }
+        return parseNumber()
+    }
+    fun parseMul(): Double {
+        var v = parsePrimary(); skipWs()
+        while (peek() == '*' || peek() == '/') { val op = peek(); i++; val r = parsePrimary(); v = if (op == '*') v * r else v / r; skipWs() }
+        return v
+    }
+    fun parseAdd(): Double {
+        var v = parseMul(); skipWs()
+        while (peek() == '+' || peek() == '-') { val op = peek(); i++; val r = parseMul(); v = if (op == '+') v + r else v - r; skipWs() }
+        return v
+    }
+    fun parse(): Double { return parseAdd() }
+}
+
+private fun evalExprImpl(s: String): Double = ExprParser(s).parse()
