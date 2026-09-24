@@ -231,6 +231,36 @@ enum class ToolboxTab(
         icon = Icons.Filled.FormatColorFill,
         desc = "HEX/RGB/HSL 互转 · 提取主题色 · 复制颜色值 · 调出好看的高级色调"
     ),
+    UNIT_CONV(
+        title = "单位换算器",
+        shortLabel = "单位换算",
+        icon = Icons.Filled.Menu,
+        desc = "长度/重量/温度/面积/体积 实时换算 · 本地离线秒出结果"
+    ),
+    BASE_CONV(
+        title = "进制转换",
+        shortLabel = "进制转换",
+        icon = Icons.Filled.List,
+        desc = "2/8/10/16 进制互转 · 二进制补码/进制前缀 · 程序员利器"
+    ),
+    DATE_CALC(
+        title = "日期计算",
+        shortLabel = "日期计算",
+        icon = Icons.Filled.DateRange,
+        desc = "两个日期相差几天 · 日期加减天数 · 今天是第几周/第几天"
+    ),
+    CALCULATOR(
+        title = "简易计算器",
+        shortLabel = "计算器",
+        icon = Icons.Filled.Add,
+        desc = "加减乘除四则运算 · 括号与小数支持 · 本地计算不联网"
+    ),
+    EMOJI_PICKER(
+        title = "Emoji 表情库",
+        shortLabel = "Emoji",
+        icon = Icons.Filled.SentimentSatisfied,
+        desc = "常用表情一键复制 · 分类收藏 · 聊天斗图不发愁"
+    ),
 }
 
 @Composable
@@ -407,6 +437,11 @@ fun ToolboxScreen(
                                 ToolboxTab.PASSWORD_GEN -> PasswordGeneratorScreenView()
                                 ToolboxTab.QRCODE_TEXT -> QrCodeTextScreenView()
                                 ToolboxTab.COLOR_CARD -> ColorCardScreenView()
+                                ToolboxTab.UNIT_CONV -> UnitConverterScreenView()
+                                ToolboxTab.BASE_CONV -> BaseConverterScreenView()
+                                ToolboxTab.DATE_CALC -> DateCalcScreenView()
+                                ToolboxTab.CALCULATOR -> CalculatorScreenView()
+                                ToolboxTab.EMOJI_PICKER -> EmojiPickerScreenView()
                             }
                         }
                     }
