@@ -219,6 +219,7 @@ main{padding:12px;max-width:960px;margin:0 auto}
       <input id="cfgToken" type="password" placeholder="GitHub Token（必填，创建方法见使用手册）" autocomplete="off">
       <input id="cfgOwner" placeholder="Owner" value="shuting52">
       <input id="cfgRepo" placeholder="仓库名" value="2026-9-21landezhaole">
+      <input id="cfgApi" placeholder="API 地址（默认官方，网络受限时可填代理网关）" value="https://api.github.com" style="width:100%">
     </div>
     <div class="row cfg-actions">
       <button class="btn-pri grow" onclick="connect()">🔌 连接</button>
@@ -226,9 +227,11 @@ main{padding:12px;max-width:960px;margin:0 auto}
       <button onclick="exportJson()">⬇️ 备份</button>
       <button onclick="document.getElementById('importFile').click()">⬆️ 导入</button>
       <button class="btn-err" onclick="disconnect()">⏻ 断开</button>
+      <button onclick="runDiagnosis()">🔍 连接诊断</button>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJson(event)">
     </div>
     <div style="margin-top:8px;font-size:12px;color:var(--tx2)" id="connInfo"></div>
+    <div style="margin-top:6px;font-size:12px;color:var(--tx2);display:none" id="diagInfo"></div>
   </div>
 
   <!-- 1. 首页 -->
@@ -273,11 +276,12 @@ main{padding:12px;max-width:960px;margin:0 auto}
 const DEFAULT_TOKEN = "";
 const DEFAULT_OWNER = "shuting52";
 const DEFAULT_REPO  = "2026-9-21landezhaole";
+const DEFAULT_API   = "https://api.github.com";
 const CONFIG_PATH   = "admin-data.json";
 // 控制台程序内置 versionCode（与 console-apk/app/build.gradle.kts 的 versionCode 保持一致）。
 // v1.0.12 修复：运行时优先读取原生桥回传的「真实已安装 versionCode」，
 // 只有浏览器环境取不到时才回退到该常量，彻底避免常量漏改导致更新判断失效。
-const CONSOLE_BUILTIN_VERSION = 16;
+const CONSOLE_BUILTIN_VERSION = 17;
 
 // 取当前控制台程序的真实版本号：APK 内用系统安装包 versionCode，浏览器回退内置常量
 function getLocalConsoleVersion(){
@@ -294,6 +298,7 @@ const S = {
   token: DEFAULT_TOKEN,
   owner: DEFAULT_OWNER,
   repo:  DEFAULT_REPO,
+  api:   DEFAULT_API,
   admin: null,
   sha:   "",
   loaded: false,
@@ -337,7 +342,8 @@ function saveCfg(){
   localStorage.setItem("lzdz_cfg", JSON.stringify({
     token: $("cfgToken").value.trim() || S.token,
     owner: $("cfgOwner").value.trim() || S.owner,
-    repo:  $("cfgRepo").value.trim()  || S.repo
+    repo:  $("cfgRepo").value.trim()  || S.repo,
+    api:   $("cfgApi").value.trim()   || S.api
   }));
   toast("配置已保存","ok");
 }
@@ -348,9 +354,11 @@ function loadCfg(){
     $("cfgToken").value = c.token || DEFAULT_TOKEN;
     $("cfgOwner").value = c.owner || DEFAULT_OWNER;
     $("cfgRepo").value  = c.repo  || DEFAULT_REPO;
+    $("cfgApi").value   = c.api   || DEFAULT_API;
     S.token = $("cfgToken").value;
     S.owner = $("cfgOwner").value;
     S.repo  = $("cfgRepo").value;
+    S.api   = $("cfgApi").value;
   }catch(e){
     $("cfgToken").value = DEFAULT_TOKEN;
     $("cfgOwner").value = DEFAULT_OWNER;
@@ -359,7 +367,8 @@ function loadCfg(){
 }
 
 // ============ GitHub API ============
-const API = "https://api.github.com";
+const API_BASE_DEFAULT = "https://api.github.com";
+function apiBase(){ return (S && S.api) ? S.api.replace(/\/+$/, "") : API_BASE_DEFAULT; }
 function ghHeaders(json){
   const h = { Accept: "application/vnd.github+json" };
   if(S.token) h.Authorization = "token " + S.token;
@@ -368,7 +377,7 @@ function ghHeaders(json){
 }
 
 async function ghGet(p){
-  const r = await fetch(`${API}/repos/${S.owner}/${S.repo}/contents/${p}`, { headers: ghHeaders() });
+  const r = await fetch(`${apiBase()}/repos/${S.owner}/${S.repo}/contents/${p}`, { headers: ghHeaders() });
   if(!r.ok) throw new Error("读取失败 HTTP " + r.status + " " + p);
   return r.json();
 }
@@ -377,7 +386,7 @@ async function ghPut(p, content, msg, sha){
   // v1.0.14：统一使用 UTF-8 安全的 base64 编码，与读取端保持一致
   const body = { message: msg, content: b64EncodeUtf8(content) };
   if(sha) body.sha = sha;
-  const r = await fetch(`${API}/repos/${S.owner}/${S.repo}/contents/${p}`, {
+  const r = await fetch(`${apiBase()}/repos/${S.owner}/${S.repo}/contents/${p}`, {
     method: "PUT",
     headers: ghHeaders(true),
     body: JSON.stringify(body)
@@ -392,7 +401,7 @@ async function ghPut(p, content, msg, sha){
 async function ghPutBin(p, base64, msg, sha){
   const body = { message: msg, content: base64 };
   if(sha) body.sha = sha;
-  const r = await fetch(`${API}/repos/${S.owner}/${S.repo}/contents/${p}`, {
+  const r = await fetch(`${apiBase()}/repos/${S.owner}/${S.repo}/contents/${p}`, {
     method: "PUT",
     headers: ghHeaders(true),
     body: JSON.stringify(body)
@@ -497,7 +506,7 @@ async function connect(){
 
   // 1) 主路径：GitHub Contents API（带 Token 可写，实时无缓存）
   try{
-    const r = await fetch(`${API}/repos/${S.owner}/${S.repo}/contents/${CONFIG_PATH}`, { headers: ghHeaders() });
+    const r = await fetch(`${apiBase()}/repos/${S.owner}/${S.repo}/contents/${CONFIG_PATH}`, { headers: ghHeaders() });
     const text = await r.text();
     if(!r.ok){
       if(r.status === 401) throw new Error("Token 无效或已过期（HTTP 401）");
@@ -574,6 +583,41 @@ async function connect(){
     setSub("连接失败");
     toast("云端数据解析失败","err");
   }
+}
+
+// ============ 连接诊断：逐一测试 API 与全部镜像通道，输出可读结果 ============
+// v1.0.16 新增：连不上时一键定位问题（Token 无效 / 网络被拦截 / 全部不可达）
+async function runDiagnosis(){
+  const owner = $("cfgOwner").value.trim() || S.owner;
+  const repo  = $("cfgRepo").value.trim()  || S.repo;
+  const token = $("cfgToken").value.trim();
+  const diag = $("diagInfo");
+  diag.style.display = "block";
+  diag.innerHTML = '<span class="status-dot idle"></span>正在逐通道测试，请稍候…';
+  const out = [];
+  // API 主通道（含 Token 校验）
+  const apiUrl = `${apiBase()}/repos/${owner}/${repo}/contents/${CONFIG_PATH}`;
+  try{
+    const r = await fetch(apiUrl, { headers: token ? { Authorization: "token " + token } : {} });
+    if(r.ok) out.push(`✅ API 主通道 [${apiBase()}]：HTTP ${r.status}（${token ? "已带 Token" : "匿名"}）`);
+    else out.push(`❌ API 主通道 [${apiBase()}]：HTTP ${r.status} ${r.status === 401 ? "（Token 无效/过期 → 请重新生成并粘贴）" : r.status === 403 ? "（限流/无权限 → 检查 Token 与权限）" : r.status === 404 ? "（仓库/文件不存在 → 检查 Owner/Repo）" : ""}`);
+  }catch(e){ out.push(`❌ API 主通道 [${apiBase()}]：网络不可达（${esc(String((e&&e.message)||e)).slice(0,120)}）`); }
+  // 8 条只读镜像
+  for(const m of READ_MIRRORS){
+    try{
+      const r = await fetch(m.url({ owner, repo }), { headers: {} });
+      if(!r.ok){ out.push(`❌ ${m.name}：HTTP ${r.status}`); continue; }
+      const t = await r.text();
+      if(looksLikeHtml(t)){ out.push(`❌ ${m.name}：返回网页（网络疑似被拦截/劫持）`); continue; }
+      try{ JSON.parse(t); out.push(`✅ ${m.name}：数据正常`); }
+      catch(e2){ out.push(`❌ ${m.name}：数据非 JSON`); }
+    }catch(e2){ out.push(`❌ ${m.name}：网络不可达`); }
+  }
+  const html = out.map(x =>
+    "<div style='padding:4px 2px;border-bottom:1px dashed rgba(255,255,255,.08)'>" + x + "</div>"
+  ).join("");
+  diag.innerHTML = '<div style="margin-bottom:6px"><b>连接诊断结果</b> <span style="opacity:.6">（点击上方 🔌 连接前可先看此结果）</span></div>' + html;
+  return out;
 }
 
 function setSub(t){ $("hdSub").textContent = t; }
@@ -786,7 +830,7 @@ function doConsoleUpdate(con){
 
 // GitHub 删除文件
 async function ghDelete(p, sha){
-  const r = await fetch(`${API}/repos/${S.owner}/${S.repo}/contents/${p}`, {
+  const r = await fetch(`${apiBase()}/repos/${S.owner}/${S.repo}/contents/${p}`, {
     method: "DELETE",
     headers: ghHeaders(true),
     body: JSON.stringify({ message: "console: 清理旧版本 APK " + p.split("/").pop(), sha: sha })
@@ -2308,7 +2352,7 @@ async function deleteApk(name){
   if(!ok) return;
   try{
     const meta = await ghGet("dist/apk/" + name);
-    const url = `${API}/repos/${S.owner}/${S.repo}/contents/dist/apk/${name}`;
+    const url = `${apiBase()}/repos/${S.owner}/${S.repo}/contents/dist/apk/${name}`;
     const r = await fetch(url, {
       method: "DELETE",
       headers: ghHeaders(true),
