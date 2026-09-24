@@ -8,7 +8,7 @@
       "文本二维码优化：默认不再预填任何地址，由你自由输入",
       "软件版块按钮升级：apk/zip/md 显示「安装」，网址显示「直达」，自动识别",
       "软件版块新增多款免费短剧 App（红果/番茄/河马/NetShort）",
-      "免费短剧分类扩充至 12 个站点（NetShort/findshortdrama/腾讯微剧场/爱奇艺随刻等）",
+      "免费短剧分类扩充至 12 个站点",
       "Skill 视频播放修复：多镜像兜底下载，不再黑屏",
       "控制台闪退修复：页面构建与连接时序全面加固"
     ],
@@ -782,6 +782,16 @@
             "categoryId": "ai_models",
             "subcatId": "creative",
             "highlights": "自然口语语调、笑声与语气词拟真；非常适合播客与对话助手制作"
+          },
+          {
+            "id": "site_1790272498603_57",
+            "title": "Jev (AI 开发者 API)",
+            "url": "https://jev.dev",
+            "badge": "HOT",
+            "badgeType": "NEW",
+            "desc": "面向开发者的轻量级 AI API 服务 · 注册送免费额度",
+            "categoryId": "ai_models",
+            "subcatId": "all"
           }
         ]
       },
@@ -1623,6 +1633,76 @@
             "categoryId": "short_drama",
             "subcatId": "all",
             "highlights": "字节 · 免费 · 海量"
+          },
+          {
+            "id": "site_1790272498602_5",
+            "title": "NetShort 短剧",
+            "url": "https://netshort.com/zh",
+            "badge": "NEW",
+            "badgeType": "NEW",
+            "desc": "高分热播短剧免费在线观看 · 霸总/赘婿/穿越/古装/AI短剧",
+            "categoryId": "short_drama",
+            "subcatId": "all"
+          },
+          {
+            "id": "site_1790272498602_6",
+            "title": "findshortdrama 大陆短剧",
+            "url": "https://www.findshortdrama.com/",
+            "badge": "NEW",
+            "badgeType": "NEW",
+            "desc": "大陆短剧聚合推荐 · 每日更新 · 无需注册直接看",
+            "categoryId": "short_drama",
+            "subcatId": "all"
+          },
+          {
+            "id": "site_1790272498602_7",
+            "title": "腾讯视频微剧场",
+            "url": "https://v.qq.com/microsite/wetheater/index.html",
+            "badge": "NEW",
+            "badgeType": "NEW",
+            "desc": "腾讯竖屏微短剧 · 制作精良横屏精品剧",
+            "categoryId": "short_drama",
+            "subcatId": "all"
+          },
+          {
+            "id": "site_1790272498602_8",
+            "title": "爱奇艺随刻",
+            "url": "https://suike.iqiyi.com/",
+            "badge": "NEW",
+            "badgeType": "NEW",
+            "desc": "分类详细 · 赘婿/战神/甜宠分得清清楚楚",
+            "categoryId": "short_drama",
+            "subcatId": "all"
+          },
+          {
+            "id": "site_1790272498603_9",
+            "title": "芒果TV 大芒短剧",
+            "url": "https://www.mgtv.com/",
+            "badge": "NEW",
+            "badgeType": "NEW",
+            "desc": "甜宠唯美 · 画面每一帧都能当壁纸",
+            "categoryId": "short_drama",
+            "subcatId": "all"
+          },
+          {
+            "id": "site_1790272498603_10",
+            "title": "优酷竖屏剧场",
+            "url": "https://www.youku.com/",
+            "badge": "NEW",
+            "badgeType": "NEW",
+            "desc": "独家剧很多 · 古装悬疑类特别准",
+            "categoryId": "short_drama",
+            "subcatId": "all"
+          },
+          {
+            "id": "site_1790272498603_11",
+            "title": "火山短剧",
+            "url": "https://www.huoshan.com/",
+            "badge": "NEW",
+            "badgeType": "NEW",
+            "desc": "操作极简 · 全是各种爽剧不用动脑",
+            "categoryId": "short_drama",
+            "subcatId": "all"
           }
         ]
       },
@@ -6008,6 +6088,66 @@
       "previewUrl": "",
       "iconUrl": "https://www.google.com/s2/favicons?domain=raw.githubusercontent.com&sz=128",
       "mode": "file"
+    },
+    {
+      "id": "sw_1790272498603_1",
+      "type": "software",
+      "title": "红果短剧",
+      "desc": "免费短剧聚合平台 · 每日更新海量剧集",
+      "author": "懒得找了官方推荐",
+      "badge": "官方推荐",
+      "tags": "短剧 免费 官方",
+      "url": "https://www.hongguo.tv/",
+      "apkUrl": "",
+      "fileUrl": "https://www.hongguo.tv/",
+      "iconUrl": "",
+      "previewUrl": "",
+      "mode": "url"
+    },
+    {
+      "id": "sw_1790272498603_2",
+      "type": "software",
+      "title": "番茄短剧",
+      "desc": "番茄小说短剧版块 · 原著小说无缝衔接",
+      "author": "懒得找了官方推荐",
+      "badge": "热门",
+      "tags": "短剧 免费 番茄",
+      "url": "https://fanqienovel.com/short-play",
+      "apkUrl": "",
+      "fileUrl": "https://fanqienovel.com/short-play",
+      "iconUrl": "",
+      "previewUrl": "",
+      "mode": "url"
+    },
+    {
+      "id": "sw_1790272498603_3",
+      "type": "software",
+      "title": "河马剧场",
+      "desc": "高品质短剧平台 · 微短剧/网络短剧",
+      "author": "懒得找了官方推荐",
+      "badge": "精品",
+      "tags": "短剧 剧场 官方",
+      "url": "https://www.hemashort.com/",
+      "apkUrl": "",
+      "fileUrl": "https://www.hemashort.com/",
+      "iconUrl": "",
+      "previewUrl": "",
+      "mode": "url"
+    },
+    {
+      "id": "sw_1790272498603_4",
+      "type": "software",
+      "title": "NetShort 短剧",
+      "desc": "高分热播短剧免费在线观看",
+      "author": "懒得找了官方推荐",
+      "badge": "精选",
+      "tags": "短剧 免费 在线",
+      "url": "https://netshort.com/zh",
+      "apkUrl": "",
+      "fileUrl": "https://netshort.com/zh",
+      "iconUrl": "",
+      "previewUrl": "",
+      "mode": "url"
     }
   ],
   "skills": [
