@@ -26,11 +26,22 @@ android {
   signingConfigs {
     create("release") {
       // v1.7.5 修复：写死固定签名密钥与密码，保证每个版本签名永远一致（覆盖安装不再失败）
-      val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
-      storeFile = file(keystorePath)
-      storePassword = System.getenv("STORE_PASSWORD") ?: "lzdz2026!secure"
-      keyAlias = "upload"
-      keyPassword = System.getenv("KEY_PASSWORD") ?: "lzdz2026!secure"
+      // 增强：密钥缺失（如 CI 未配置 secrets）时自动回退仓库内置 debug.keystore，保证仍能出可安装包
+      val envPath = System.getenv("KEYSTORE_PATH")
+      val envFile = envPath?.let { p -> if (File(p).isAbsolute) File(p) else file("${rootDir}/$p") }
+      val uploadKey = file("${rootDir}/my-upload-key.jks")
+      val dbgKey = file("${rootDir}/debug.keystore")
+      val chosen = when {
+        envFile != null && envFile.exists() -> envFile
+        uploadKey.exists() -> uploadKey
+        else -> dbgKey
+      }
+      val useDebugFallback = (chosen == dbgKey)
+      if (useDebugFallback) println("==> 警告：未找到正式签名密钥，回退使用 debug.keystore（产物为调试签名）")
+      storeFile = chosen
+      storePassword = if (useDebugFallback) "android" else (System.getenv("STORE_PASSWORD") ?: "lzdz2026!secure")
+      keyAlias = if (useDebugFallback) "androiddebugkey" else (System.getenv("KEY_ALIAS") ?: "upload")
+      keyPassword = if (useDebugFallback) "android" else (System.getenv("KEY_PASSWORD") ?: "lzdz2026!secure")
     }
     create("debugConfig") {
       storeFile = file("${rootDir}/debug.keystore")
