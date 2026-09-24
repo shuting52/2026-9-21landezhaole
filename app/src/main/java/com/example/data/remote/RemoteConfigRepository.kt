@@ -35,29 +35,47 @@ class RemoteConfigRepository(private val context: Context) {
 
     // GitHub API 直读（无 CDN 缓存，实时，但匿名限 60 次/小时/IP）
     private val apiUrl = "https://api.github.com/repos/$owner/$repo/contents/$filePath?ref=$branch"
-    // jsDelivr CDN（控制台发布后主动 purge，2 秒内生效，实时性强且无限频）
-    private val jsdelivrUrl = "https://cdn.jsdelivr.net/gh/$owner/$repo@$branch/$filePath"
-    // raw 直链兜底（CDN 有缓存延迟）
-    private val rawUrl = "https://raw.githubusercontent.com/$owner/$repo/$branch/$filePath"
+    // 只读镜像链（国内网络下 cdn.jsdelivr.net 主站可能被 DNS 污染，多节点顺延）
+    private val mirrorUrls = listOf(
+        "https://testingcf.jsdelivr.net/gh/$owner/$repo@$branch/$filePath",
+        "https://cdn.jsdelivr.net/gh/$owner/$repo@$branch/$filePath",
+        "https://fastly.jsdelivr.net/gh/$owner/$repo@$branch/$filePath",
+        "https://gcore.jsdelivr.net/gh/$owner/$repo@$branch/$filePath",
+        "https://ghfast.top/https://raw.githubusercontent.com/$owner/$repo/$branch/$filePath",
+        "https://ghproxy.net/https://raw.githubusercontent.com/$owner/$repo/$branch/$filePath",
+        "https://raw.gitmirror.com/$owner/$repo/$branch/$filePath",
+        "https://raw.githubusercontent.com/$owner/$repo/$branch/$filePath"
+    )
 
     suspend fun fetchAdminData(): AdminData? = withContext(Dispatchers.IO) {
-        // 优先级：API（实时）→ jsDelivr（purge 后实时）→ raw（兜底）
-        fetchFromApi() ?: fetchFromJsdelivr() ?: fetchFromRaw()
+        // 优先级：API（实时）→ 镜像链（jsDelivr 多节点 / raw 代理 / raw 兜底）
+        fetchFromApi() ?: fetchFromMirrors()
     }
 
     /** 阻塞版读取（供安全校验等非协程场景使用） */
     fun fetchAdminDataBlocking(): AdminData? {
-        return fetchFromApi() ?: fetchFromJsdelivr() ?: fetchFromRaw()
+        return fetchFromApi() ?: fetchFromMirrors()
     }
 
-    /** 通过 jsDelivr CDN 读取（控制台 publish 后 purge 立即刷新，本体 5 秒轮询即可拿到最新） */
-    private fun fetchFromJsdelivr(): AdminData? {
+    /** 依次尝试只读镜像链，第一个成功的即返回 */
+    private fun fetchFromMirrors(): AdminData? {
+        for (url in mirrorUrls) {
+            val data = fetchJsonText(url)?.let { adapter.fromJson(it) }
+            if (data != null) return data
+        }
+        return null
+    }
+
+    /** 拉取 URL 文本；返回网页（HTML）而非 JSON 时视为被拦截，跳过该来源 */
+    private fun fetchJsonText(url: String): String? {
         return try {
-            val request = Request.Builder().url(jsdelivrUrl).build()
+            val request = Request.Builder().url(url).build()
             client.newCall(request).execute().use { resp ->
                 if (!resp.isSuccessful) return null
                 val body = resp.body?.string() ?: return null
-                adapter.fromJson(body)
+                val trimmed = body.trimStart()
+                if (trimmed.startsWith("<") && !trimmed.startsWith("<{")) return null
+                if (trimmed.startsWith("{")) body else null
             }
         } catch (e: Exception) {
             null
@@ -79,20 +97,6 @@ class RemoteConfigRepository(private val context: Context) {
                     Charsets.UTF_8
                 )
                 adapter.fromJson(decoded)
-            }
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    /** 通过 raw 直链读取（CDN 有缓存延迟，作兜底） */
-    private fun fetchFromRaw(): AdminData? {
-        return try {
-            val request = Request.Builder().url(rawUrl).build()
-            client.newCall(request).execute().use { resp ->
-                if (!resp.isSuccessful) return null
-                val body = resp.body?.string() ?: return null
-                adapter.fromJson(body)
             }
         } catch (e: Exception) {
             null
