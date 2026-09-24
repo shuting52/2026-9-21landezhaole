@@ -402,6 +402,14 @@ async function connect(){
   S.owner = $("cfgOwner").value.trim();
   S.repo  = $("cfgRepo").value.trim();
   if(!S.owner || !S.repo){ toast("请填写 Owner 和仓库名","err"); return; }
+  // v1.7.6 修复 401：token 为空时不再发起请求，直接引导粘贴 Token
+  if(!S.token){
+    $("connInfo").innerHTML = '<span class="status-dot fail"></span>401 认证失败：请先在顶部「配置区」粘贴你的 GitHub Token（Access Token）再连接';
+    setSub("缺少 Token");
+    toast("请粘贴 GitHub Token 后再连接","err");
+    $("cfgToken").focus();
+    return;
+  }
   setSub("正在连接…");
   $("connInfo").innerHTML = '<span class="status-dot idle"></span>连接云端仓库中…';
   try{
@@ -423,9 +431,15 @@ async function connect(){
     // 控制台程序自更新检查（与本体软件更新完全分离，只在控制台程序内提示）
     checkConsoleUpdate();
   }catch(e){
-    $("connInfo").innerHTML = '<span class="status-dot fail"></span>加载失败：' + e.message;
-    setSub("连接失败");
-    toast("连接云端失败："+e.message,"err");
+    // v1.7.6 修复 401：区分 Token 无效与网络错误
+    const msg = (e.message||"").toString();
+    const is401 = msg.indexOf("401") >= 0 || msg.indexOf("Bad credentials") >= 0;
+    $("connInfo").innerHTML = is401
+      ? '<span class="status-dot fail"></span>401 认证失败：Token 无效或已过期，请更换有效 GitHub Token 后重试'
+      : '<span class="status-dot fail"></span>加载失败：' + e.message;
+    setSub(is401 ? "401 认证失败" : "连接失败");
+    toast(is401 ? "Token 无效或已过期（401），请检查后重试" : "连接云端失败："+e.message,"err");
+    if(is401){ try{ $("cfgToken").focus(); }catch(_e){} }
   }
 }
 

@@ -152,22 +152,41 @@ fun AppUpdateDialog(
             } catch (e: Exception) { null }
 
             if (installedSig != null && newSig != null && installedSig != newSig) {
-                // 签名不一致：自动引导卸载旧版本，卸载完成后自动安装新版本
+                // 签名不一致：先把 APK 复制到公共「下载」目录（卸载后容易找到重装），再引导卸载
                 isSignatureConflict = true
                 statusLabel = "旧版本签名不同，正在引导卸载…"
-                Toast.makeText(context, "检测到旧版本签名不同，请按系统提示卸载旧版本，卸载完成后将自动安装新版本", Toast.LENGTH_LONG).show()
+                // 复制到公共下载目录，卸载后用户可从文件管理器/通知栏直接安装新版本
+                var publicApkPath: String? = null
+                try {
+                    val publicDir = android.os.Environment.getExternalStoragePublicDirectory(
+                        android.os.Environment.DIRECTORY_DOWNLOADS
+                    )
+                    if (publicDir != null) {
+                        if (!publicDir.exists()) publicDir.mkdirs()
+                        val dest = File(publicDir, "landezhao-${versionName.removePrefix("v")}.apk")
+                        file.inputStream().use { input -> dest.outputStream().use { output -> input.copyTo(output) } }
+                        publicApkPath = dest.absolutePath
+                    }
+                } catch (e: Exception) { }
+                Toast.makeText(
+                    context,
+                    if (publicApkPath != null)
+                        "检测到旧版本签名不同，请卸载旧版本后，从手机「下载」文件夹安装新版本（已自动拷贝安装包到下载目录）"
+                    else
+                        "检测到旧版本签名不同，请卸载旧版本后再安装新版本",
+                    Toast.LENGTH_LONG
+                ).show()
                 // 保存待安装 APK 路径，供卸载后自动安装使用
                 context.getSharedPreferences("lzdz_update_prefs", Context.MODE_PRIVATE)
-                    .edit().putString("pending_install_apk", file.absolutePath).apply()
-                // 打开系统卸载界面（卸载旧版本后回到桌面，重新打开本 APK 即可安装新版本）
+                    .edit().putString("pending_install_apk", publicApkPath ?: file.absolutePath).apply()
+                // 打开系统卸载界面（卸载旧版本后，用户可从下载目录安装新版本）
                 try {
                     val uninstallIntent = Intent(Intent.ACTION_DELETE, Uri.parse("package:" + context.packageName)).apply {
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
                     context.startActivity(uninstallIntent)
-                    // 卸载完成后，用户在桌面重新打开下载的安装包即可完成新版本安装
                     coroutineScope.launch {
-                        statusLabel = "已打开系统卸载页，请卸载后重新打开安装包完成安装"
+                        statusLabel = "已打开系统卸载页，卸载后请到手机「下载」文件夹安装新版本"
                         delay(4000)
                         onUpdateFinished()
                         onDismiss()
@@ -180,11 +199,13 @@ fun AppUpdateDialog(
                 return
             }
 
-            // 签名一致（或全新安装）：优先 PackageInstaller 系统会话，失败回退 FileProvider
-            if (!installViaPackageInstaller(context, file)) {
+            // 签名一致（或全新安装）：优先 PackageInstaller 系统会话（等待接收器回调驱动 完成动画），失败回退 FileProvider
+            if (installViaPackageInstaller(context, file)) {
+                // PackageInstaller 会话已提交：保持弹窗显示「安装中」，由 UpdateInstallReceiver 回调驱动 Done/Error
+            } else {
                 installViaFileProvider(context, file)
+                onUpdateFinished()
             }
-            onUpdateFinished()
         } catch (e: Exception) {
             Toast.makeText(context, "自动安装被拦截，请到系统设置允许安装未知应用后重试", Toast.LENGTH_LONG).show()
         }
@@ -484,358 +505,87 @@ fun AppUpdateDialog(
         return
     }
 
-    // 默认呈现：100% 还原 Uiverse.io 设计，纯 Jetpack Compose 原生渲染，零 WebView 依赖，彻底杜绝崩溃
-    Dialog(
-        onDismissRequest = { closeUpdate() },
-        properties = DialogProperties(
-            usePlatformDefaultWidth = false,
-            dismissOnBackPress = !isUpdating && !forceUpdate,
-            dismissOnClickOutside = !isUpdating && !forceUpdate
-        )
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.65f))
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = { closeUpdate() }
-                )
-                .testTag("uiverse_dialog_mask"),
-            contentAlignment = Alignment.Center
-        ) {
-            // v1.7.5：中间呈现动画——缩放淡入 + 轻微上浮（适配所有机型，避免底部弹窗误触返回键）
-            var appear by remember { mutableStateOf(false) }
-            LaunchedEffect(Unit) { appear = true }
-            val dialogScale by animateFloatAsState(
-                targetValue = if (appear) 1f else 0.82f,
-                animationSpec = tween(durationMillis = 380, easing = FastOutSlowInEasing),
-                label = "dialogScale"
-            )
-            val fadeAlpha by animateFloatAsState(
-                targetValue = if (appear) 1f else 0f,
-                animationSpec = tween(durationMillis = 320),
-                label = "fadeAlpha"
-            )
-            val riseY by animateFloatAsState(
-                targetValue = if (appear) 0f else 40f,
-                animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing),
-                label = "riseY"
-            )
-            // 顶部卡通表情摇摆动画（持续在动）
-            val bounce by androidx.compose.animation.core.rememberInfiniteTransition(label = "bounce")
-                .animateFloat(
-                    initialValue = -8f,
-                    targetValue = 8f,
-                    animationSpec = androidx.compose.animation.core.infiniteRepeatable(
-                        animation = androidx.compose.animation.core.tween(650),
-                        repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
-                    ),
-                    label = "bounce"
-                )
-            // 星星眨闪 + 火箭上下跳动（动态卡通）
-            val twinkle by androidx.compose.animation.core.rememberInfiniteTransition(label = "twinkle")
-                .animateFloat(
-                    initialValue = 0.35f,
-                    targetValue = 1f,
-                    animationSpec = androidx.compose.animation.core.infiniteRepeatable(
-                        animation = androidx.compose.animation.core.tween(520),
-                        repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
-                    ),
-                    label = "twinkle"
-                )
-            val rocketFloat by androidx.compose.animation.core.rememberInfiniteTransition(label = "rocketFloat")
-                .animateFloat(
-                    initialValue = -6f,
-                    targetValue = 5f,
-                    animationSpec = androidx.compose.animation.core.infiniteRepeatable(
-                        animation = androidx.compose.animation.core.tween(900, easing = FastOutSlowInEasing),
-                        repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
-                    ),
-                    label = "rocketFloat"
-                )
+    // v1.7.6：默认呈现——完全采用 AppUpdater 风格动态卡通弹窗（Canvas 手绘猫咪 + 进度环 + 均衡器 + 火箭 + 彩带）
+    // 屏幕中间呈现、全动画；更新内容固定写死「叮咚」文案，下载/安装/完成全程动画驱动。
+    val cartoonInfo = CartoonUpdateInfo(
+        versionName = versionName.removePrefix("v"),
+        downloadUrl = apkUrl ?: "",
+        forceUpdate = forceUpdate
+    )
 
-            // 中间卡通卡片容器（全动画）
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(0.9f)
-                    .graphicsLayer {
-                        scaleX = dialogScale
-                        scaleY = dialogScale
-                        alpha = fadeAlpha
-                        translationY = riseY * density
-                    }
-            ) {
-                // 卡通顶部装饰：跳跃火箭 + 眨闪星星 + 摇摆小怪兽（居中于卡片上方）
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .offset(y = -32.dp)
-                        .graphicsLayer { rotationZ = bounce },
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("✨", fontSize = 18.sp, modifier = Modifier.graphicsLayer { alpha = twinkle })
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("?", fontSize = 40.sp, modifier = Modifier.graphicsLayer { translationY = rocketFloat * density })
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("✨", fontSize = 18.sp, modifier = Modifier.graphicsLayer { alpha = twinkle })
-                }
-                // 中间白色圆角卡片（全圆角、居中呈现）
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .shadow(
-                            elevation = 18.dp,
-                            shape = RoundedCornerShape(26.dp),
-                            ambientColor = Color(0x663C4043),
-                            spotColor = Color(0x333C4043)
-                        )
-                        .clip(RoundedCornerShape(26.dp))
-                        .background(Color.White)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null,
-                            onClick = {} // Prevent closing when clicking inside dialog
-                        )
-                        .testTag("uiverse_dialog_card")
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 22.dp, vertical = 22.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        // Title（居中呈现）
-                        Text(
-                            text = if (cloudTitle.isNotBlank()) cloudTitle else "发现新版本",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF3F3F46),
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .testTag("uiverse_title")
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        // Description / Logs
-                        if (cloudLogs.isNotEmpty()) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                cloudLogs.take(4).forEach { log ->
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        verticalAlignment = Alignment.Top
-                                    ) {
-                                        Text("•", fontSize = 12.sp, color = Color(0xFF9C6750), fontWeight = FontWeight.Bold)
-                                        Spacer(modifier = Modifier.width(6.dp))
-                                        Text(log, fontSize = 12.sp, color = Color(0xFF52525B), lineHeight = 16.sp)
-                                    }
-                                }
-                            }
-                        } else {
-                            Text(
-                                text = "We process your personal information to measure and improve our sites and services, to assist our campaigns and to provide personalised content.",
-                                fontSize = 12.5.sp,
-                                color = Color(0xFF52525B),
-                                lineHeight = 17.sp,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Row(modifier = Modifier.fillMaxWidth()) {
-                                Text(
-                                    text = "For more information see our ",
-                                    fontSize = 12.5.sp,
-                                    color = Color(0xFF52525B)
-                                )
-                                Text(
-                                    text = "Privacy Policy",
-                                    fontSize = 12.5.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = Color(0xFF634647),
-                                    textDecoration = TextDecoration.Underline
-                                )
-                            }
-                        }
-
-                        // Progress Bar (During download) —— v1.7.5 全动画：流光进度条 + 大号百分比
-                        if (isUpdating) {
-                            Spacer(modifier = Modifier.height(14.dp))
-                            Column(modifier = Modifier.fillMaxWidth()) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = if (progress < 100f) "正在极速下载..." else "下载完成，准备安装",
-                                        fontSize = 11.sp,
-                                        color = Color(0xFF71717A)
-                                    )
-                                    Text(
-                                        text = "${progress.toInt()}%",
-                                        fontSize = 15.sp,
-                                        fontWeight = FontWeight.Black,
-                                        color = Color(0xFF634647)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(6.dp))
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(10.dp)
-                                        .clip(RoundedCornerShape(5.dp))
-                                        .background(Color(0xFFEAB789).copy(alpha = 0.35f))
-                                ) {
-                                    val animProgress by animateFloatAsState(
-                                        targetValue = progress / 100f,
-                                        animationSpec = tween(durationMillis = 200),
-                                        label = "progress"
-                                    )
-                                    // 已下载进度（渐变填充）
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth(fraction = animProgress.coerceIn(0f, 1f))
-                                            .fillMaxHeight()
-                                            .clip(RoundedCornerShape(5.dp))
-                                            .background(
-                                                Brush.horizontalGradient(
-                                                    listOf(Color(0xFF8D5CFF), Color(0xFFFF6EC7), Color(0xFFDDAD81))
-                                                )
-                                            )
-                                    )
-                                    // 流光高光动画：一条斜向亮带反复扫过进度条
-                                    val shineOffset by androidx.compose.animation.core.rememberInfiniteTransition(label = "shine")
-                                        .animateFloat(
-                                            initialValue = -0.6f,
-                                            targetValue = 1.4f,
-                                            animationSpec = androidx.compose.animation.core.infiniteRepeatable(
-                                                animation = androidx.compose.animation.core.tween(1400, easing = androidx.compose.animation.core.LinearEasing),
-                                                repeatMode = androidx.compose.animation.core.RepeatMode.Restart
-                                            ),
-                                            label = "shineOffset"
-                                        )
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .fillMaxHeight()
-                                            .graphicsLayer {
-                                                translationX = shineOffset * size.width
-                                            }
-                                            .background(
-                                                Brush.horizontalGradient(
-                                                    colors = listOf(
-                                                        Color.Transparent,
-                                                        Color.White.copy(alpha = 0.65f),
-                                                        Color.Transparent
-                                                    )
-                                                )
-                                            )
-                                    )
-                                }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(18.dp))
-
-                        // Action Buttons Row
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            // 「官方群」按钮（点击跳转 QQ 群；强制更新时也不关闭弹窗）
-                            Text(
-                                text = "官方群",
-                                fontSize = 13.5.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF71717A),
-                                modifier = Modifier
-                                    .clickable(enabled = !isUpdating) { openOfficialGroup() }
-                                    .padding(vertical = 6.dp)
-                                    .testTag("uiverse_more_options")
-                            )
-
-                            // 签名冲突时：自动识别并引导先卸载旧版本再安装（解决旧版本未卸载导致安装失败问题）
-                            if (isSignatureConflict) {
-                                Button(
-                                    onClick = {
-                                        // 自动调用系统卸载界面卸载旧版本（安装新版本前先卸载，彻底避免签名冲突安装失败）
-                                        try {
-                                            val intent = Intent(
-                                                Intent.ACTION_DELETE,
-                                                Uri.parse("package:" + context.packageName)
-                                            ).apply {
-                                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                            }
-                                            context.startActivity(intent)
-                                            Toast.makeText(context, "已打开卸载界面，卸载完成后请重新打开本软件即可自动安装新版本", Toast.LENGTH_LONG).show()
-                                        } catch (e: Exception) {
-                                            // 兜底：跳转应用详情页手动卸载
-                                            try {
-                                                val intent = Intent(
-                                                    android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                                                    Uri.parse("package:" + context.packageName)
-                                                )
-                                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                                context.startActivity(intent)
-                                                Toast.makeText(context, "请在应用详情页点击「卸载」，卸载完成后重新打开软件即可安装新版本", Toast.LENGTH_LONG).show()
-                                            } catch (e2: Exception) {
-                                                Toast.makeText(context, "请到系统设置手动卸载旧版本后重新安装", Toast.LENGTH_LONG).show()
-                                            }
-                                        }
-                                    },
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0xFFEF4444),
-                                        contentColor = Color.White
-                                    ),
-                                    shape = RoundedCornerShape(8.dp),
-                                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 9.dp),
-                                    modifier = Modifier.testTag("uiverse_uninstall_btn")
-                                ) {
-                                    Text(
-                                        text = "一键卸载旧版本",
-                                        fontSize = 13.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
-
-                            // "Accept" / 立即更新
-                            Button(
-                                onClick = { startUpdate() },
-                                enabled = !isUpdating,
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFFDDAD81),
-                                    contentColor = Color(0xFF634647),
-                                    disabledContainerColor = Color(0xFFDDAD81).copy(alpha = 0.6f),
-                                    disabledContentColor = Color(0xFF634647).copy(alpha = 0.6f)
-                                ),
-                                shape = RoundedCornerShape(8.dp),
-                                contentPadding = PaddingValues(horizontal = 24.dp, vertical = 9.dp),
-                                modifier = Modifier.testTag("uiverse_accept_btn")
-                            ) {
-                                Text(
-                                    text = if (isUpdating) "更新中…" else cloudConfirm.ifBlank { "立即更新" },
-                                    fontSize = 13.5.sp,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                            }
-                        }
-                    }
-                }
-
-                // 底部留白
-                Spacer(modifier = Modifier.height(6.dp))
+    // 安装结果（PackageInstaller 广播回调）驱动 安装中→完成/失败 状态
+    var installOutcome by remember { mutableStateOf<Boolean?>(null) }
+    LaunchedEffect(Unit) {
+        UpdateInstallReceiver.Results.flow.collect { (success, msg) ->
+            installOutcome = success
+            if (success) {
+                progress = 100f
+                statusLabel = "安装完成"
+            } else {
+                statusLabel = msg.ifBlank { "安装失败，请检查是否已开启「允许安装未知应用」权限" }
             }
         }
     }
+
+    val cartoonState: CartoonUpdateState = when {
+        // 签名冲突：引导卸载（installApk 已自动跳系统卸载页）
+        isSignatureConflict -> CartoonUpdateState.Error(
+            "检测到旧版本签名不同，已引导卸载旧版本\n卸载完成后重新打开本软件即可自动安装新版本",
+            canRetry = false
+        )
+        // 下载完成且安装成功：完成庆祝
+        isUpdating && installOutcome == true -> CartoonUpdateState.Done(installed = true)
+        // 下载完成/安装失败：错误可重试
+        isUpdating && installOutcome == false -> CartoonUpdateState.Error(
+            statusLabel.ifBlank { "安装失败，请重试" },
+            canRetry = true
+        )
+        // 下载中：进度环
+        isUpdating && progress < 100f -> CartoonUpdateState.Downloading(
+            progress = (progress / 100f).coerceIn(0f, 1f),
+            bytesDownloaded = 0L,
+            totalBytes = 0L
+        )
+        // 下载完成准备安装：正在安装
+        isUpdating -> CartoonUpdateState.Installing
+        // 默认：发现新版本（写死叮咚文案）
+        else -> CartoonUpdateState.Found(cartoonInfo)
+    }
+
+    CartoonUpdateDialog(
+        state = cartoonState,
+        currentVersion = com.example.BuildConfig.VERSION_NAME,
+        newVersion = versionName.removePrefix("v"),
+        onStartDownload = { startUpdate() },
+        onInstall = { startUpdate() },
+        onOpenInstallSettings = {
+            try {
+                val intent = Intent(
+                    android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                    Uri.parse("package:" + context.packageName)
+                ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+            } catch (e: Exception) { }
+        },
+        onDismiss = { closeUpdate() },
+        onRetry = { startUpdate() },
+        onDone = {
+            onUpdateFinished()
+            onDismiss()
+        },
+        onRestartApp = {
+            onUpdateFinished()
+            onDismiss()
+            try {
+                val launch = context.packageManager.getLaunchIntentForPackage(context.packageName)
+                    ?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                if (launch != null) {
+                    context.startActivity(launch)
+                    Runtime.getRuntime().exit(0)
+                }
+            } catch (e: Exception) { }
+        }
+    )
 }
 
 @Composable
