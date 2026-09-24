@@ -3,18 +3,18 @@
     "code": 67,
     "name": "1.7.8",
     "changelog": [
-      "功能与体验全面升级",
       "叮咚～我们又又又更新啦！",
-      "新增「免费短剧」分类，多个免费短剧站点一键直达（含字节系）",
-      "修复：立即更新真正走进度条走满直接安装，不再走系统下载管理器",
-      "工具箱新增 5 个不联网稳定小工具：随机数色子、BMI、密码生成、文本二维码、调色卡",
-      "「今天吃什么」全面升级：录入我的菜 / 我的最爱 / 自定菜数 / 一键复制菜单",
-      "Skill 视频黑屏修复：自动预缓存到本地再播放，无障碍可视化",
-      "叮咚～我们又又又更新啦！"
+      "修复：版本更新死循环问题（云端与安装包版本严格对齐）",
+      "更新弹窗升级：强制更新不可取消，仅一个「立即更新」按钮",
+      "更新弹窗新增「官方群」入口，遇到问题一键进群反馈",
+      "修复：下载进度条走满直接安装，不再重复提示更新",
+      "工具箱新增 5 个不联网稳定小工具",
+      "「今天吃什么」全面升级",
+      "Skill 视频黑屏修复：自动预缓存到本地再播放"
     ],
     "force": true,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.7.7-1790222354996.apk",
-    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.7.7-1790222354996.apk"
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.7.8-1790265667.apk",
+    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.7.8-1790265667.apk"
   },
   "home": {
     "categories": [
@@ -6255,9 +6255,9 @@
     ]
   },
   "console": {
-    "version": "2.0.0",
-    "code": 20,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v2.0.0-1790259649.apk"
+    "version": "2.0.1",
+    "code": 21,
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v2.0.1-1790265667.apk"
   },
   "ipMonitor": {
     "enabled": false,
