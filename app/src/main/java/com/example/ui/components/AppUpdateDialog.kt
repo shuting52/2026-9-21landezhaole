@@ -3,6 +3,7 @@ package com.example.ui.components
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.view.View
 import android.webkit.JavascriptInterface
 import android.webkit.RenderProcessGoneDetail
@@ -10,6 +11,7 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.R
@@ -112,6 +114,8 @@ fun AppUpdateDialog(
     var statusLabel by remember { mutableStateOf("等待更新…") }
     // 签名冲突标记：检测到旧版本签名不一致时引导先卸载再安装
     var isSignatureConflict by remember { mutableStateOf(false) }
+    // v1.7.8-fix6：已请求「允许安装未知应用」权限（从系统设置返回后自动继续安装）
+    var installPermissionRequested by remember { mutableStateOf(false) }
 
 
     // v1.7.4：更新弹窗内容「写死」——后续发布任何版本都不随云端 changelog 变化
@@ -198,6 +202,21 @@ fun AppUpdateDialog(
             }
 
             // 签名一致（或全新安装）：优先 PackageInstaller 系统会话（等待接收器回调驱动 完成动画），失败回退 FileProvider
+            // v1.7.8-fix6：先检查安装权限——未授权则引导开启（PackageInstaller 需要该权限）
+            if (!hasInstallPermission(context)) {
+                isUpdating = false
+                installPermissionRequested = true
+                statusLabel = "需要开启「允许安装未知应用」权限"
+                Toast.makeText(context, "为直接自动安装新版本，请先允许安装未知应用（仅首次需要）", Toast.LENGTH_LONG).show()
+                try {
+                    val intent = Intent(
+                        android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                        Uri.parse("package:" + context.packageName)
+                    ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(intent)
+                } catch (e: Exception) { }
+                return
+            }
             if (installViaPackageInstaller(context, file)) {
                 // PackageInstaller 会话已提交：保持弹窗显示「安装中」，由 UpdateInstallReceiver 回调驱动 Done/Error
             } else {
@@ -229,7 +248,8 @@ fun AppUpdateDialog(
     }
 
     /** 同步执行单次下载，返回保存好的 File。本函数会跑在 IO 线程里
-     *  v1.7.8：移到 startRealDownload 之前定义（Kotlin 局部函数不支持前向引用） */
+     *  v1.7.8：移到 startRealDownload 之前定义（Kotlin 局部函数不支持前向引用）
+     *  v1.7.8-fix6：升级为多线程 Range 分块下载（默认 4 线程并行），服务器不支持 Range 时自动回退单线程 */
     suspend fun downloadWithProgress(url: String, onProgress: suspend (Float) -> Unit): File {
         return kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
             val client = okhttp3.OkHttpClient.Builder()
@@ -244,38 +264,122 @@ fun AppUpdateDialog(
                 .header("User-Agent", "Mozilla/5.0 (Linux; Android) LzdzUpdater/1.7.8")
                 .header("Accept", "*/*")
                 .build()
-            client.newCall(request).execute().use { resp ->
-                if (!resp.isSuccessful) throw Exception("HTTP ${resp.code}")
-                val body = resp.body ?: throw Exception("无响应体")
-                val total = body.contentLength()
-                val dir = File(context.cacheDir, "update")
-                dir.mkdirs()
-                val file = File(dir, "latest.apk")
-                body.byteStream().use { input ->
-                    file.outputStream().use { output ->
-                        val buf = ByteArray(16 * 1024)
-                        var downloaded = 0L
-                        var lastEmit = 0L
-                        while (true) {
-                            val n = input.read(buf)
-                            if (n <= 0) break
-                            output.write(buf, 0, n)
-                            downloaded += n
-                            if (total > 0) {
-                                val now = System.currentTimeMillis()
-                                if (now - lastEmit > 120 || downloaded == total) {
-                                    lastEmit = now
-                                    val frac = (downloaded.toFloat() / total.toFloat()).coerceIn(0f, 1f)
-                                    kotlinx.coroutines.runBlocking { onProgress(frac) }
-                                }
-                            }
-                        }
-                        output.flush()
+            val dir = File(context.cacheDir, "update")
+            dir.mkdirs()
+            val file = File(dir, "latest.apk")
+
+            // 先 HEAD/GET 探测文件大小与 Range 支持
+            var total = -1L
+            var rangeOk = false
+            try {
+                client.newCall(request.newBuilder().header("Range", "bytes=0-0").build()).execute().use { probe ->
+                    if (probe.isSuccessful && probe.code == 206) {
+                        rangeOk = true
+                        val cr = probe.header("Content-Range") ?: ""
+                        val slash = cr.lastIndexOf('/')
+                        if (slash >= 0) total = cr.substring(slash + 1).trim().toLongOrNull() ?: -1L
+                    } else if (probe.isSuccessful) {
+                        total = probe.body?.contentLength() ?: -1L
                     }
                 }
-                file
+            } catch (_: Exception) {}
+
+            // 多线程分块：仅当服务器支持 Range 且文件 > 3MB 时启用（4 线程并行写入）
+            if (rangeOk && total > 3L * 1024 * 1024) {
+                try {
+                    val threads = 4
+                    val chunk = total / threads
+                    java.io.RandomAccessFile(file, "rw").use { raf -> raf.setLength(total) }
+                    val done = java.util.concurrent.atomic.AtomicLong(0L)
+                    val errors = java.util.concurrent.atomic.AtomicInteger(0)
+                    val jobs = (0 until threads).map { i ->
+                        kotlinx.coroutines.async {
+                            val start = i * chunk
+                            val end = if (i == threads - 1) total - 1 else (i + 1) * chunk - 1
+                            if (start > end) return@async
+                            try {
+                                val rangeReq = okhttp3.Request.Builder()
+                                    .url(url)
+                                    .header("User-Agent", "Mozilla/5.0 (Linux; Android) LzdzUpdater/1.7.8")
+                                    .header("Range", "bytes=$start-$end")
+                                    .build()
+                                client.newCall(rangeReq).execute().use { resp ->
+                                    if (!resp.isSuccessful) { errors.incrementAndGet(); return@use }
+                                    val body = resp.body ?: run { errors.incrementAndGet(); return@use }
+                                    body.byteStream().use { input ->
+                                        java.io.RandomAccessFile(file, "rw").use { raf ->
+                                            raf.seek(start)
+                                            val buf = ByteArray(128 * 1024)
+                                            while (true) {
+                                                val n = input.read(buf)
+                                                if (n <= 0) break
+                                                raf.write(buf, 0, n)
+                                                done.addAndGet(n.toLong())
+                                            }
+                                        }
+                                    }
+                                }
+                            } catch (e: Exception) { errors.incrementAndGet() }
+                        }
+                    }
+                    while (jobs.any { !it.isCompleted }) {
+                        if (errors.get() >= threads) throw Exception("分块下载失败")
+                        val frac = (done.get().toFloat() / total.toFloat()).coerceIn(0f, 1f)
+                        kotlinx.coroutines.runBlocking { onProgress(frac) }
+                        kotlinx.coroutines.delay(150)
+                    }
+                    jobs.forEach { it.await() }
+                    if (errors.get() > 0) throw Exception("分块下载部分失败")
+                    onProgress(1f)
+                    file
+                } catch (e: Exception) {
+                    file.delete()
+                    singleStreamDownload(client, request, file, onProgress)
+                }
+            } else {
+                singleStreamDownload(client, request, file, onProgress)
             }
         }
+    }
+
+    /** 单线程流式下载（回退方案，兼容不支持 Range 的镜像） */
+    suspend fun singleStreamDownload(
+        client: okhttp3.OkHttpClient,
+        request: okhttp3.Request,
+        file: File,
+        onProgress: suspend (Float) -> Unit
+    ): File {
+        client.newCall(request).execute().use { resp ->
+            if (!resp.isSuccessful) throw Exception("HTTP ${resp.code}")
+            val body = resp.body ?: throw Exception("无响应体")
+            val total = body.contentLength()
+            file.outputStream().use { output ->
+                val buf = ByteArray(64 * 1024)
+                var downloaded = 0L
+                var lastEmit = 0L
+                while (true) {
+                    val n = body.byteStream().read(buf)
+                    if (n <= 0) break
+                    output.write(buf, 0, n)
+                    downloaded += n
+                    if (total > 0) {
+                        val now = System.currentTimeMillis()
+                        if (now - lastEmit > 120 || downloaded == total) {
+                            lastEmit = now
+                            val frac = (downloaded.toFloat() / total.toFloat()).coerceIn(0f, 1f)
+                            kotlinx.coroutines.runBlocking { onProgress(frac) }
+                        }
+                    }
+                }
+                output.flush()
+            }
+            file
+        }
+    }
+
+    /** 是否已具备「允许安装未知应用」权限（Android 8+ 才需要检查） */
+    fun hasInstallPermission(ctx: Context): Boolean {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.O || ctx.packageManager.canRequestPackageInstalls()
     }
 
     /**
@@ -309,6 +413,7 @@ fun AppUpdateDialog(
 
             // 重试：每个源最多尝试 2 次（第一次失败马上重试同源，避免抖动）
             var success = false
+            var permissionInterrupted = false
             var lastError: Exception? = null
             outer@ for (candidate in candidates) {
                 var attempt = 0
@@ -352,6 +457,22 @@ fun AppUpdateDialog(
                         progress = 100f
                         statusLabel = "下载完成，准备安装…"
                         kotlinx.coroutines.delay(300)
+                        // v1.7.8-fix6：安装前检查「允许安装未知应用」权限；未授权先自动引导开启（仅首次）
+                        if (!hasInstallPermission(context)) {
+                            isUpdating = false
+                            installPermissionRequested = true
+                            statusLabel = "需要开启「允许安装未知应用」权限"
+                            Toast.makeText(context, "为直接自动安装新版本，请先允许安装未知应用（仅首次需要）", Toast.LENGTH_LONG).show()
+                            try {
+                                val intent = Intent(
+                                    android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                                    Uri.parse("package:" + context.packageName)
+                                ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                context.startActivity(intent)
+                            } catch (_: Exception) {}
+                            permissionInterrupted = true
+                            break@outer
+                        }
                         installApk(file)
                         success = true
                         break@outer
@@ -368,7 +489,7 @@ fun AppUpdateDialog(
                 }
             }
 
-            if (!success) {
+            if (!success && !permissionInterrupted) {
                 // 所有源彻底失败：弹窗仍保持打开，提供「浏览器下载兜底」而非 DM 静默转发
                 statusLabel = "下载失败，请尝试浏览器下载"
                 Toast.makeText(
@@ -408,6 +529,20 @@ fun AppUpdateDialog(
 
     fun startUpdate() {
         if (isUpdating) return
+        // v1.7.8-fix6：下载/安装前先确认「允许安装未知应用」权限，未授权先引导开启（避免下载完才失败）
+        if (!hasInstallPermission(context)) {
+            installPermissionRequested = true
+            statusLabel = "需要开启「允许安装未知应用」权限"
+            Toast.makeText(context, "为直接自动安装新版本，请先允许安装未知应用（仅首次需要）", Toast.LENGTH_LONG).show()
+            try {
+                val intent = Intent(
+                    android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                    Uri.parse("package:" + context.packageName)
+                ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+            } catch (e: Exception) { }
+            return
+        }
         if (!apkUrl.isNullOrBlank()) {
             startRealDownload()
             return
@@ -562,6 +697,27 @@ fun AppUpdateDialog(
         }
     }
 
+    // 从系统设置返回：若已开启安装权限，自动继续安装已下载的 APK（无需再次点击）
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME &&
+                installPermissionRequested && hasInstallPermission(context)
+            ) {
+                installPermissionRequested = false
+                val cached = File(context.cacheDir, "update/latest.apk")
+                if (cached.exists() && cached.length() > 1024 * 50) {
+                    isUpdating = true
+                    installApk(cached)
+                } else {
+                    startUpdate()
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
     val cartoonState: CartoonUpdateState = when {
         // 签名冲突：引导卸载（installApk 已自动跳系统卸载页）
         isSignatureConflict -> CartoonUpdateState.Error(
@@ -583,6 +739,8 @@ fun AppUpdateDialog(
         )
         // 下载完成准备安装：正在安装
         isUpdating -> CartoonUpdateState.Installing
+        // v1.7.8-fix6：需要用户先开启「允许安装未知应用」权限（从设置返回后自动续装）
+        installPermissionRequested && !hasInstallPermission(context) -> CartoonUpdateState.NeedInstallPermission
         // 默认：发现新版本（写死叮咚文案）
         else -> CartoonUpdateState.Found(cartoonInfo)
     }
