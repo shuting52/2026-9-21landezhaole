@@ -345,40 +345,7 @@ fun AppUpdateDialog(
         }
     }
 
-    /** 单线程流式下载（回退方案，兼容不支持 Range 的镜像） */
-    suspend fun singleStreamDownload(
-        client: okhttp3.OkHttpClient,
-        request: okhttp3.Request,
-        file: File,
-        onProgress: suspend (Float) -> Unit
-    ): File {
-        client.newCall(request).execute().use { resp ->
-            if (!resp.isSuccessful) throw Exception("HTTP ${resp.code}")
-            val body = resp.body ?: throw Exception("无响应体")
-            val total = body.contentLength()
-            file.outputStream().use { output ->
-                val buf = ByteArray(64 * 1024)
-                var downloaded = 0L
-                var lastEmit = 0L
-                while (true) {
-                    val n = body.byteStream().read(buf)
-                    if (n <= 0) break
-                    output.write(buf, 0, n)
-                    downloaded += n
-                    if (total > 0) {
-                        val now = System.currentTimeMillis()
-                        if (now - lastEmit > 120 || downloaded == total) {
-                            lastEmit = now
-                            val frac = (downloaded.toFloat() / total.toFloat()).coerceIn(0f, 1f)
-                            kotlinx.coroutines.runBlocking { onProgress(frac) }
-                        }
-                    }
-                }
-                output.flush()
-            }
-            file
-        }
-    }
+
 
     /**
      * 进度条直接下载 + 安装（v1.7.8 升级版）
