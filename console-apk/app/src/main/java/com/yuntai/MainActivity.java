@@ -114,6 +114,9 @@ public class MainActivity extends Activity {
     private final List<JSONObject> catCache = new ArrayList<>();
     private final List<JSONObject> siteCache = new ArrayList<>();
     private final List<JSONObject> softCache = new ArrayList<>();
+    // ---- v2.0.4 增强：站点搜索视图（过滤后显示列表） ----
+    private final List<JSONObject> siteView = new ArrayList<>();
+    private EditText siteFilterEt;
     private final List<JSONObject> skillCache = new ArrayList<>();
     private final List<JSONObject> apkCache = new ArrayList<>();
     private int selCat = -1, selSite = -1, selSoft = -1, selSkill = -1, selApk = -1;
@@ -380,6 +383,23 @@ public class MainActivity extends Activity {
         TextView t2 = secTitle("—— 该分类下的站点 ——");
         page.addView(t2);
 
+        // v2.0.4 增强：站点搜索过滤（1000+ 站点快速定位）
+        siteFilterEt = new EditText(this);
+        siteFilterEt.setHint("🔍 搜索站点标题 / 域名（1000+ 站点秒定位）");
+        siteFilterEt.setTextColor(Color.WHITE);
+        siteFilterEt.setHintTextColor(0xFF64748B);
+        siteFilterEt.setSingleLine(true);
+        siteFilterEt.setTextSize(13);
+        siteFilterEt.setBackgroundColor(0xFF1E2438);
+        siteFilterEt.setPadding(dp(8), dp(4), dp(8), dp(4));
+        siteFilterEt.setMinHeight(dp(36));
+        siteFilterEt.addTextChangedListener(new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int a, int b, int c) { }
+            @Override public void onTextChanged(CharSequence s, int a, int b, int c) { }
+            @Override public void afterTextChanged(android.text.Editable s) { renderSites(); }
+        });
+        page.addView(siteFilterEt);
+
         siteLv = new ListView(this);
         siteAd = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<String>());
         siteLv.setAdapter(siteAd);
@@ -402,6 +422,11 @@ public class MainActivity extends Activity {
         addBtn(siteBtns2, "🌟 一键收录", v -> dlgCollect());
         addBtn(siteBtns2, "🔁 全库去重", v -> dedupAllSites());
         page.addView(siteBtns2);
+
+        // v2.0.4 增强：站点 JSON 批量导入（配合 1000+ 站点库）
+        LinearLayout siteBtns3 = row();
+        addBtn(siteBtns3, "📥 剪贴板导入JSON", v -> dlgImportJson());
+        page.addView(siteBtns3);
     }
 
     private void renderHomeLists() {
@@ -426,6 +451,7 @@ public class MainActivity extends Activity {
     }
 
     private void renderSites() {
+        // v2.0.4：支持搜索过滤（siteView 只存过滤后的站点对象）
         siteCache.clear();
         if (selCat >= 0 && selCat < catCache.size()) {
             JSONObject cat = catCache.get(selCat);
@@ -437,8 +463,16 @@ public class MainActivity extends Activity {
                 }
             }
         }
-        List<String> names = new ArrayList<>();
+        String kw = (siteFilterEt == null ? "" : siteFilterEt.getText().toString().trim()).toLowerCase(Locale.ROOT);
+        siteView.clear();
         for (JSONObject s : siteCache) {
+            if (kw.isEmpty()) { siteView.add(s); continue; }
+            String title = s.optString("title", "").toLowerCase(Locale.ROOT);
+            String url = s.optString("url", "").toLowerCase(Locale.ROOT);
+            if (title.contains(kw) || url.contains(kw)) siteView.add(s);
+        }
+        List<String> names = new ArrayList<>();
+        for (JSONObject s : siteView) {
             names.add((s.optString("title", "")) + (s.optString("badge", "").isEmpty() ? "" : " ⭐" + s.optString("badge")));
         }
         siteAd.clear(); siteAd.addAll(names); siteAd.notifyDataSetChanged();
@@ -496,7 +530,7 @@ public class MainActivity extends Activity {
 
     private void dlgSite(final int idx) {
         if (selCat < 0 || selCat >= catCache.size()) { toast("请先选择上方分类"); return; }
-        final JSONObject s = (idx >= 0 && idx < siteCache.size()) ? siteCache.get(idx) : new JSONObject();
+        final JSONObject s = (idx >= 0 && idx < siteView.size()) ? siteView.get(idx) : new JSONObject();
         LinearLayout fm = new LinearLayout(this);
         fm.setOrientation(LinearLayout.VERTICAL);
         EditText tiE = le(fm, "站点名称", s.optString("title", ""));
@@ -539,11 +573,24 @@ public class MainActivity extends Activity {
     }
 
     private void delSite() {
-        if (selCat < 0 || selCat >= catCache.size() || selSite < 0 || selSite >= siteCache.size()) {
+        if (selCat < 0 || selCat >= catCache.size() || selSite < 0 || selSite >= siteView.size()) {
             toast("请先在列表选择站点"); return;
         }
-        confirm("删除站点「" + siteCache.get(selSite).optString("title") + "」？", () -> {
-            siteCache.remove(selSite);
+        confirm("删除站点「" + siteView.get(selSite).optString("title") + "」？", () -> {
+            JSONObject victim = siteView.get(selSite);
+            siteView.remove(selSite);
+            siteCache.remove(victim);
+            // 同步从 cards 数组中真实移除（保持与云端一致）
+            JSONObject cat = catCache.get(selCat);
+            JSONArray cards = cat.optJSONArray("cards");
+            if (cards != null) {
+                JSONArray keep = new JSONArray();
+                for (int i = 0; i < cards.length(); i++) {
+                    JSONObject c = cards.optJSONObject(i);
+                    if (c != victim) keep.put(c);
+                }
+                cat.put("cards", keep);
+            }
             collectCatFromCache();
             renderHomeLists();
             toast("站点已删除（点「⚡ 应用」生效）");
@@ -620,13 +667,21 @@ public class MainActivity extends Activity {
     }
 
     private void moveSite(int dir) {
-        if (selCat < 0 || selSite < 0 || selSite >= siteCache.size()) { toast("请先选择站点"); return; }
+        if (selCat < 0 || selSite < 0 || selSite >= siteView.size()) { toast("请先选择站点"); return; }
         int to = selSite + dir;
-        if (to < 0 || to >= siteCache.size()) { toast("已在最" + (dir < 0 ? "上" : "下") + "边"); return; }
-        JSONObject tmp = siteCache.get(selSite);
-        siteCache.set(selSite, siteCache.get(to));
-        siteCache.set(to, tmp);
+        if (to < 0 || to >= siteView.size()) { toast("已在最" + (dir < 0 ? "上" : "下") + "边"); return; }
+        JSONObject tmp = siteView.get(selSite);
+        siteView.set(selSite, siteView.get(to));
+        siteView.set(to, tmp);
         selSite = to;
+        // 同步到 cards 数组顺序
+        JSONObject cat = catCache.get(selCat);
+        JSONArray cards = cat.optJSONArray("cards");
+        if (cards != null) {
+            JSONArray re = new JSONArray();
+            for (JSONObject s : siteView) re.put(s);
+            cat.put("cards", re);
+        }
         collectCatFromCache();
         renderHomeLists();
         toast("站点已移动，点「⚡ 应用」同步");
@@ -656,6 +711,101 @@ public class MainActivity extends Activity {
             .setNegativeButton("取消", null)
             .show();
     }
+
+    // ============================================================
+    // v2.0.4 增强：剪贴板 JSON 批量导入（支持 1000+ 站点库一键导入）
+    // ============================================================
+    private void dlgImportJson() {
+        if (admin == null) { toast("请先连接云端"); return; }
+        final android.content.ClipboardManager cm = (android.content.ClipboardManager)
+                getSystemService(Context.CLIPBOARD_SERVICE);
+        String clip = "";
+        if (cm != null && cm.hasPrimaryClip() && cm.getPrimaryClip() != null
+                && cm.getPrimaryClip().getItemCount() > 0) {
+            clip = cm.getPrimaryClip().getItemAt(0).coerceToText(this).toString();
+        }
+        LinearLayout fm = new LinearLayout(this);
+        fm.setOrientation(LinearLayout.VERTICAL);
+        final EditText jsonE = new EditText(this);
+        jsonE.setHint("粘贴站点 JSON 数组，如 [{title,url,desc,badge,subcatId},...]");
+        jsonE.setTextColor(Color.WHITE);
+        jsonE.setHintTextColor(0xFF64748B);
+        jsonE.setBackgroundColor(0xFF1E2438);
+        jsonE.setGravity(Gravity.TOP);
+        jsonE.setMinHeight(dp(160));
+        jsonE.setTextSize(12);
+        jsonE.setPadding(dp(8), dp(6), dp(8), dp(6));
+        if (!clip.isEmpty() && clip.contains("\"url\"")) jsonE.setText(clip);
+        fm.addView(jsonE, new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(180)));
+        TextView info = new TextView(this);
+        info.setText("导入到当前选中分类「" + (selCat >= 0 && selCat < catCache.size()
+                ? catCache.get(selCat).optString("name", "") : "（请先选分类）") + "」，自动按 URL 去重");
+        info.setTextSize(12);
+        info.setTextColor(0xFF94A3B8);
+        info.setPadding(0, dp(6), 0, 0);
+        fm.addView(info);
+        new AlertDialog.Builder(this)
+            .setTitle("📥 批量导入站点 JSON")
+            .setView(fm)
+            .setPositiveButton("导入", (d, w) -> importSitesJson(jsonE.getText().toString()))
+            .setNegativeButton("取消", null)
+            .show();
+    }
+
+    /** 解析剪贴板 JSON 数组并合并到当前分类（URL 去重 + 只增不删） */
+    private void importSitesJson(String raw) {
+        raw = raw == null ? "" : raw.trim();
+        if (raw.isEmpty()) { toast("内容为空"); return; }
+        if (selCat < 0 || selCat >= catCache.size()) { toast("请先在首页选择目标分类"); return; }
+        try {
+            JSONArray arr = new JSONArray(raw);
+            JSONObject cat = catCache.get(selCat);
+            JSONArray cards = cat.optJSONArray("cards");
+            if (cards == null) { cards = new JSONArray(); cat.put("cards", cards); }
+            // 收集现有 URL（去重用）
+            Set<String> exist = new HashSet<>();
+            for (int i = 0; i < cards.length(); i++) {
+                JSONObject c = cards.optJSONObject(i);
+                if (c != null) exist.add(normUrl(c.optString("url", "")));
+            }
+            int added = 0, dup = 0, bad = 0;
+            String catId = cat.optString("id", "");
+            String subId = "all";
+            for (int i = 0; i < arr.length(); i++) {
+                try {
+                    JSONObject o = arr.getJSONObject(i);
+                    String title = o.optString("title", "").trim();
+                    String url = o.optString("url", "").trim();
+                    if (title.isEmpty() || url.isEmpty()) { bad++; continue; }
+                    if (!url.startsWith("http")) url = "https://" + url;
+                    String nk = normUrl(url);
+                    if (exist.contains(nk)) { dup++; continue; }
+                    JSONObject ns = new JSONObject();
+                    ns.put("id", "site_imp_" + System.currentTimeMillis() + "_" + added);
+                    ns.put("title", title);
+                    ns.put("url", url);
+                    ns.put("icon", o.optString("icon", ""));
+                    ns.put("fallbackText", o.optString("fallbackText", title.length() > 2 ? title.substring(0, 2) : title));
+                    ns.put("badge", o.optString("badge", ""));
+                    ns.put("badgeType", o.optString("badgeType", "NEW"));
+                    ns.put("desc", o.optString("desc", ""));
+                    ns.put("categoryId", catId);
+                    ns.put("subcatId", o.optString("subcatId", subId));
+                    ns.put("highlights", o.optString("highlights", ""));
+                    cards.put(ns);
+                    exist.add(nk);
+                    added++;
+                } catch (Exception e) { bad++; }
+            }
+            collectCatFromCache();
+            renderHomeLists();
+            toast("导入完成：新增 " + added + "，跳过重复 " + dup + "，无效 " + bad + "（点「⚡ 应用」同步）");
+        } catch (Exception e) {
+            toast("JSON 解析失败：" + e.getMessage());
+        }
+    }
+
 
     private void collectSites(String raw) {
         String[] lines = raw.split("\n");

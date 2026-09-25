@@ -11,8 +11,9 @@ android {
         minSdk = 24
         targetSdk = 36
         // v2.0.3：迁移旧版控制台交互（子分类/上下移/一键收录/去重/备份导入/控制台自更新/IP监控/跑马灯时间段）
-        versionCode = 23
-        versionName = "2.0.3"
+        // v2.0.4：回炉重造增强——站点搜索过滤 + 剪贴板 JSON 批量导入 + 删除/移动真实写回
+        versionCode = 24
+        versionName = "2.0.4"
     }
 
     signingConfigs {
