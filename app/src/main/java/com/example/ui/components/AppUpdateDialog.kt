@@ -970,11 +970,13 @@ private suspend fun singleStreamDownload(
     file: File,
     onProgress: suspend (Float) -> Unit
 ): File {
-    client.newCall(request).execute().use { resp ->
+    val resp = client.newCall(request).execute()
+    try {
         if (!resp.isSuccessful) throw Exception("HTTP ${resp.code}")
         val body = resp.body ?: throw Exception("无响应体")
         val total = body.contentLength()
-        file.outputStream().use { output ->
+        val output = file.outputStream()
+        try {
             val buf = ByteArray(64 * 1024)
             var downloaded = 0L
             var lastEmit = 0L
@@ -993,8 +995,12 @@ private suspend fun singleStreamDownload(
                 }
             }
             output.flush()
+        } finally {
+            output.close()
         }
-        file
+        return file
+    } finally {
+        resp.close()
     }
 }
 
