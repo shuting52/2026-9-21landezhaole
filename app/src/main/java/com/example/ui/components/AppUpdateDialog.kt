@@ -76,6 +76,7 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
 import kotlin.math.floor
 import kotlin.random.Random
 
@@ -294,7 +295,7 @@ fun AppUpdateDialog(
                     val done = java.util.concurrent.atomic.AtomicLong(0L)
                     val errors = java.util.concurrent.atomic.AtomicInteger(0)
                     val jobs = (0 until threads).map { i ->
-                        kotlinx.coroutines.async {
+                        async {
                             val start = i * chunk
                             val end = if (i == threads - 1) total - 1 else (i + 1) * chunk - 1
                             if (start > end) return@async
