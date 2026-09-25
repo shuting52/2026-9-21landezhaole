@@ -3,7 +3,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!-- 控制台自更新：允许安装新版本 APK（首次需用户授权一次） -->
+    <!-- 控制台程序自更新：允许安装新版本 APK 替换老版本 -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <application
@@ -24,10 +24,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <!-- 控制台自更新：安装结果接收 -->
-        <receiver
-            android:name=".MainActivity$ConsoleInstallReceiver"
-            android:exported="false" />
+
+        <!-- 控制台自更新安装：FileProvider 共享下载的 APK -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.yuntai.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 
 </manifest>

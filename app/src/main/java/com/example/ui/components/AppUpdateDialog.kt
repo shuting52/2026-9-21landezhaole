@@ -205,7 +205,8 @@ fun AppUpdateDialog(
                 onUpdateFinished()
             }
         } catch (e: Exception) {
-            Toast.makeText(context, "自动安装被拦截，请到系统设置允许安装未知应用后重试", Toast.LENGTH_LONG).show()
+            // v1.8.4：不再引导「允许安装未知应用」——静默失败，交由系统安装器自动处理
+            Toast.makeText(context, "安装未能自动完成，请重新点击更新再试", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -557,7 +558,8 @@ fun AppUpdateDialog(
                 progress = 100f
                 statusLabel = "安装完成"
             } else {
-                statusLabel = msg.ifBlank { "安装失败，请检查是否已开启「允许安装未知应用」权限" }
+                // v1.8.4：安装失败提示不再提「允许安装未知应用」
+                statusLabel = msg.ifBlank { "安装未完成，请重新点击更新重试" }
             }
         }
     }
@@ -782,7 +784,8 @@ private fun installViaFileProvider(context: Context, file: File) {
         }
         context.startActivity(intent)
     } catch (e: Exception) {
-        Toast.makeText(context, "自动安装被拦截，请到系统设置允许安装未知应用后重试", Toast.LENGTH_LONG).show()
+        // v1.8.4：FileProvider 打开系统安装器失败时不引导设置，中性提示即可
+        Toast.makeText(context, "无法打开系统安装器，请稍后到文件管理器中手动安装更新包", Toast.LENGTH_LONG).show()
     }
 }
 
