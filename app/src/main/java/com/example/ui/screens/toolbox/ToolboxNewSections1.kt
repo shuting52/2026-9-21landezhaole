@@ -482,9 +482,9 @@ fun MoneyUpperScreenView() {
             num /= 10000; secPos++
         }
         sb.append("元")
-        // 角分
-        val jiao = (big % 100) / 10
-        val fen = big % 10
+        // 角分（统一转 Int，避免 Long/Int 比较编译错误）
+        val jiao = ((big % 100) / 10).toInt()
+        val fen = (big % 10).toInt()
         if (jiao == 0 && fen == 0) sb.append("整")
         else {
             if (jiao != 0) sb.append(up[jiao]).append("角")
