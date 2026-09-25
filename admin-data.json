@@ -10,8 +10,8 @@
    "⚡ 修复更新下载与安装的稳定性问题"
   ],
   "force": false,
-  "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.8.2-1790314421.apk",
-  "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.8.2-1790314421.apk"
+  "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.8.2-1790317080.apk",
+  "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.8.2-1790317080.apk"
  },
  "home": {
   "categories": [
@@ -15431,8 +15431,86 @@
    }
   ]
  },
- "software": [],
- "skills": [],
+ "software": [
+  {
+   "id": "sw_mudu2q27u97w",
+   "type": "software",
+   "title": "豆包去水印助手",
+   "desc": "豆包视频/图片去水印助手",
+   "url": "",
+   "author": "陈淑婷",
+   "badge": "最新版",
+   "tags": "软件 安装包 APK",
+   "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/1790151569803_豆包去水印助手_3.6.apk",
+   "previewUrl": "",
+   "iconUrl": "https://www.google.com/s2/favicons?domain=raw.githubusercontent.com&sz=128",
+   "mode": "file"
+  }
+ ],
+ "skills": [
+  {
+   "id": "sk_mudmeqslzi71",
+   "type": "skill",
+   "promptType": "skill",
+   "title": "夏林果真人IP封面",
+   "desc": "真人IP短视频封面",
+   "prompt": "",
+   "url": "",
+   "author": "开源～小红书博主",
+   "badge": "爆款推荐",
+   "tags": "技能 资源包 ZIP",
+   "previewUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790138774029_Screenshot_2026_0923_124605.png",
+   "mediaUrl": "",
+   "iconUrl": "",
+   "mode": "file"
+  },
+  {
+   "id": "sk_mudpwcbwi8am",
+   "type": "skill",
+   "promptType": "prompt_video",
+   "title": "系统桌面趣味视频",
+   "desc": "",
+   "prompt": "参考提示：创建一个高端的 16:9 macOS 桌面截图，以汤姆和杰瑞为主角。\n\n构建一个原创的电影式卡通客厅环境，在日落时分，一侧窗户透入温暖的光线，木质地板，舒适的家具，柔和的阴影，散落着调皮的物件，以及微妙的氛围深度。\n\n将汤姆和杰瑞一起放置在右侧，在一个富有表现力的调皮时刻，保留他们经典卡通外观、比例、颜色、面部表情、服装/细节以及原始 2D 动画美学。\n\n汤姆应该戏剧性地做出反应，而杰瑞显得调皮捣蛋，创造一个自然的叙事时刻。保持两个角色完全可见，避免裁剪脸部、手、尾巴或重要细节。\n\n使用温暖的金橙色照明，混合深棕色、奶油色、柔和的红色和柔和的蓝色点缀。添加微妙的电影式照明和深度，同时保持艺术作品明显的卡通风格。\n\n左侧预留用于桌面快捷方式。添加正好 18 个应用程序，分成三列六行：\n\nChrome | Safari | Gmail  \nYouTube | Spotify | Discord  \nSlack | Zoom | Microsoft Teams  \nNotion | Word | Excel  \nInstagram | Reddit | Netflix  \nSteam | Dropbox | Google Drive  \n\n使用干净、可识别的应用程序标志，相同尺寸、宽裕间距和清晰的白色标签。\n\n在顶部添加一个逼真的半透明 macOS 菜单栏：  \nApple 标志、访达、文件、编辑、查看、前往、窗口、帮助  \n右侧带有 Wi-Fi、电池、控制图标和时钟。\n\n在底部添加一个浮动的半透明 Dock，向左侧定位，以免阻挡汤姆和杰瑞。\n\nDock：  \n访达、Safari、信息、邮件、照片、日历、系统设置、分隔符、下载、废纸篓。\n\n最终风格：高端动画电影艺术作品结合逼真的 macOS 界面，电影式构图，干净的字体，强烈的角色融合，精致的照明，详细的环境，以及平衡的负空间。\n\n无笔记本电脑、显示器、键盘、鼠标、打开的应用程序、额外角色、重复图标、大标题、广告、横幅或水印。\n\n输出一张完成的超高分辨率 16:9 边缘到边缘桌面图像。",
+   "author": "来源于推特博主的提示词",
+   "badge": "Seedance2.5/wan3.0",
+   "tags": "趣味视频",
+   "previewUrl": "",
+   "mediaUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790144629204_L17YSsxs5pSxTVeD.mp4",
+   "url": "",
+   "mode": "file"
+  },
+  {
+   "id": "sk_mudqw21fbnc1",
+   "type": "skill",
+   "promptType": "prompt_video",
+   "title": "卡点换装",
+   "desc": "将衣服和人物图丢给豆包，",
+   "prompt": "真人实拍风格，一位美丽少女，皮肤白皙，正随着Future House风格的DJ舞曲俏皮地舞动，舞蹈动作包含俏皮的摆胯、手臂波浪步和定点pose，且与音乐节拍完全吻合；镜头会跟着音乐节拍前后推拉运镜，顶部有柔和的聚光灯打下来照亮少女，整体光影柔和、氛围感强，画面比例为9:16。排除：模糊，低清，噪点，水印，文字，logo，扭曲，变形，五官崩坏，动作僵硬，画面抖动，比例失调。边跳边卡点换装后面服装，9:16",
+   "author": "来源于推特博主分享",
+   "badge": "Seedance2.5/H3/wan3.0",
+   "tags": "",
+   "previewUrl": "",
+   "mediaUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790146298025_卡点换装.mp4",
+   "url": "",
+   "mode": "file"
+  },
+  {
+   "id": "sk_mudu7wp984zr",
+   "type": "skill",
+   "promptType": "skill",
+   "title": "生日祝福Skill",
+   "desc": "将下载的文件解压，丢给豆包工作模式。输入\"加载\"即可",
+   "prompt": "",
+   "url": "",
+   "author": "陈淑婷",
+   "badge": "爆款推荐",
+   "tags": "生日模版",
+   "previewUrl": "",
+   "mediaUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790151820542_生日祝福.zip",
+   "iconUrl": "",
+   "mode": "file"
+  }
+ ],
  "settings": {
   "appName": "懒得找了",
   "slogan": "精选AI工具导航、Prompt效果图预览与手机应用无限多开分身百宝箱",
@@ -15503,9 +15581,9 @@
   ]
  },
  "console": {
-  "version": "2.0.4",
-  "code": 24,
-  "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v2.0.4-1790311735.apk"
+  "version": "2.0.3",
+  "code": 23,
+  "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v2.0.3-1790317080.apk"
  },
  "ipMonitor": {
   "enabled": false,
