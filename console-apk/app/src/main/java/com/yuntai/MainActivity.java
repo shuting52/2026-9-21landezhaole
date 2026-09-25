@@ -582,15 +582,17 @@ public class MainActivity extends Activity {
             siteCache.remove(victim);
             // 同步从 cards 数组中真实移除（保持与云端一致）
             JSONObject cat = catCache.get(selCat);
-            JSONArray cards = cat.optJSONArray("cards");
-            if (cards != null) {
-                JSONArray keep = new JSONArray();
-                for (int i = 0; i < cards.length(); i++) {
-                    JSONObject c = cards.optJSONObject(i);
-                    if (c != victim) keep.put(c);
+            try {
+                JSONArray cards = cat.optJSONArray("cards");
+                if (cards != null) {
+                    JSONArray keep = new JSONArray();
+                    for (int i = 0; i < cards.length(); i++) {
+                        JSONObject c = cards.optJSONObject(i);
+                        if (c != victim) keep.put(c);
+                    }
+                    cat.put("cards", keep);
                 }
-                cat.put("cards", keep);
-            }
+            } catch (Exception ignored) { }
             collectCatFromCache();
             renderHomeLists();
             toast("站点已删除（点「⚡ 应用」生效）");
@@ -676,12 +678,14 @@ public class MainActivity extends Activity {
         selSite = to;
         // 同步到 cards 数组顺序
         JSONObject cat = catCache.get(selCat);
-        JSONArray cards = cat.optJSONArray("cards");
-        if (cards != null) {
-            JSONArray re = new JSONArray();
-            for (JSONObject s : siteView) re.put(s);
-            cat.put("cards", re);
-        }
+        try {
+            JSONArray cards = cat.optJSONArray("cards");
+            if (cards != null) {
+                JSONArray re = new JSONArray();
+                for (JSONObject s : siteView) re.put(s);
+                cat.put("cards", re);
+            }
+        } catch (Exception ignored) { }
         collectCatFromCache();
         renderHomeLists();
         toast("站点已移动，点「⚡ 应用」同步");
