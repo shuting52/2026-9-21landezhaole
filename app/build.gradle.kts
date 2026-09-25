@@ -22,8 +22,9 @@ android {
     // 且 apkUrl 必须指向与 versionName 一致的真实安装包，否则会造成「永远提示更新但装不上」死循环。
     // v1.8.0：更新弹窗多巴胺改版 + 多线程下载提速 + 免授权直装引导
     // v1.8.1：站点扩充至 1000+ · 工具箱新增至 50+ 小工具
-    versionCode = 70
-    versionName = "1.8.1"
+    // v1.8.2：更新弹窗回退为卡通弹窗（去掉多巴胺 HTML 与「授权未知应用」引导）
+    versionCode = 71
+    versionName = "1.8.2"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
