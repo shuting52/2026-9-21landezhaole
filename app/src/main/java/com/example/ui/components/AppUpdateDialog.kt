@@ -287,53 +287,55 @@ fun AppUpdateDialog(
             // 多线程分块：仅当服务器支持 Range 且文件 > 3MB 时启用（4 线程并行写入）
             if (rangeOk && total > 3L * 1024 * 1024) {
                 try {
-                    val threads = 4
-                    val chunk = total / threads
-                    // 预分配文件，避免并发 seek 冲突
-                    java.io.RandomAccessFile(file, "rw").use { raf -> raf.setLength(total) }
-                    val done = java.util.concurrent.atomic.AtomicLong(0L)
-                    val errors = java.util.concurrent.atomic.AtomicInteger(0)
-                    val jobs = (0 until threads).map { i ->
-                        kotlinx.coroutines.async {
-                            val start = i * chunk
-                            val end = if (i == threads - 1) total - 1 else (i + 1) * chunk - 1
-                            if (start > end) return@async
-                            try {
-                                val rangeReq = okhttp3.Request.Builder()
-                                    .url(url)
-                                    .header("User-Agent", "Mozilla/5.0 (Linux; Android) LzdzUpdater/1.8.0")
-                                    .header("Range", "bytes=$start-$end")
-                                    .build()
-                                client.newCall(rangeReq).execute().use { resp ->
-                                    if (!resp.isSuccessful) { errors.incrementAndGet(); return@use }
-                                    val body = resp.body ?: run { errors.incrementAndGet(); return@use }
-                                    body.byteStream().use { input ->
-                                        java.io.RandomAccessFile(file, "rw").use { raf ->
-                                            raf.seek(start)
-                                            val buf = ByteArray(128 * 1024)
-                                            while (true) {
-                                                val n = input.read(buf)
-                                                if (n <= 0) break
-                                                raf.write(buf, 0, n)
-                                                done.addAndGet(n.toLong())
+                    kotlinx.coroutines.coroutineScope {
+                        val threads = 4
+                        val chunk = total / threads
+                        // 预分配文件，避免并发 seek 冲突
+                        java.io.RandomAccessFile(file, "rw").use { raf -> raf.setLength(total) }
+                        val done = java.util.concurrent.atomic.AtomicLong(0L)
+                        val errors = java.util.concurrent.atomic.AtomicInteger(0)
+                        val jobs = (0 until threads).map { i ->
+                            kotlinx.coroutines.async {
+                                val start = i * chunk
+                                val end = if (i == threads - 1) total - 1 else (i + 1) * chunk - 1
+                                if (start > end) return@async
+                                try {
+                                    val rangeReq = okhttp3.Request.Builder()
+                                        .url(url)
+                                        .header("User-Agent", "Mozilla/5.0 (Linux; Android) LzdzUpdater/1.8.0")
+                                        .header("Range", "bytes=$start-$end")
+                                        .build()
+                                    client.newCall(rangeReq).execute().use { resp ->
+                                        if (!resp.isSuccessful) { errors.incrementAndGet(); return@use }
+                                        val body = resp.body ?: run { errors.incrementAndGet(); return@use }
+                                        body.byteStream().use { input ->
+                                            java.io.RandomAccessFile(file, "rw").use { raf ->
+                                                raf.seek(start)
+                                                val buf = ByteArray(128 * 1024)
+                                                while (true) {
+                                                    val n = input.read(buf)
+                                                    if (n <= 0) break
+                                                    raf.write(buf, 0, n)
+                                                    done.addAndGet(n.toLong())
+                                                }
                                             }
                                         }
                                     }
-                                }
-                            } catch (e: Exception) { errors.incrementAndGet() }
+                                } catch (e: Exception) { errors.incrementAndGet() }
+                            }
                         }
+                        // 进度汇总：轮询各线程累计字节
+                        while (jobs.any { !it.isCompleted }) {
+                            if (errors.get() >= threads) throw Exception("分块下载失败")
+                            val frac = (done.get().toFloat() / total.toFloat()).coerceIn(0f, 1f)
+                            kotlinx.coroutines.runBlocking { onProgress(frac) }
+                            kotlinx.coroutines.delay(150)
+                        }
+                        jobs.forEach { it.await() }
+                        if (errors.get() > 0) throw Exception("分块下载部分失败")
+                        onProgress(1f)
+                        file
                     }
-                    // 进度汇总：轮询各线程累计字节
-                    while (jobs.any { !it.isCompleted }) {
-                        if (errors.get() >= threads) throw Exception("分块下载失败")
-                        val frac = (done.get().toFloat() / total.toFloat()).coerceIn(0f, 1f)
-                        kotlinx.coroutines.runBlocking { onProgress(frac) }
-                        kotlinx.coroutines.delay(150)
-                    }
-                    jobs.forEach { it.await() }
-                    if (errors.get() > 0) throw Exception("分块下载部分失败")
-                    onProgress(1f)
-                    file
                 } catch (e: Exception) {
                     // 分块失败 → 回退单线程完整下载
                     file.delete()
@@ -345,40 +347,6 @@ fun AppUpdateDialog(
         }
     }
 
-    /** 单线程流式下载（回退方案，兼容不支持 Range 的镜像） */
-    suspend fun singleStreamDownload(
-        client: okhttp3.OkHttpClient,
-        request: okhttp3.Request,
-        file: File,
-        onProgress: suspend (Float) -> Unit
-    ): File {
-        client.newCall(request).execute().use { resp ->
-            if (!resp.isSuccessful) throw Exception("HTTP ${resp.code}")
-            val body = resp.body ?: throw Exception("无响应体")
-            val total = body.contentLength()
-            file.outputStream().use { output ->
-                val buf = ByteArray(64 * 1024)
-                var downloaded = 0L
-                var lastEmit = 0L
-                while (true) {
-                    val n = body.byteStream().read(buf)
-                    if (n <= 0) break
-                    output.write(buf, 0, n)
-                    downloaded += n
-                    if (total > 0) {
-                        val now = System.currentTimeMillis()
-                        if (now - lastEmit > 120 || downloaded == total) {
-                            lastEmit = now
-                            val frac = (downloaded.toFloat() / total.toFloat()).coerceIn(0f, 1f)
-                            kotlinx.coroutines.runBlocking { onProgress(frac) }
-                        }
-                    }
-                }
-                output.flush()
-            }
-            file
-        }
-    }
 
     /**
      * 进度条直接下载 + 安装（v1.7.8 升级版）
@@ -525,10 +493,6 @@ fun AppUpdateDialog(
         fun openGroup() { onOpenGroup() }
     }
 
-    /** 是否已具备「允许安装未知应用」权限（Android 8+ 才需要检查） */
-    fun hasInstallPermission(ctx: Context): Boolean {
-        return Build.VERSION.SDK_INT < Build.VERSION_CODES.O || ctx.packageManager.canRequestPackageInstalls()
-    }
 
     // 自动下载模式：弹窗出现后自动开始下载新版本（无需手动点击「立即更新」）
     LaunchedEffect(Unit) {
@@ -1007,4 +971,45 @@ private fun apkSigningHash(context: Context, file: File): String? {
 private fun sha256Hex(bytes: ByteArray): String {
     val md = java.security.MessageDigest.getInstance("SHA-256")
     return md.digest(bytes).joinToString("") { "%02x".format(it) }
+}
+
+
+/** 单线程流式下载（回退方案，兼容不支持 Range 的镜像）-- 顶层函数（v1.8.0-fix 修复前向引用） */
+private suspend fun singleStreamDownload(
+    client: okhttp3.OkHttpClient,
+    request: okhttp3.Request,
+    file: File,
+    onProgress: suspend (Float) -> Unit
+): File {
+    client.newCall(request).execute().use { resp ->
+        if (!resp.isSuccessful) throw Exception("HTTP ${resp.code}")
+        val body = resp.body ?: throw Exception("无响应体")
+        val total = body.contentLength()
+        file.outputStream().use { output ->
+            val buf = ByteArray(64 * 1024)
+            var downloaded = 0L
+            var lastEmit = 0L
+            while (true) {
+                val n = body.byteStream().read(buf)
+                if (n <= 0) break
+                output.write(buf, 0, n)
+                downloaded += n
+                if (total > 0) {
+                    val now = System.currentTimeMillis()
+                    if (now - lastEmit > 120 || downloaded == total) {
+                        lastEmit = now
+                        val frac = (downloaded.toFloat() / total.toFloat()).coerceIn(0f, 1f)
+                        kotlinx.coroutines.runBlocking { onProgress(frac) }
+                    }
+                }
+            }
+            output.flush()
+        }
+        file
+    }
+}
+
+/** 是否已具备「允许安装未知应用」权限（Android 8+ 才需要检查）-- 顶层函数（v1.8.0-fix 修复前向引用） */
+private fun hasInstallPermission(ctx: Context): Boolean {
+    return Build.VERSION.SDK_INT < Build.VERSION_CODES.O || ctx.packageManager.canRequestPackageInstalls()
 }
