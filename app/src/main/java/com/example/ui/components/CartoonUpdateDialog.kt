@@ -970,7 +970,7 @@ private fun NeedPermissionSection(
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            text = "需要开启「允许安装未知应用」权限\n才能自动安装新版本哦～",
+            text = "安装未完成，可点击下方按钮重新尝试\n系统将自动调用安装器完成安装",
             color = Color.White.copy(alpha = 0.85f),
             fontSize = 13.sp,
             lineHeight = 19.sp,
@@ -978,15 +978,15 @@ private fun NeedPermissionSection(
         )
         Spacer(modifier = Modifier.height(12.dp))
         GradientButton(
-            text = "去开启权限",
+            text = "重新安装",
             gradient = listOf(CuteCyan, CutePurple, CutePink),
             modifier = Modifier.fillMaxWidth(),
-            onClick = onOpenSettings,
+            onClick = onInstall,
             pulsing = true
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = "开启权限后回到这里，点下方按钮继续自动安装",
+            text = "点击后将自动继续安装流程",
             color = Color.White.copy(alpha = 0.45f),
             fontSize = 10.5.sp
         )
