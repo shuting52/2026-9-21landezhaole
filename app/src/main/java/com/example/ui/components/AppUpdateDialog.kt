@@ -287,6 +287,7 @@ fun AppUpdateDialog(
             // 多线程分块：仅当服务器支持 Range 且文件 > 3MB 时启用（4 线程并行写入）
             if (rangeOk && total > 3L * 1024 * 1024) {
                 try {
+                    kotlinx.coroutines.coroutineScope {
                     val threads = 4
                     val chunk = total / threads
                     java.io.RandomAccessFile(file, "rw").use { raf -> raf.setLength(total) }
@@ -332,6 +333,7 @@ fun AppUpdateDialog(
                     if (errors.get() > 0) throw Exception("分块下载部分失败")
                     onProgress(1f)
                     file
+                    }
                 } catch (e: Exception) {
                     file.delete()
                     singleStreamDownload(client, request, file, onProgress)
@@ -375,11 +377,6 @@ fun AppUpdateDialog(
             }
             file
         }
-    }
-
-    /** 是否已具备「允许安装未知应用」权限（Android 8+ 才需要检查） */
-    fun hasInstallPermission(ctx: Context): Boolean {
-        return Build.VERSION.SDK_INT < Build.VERSION_CODES.O || ctx.packageManager.canRequestPackageInstalls()
     }
 
     /**
@@ -962,4 +959,45 @@ private fun apkSigningHash(context: Context, file: File): String? {
 private fun sha256Hex(bytes: ByteArray): String {
     val md = java.security.MessageDigest.getInstance("SHA-256")
     return md.digest(bytes).joinToString("") { "%02x".format(it) }
+}
+
+
+/** 单线程流式下载（回退方案，兼容不支持 Range 的镜像）-- 顶层函数（v1.7.8-fix6 修复前向引用） */
+private suspend fun singleStreamDownload(
+    client: okhttp3.OkHttpClient,
+    request: okhttp3.Request,
+    file: File,
+    onProgress: suspend (Float) -> Unit
+): File {
+    client.newCall(request).execute().use { resp ->
+        if (!resp.isSuccessful) throw Exception("HTTP ${resp.code}")
+        val body = resp.body ?: throw Exception("无响应体")
+        val total = body.contentLength()
+        file.outputStream().use { output ->
+            val buf = ByteArray(64 * 1024)
+            var downloaded = 0L
+            var lastEmit = 0L
+            while (true) {
+                val n = body.byteStream().read(buf)
+                if (n <= 0) break
+                output.write(buf, 0, n)
+                downloaded += n
+                if (total > 0) {
+                    val now = System.currentTimeMillis()
+                    if (now - lastEmit > 120 || downloaded == total) {
+                        lastEmit = now
+                        val frac = (downloaded.toFloat() / total.toFloat()).coerceIn(0f, 1f)
+                        kotlinx.coroutines.runBlocking { onProgress(frac) }
+                    }
+                }
+            }
+            output.flush()
+        }
+        file
+    }
+}
+
+/** 是否已具备「允许安装未知应用」权限（Android 8+ 才需要检查）-- 顶层函数（v1.7.8-fix6 修复前向引用） */
+private fun hasInstallPermission(ctx: Context): Boolean {
+    return Build.VERSION.SDK_INT < Build.VERSION_CODES.O || ctx.packageManager.canRequestPackageInstalls()
 }
