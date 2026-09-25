@@ -41,12 +41,8 @@ class GitHubClient:
     MIRRORS = [
         lambda o, r, p: f"https://testingcf.jsdelivr.net/gh/{o}/{r}@main/{p}",
         lambda o, r, p: f"https://cdn.jsdelivr.net/gh/{o}/{r}@main/{p}",
-        lambda o, r, p: f"https://fastly.jsdelivr.net/gh/{o}/{r}@main/{p}",
         lambda o, r, p: f"https://gcore.jsdelivr.net/gh/{o}/{r}@main/{p}",
         lambda o, r, p: f"https://ghfast.top/https://raw.githubusercontent.com/{o}/{r}/main/{p}",
-        lambda o, r, p: f"https://ghproxy.net/https://raw.githubusercontent.com/{o}/{r}/main/{p}",
-        lambda o, r, p: f"https://raw.gitmirror.com/{o}/{r}/main/{p}",
-        lambda o, r, p: f"https://raw.githubusercontent.com/{o}/{r}/main/{p}",
     ]
 
     def __init__(self, token=DEFAULT_TOKEN, owner=DEFAULT_OWNER, repo=DEFAULT_REPO):
@@ -676,3 +672,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
