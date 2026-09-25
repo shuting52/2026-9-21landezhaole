@@ -461,7 +461,8 @@ function b64DecodeUtf8(b64){
 }
 
 // ============ 云端连接：API 优先，多镜像兜底（v1.0.15 修复「云端数据解析失败」） ============
-// 背景：国内网络下 api.github.com 可能不稳定，jsDelivr 主站(cdn.jsdelivr.net) 可能被 DNS 污染
+// 背景：国内网络下 api.github.com 可能不稳定，jsDelivr 主站(cdn.jsdelivr.net) 可能被 DNS 污染。
+// v1.0.18 清理：移除实测不可达通道（fastly/ghproxy.net/gitmirror/raw 直连），仅保留可用镜像。
 // 返回 HTTP 200 的假网页，导致 JSON.parse 失败误报「云端数据解析失败」。
 // 修复：对每个来源做「网页拦截检测 + JSON 校验」，失败自动顺延到下一个镜像，全部失败才报错。
 
@@ -490,12 +491,8 @@ function parseAdminJson(text){
 const READ_MIRRORS = [
   { name: "jsdelivr-testingcf", url: o => `https://testingcf.jsdelivr.net/gh/${o.owner}/${o.repo}@main/${CONFIG_PATH}` },
   { name: "jsdelivr-cdn",       url: o => `https://cdn.jsdelivr.net/gh/${o.owner}/${o.repo}@main/${CONFIG_PATH}` },
-  { name: "jsdelivr-fastly",    url: o => `https://fastly.jsdelivr.net/gh/${o.owner}/${o.repo}@main/${CONFIG_PATH}` },
   { name: "jsdelivr-gcore",     url: o => `https://gcore.jsdelivr.net/gh/${o.owner}/${o.repo}@main/${CONFIG_PATH}` },
-  { name: "ghfast-top",         url: o => `https://ghfast.top/https://raw.githubusercontent.com/${o.owner}/${o.repo}/main/${CONFIG_PATH}` },
-  { name: "ghproxy-net",        url: o => `https://ghproxy.net/https://raw.githubusercontent.com/${o.owner}/${o.repo}/main/${CONFIG_PATH}` },
-  { name: "gitmirror",          url: o => `https://raw.gitmirror.com/${o.owner}/${o.repo}/main/${CONFIG_PATH}` },
-  { name: "raw",                url: o => `https://raw.githubusercontent.com/${o.owner}/${o.repo}/main/${CONFIG_PATH}` }
+  { name: "ghfast-top",         url: o => `https://ghfast.top/https://raw.githubusercontent.com/${o.owner}/${o.repo}/main/${CONFIG_PATH}` }
 ];
 
 async function connect(){
@@ -2651,3 +2648,4 @@ setTimeout(() => {
 </div>
 </body>
 </html>
+
