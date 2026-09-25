@@ -1,17 +1,16 @@
 {
  "version": {
-  "code": 71,
-  "name": "1.8.2",
+  "code": 72,
+  "name": "1.8.3",
   "changelog": [
-   "🐱 v1.8.2：更新弹窗焕新啦～",
-   "☕ 采纳经典卡通更新弹窗（手绘猫咪 + 进度环），不再使用网页版弹窗",
-   "🔒 移除「授权未知应用程序」引导，改为自动调用系统安装器，更安全更省心",
-   "🗺️ 站点库继续扩充至 1000+，工具箱 52 个小工具持续在线",
-   "⚡ 修复更新下载与安装的稳定性问题"
+   "? v1.8.3：修复 Skill 视频播放不显示问题",
+   "? 视频改为先缓存到本地再播放，彻底告别黑屏/不显示",
+   "? 控制台升级 v2.0.5 原生版：移除网页壳，支持自动检测新版本自动安装",
+   "? 1000+ 站点、52 个小工具持续在线"
   ],
   "force": false,
-  "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.8.2-1790317080.apk",
-  "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.8.2-1790317080.apk"
+  "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.8.3-1790332533.apk",
+  "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.8.3-1790332533.apk"
  },
  "home": {
   "categories": [
@@ -15548,13 +15547,12 @@
   "ratio": "standard"
  },
  "updateDialog": {
-  "title": "懒得找了 v1.8.2 已上线",
+  "title": "懒得找了 v1.8.3 已上线",
   "changelog": [
-   "🐱 v1.8.2：更新弹窗焕新啦～",
-   "☕ 采纳经典卡通更新弹窗（手绘猫咪 + 进度环），不再使用网页版弹窗",
-   "🔒 移除「授权未知应用程序」引导，改为自动调用系统安装器，更安全更省心",
-   "🗺️ 站点库继续扩充至 1000+，工具箱 52 个小工具持续在线",
-   "⚡ 修复更新下载与安装的稳定性问题"
+   "? v1.8.3：修复 Skill 视频播放不显示问题",
+   "? 视频改为先缓存到本地再播放，彻底告别黑屏/不显示",
+   "? 控制台升级 v2.0.5 原生版：移除网页壳，支持自动检测新版本自动安装",
+   "? 1000+ 站点、52 个小工具持续在线"
   ],
   "confirmText": "立即更新",
   "cancelText": "稍后再说",
@@ -15581,9 +15579,9 @@
   ]
  },
  "console": {
-  "version": "1.0.17",
-  "code": 18,
-  "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v1.0.17-1790321231.apk"
+  "version": "2.0.5",
+  "code": 25,
+  "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v2.0.5-1790332533.apk"
  },
  "ipMonitor": {
   "enabled": false,
