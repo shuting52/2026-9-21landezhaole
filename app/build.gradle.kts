@@ -21,8 +21,9 @@ android {
     // v1.7.8 警告（大写）：本应用禁止随意修改 versionCode/versionName，
     // 且 apkUrl 必须指向与 versionName 一致的真实安装包，否则会造成「永远提示更新但装不上」死循环。
     // v1.8.0：更新弹窗多巴胺改版 + 多线程下载提速 + 免授权直装引导
-    versionCode = 69
-    versionName = "1.8.0"
+    // v1.8.1：站点扩充至 1000+ · 工具箱新增至 50+ 小工具
+    versionCode = 70
+    versionName = "1.8.1"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }

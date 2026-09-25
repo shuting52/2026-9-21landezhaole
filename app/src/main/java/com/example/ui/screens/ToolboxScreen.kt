@@ -67,6 +67,29 @@ import androidx.compose.material.icons.filled.Stars
 import androidx.compose.material.icons.filled.TextFormat
 import androidx.compose.material.icons.filled.VpnKey
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.Balance
+import androidx.compose.material.icons.filled.Calculate
+import androidx.compose.material.icons.filled.Casino
+import androidx.compose.material.icons.filled.CreditCard
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.LocalOffer
+import androidx.compose.material.icons.filled.MonitorWeight
+import androidx.compose.material.icons.filled.Numbers
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Payment
+import androidx.compose.material.icons.filled.Percent
+import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Sort
+import androidx.compose.material.icons.filled.SportsEsports
+import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material.icons.filled.Tag
+import androidx.compose.material.icons.filled.TextFields
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -107,19 +130,49 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.ui.screens.toolbox.AgeCalculatorSection
 import com.example.ui.screens.toolbox.BmiCalculatorScreenView
+import com.example.ui.screens.toolbox.BmrCalcScreenView
+import com.example.ui.screens.toolbox.CaesarCipherScreenView
+import com.example.ui.screens.toolbox.CaseConvertScreenView
 import com.example.ui.screens.toolbox.ColorCardScreenView
+import com.example.ui.screens.toolbox.CompoundInterestScreenView
 import com.example.ui.screens.toolbox.ConstellationSection
+import com.example.ui.screens.toolbox.DateDiffScreenView
+import com.example.ui.screens.toolbox.DiscountCalcScreenView
+import com.example.ui.screens.toolbox.FileSizeScreenView
 import com.example.ui.screens.toolbox.FoodPickerScreenView
+import com.example.ui.screens.toolbox.GuessNumberScreenView
+import com.example.ui.screens.toolbox.HtmlEscapeScreenView
+import com.example.ui.screens.toolbox.IdCardScreenView
+import com.example.ui.screens.toolbox.IdealWeightScreenView
+import com.example.ui.screens.toolbox.JsonFormatScreenView
+import com.example.ui.screens.toolbox.LineDedupeScreenView
+import com.example.ui.screens.toolbox.LineSortScreenView
+import com.example.ui.screens.toolbox.LotteryScreenView
+import com.example.ui.screens.toolbox.LuhnCheckScreenView
+import com.example.ui.screens.toolbox.MoneyUpperScreenView
+import com.example.ui.screens.toolbox.MorseCodeScreenView
+import com.example.ui.screens.toolbox.MortgageCalcScreenView
 import com.example.ui.screens.toolbox.MouthpieceSection
+import com.example.ui.screens.toolbox.NumToCnScreenView
 import com.example.ui.screens.toolbox.OfflineTreasureSection
 import com.example.ui.screens.toolbox.PasswordGeneratorScreenView
+import com.example.ui.screens.toolbox.PasswordStrengthScreenView
+import com.example.ui.screens.toolbox.PercentCalcScreenView
+import com.example.ui.screens.toolbox.PhoneValidateScreenView
 import com.example.ui.screens.toolbox.QrCodeTextScreenView
 import com.example.ui.screens.toolbox.RandomNumberScreenView
+import com.example.ui.screens.toolbox.ReverseTextScreenView
+import com.example.ui.screens.toolbox.RgbHexScreenView
+import com.example.ui.screens.toolbox.RpsScreenView
+import com.example.ui.screens.toolbox.TextSplitScreenView
+import com.example.ui.screens.toolbox.TimeDiffScreenView
 import com.example.ui.screens.toolbox.UnitConverterScreenView
 import com.example.ui.screens.toolbox.BaseConverterScreenView
 import com.example.ui.screens.toolbox.DateCalcScreenView
 import com.example.ui.screens.toolbox.CalculatorScreenView
 import com.example.ui.screens.toolbox.EmojiPickerScreenView
+import com.example.ui.screens.toolbox.UnicodeCodecScreenView
+import com.example.ui.screens.toolbox.ZodiacScreenView
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.security.MessageDigest
@@ -269,6 +322,187 @@ enum class ToolboxTab(
         shortLabel = "Emoji",
         icon = Icons.Filled.SentimentSatisfied,
         desc = "常用表情一键复制 · 分类收藏 · 聊天斗图不发愁"
+    ),
+    // ===== v1.8.1 新增 30 个小工具（纯本地、防闪退） =====
+    REVERSE_TEXT(
+        title = "文本反转",
+        shortLabel = "文本反转",
+        icon = Icons.Filled.TextFields,
+        desc = "逐字倒序反转文本 · 支持中文与多行"
+    ),
+    CASE_CONVERT(
+        title = "大小写转换",
+        shortLabel = "大小写",
+        icon = Icons.Filled.Spellcheck,
+        desc = "全大写/全小写/首字母大写一键转换"
+    ),
+    LINE_DEDUPE(
+        title = "行去重去空",
+        shortLabel = "行去重",
+        icon = Icons.Filled.Sort,
+        desc = "按行去重去空 · 名单/关键词清理神器"
+    ),
+    LINE_SORT(
+        title = "行排序",
+        shortLabel = "行排序",
+        icon = Icons.Filled.Sort,
+        desc = "多行文本升序/降序排列"
+    ),
+    JSON_FORMAT(
+        title = "JSON 格式化",
+        shortLabel = "JSON",
+        icon = Icons.Filled.DataObject,
+        desc = "JSON 美化/压缩/校验 · 开发调试利器"
+    ),
+    HTML_ESCAPE(
+        title = "HTML 实体转义",
+        shortLabel = "HTML转义",
+        icon = Icons.Filled.Code,
+        desc = "&lt;&gt;&amp; 等实体与原文互转"
+    ),
+    UNICODE_CODEC(
+        title = "Unicode 编解码",
+        shortLabel = "Unicode",
+        icon = Icons.Filled.Tag,
+        desc = "文本与 \\uXXXX 转义序列互相转换"
+    ),
+    MORSE_CODE(
+        title = "摩斯电码",
+        shortLabel = "摩斯码",
+        icon = Icons.Filled.Key,
+        desc = "字母数字 ↔ 摩斯电码互转"
+    ),
+    CAESAR_CIPHER(
+        title = "凯撒密码",
+        shortLabel = "凯撒密码",
+        icon = Icons.Filled.Lock,
+        desc = "经典位移密码加解密 · 可自定义位移量"
+    ),
+    NUM_TO_CN(
+        title = "数字转中文",
+        shortLabel = "转中文",
+        icon = Icons.Filled.Numbers,
+        desc = "阿拉伯数字转中文读法（支持到亿）"
+    ),
+    MONEY_UPPER(
+        title = "金额大写",
+        shortLabel = "金额大写",
+        icon = Icons.Filled.Payment,
+        desc = "人民币数字转大写 · 元角分金额"
+    ),
+    RGB_HEX(
+        title = "RGB/HEX 互转",
+        shortLabel = "色值互转",
+        icon = Icons.Filled.Palette,
+        desc = "HEX 色值与 RGB 分量互转"
+    ),
+    FILE_SIZE(
+        title = "文件大小换算",
+        shortLabel = "大小换算",
+        icon = Icons.Filled.Storage,
+        desc = "B/KB/MB/GB/TB 人性化换算"
+    ),
+    PERCENT_CALC(
+        title = "百分比计算",
+        shortLabel = "百分比",
+        icon = Icons.Filled.Percent,
+        desc = "占比、求百分比、A×B% 一键计算"
+    ),
+    DISCOUNT_CALC(
+        title = "折扣计算器",
+        shortLabel = "折扣",
+        icon = Icons.Filled.LocalOffer,
+        desc = "折后价与节省金额快速计算"
+    ),
+    MORTGAGE_CALC(
+        title = "房贷计算器",
+        shortLabel = "房贷",
+        icon = Icons.Filled.Balance,
+        desc = "等额本息/等额本金月供试算"
+    ),
+    COMPOUND_INTEREST(
+        title = "复利计算器",
+        shortLabel = "复利",
+        icon = Icons.Filled.AttachMoney,
+        desc = "复利终值与收益估算"
+    ),
+    BMR_CALC(
+        title = "基础代谢 BMR",
+        shortLabel = "基础代谢",
+        icon = Icons.Filled.Favorite,
+        desc = "Mifflin 公式估算每日消耗"
+    ),
+    IDEAL_WEIGHT(
+        title = "标准体重",
+        shortLabel = "标准体重",
+        icon = Icons.Filled.MonitorWeight,
+        desc = "按身高性别计算标准体重范围"
+    ),
+    ZODIAC_QUERY(
+        title = "生肖查询",
+        shortLabel = "生肖",
+        icon = Icons.Filled.Pets,
+        desc = "年份查生肖/地支/干支/年龄"
+    ),
+    DATE_DIFF(
+        title = "日期差计算",
+        shortLabel = "日期差",
+        icon = Icons.Filled.DateRange,
+        desc = "两个日期相差天数一键计算"
+    ),
+    TIME_DIFF(
+        title = "时间差计算",
+        shortLabel = "时间差",
+        icon = Icons.Filled.Timer,
+        desc = "两个时刻间隔 · 倒计时计算"
+    ),
+    LOTTERY(
+        title = "随机点名/抽奖",
+        shortLabel = "抽奖点名",
+        icon = Icons.Filled.Casino,
+        desc = "录入名单随机抽取 · 随机排序"
+    ),
+    RPS_GAME(
+        title = "石头剪刀布",
+        shortLabel = "猜拳",
+        icon = Icons.Filled.SportsEsports,
+        desc = "和电脑对战猜拳小游戏"
+    ),
+    GUESS_NUMBER(
+        title = "猜数字游戏",
+        shortLabel = "猜数字",
+        icon = Icons.Filled.Calculate,
+        desc = "1-100 猜数字 · 越猜越接近"
+    ),
+    PASSWORD_STRENGTH(
+        title = "密码强度检测",
+        shortLabel = "密码检测",
+        icon = Icons.Filled.Security,
+        desc = "评分密码复杂度并给建议"
+    ),
+    PHONE_VALIDATE(
+        title = "手机号校验",
+        shortLabel = "手机校验",
+        icon = Icons.Filled.Phone,
+        desc = "校验 11 位大陆手机号与运营商"
+    ),
+    ID_CARD(
+        title = "身份证解析",
+        shortLabel = "身份证",
+        icon = Icons.Filled.Badge,
+        desc = "提取生日/性别/地区码（本地）"
+    ),
+    LUHN_CHECK(
+        title = "银行卡校验",
+        shortLabel = "银行卡",
+        icon = Icons.Filled.CreditCard,
+        desc = "Luhn 算法校验卡号合法性"
+    ),
+    TEXT_SPLIT(
+        title = "文本拆分",
+        shortLabel = "文本拆分",
+        icon = Icons.Filled.Verified,
+        desc = "按分隔符拆分文本并统计"
     ),
 }
 
@@ -451,6 +685,37 @@ fun ToolboxScreen(
                                 ToolboxTab.DATE_CALC -> DateCalcScreenView()
                                 ToolboxTab.CALCULATOR -> CalculatorScreenView()
                                 ToolboxTab.EMOJI_PICKER -> EmojiPickerScreenView()
+                                // ===== v1.8.1 新增 =====
+                                ToolboxTab.REVERSE_TEXT -> ReverseTextScreenView()
+                                ToolboxTab.CASE_CONVERT -> CaseConvertScreenView()
+                                ToolboxTab.LINE_DEDUPE -> LineDedupeScreenView()
+                                ToolboxTab.LINE_SORT -> LineSortScreenView()
+                                ToolboxTab.JSON_FORMAT -> JsonFormatScreenView()
+                                ToolboxTab.HTML_ESCAPE -> HtmlEscapeScreenView()
+                                ToolboxTab.UNICODE_CODEC -> UnicodeCodecScreenView()
+                                ToolboxTab.MORSE_CODE -> MorseCodeScreenView()
+                                ToolboxTab.CAESAR_CIPHER -> CaesarCipherScreenView()
+                                ToolboxTab.NUM_TO_CN -> NumToCnScreenView()
+                                ToolboxTab.MONEY_UPPER -> MoneyUpperScreenView()
+                                ToolboxTab.RGB_HEX -> RgbHexScreenView()
+                                ToolboxTab.FILE_SIZE -> FileSizeScreenView()
+                                ToolboxTab.PERCENT_CALC -> PercentCalcScreenView()
+                                ToolboxTab.DISCOUNT_CALC -> DiscountCalcScreenView()
+                                ToolboxTab.MORTGAGE_CALC -> MortgageCalcScreenView()
+                                ToolboxTab.COMPOUND_INTEREST -> CompoundInterestScreenView()
+                                ToolboxTab.BMR_CALC -> BmrCalcScreenView()
+                                ToolboxTab.IDEAL_WEIGHT -> IdealWeightScreenView()
+                                ToolboxTab.ZODIAC_QUERY -> ZodiacScreenView()
+                                ToolboxTab.DATE_DIFF -> DateDiffScreenView()
+                                ToolboxTab.TIME_DIFF -> TimeDiffScreenView()
+                                ToolboxTab.LOTTERY -> LotteryScreenView()
+                                ToolboxTab.RPS_GAME -> RpsScreenView()
+                                ToolboxTab.GUESS_NUMBER -> GuessNumberScreenView()
+                                ToolboxTab.PASSWORD_STRENGTH -> PasswordStrengthScreenView()
+                                ToolboxTab.PHONE_VALIDATE -> PhoneValidateScreenView()
+                                ToolboxTab.ID_CARD -> IdCardScreenView()
+                                ToolboxTab.LUHN_CHECK -> LuhnCheckScreenView()
+                                ToolboxTab.TEXT_SPLIT -> TextSplitScreenView()
                             }
                         }
                     }
