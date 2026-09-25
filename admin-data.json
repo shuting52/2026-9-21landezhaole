@@ -1,16 +1,16 @@
 {
   "version": {
-    "code": 74,
-    "name": "1.8.5",
+    "code": 75,
+    "name": "1.8.6",
     "changelog": [
-      "? v1.8.5：更新弹窗回归手绘卡通动态呈现，屏幕中间展示",
-      "⚡ 手绘猫咪动画（进度环/均衡器/火箭/彩带）全程动画驱动",
-      "? 移除多巴胺 WebView 弹窗，云端自定义 HTML 不再影响弹窗",
-      "? 1000+ 站点、52 个小工具持续在线"
+      "? v1.8.6：恢复全部站点与软件库，1161+ 不重复站点完整在线",
+      "⚡ 软件库恢复：红果短剧/番茄短剧/河马剧场/NetShort 已重新上架",
+      "? Skill 与联系作者版块保持完整（微信/QQ/支付宝/官方群）",
+      "? 开屏倒计时动画默认 5 秒，进入更快更流畅"
     ],
     "force": false,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.8.5-1790340584.apk",
-    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.8.5-1790340584.apk"
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.8.6-1790347134.apk",
+    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.8.6-1790347134.apk"
   },
   "home": {
     "categories": [
@@ -15444,6 +15444,66 @@
       "previewUrl": "",
       "iconUrl": "https://www.google.com/s2/favicons?domain=raw.githubusercontent.com&sz=128",
       "mode": "file"
+    },
+    {
+      "id": "sw_1790272498603_1",
+      "type": "software",
+      "title": "红果短剧",
+      "desc": "免费短剧聚合平台 · 每日更新海量剧集",
+      "author": "懒得找了官方推荐",
+      "badge": "官方推荐",
+      "tags": "短剧 免费 官方",
+      "url": "https://www.hongguo.tv/",
+      "apkUrl": "",
+      "fileUrl": "https://www.hongguo.tv/",
+      "iconUrl": "",
+      "previewUrl": "",
+      "mode": "url"
+    },
+    {
+      "id": "sw_1790272498603_2",
+      "type": "software",
+      "title": "番茄短剧",
+      "desc": "番茄小说短剧版块 · 原著小说无缝衔接",
+      "author": "懒得找了官方推荐",
+      "badge": "热门",
+      "tags": "短剧 免费 番茄",
+      "url": "https://fanqienovel.com/short-play",
+      "apkUrl": "",
+      "fileUrl": "https://fanqienovel.com/short-play",
+      "iconUrl": "",
+      "previewUrl": "",
+      "mode": "url"
+    },
+    {
+      "id": "sw_1790272498603_3",
+      "type": "software",
+      "title": "河马剧场",
+      "desc": "高品质短剧平台 · 微短剧/网络短剧",
+      "author": "懒得找了官方推荐",
+      "badge": "精品",
+      "tags": "短剧 剧场 官方",
+      "url": "https://www.hemashort.com/",
+      "apkUrl": "",
+      "fileUrl": "https://www.hemashort.com/",
+      "iconUrl": "",
+      "previewUrl": "",
+      "mode": "url"
+    },
+    {
+      "id": "sw_1790272498603_4",
+      "type": "software",
+      "title": "NetShort 短剧",
+      "desc": "高分热播短剧免费在线观看",
+      "author": "懒得找了官方推荐",
+      "badge": "精选",
+      "tags": "短剧 免费 在线",
+      "url": "https://netshort.com/zh",
+      "apkUrl": "",
+      "fileUrl": "https://netshort.com/zh",
+      "iconUrl": "",
+      "previewUrl": "",
+      "mode": "url"
     }
   ],
   "skills": [
@@ -15547,12 +15607,12 @@
     "ratio": "standard"
   },
   "updateDialog": {
-    "title": "懒得找了 v1.8.5 已上线",
+    "title": "懒得找了 v1.8.6 已上线",
     "changelog": [
-      "? v1.8.5：更新弹窗回归手绘卡通动态呈现，屏幕中间展示",
-      "⚡ 手绘猫咪动画（进度环/均衡器/火箭/彩带）全程动画驱动",
-      "? 移除多巴胺 WebView 弹窗，云端自定义 HTML 不再影响弹窗",
-      "? 1000+ 站点、52 个小工具持续在线"
+      "? v1.8.6：恢复全部站点与软件库，1161+ 不重复站点完整在线",
+      "⚡ 软件库恢复：红果短剧/番茄短剧/河马剧场/NetShort 已重新上架",
+      "? Skill 与联系作者版块保持完整（微信/QQ/支付宝/官方群）",
+      "? 开屏倒计时动画默认 5 秒，进入更快更流畅"
     ],
     "confirmText": "立即更新",
     "cancelText": "稍后再说",
