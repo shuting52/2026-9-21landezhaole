@@ -1,17 +1,17 @@
 {
  "version": {
-  "code": 70,
-  "name": "1.8.1",
+  "code": 71,
+  "name": "1.8.2",
   "changelog": [
-   "🎉 v1.8.1 重磅更新：站点库扩充至 1000+ 精选站点！",
-   "🔧 工具箱新增 30+ 小工具，总量 50+：文本反转/JSON格式化/房贷计算/生肖查询/猜数字/银行卡校验等",
-   "📥 已覆盖 17 大分类：AI对话、无限画布、免费短剧、影视、音乐、小说、游戏、省钱、装机必备等",
-   "⚡ 控制台 v2.0.4：站点搜索过滤 + 剪贴板 JSON 批量导入，管理千站如探囊取物",
-   "🛠 全部小工具纯本地离线运行，不联网不闪退"
+   "🐱 v1.8.2：更新弹窗焕新啦～",
+   "☕ 采纳经典卡通更新弹窗（手绘猫咪 + 进度环），不再使用网页版弹窗",
+   "🔒 移除「授权未知应用程序」引导，改为自动调用系统安装器，更安全更省心",
+   "🗺️ 站点库继续扩充至 1000+，工具箱 52 个小工具持续在线",
+   "⚡ 修复更新下载与安装的稳定性问题"
   ],
   "force": false,
-  "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.8.1-1790311735.apk",
-  "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.8.1-1790311735.apk"
+  "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.8.2-1790314421.apk",
+  "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.8.2-1790314421.apk"
  },
  "home": {
   "categories": [
@@ -15470,13 +15470,13 @@
   "ratio": "standard"
  },
  "updateDialog": {
-  "title": "懒得找了 v1.8.1 已上线",
+  "title": "懒得找了 v1.8.2 已上线",
   "changelog": [
-   "🎉 v1.8.1 重磅更新：站点库扩充至 1000+ 精选站点！",
-   "🔧 工具箱新增 30+ 小工具，总量 50+：文本反转/JSON格式化/房贷计算/生肖查询/猜数字/银行卡校验等",
-   "📥 已覆盖 17 大分类：AI对话、无限画布、免费短剧、影视、音乐、小说、游戏、省钱、装机必备等",
-   "⚡ 控制台 v2.0.4：站点搜索过滤 + 剪贴板 JSON 批量导入，管理千站如探囊取物",
-   "🛠 全部小工具纯本地离线运行，不联网不闪退"
+   "🐱 v1.8.2：更新弹窗焕新啦～",
+   "☕ 采纳经典卡通更新弹窗（手绘猫咪 + 进度环），不再使用网页版弹窗",
+   "🔒 移除「授权未知应用程序」引导，改为自动调用系统安装器，更安全更省心",
+   "🗺️ 站点库继续扩充至 1000+，工具箱 52 个小工具持续在线",
+   "⚡ 修复更新下载与安装的稳定性问题"
   ],
   "confirmText": "立即更新",
   "cancelText": "稍后再说",
