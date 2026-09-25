@@ -294,6 +294,8 @@ private fun CloudPromptCard(
                     var localPath by remember(prompt.mediaUrl) { mutableStateOf<String?>(null) }
                     androidx.compose.runtime.LaunchedEffect(prompt.mediaUrl) {
                         try { localPath = VideoCache.ensureLocal(context, prompt.mediaUrl) } catch (_: Exception) {}
+                        // v1.8.3 修复：缓存下载失败时立即切到 fallback（不再永远转圈）
+                        if (localPath == null) videoFailed = true
                     }
                     Box(
                         modifier = Modifier
@@ -304,21 +306,24 @@ private fun CloudPromptCard(
                         androidx.compose.ui.viewinterop.AndroidView(
                             factory = { ctx ->
                                 android.widget.VideoView(ctx).apply {
-                                    val uri = localPath?.let { android.net.Uri.fromFile(java.io.File(it)) }
-                                        ?: android.net.Uri.parse(prompt.mediaUrl)
-                                    setVideoURI(uri)
-                                    setOnPreparedListener { mp ->
-                                        mp.isLooping = true
-                                        if (isActiveVideo) {
-                                            mp.setVolume(1f, 1f)
-                                            mp.start()
-                                        } else {
-                                            mp.setVolume(0f, 0f)
-                                            mp.pause()
+                                    // v1.8.3 修复：绝不用远程 URL 首播（远程黑屏→误判失败→销毁组件）
+                                    // 仅当本地缓存就绪才设置视频源；未就绪时由下方加载覆盖层遮挡
+                                    localPath?.let {
+                                        setVideoURI(android.net.Uri.fromFile(java.io.File(it)))
+                                        setOnPreparedListener { mp ->
+                                            mp.isLooping = true
+                                            if (isActiveVideo) {
+                                                mp.setVolume(1f, 1f)
+                                                mp.start()
+                                            } else {
+                                                mp.setVolume(0f, 0f)
+                                                mp.pause()
+                                            }
                                         }
                                     }
                                     setOnErrorListener { mp, what, extra ->
-                                        videoFailed = true
+                                        // 仅当本地文件也播放失败时才标记失败（本地若存在基本不会失败）
+                                        if (localPath != null) videoFailed = true
                                         true
                                     }
                                     setOnClickListener {
@@ -619,6 +624,7 @@ private fun CloudPromptPreviewDialog(
     if (fullscreenVideo) {
         // 全屏视频播放（点击退出全屏）
         // v1.7.8：与列表一致，先通过 VideoCache 把视频预载到本地，避免黑屏
+        // v1.8.3 修复：绝不用远程 URL 首播，仅本地缓存就绪后设置视频源
         val context = androidx.compose.ui.platform.LocalContext.current
         var fsLocalPath by remember(prompt.mediaUrl) { mutableStateOf<String?>(null) }
         androidx.compose.runtime.LaunchedEffect(prompt.mediaUrl) {
@@ -637,13 +643,14 @@ private fun CloudPromptPreviewDialog(
                 androidx.compose.ui.viewinterop.AndroidView(
                     factory = { ctx ->
                         android.widget.VideoView(ctx).apply {
-                            val uri = fsLocalPath?.let { android.net.Uri.fromFile(java.io.File(it)) }
-                                ?: android.net.Uri.parse(prompt.mediaUrl)
-                            setVideoURI(uri)
-                            setOnPreparedListener { mp ->
-                                mp.isLooping = true
-                                mp.setVolume(1f, 1f)
-                                mp.start()
+                            // v1.8.3：仅当本地缓存就绪才设置视频源（远程 URL 首播易黑屏）
+                            fsLocalPath?.let {
+                                setVideoURI(android.net.Uri.fromFile(java.io.File(it)))
+                                setOnPreparedListener { mp ->
+                                    mp.isLooping = true
+                                    mp.setVolume(1f, 1f)
+                                    mp.start()
+                                }
                             }
                             layoutParams = android.view.ViewGroup.LayoutParams(
                                 android.view.ViewGroup.LayoutParams.MATCH_PARENT,
@@ -664,6 +671,27 @@ private fun CloudPromptPreviewDialog(
                     },
                     modifier = Modifier.fillMaxSize()
                 )
+                // v1.8.3：本地缓存未就绪时显示加载提示（避免全屏纯黑屏无响应感）
+                if (fsLocalPath == null) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            androidx.compose.material3.CircularProgressIndicator(
+                                color = Color.White,
+                                strokeWidth = 3.dp,
+                                modifier = Modifier.size(40.dp)
+                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                text = "正在缓存视频…",
+                                color = Color.White,
+                                fontSize = 13.sp
+                            )
+                        }
+                    }
+                }
                 // 顶部返回按钮
                 Surface(
                     onClick = { fullscreenVideo = false },
@@ -747,6 +775,8 @@ private fun CloudPromptPreviewDialog(
                         var localPath by remember(prompt.mediaUrl) { mutableStateOf<String?>(null) }
                         androidx.compose.runtime.LaunchedEffect(prompt.mediaUrl) {
                             try { localPath = com.example.data.util.VideoCache.ensureLocal(context, prompt.mediaUrl) } catch (_: Exception) {}
+                            // v1.8.3 修复：缓存下载失败时切 fallback
+                            if (localPath == null) videoFailed = true
                         }
                         Box(
                             modifier = Modifier
@@ -758,16 +788,17 @@ private fun CloudPromptPreviewDialog(
                                 androidx.compose.ui.viewinterop.AndroidView(
                                     factory = { ctx ->
                                         android.widget.VideoView(ctx).apply {
-                                            val uri = localPath?.let { android.net.Uri.fromFile(java.io.File(it)) }
-                                                ?: android.net.Uri.parse(prompt.mediaUrl)
-                                            setVideoURI(uri)
-                                            setOnPreparedListener { mp ->
-                                                mp.isLooping = true
-                                                mp.setVolume(1f, 1f)
-                                                mp.start()
+                                            // v1.8.3：仅本地缓存就绪才设置视频源（远程首播易黑屏）
+                                            localPath?.let {
+                                                setVideoURI(android.net.Uri.fromFile(java.io.File(it)))
+                                                setOnPreparedListener { mp ->
+                                                    mp.isLooping = true
+                                                    mp.setVolume(1f, 1f)
+                                                    mp.start()
+                                                }
                                             }
                                             setOnErrorListener { mp, what, extra ->
-                                                videoFailed = true
+                                                if (localPath != null) videoFailed = true
                                                 true
                                             }
                                         }

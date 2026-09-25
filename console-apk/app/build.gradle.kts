@@ -10,8 +10,9 @@ android {
         applicationId = "com.yuntai"
         minSdk = 24
         targetSdk = 36
-        versionCode = 18
-        versionName = "1.0.17"
+        // v2.0.3：迁移旧版控制台交互（子分类/上下移/一键收录/去重/备份导入/控制台自更新/IP监控/跑马灯时间段）
+        versionCode = 25
+        versionName = "2.0.5"
     }
 
     signingConfigs {
@@ -48,9 +49,4 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-}
-
-dependencies {
-    // FileProvider（控制台自更新安装 APK 用）
-    implementation("androidx.core:core:1.13.1")
 }
