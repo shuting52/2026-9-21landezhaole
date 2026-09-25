@@ -238,6 +238,7 @@ main{padding:12px;max-width:960px;margin:0 auto}
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJson(event)">
     </div>
     <div style="margin-top:8px;font-size:12px;color:var(--tx2)" id="connInfo"></div>
+    <div style="margin-top:6px;font-size:12px;color:var(--tx2);opacity:.75" id="tokenHint">💡 Token 填写后自动保存到本机（仅存本设备，不上传仓库）：下次打开自动填充并自动连接云端；未填 Token 时自动以只读模式连接。</div>
     <div style="margin-top:6px;font-size:12px;color:var(--tx2);display:none" id="diagInfo"></div>
   </div>
 
@@ -288,7 +289,8 @@ const CONFIG_PATH   = "admin-data.json";
 // 控制台程序内置 versionCode（与 console-apk/app/build.gradle.kts 的 versionCode 保持一致）。
 // v1.0.12 修复：运行时优先读取原生桥回传的「真实已安装 versionCode」，
 // 只有浏览器环境取不到时才回退到该常量，彻底避免常量漏改导致更新判断失效。
-const CONSOLE_BUILTIN_VERSION = 18;
+// v1.0.2：同步为 27（console-apk build.gradle.kts versionCode=27）。
+const CONSOLE_BUILTIN_VERSION = 27;
 
 // 取当前控制台程序的真实版本号：APK 内用系统安装包 versionCode，浏览器回退内置常量
 function getLocalConsoleVersion(){
