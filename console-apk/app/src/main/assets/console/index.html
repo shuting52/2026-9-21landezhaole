@@ -290,7 +290,7 @@ const CONFIG_PATH   = "admin-data.json";
 // v1.0.12 修复：运行时优先读取原生桥回传的「真实已安装 versionCode」，
 // 只有浏览器环境取不到时才回退到该常量，彻底避免常量漏改导致更新判断失效。
 // v1.0.2：同步为 27（console-apk build.gradle.kts versionCode=27）。
-const CONSOLE_BUILTIN_VERSION = 27;
+const CONSOLE_BUILTIN_VERSION = 28;
 
 // 取当前控制台程序的真实版本号：APK 内用系统安装包 versionCode，浏览器回退内置常量
 function getLocalConsoleVersion(){
@@ -461,8 +461,7 @@ function b64DecodeUtf8(b64){
 }
 
 // ============ 云端连接：API 优先，多镜像兜底（v1.0.15 修复「云端数据解析失败」） ============
-// 背景：国内网络下 api.github.com 可能不稳定，jsDelivr 主站(cdn.jsdelivr.net) 可能被 DNS 污染。
-// v1.0.18 清理：移除实测不可达通道（fastly/ghproxy.net/gitmirror/raw 直连），仅保留可用镜像。
+// 背景：国内网络下 api.github.com 可能不稳定，jsDelivr 主站(cdn.jsdelivr.net) 可能被 DNS 污染
 // 返回 HTTP 200 的假网页，导致 JSON.parse 失败误报「云端数据解析失败」。
 // 修复：对每个来源做「网页拦截检测 + JSON 校验」，失败自动顺延到下一个镜像，全部失败才报错。
 
@@ -491,8 +490,12 @@ function parseAdminJson(text){
 const READ_MIRRORS = [
   { name: "jsdelivr-testingcf", url: o => `https://testingcf.jsdelivr.net/gh/${o.owner}/${o.repo}@main/${CONFIG_PATH}` },
   { name: "jsdelivr-cdn",       url: o => `https://cdn.jsdelivr.net/gh/${o.owner}/${o.repo}@main/${CONFIG_PATH}` },
+  { name: "jsdelivr-fastly",    url: o => `https://fastly.jsdelivr.net/gh/${o.owner}/${o.repo}@main/${CONFIG_PATH}` },
   { name: "jsdelivr-gcore",     url: o => `https://gcore.jsdelivr.net/gh/${o.owner}/${o.repo}@main/${CONFIG_PATH}` },
-  { name: "ghfast-top",         url: o => `https://ghfast.top/https://raw.githubusercontent.com/${o.owner}/${o.repo}/main/${CONFIG_PATH}` }
+  { name: "ghfast-top",         url: o => `https://ghfast.top/https://raw.githubusercontent.com/${o.owner}/${o.repo}/main/${CONFIG_PATH}` },
+  { name: "ghproxy-net",        url: o => `https://ghproxy.net/https://raw.githubusercontent.com/${o.owner}/${o.repo}/main/${CONFIG_PATH}` },
+  { name: "gitmirror",          url: o => `https://raw.gitmirror.com/${o.owner}/${o.repo}/main/${CONFIG_PATH}` },
+  { name: "raw",                url: o => `https://raw.githubusercontent.com/${o.owner}/${o.repo}/main/${CONFIG_PATH}` }
 ];
 
 async function connect(){
@@ -1061,6 +1064,8 @@ function renderHome(){
   if(!cats.length) html += `<div class="empty">暂无分类，点击上方新增</div>`;
   cats.forEach((c, ci) => {
     const cards = c.cards || [];
+    // v1.0.3 修复「Maximum call stack size exceeded」：分类头立即渲染，卡片在展开时才惰性填充
+    // （站点量大时一次性拼 300KB+ HTML 会让老 WebView 的解析器递归栈溢出 → 数据解析失败）
     html += `<div class="card">
       <div class="collapse-head" onclick="toggleCollapse(this)">
         <span class="arrow">▶</span><span class="chip">${esc(c.iconKey||"grid")}</span>
@@ -1069,33 +1074,40 @@ function renderHome(){
         <button class="btn-mini pri" onclick="event.stopPropagation();catForm(${ci})">✏️ 编辑</button>
         <button class="btn-mini err" onclick="event.stopPropagation();removeCat(${ci})">🗑️ 删除</button>
       </div>
-      <div class="cat-body" style="display:none">
-        <div class="divider"></div>
-        <div class="row" style="margin-bottom:8px">
-          <button class="btn-mini pri" onclick="subcatForm(${ci})">＋ 子分类</button>
-          <button class="btn-mini pri" onclick="cardForm(${ci})">＋ 站点</button>
-          <button class="btn-mini gray" onclick="moveCat(${ci},-1)">⬆ 上移分类</button>
-          <button class="btn-mini gray" onclick="moveCat(${ci},1)">⬇ 下移分类</button>
-        </div>
-        <div class="row" style="margin-bottom:8px">
-          ${(c.subcategories||[]).map((s, si) => `<span class="chip">${esc(s.name)} <a style="cursor:pointer" onclick="subcatForm(${ci},${si})">✏️</a> <a style="cursor:pointer;color:var(--err)" onclick="removeSubcat(${ci},${si})">✕</a></span>`).join("")}
-        </div>
-        ${cards.map((card, ri) => `
-        <div class="item" style="margin-bottom:6px">
-          <div class="item-head">
-            ${card.badge ? `<span class="badge ${esc(card.badgeType||"ROSE")}">${esc(card.badge)}</span>` : ""}
-            <span class="item-title">${esc(card.title)}</span>
-            <button class="btn-mini gray" onclick="moveCard(${ci},${ri},-1)">↑</button>
-            <button class="btn-mini gray" onclick="moveCard(${ci},${ri},1)">↓</button>
-            <button class="btn-mini pri" onclick="cardForm(${ci},${ri})">✏️</button>
-            <button class="btn-mini err" onclick="removeCard(${ci},${ri})">🗑️</button>
-          </div>
-          <div class="item-sub">${esc(card.url)}</div>
-        </div>`).join("")}
-      </div>
+      <div class="cat-body" style="display:none" data-ci="${ci}"></div>
     </div>`;
   });
   $("homePage").innerHTML = html;
+}
+
+// v1.0.3：按需渲染单个分类的全部卡片（点开会折叠时才调用，避免一次性大 HTML）
+function renderCategoryCards(ci){
+  const c = S.admin.home.categories[ci];
+  if(!c) return "";
+  const cards = c.cards || [];
+  let html = `<div class="divider"></div>
+    <div class="row" style="margin-bottom:8px">
+      <button class="btn-mini pri" onclick="subcatForm(${ci})">＋ 子分类</button>
+      <button class="btn-mini pri" onclick="cardForm(${ci})">＋ 站点</button>
+      <button class="btn-mini gray" onclick="moveCat(${ci},-1)">⬆ 上移分类</button>
+      <button class="btn-mini gray" onclick="moveCat(${ci},1)">⬇ 下移分类</button>
+    </div>
+    <div class="row" style="margin-bottom:8px">
+      ${(c.subcategories||[]).map((s, si) => `<span class="chip">${esc(s.name)} <a style="cursor:pointer" onclick="subcatForm(${ci},${si})">✏️</a> <a style="cursor:pointer;color:var(--err)" onclick="removeSubcat(${ci},${si})">✕</a></span>`).join("")}
+    </div>`;
+  html += cards.map((card, ri) => `
+    <div class="item" style="margin-bottom:6px">
+      <div class="item-head">
+        ${card.badge ? `<span class="badge ${esc(card.badgeType||"ROSE")}">${esc(card.badge)}</span>` : ""}
+        <span class="item-title">${esc(card.title)}</span>
+        <button class="btn-mini gray" onclick="moveCard(${ci},${ri},-1)">↑</button>
+        <button class="btn-mini gray" onclick="moveCard(${ci},${ri},1)">↓</button>
+        <button class="btn-mini pri" onclick="cardForm(${ci},${ri})">✏️</button>
+        <button class="btn-mini err" onclick="removeCard(${ci},${ri})">🗑️</button>
+      </div>
+      <div class="item-sub">${esc(card.url)}</div>
+    </div>`).join("");
+  return html;
 }
 
 function toggleCollapse(el){
@@ -1103,7 +1115,16 @@ function toggleCollapse(el){
   const arrow = el.querySelector('.arrow');
   if(!body) return;
   const isHidden = body.style.display === 'none';
-  body.style.display = isHidden ? '' : 'none';
+  if(isHidden){
+    // 首次展开：惰性填充该分类卡片（避免一次性渲染全部站点导致栈溢出）
+    if(body.getAttribute('data-rendered') !== '1'){
+      body.innerHTML = renderCategoryCards(parseInt(body.getAttribute('data-ci')||'0', 10));
+      body.setAttribute('data-rendered', '1');
+    }
+    body.style.display = '';
+  } else {
+    body.style.display = 'none';
+  }
   if(arrow) arrow.classList.toggle('open', isHidden);
 }
 
@@ -2648,4 +2669,3 @@ setTimeout(() => {
 </div>
 </body>
 </html>
-
