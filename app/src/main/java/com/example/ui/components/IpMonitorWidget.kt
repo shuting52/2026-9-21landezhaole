@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -123,7 +124,8 @@ fun MarqueeNoticeWidget(
     // 后台关闭跑马灯：本体完全不渲染公告内容（严格修复开关无效问题）
     if (cloudMarquee != null && cloudMarquee.enabled == false) return
 
-    // 播放队列：默认公告文字 + 各时段内容（按开始小时排序），顺序循环播放、中间不停顿
+    // 播放队列：默认公告 + 云端时段内容 + 24 小时逐小时文案，顺序循环播放、中间不停顿
+    // v1.8.7：恢复「24 小时不间断轮播」——默认文案/时段/逐小时文案全部参与轮播，不再只显示当前小时
     val defaultText = cloudMarquee?.defaultText?.ifBlank {
         MARQUEE_ANNOUNCEMENT_TEXT
     } ?: MARQUEE_ANNOUNCEMENT_TEXT
@@ -131,35 +133,31 @@ fun MarqueeNoticeWidget(
         .filter { it.text.isNotBlank() }
         .sortedBy { it.start }
         .map { it.text }
-    val playlist = remember(sortedSegments) {
+    val playlist = remember(defaultText, sortedSegments) {
         buildList {
             add(defaultText)
             addAll(sortedSegments)
-            // 无任何时段时，补一条按小时动态文案，保证始终有内容轮播
-            if (size <= 1) add(getHourlyMarqueeText())
-        }
+            // 24 小时逐小时动态文案全部加入轮播队列（每天同一时段文案固定，24 小时不间断）
+            for (h in 0..23) {
+                val cal = beijingCalendar()
+                cal.set(Calendar.HOUR_OF_DAY, h)
+                cal.set(Calendar.MINUTE, 0)
+                cal.set(Calendar.SECOND, 0)
+                add(getHourlyMarqueeText(cal))
+            }
+        }.distinct()
     }
 
     var displayText by remember { mutableStateOf(playlist.firstOrNull() ?: defaultText) }
-    // v1.7.3：严格按「北京时间」当前小时命中对应时段文案（start<=hour<end，支持跨天），
-    // 每分钟刷新一次，整点自动切换下一时段；无命中时段则回退默认文案/小时动态文案。
-    LaunchedEffect(cloudMarquee) {
-        fun resolveByBeijingHour(): String {
-            val hour = beijingCalendar().get(Calendar.HOUR_OF_DAY)
-            val segs = cloudMarquee?.segments.orEmpty().filter { it.text.isNotBlank() }
-            // 匹配当前小时所在的时段（处理跨天段：start>end 表示跨午夜）
-            val hit = segs.firstOrNull { seg ->
-                val s = seg.start % 24
-                val e = seg.end % 24
-                if (s <= e) hour >= s && hour < e
-                else hour >= s || hour < e
-            }
-            return hit?.text ?: defaultText
-        }
+    var rotateIndex by remember { mutableIntStateOf(0) }
+    // v1.8.7：每隔 10 秒自动切换下一条公告，24 小时不间断轮播全部内容
+    LaunchedEffect(cloudMarquee, playlist) {
+        rotateIndex = 0
+        displayText = playlist.firstOrNull() ?: defaultText
         while (true) {
-            displayText = resolveByBeijingHour()
-            // 每分钟刷新：整点（或后台修改时段）后自动切换
-            delay(60_000L)
+            delay(10_000L)
+            rotateIndex = (rotateIndex + 1) % playlist.size
+            displayText = playlist[rotateIndex]
         }
     }
     val effectiveText = displayText

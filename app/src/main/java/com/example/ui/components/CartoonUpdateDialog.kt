@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -141,6 +142,7 @@ fun CartoonUpdateDialog(
                     this.alpha = dialogAlpha
                 }
                 .clickable(enabled = true, onClick = { /* 消费点击，阻止穿透 */ })
+                .clip(RoundedCornerShape(30.dp))
                 .background(
                     brush = Brush.verticalGradient(
                         listOf(Color(0xFF1C1B2E), Color(0xFF241A3B), Color(0xFF2B1E45))
@@ -155,6 +157,32 @@ fun CartoonUpdateDialog(
                 .padding(horizontal = 20.dp, vertical = 18.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // v1.8.7：CSS 式动态装饰——顶部流光扫过（类似 web 进度条的 shine 动画）
+            val shineTransition = rememberInfiniteTransition(label = "card_shine")
+            val shinePhase by shineTransition.animateFloat(
+                initialValue = 0f,
+                targetValue = 1f,
+                animationSpec = infiniteRepeatable(tween(4200, easing = LinearEasing), RepeatMode.Restart),
+                label = "card_shine_phase"
+            )
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth(0.6f)
+                    .height(230.dp)
+                    .graphicsLayer { translationX = (shinePhase - 0.5f) * 760f }
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(
+                                Color.Transparent,
+                                Color.White.copy(alpha = 0.055f),
+                                Color.White.copy(alpha = 0.11f),
+                                Color.White.copy(alpha = 0.055f),
+                                Color.Transparent
+                            )
+                        )
+                    )
+            )
             // 顶部：动态卡通角色（Canvas 全手绘）
             MusicCatMascot(
                 mood = mood,
@@ -663,6 +691,9 @@ private fun ReleaseNotesBox(notes: List<String>) {
 @Composable
 private fun DownloadProgressSection(progress: Float, downloaded: Long, total: Long) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        // v1.8.7：CSS 式动态进度条（渐变流动 + 高光扫过），进度条走满后直接进入安装
+        GradientProgressBar(progress = progress, modifier = Modifier.fillMaxWidth())
+        Spacer(modifier = Modifier.height(10.dp))
         Box(contentAlignment = Alignment.Center) {
             ProgressRing(progress = progress, size = 92.dp)
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -688,10 +719,72 @@ private fun DownloadProgressSection(progress: Float, downloaded: Long, total: Lo
         EqualizerBars(modifier = Modifier.size(72.dp, 20.dp))
         Spacer(modifier = Modifier.height(2.dp))
         Text(
-            text = "正在下载新版本，请保持网络连接…",
+            text = "正在下载新版本，进度条走完将直接安装，请保持网络连接…",
             color = Color.White.copy(alpha = 0.7f),
             fontSize = 11.sp
         )
+    }
+}
+
+/**
+ * v1.8.7：CSS 式动态进度条——渐变底色流动 + 高光扫过（类似网页进度条动画），
+ * 下载进度实时驱动，走满 100% 后立即进入安装流程。
+ */
+@Composable
+private fun GradientProgressBar(progress: Float, modifier: Modifier = Modifier) {
+    val animatedProgress by animateFloatAsState(
+        targetValue = progress.coerceIn(0f, 1f),
+        animationSpec = tween(260),
+        label = "bar_progress"
+    )
+    val transition = rememberInfiniteTransition(label = "grad_bar")
+    val shimmer by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(1500, easing = LinearEasing), RepeatMode.Restart),
+        label = "bar_shimmer"
+    )
+    Box(
+        modifier = modifier
+            .height(12.dp)
+            .clip(RoundedCornerShape(99.dp))
+            .background(Color.White.copy(alpha = 0.12f))
+    ) {
+        // 渐变填充（进度驱动宽度）
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(animatedProgress)
+                .fillMaxHeight()
+                .clip(RoundedCornerShape(99.dp))
+                .background(
+                    Brush.horizontalGradient(
+                        listOf(CuteCyan, CutePurple, CutePink, CuteYellow, CuteCyan)
+                    )
+                )
+        )
+        // 高光扫过（只扫填充区域）
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(animatedProgress)
+                .fillMaxHeight()
+                .clip(RoundedCornerShape(99.dp))
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .graphicsLayer { translationX = (shimmer - 0.5f) * 420f }
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(
+                                Color.Transparent,
+                                Color.White.copy(alpha = 0.5f),
+                                Color.Transparent
+                            )
+                        )
+                    )
+            )
+        }
     }
 }
 
