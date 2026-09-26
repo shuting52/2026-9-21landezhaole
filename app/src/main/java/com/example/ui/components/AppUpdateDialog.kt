@@ -525,6 +525,7 @@ fun AppUpdateDialog(
                 logs = FIXED_UPDATE_LOGS,
                 installing = installingNow,
                 installingText = statusLabel,
+                installDone = installOutcome == true,
                 isUpdating = isUpdating,
                 progress = progress,
                 isSignatureConflict = isSignatureConflict,
@@ -546,6 +547,7 @@ private fun CssUpdateCard(
     logs: List<String>,
     installing: Boolean,
     installingText: String,
+    installDone: Boolean,
     isUpdating: Boolean,
     progress: Float,
     isSignatureConflict: Boolean,
@@ -740,7 +742,7 @@ private fun CssUpdateCard(
                         ) {
                             Text(
                                 text = when {
-                                    installOutcome == true -> "更新完成，重新打开即最新版"
+                                    installDone -> "更新完成，重新打开即最新版"
                                     installing -> installingText.ifBlank { "正在安装…" }
                                     else -> "正在极速下载…"
                                 },
@@ -838,7 +840,7 @@ private fun CssLogItem(index: Int, text: String) {
                         colors = listOf(CSS_PINK, CSS_PEACH),
                         start = Offset(0f, 0f),
                         end = Offset(80f, 80f)
-                    ).copy(alpha = 1f)
+                    )
                 )
         )
         Spacer(modifier = Modifier.width(8.dp))
