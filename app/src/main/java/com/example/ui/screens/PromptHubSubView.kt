@@ -459,6 +459,9 @@ private fun CloudPromptCard(
                 }
             } else if (isVideo && prompt.mediaUrl.isNotBlank()) {
                 var videoFailed by remember { mutableStateOf(false) }
+                // v1.9.1 修复「视频延迟显示」：本地缓存未就绪时先远程直链试播，
+                // 首帧出现即隐藏加载层，无需等整个文件缓存完（缓存就绪后无缝切到本地，避免黑屏）
+                var remoteReady by remember { mutableStateOf(false) }
                 if (!videoFailed) {
                     // v1.7.4 单视频播放方案：
                     // - 仅「当前激活视频」播放声音；其他视频静音暂停，避免多个视频同时出声
@@ -482,24 +485,31 @@ private fun CloudPromptCard(
                         androidx.compose.ui.viewinterop.AndroidView(
                             factory = { ctx ->
                                 android.widget.VideoView(ctx).apply {
-                                    // v1.8.3 修复：绝不用远程 URL 首播（远程黑屏→误判失败→销毁组件）
-                                    // 仅当本地缓存就绪才设置视频源；未就绪时由下方加载覆盖层遮挡
-                                    localPath?.let {
-                                        setVideoURI(android.net.Uri.fromFile(java.io.File(it)))
-                                        setOnPreparedListener { mp ->
-                                            mp.isLooping = true
-                                            if (isActiveVideo) {
-                                                mp.setVolume(1f, 1f)
-                                                mp.start()
-                                            } else {
-                                                mp.setVolume(0f, 0f)
-                                                mp.pause()
-                                            }
+                                    // v1.9.1：本地缓存就绪优先播本地；未就绪时立刻用远程 URL 直连试播，
+                                    // 避免「下载完才能看」的长时间转圈；缓存就绪后由 update 无缝切到本地文件
+                                    val lp = localPath
+                                    if (lp != null) {
+                                        setVideoURI(android.net.Uri.fromFile(java.io.File(lp)))
+                                        tag = "local:$lp"
+                                    } else {
+                                        setVideoURI(android.net.Uri.parse(prompt.mediaUrl))
+                                        tag = "remote"
+                                    }
+                                    setOnPreparedListener { mp ->
+                                        if (tag == "remote") remoteReady = true
+                                        mp.isLooping = true
+                                        if (isActiveVideo) {
+                                            mp.setVolume(1f, 1f)
+                                            mp.start()
+                                        } else {
+                                            mp.setVolume(0f, 0f)
+                                            mp.pause()
                                         }
                                     }
                                     setOnErrorListener { mp, what, extra ->
-                                        // 仅当本地文件也播放失败时才标记失败（本地若存在基本不会失败）
-                                        if (localPath != null) videoFailed = true
+                                        // v1.9.1：远程试播失败不误判（本地就绪后由 update 切换本地重试）；
+                                        // 仅当本地文件播放失败才标记失败走 fallback（本地若存在基本不会失败）
+                                        if (tag != "remote" && localPath != null) videoFailed = true
                                         true
                                     }
                                     setOnClickListener {
@@ -512,12 +522,12 @@ private fun CloudPromptCard(
                                 }
                             },
                             update = { view ->
-                                // localPath 到位后重设视频源（VideoView 首次创建时缓存可能还没下载完）
+                                // localPath 到位后无缝切换到本地（本地文件秒开）
                                 val currentPath = localPath
                                 if (currentPath != null) {
                                     val uri = android.net.Uri.fromFile(java.io.File(currentPath))
-                                    if (view.tag != currentPath) {
-                                        view.tag = currentPath
+                                    if (view.tag != "local:$currentPath") {
+                                        view.tag = "local:$currentPath"
                                         view.setVideoURI(uri)
                                         view.setOnPreparedListener { mp ->
                                             mp.isLooping = true
@@ -540,8 +550,8 @@ private fun CloudPromptCard(
                                 .fillMaxWidth()
                                 .height(170.dp)
                         )
-                        // 加载进度覆盖（首次缓存中给出提示）
-                        if (localPath == null) {
+                        // 加载覆盖（v1.9.1：远程首帧出来即隐藏，不再干等下载完成）
+                        if (localPath == null && !remoteReady) {
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
@@ -856,8 +866,11 @@ private fun CloudPromptPreviewDialog(
         // 全屏视频播放（点击退出全屏）
         // v1.7.8：与列表一致，先通过 VideoCache 把视频预载到本地，避免黑屏
         // v1.8.3 修复：绝不用远程 URL 首播，仅本地缓存就绪后设置视频源
+        // v1.9.1 修复「视频延迟显示」：全屏不再干等缓存下载——
+        // 本地未就绪时先用远程 URL 直连试播（首帧即见），缓存就绪后再无缝切本地
         val context = androidx.compose.ui.platform.LocalContext.current
         var fsLocalPath by remember(prompt.mediaUrl) { mutableStateOf<String?>(null) }
+        var fsRemoteReady by remember { mutableStateOf(false) }
         androidx.compose.runtime.LaunchedEffect(prompt.mediaUrl) {
             try { fsLocalPath = com.example.data.util.VideoCache.ensureLocal(context, prompt.mediaUrl) } catch (_: Exception) {}
         }
@@ -874,14 +887,25 @@ private fun CloudPromptPreviewDialog(
                 androidx.compose.ui.viewinterop.AndroidView(
                     factory = { ctx ->
                         android.widget.VideoView(ctx).apply {
-                            // v1.8.3：仅当本地缓存就绪才设置视频源（远程 URL 首播易黑屏）
-                            fsLocalPath?.let {
-                                setVideoURI(android.net.Uri.fromFile(java.io.File(it)))
-                                setOnPreparedListener { mp ->
-                                    mp.isLooping = true
-                                    mp.setVolume(1f, 1f)
-                                    mp.start()
-                                }
+                            // v1.9.1：本地缓存就绪播本地；未就绪先远程直拨试播（带 UA 的不受影响，首帧即出）
+                            val lp = fsLocalPath
+                            if (lp != null) {
+                                setVideoURI(android.net.Uri.fromFile(java.io.File(lp)))
+                                tag = "local:$lp"
+                            } else {
+                                setVideoURI(android.net.Uri.parse(prompt.mediaUrl))
+                                tag = "remote"
+                            }
+                            setOnPreparedListener { mp ->
+                                if (tag == "remote") fsRemoteReady = true
+                                mp.isLooping = true
+                                mp.setVolume(1f, 1f)
+                                mp.start()
+                            }
+                            setOnErrorListener { mp, what, extra ->
+                                // v1.9.1：远程试播失败不误判——本地缓存就绪后由 update 切换本地重试；
+                                // 始终返回 true 避免触发 VideoView 默认终止行为
+                                true
                             }
                             layoutParams = android.view.ViewGroup.LayoutParams(
                                 android.view.ViewGroup.LayoutParams.MATCH_PARENT,
@@ -891,8 +915,8 @@ private fun CloudPromptPreviewDialog(
                     },
                     update = { view ->
                         val p = fsLocalPath
-                        if (p != null && view.tag != p) {
-                            view.tag = p
+                        if (p != null && view.tag != "local:$p") {
+                            view.tag = "local:$p"
                             view.setVideoURI(android.net.Uri.fromFile(java.io.File(p)))
                             view.setOnPreparedListener { mp ->
                                 mp.isLooping = true
@@ -902,8 +926,8 @@ private fun CloudPromptPreviewDialog(
                     },
                     modifier = Modifier.fillMaxSize()
                 )
-                // v1.8.3：本地缓存未就绪时显示加载提示（避免全屏纯黑屏无响应感）
-                if (fsLocalPath == null) {
+                // v1.9.1：本地未就绪且远程还没出首帧时才显示加载提示（不再长时间纯黑屏/干等下载）
+                if (fsLocalPath == null && !fsRemoteReady) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -916,7 +940,7 @@ private fun CloudPromptPreviewDialog(
                             )
                             Spacer(modifier = Modifier.height(12.dp))
                             Text(
-                                text = "正在缓存视频…",
+                                text = "正在加载视频…",
                                 color = Color.White,
                                 fontSize = 13.sp
                             )
@@ -1002,6 +1026,8 @@ private fun CloudPromptPreviewDialog(
                     // 视频提示词：优先内嵌播放演示视频 + 全屏按钮；图片提示词展示预览图
                     if (prompt.type == "prompt_video" && prompt.mediaUrl.isNotBlank()) {
                         var videoFailed by remember { mutableStateOf(false) }
+                        // v1.9.1 修复「视频延迟显示」：本地未就绪先远程直拨试播，首帧即见
+                        var dialogRemoteReady by remember { mutableStateOf(false) }
                         val context = androidx.compose.ui.platform.LocalContext.current
                         var localPath by remember(prompt.mediaUrl) { mutableStateOf<String?>(null) }
                         androidx.compose.runtime.LaunchedEffect(prompt.mediaUrl) {
@@ -1019,25 +1045,33 @@ private fun CloudPromptPreviewDialog(
                                 androidx.compose.ui.viewinterop.AndroidView(
                                     factory = { ctx ->
                                         android.widget.VideoView(ctx).apply {
-                                            // v1.8.3：仅本地缓存就绪才设置视频源（远程首播易黑屏）
-                                            localPath?.let {
-                                                setVideoURI(android.net.Uri.fromFile(java.io.File(it)))
-                                                setOnPreparedListener { mp ->
-                                                    mp.isLooping = true
-                                                    mp.setVolume(1f, 1f)
-                                                    mp.start()
-                                                }
+                                            // v1.9.1：本地就绪播本地；未就绪先远程直拨（首帧即见，缓存好了无缝切本地）
+                                            val lp = localPath
+                                            if (lp != null) {
+                                                setVideoURI(android.net.Uri.fromFile(java.io.File(lp)))
+                                                tag = "local:$lp"
+                                            } else {
+                                                setVideoURI(android.net.Uri.parse(prompt.mediaUrl))
+                                                tag = "remote"
+                                            }
+                                            setOnPreparedListener { mp ->
+                                                if (tag == "remote") dialogRemoteReady = true
+                                                mp.isLooping = true
+                                                mp.setVolume(1f, 1f)
+                                                mp.start()
                                             }
                                             setOnErrorListener { mp, what, extra ->
-                                                if (localPath != null) videoFailed = true
+                                                // v1.9.1：远程试播失败不误判（本地就绪后由 update 切换本地重试）；
+                                                // 仅当本地文件播放失败才标记 fallback
+                                                if (tag != "remote" && localPath != null) videoFailed = true
                                                 true
                                             }
                                         }
                                     },
                                     update = { view ->
                                         val currentPath = localPath
-                                        if (currentPath != null && view.tag != currentPath) {
-                                            view.tag = currentPath
+                                        if (currentPath != null && view.tag != "local:$currentPath") {
+                                            view.tag = "local:$currentPath"
                                             view.setVideoURI(android.net.Uri.fromFile(java.io.File(currentPath)))
                                             view.setOnPreparedListener { mp ->
                                                 mp.isLooping = true
@@ -1057,7 +1091,8 @@ private fun CloudPromptPreviewDialog(
                                     modifier = Modifier.fillMaxSize()
                                 )
                             }
-                            if (localPath == null) {
+                            // v1.9.1：本地未就绪且远程未出首帧时才显示加载圈
+                            if (localPath == null && !dialogRemoteReady) {
                                 Box(
                                     modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.55f)),
                                     contentAlignment = Alignment.Center
