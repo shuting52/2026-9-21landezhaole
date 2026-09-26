@@ -74,6 +74,7 @@ import com.example.ui.theme.NeonPurple
 import com.example.ui.theme.SunsetOrange
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.withFrameNanos
 
 /**
  * 全功能高阶开屏动画：
@@ -157,17 +158,20 @@ fun SplashScreenOverlay(
                 delay(100)
                 waited += 100
             }
-            // 严格按设定时长倒计时（修复：倒计时卡顿/不走的问题——
-            // 用系统时间精确计算，避免 delay(1000) 在主线程繁忙时累积误差）
+            // 严格按设定时长倒计时（v1.8.7 修复卡顿：用 withFrameNanos 每帧校准系统时间，
+            // 主线程繁忙时也不会跳秒/卡顿，剩余秒数始终精确）
             val totalMillis = countdownSeconds * 1000L
             val startTime = System.currentTimeMillis()
             while (true) {
                 val elapsed = System.currentTimeMillis() - startTime
                 val remainSec = ((totalMillis - elapsed) / 1000L).coerceAtLeast(0L).toInt()
-                countdownSeconds = remainSec
+                // 只有在整数秒变化时才触发重组更新文本，避免每帧无谓刷新
+                if (remainSec != countdownSeconds) {
+                    countdownSeconds = remainSec
+                }
                 if (elapsed >= totalMillis) break
-                // 以 200ms 为步进更新 UI，倒计时数字平滑跳动，不受主线程卡顿影响
-                delay(200)
+                // 用帧回调等待下一帧，保证与屏幕刷新同步，读秒平滑
+                withFrameNanos { }
             }
             delay(150)
             onDismiss()
