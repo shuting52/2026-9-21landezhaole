@@ -433,7 +433,7 @@ fun AppUpdateDialog(
     }
 
     // 按钮文案 & 点击行为（跟随状态流转）
-    val (btnText, btnAction): Pair<String, () -> Unit> = when {
+    val btnPair: Pair<String, () -> Unit> = when {
         installOutcome == true -> "更新完成" to {
             onUpdateFinished()
             onDismiss()
@@ -443,6 +443,8 @@ fun AppUpdateDialog(
         isUpdating -> "更新中…" to { }
         else -> cloudConfirm to { startUpdate() }
     }
+    val btnText = btnPair.first
+    val btnAction = btnPair.second
 
     Dialog(
         onDismissRequest = { closeUpdate() },
