@@ -508,10 +508,13 @@ enum class ToolboxTab(
 
 @Composable
 fun ToolboxScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    // v1.8.7：云端工具箱扩展工具（控制台增删，实时同步）
+    cloudTools: List<com.example.data.remote.ToolDto> = emptyList()
 ) {
     // 弹窗交互：主界面为工具分类网格，点击任意工具弹出独立交互框
     var activeTool by remember { mutableStateOf<ToolboxTab?>(null) }
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     Box(modifier = modifier.fillMaxSize()) {
         Column(
@@ -549,6 +552,87 @@ fun ToolboxScreen(
             }
 
             Spacer(modifier = Modifier.height(10.dp))
+
+            // v1.8.7：云端工具箱扩展工具（控制台增删）展示在本地工具上方
+            if (cloudTools.isNotEmpty()) {
+                Text(
+                    text = "云端工具（控制台实时同步）",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(start = 2.dp, bottom = 4.dp)
+                )
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(if (cloudTools.size <= 2) 92.dp else 184.dp)
+                ) {
+                    gridItems(cloudTools, key = { it.id }) { tool ->
+                        Surface(
+                            onClick = {
+                                // 云端工具：点击打开 URL（无 URL 则提示）
+                                if (tool.url.isNotBlank()) {
+                                    try {
+                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(tool.url))
+                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        context.startActivity(intent)
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "无法打开：${tool.url}", Toast.LENGTH_SHORT).show()
+                                    }
+                                } else {
+                                    Toast.makeText(context, "该云端工具未配置跳转链接", Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color.White.copy(alpha = 0.6f),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 12.dp)
+                            ) {
+                                Text(
+                                    text = tool.icon.ifBlank { "🔧" },
+                                    fontSize = 18.sp,
+                                    modifier = Modifier.padding(end = 8.dp)
+                                )
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = tool.name,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    if (tool.desc.isNotBlank()) {
+                                        Spacer(modifier = Modifier.height(1.dp))
+                                        Text(
+                                            text = tool.desc,
+                                            fontSize = 9.5.sp,
+                                            maxLines = 2,
+                                            overflow = TextOverflow.Ellipsis,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = "本地工具",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 2.dp, bottom = 4.dp)
+                )
+            }
 
             // 工具分类网格（2列），点击弹出对应工具交互框
             LazyVerticalGrid(
