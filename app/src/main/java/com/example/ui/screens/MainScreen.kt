@@ -360,9 +360,8 @@ fun MainScreen(
                         resources = uploadedSoftware,
                         onDelete = { id -> viewModel.deleteUploadedResource(id) },
                         modifier = Modifier.padding(paddingValues),
-                        showDelete = false,
-                        // v1.8.7：软件版块三列一排 + 自动归类分组 + icon 自动识别
-                        gridMode = true
+                        showDelete = false
+                        // v1.9.0：恢复软件版块之前的内容——回到单列大卡片样式（移除 v1.8.7 的三列网格）
                     )
                 }
                 AppBottomTab.SKILL -> {
