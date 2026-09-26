@@ -8,6 +8,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -53,6 +54,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -101,43 +103,45 @@ fun PromptHubSubView(
             .padding(horizontal = 14.dp, vertical = 6.dp),
         verticalArrangement = Arrangement.Top
     ) {
-        // 分类筛选：全部 / 图片提示词 / 视频提示词
-        Row(
+        // v1.8.7：子分类向右向左滑动切换（LazyRow 横向滚动分类条 + 内容区左右滑手势切换）
+        // 分类：全部 / 图片提示词 / 视频提示词
+        val typeTabs = listOf(
+            Triple(null as String?, "全部 (${prompts.size})"),
+            Triple("image", "图片提示词 (${imageList.size})"),
+            Triple("video", "视频提示词 (${videoList.size})")
+        )
+        val typeIndex = typeTabs.indexOfFirst { it.first == selectedType }.coerceAtLeast(0)
+        LazyRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(end = 4.dp)
         ) {
-            FilterChip(
-                selected = selectedType == null,
-                onClick = { selectedType = null },
-                label = { Text("全部 (${prompts.size})", fontSize = 12.sp) },
-                colors = FilterChipDefaults.filterChipColors(
-                    containerColor = Color.White.copy(alpha = 0.45f),
-                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f)
-                ),
-                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.65f))
-            )
-            FilterChip(
-                selected = selectedType == "image",
-                onClick = { selectedType = "image" },
-                label = { Text("图片提示词 (${imageList.size})", fontSize = 12.sp) },
-                colors = FilterChipDefaults.filterChipColors(
-                    containerColor = Color.White.copy(alpha = 0.45f),
-                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f)
-                ),
-                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.65f))
-            )
-            FilterChip(
-                selected = selectedType == "video",
-                onClick = { selectedType = "video" },
-                label = { Text("视频提示词 (${videoList.size})", fontSize = 12.sp) },
-                colors = FilterChipDefaults.filterChipColors(
-                    containerColor = Color.White.copy(alpha = 0.45f),
-                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f)
-                ),
-                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.65f))
-            )
+            item {
+                // 当前分类指示（左右切换时高亮跟随）
+                Text(
+                    text = typeTabs[typeIndex].second,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(start = 2.dp, end = 4.dp)
+                )
+            }
+            typeTabs.forEach { (type, label) ->
+                item {
+                    FilterChip(
+                        selected = selectedType == type,
+                        onClick = { selectedType = type },
+                        label = { Text(if (type == null) "全部" else label.substringBefore(" ("), fontSize = 12.sp, maxLines = 1) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            containerColor = Color.White.copy(alpha = 0.45f),
+                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f)
+                        ),
+                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.65f))
+                    )
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(6.dp))
@@ -165,11 +169,38 @@ fun PromptHubSubView(
                 }
             }
         } else {
-            // v1.7.3：修复列表自动置底问题——LazyColumn 用 weight 撑满剩余空间并从顶部排列
+            // v1.8.7：内容区左右滑动手势切换子分类（左滑→下一个，右滑→上一个）
+            var dragAccum by remember { mutableStateOf(0f) }
             LazyColumn(
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .pointerInput(selectedType) {
+                        detectHorizontalDragGestures(
+                            onDragStart = { dragAccum = 0f },
+                            onDragEnd = {
+                                val cur = typeTabs.indexOfFirst { it.first == selectedType }.coerceAtLeast(0)
+                                val switched = when {
+                                    dragAccum > 60f -> { // 向右滑→上一个
+                                        val prev = (cur - 1).coerceAtLeast(0)
+                                        if (prev != cur) selectedType = typeTabs[prev].first
+                                        prev != cur
+                                    }
+                                    dragAccum < -60f -> { // 向左滑→下一个
+                                        val next = (cur + 1).coerceAtMost(typeTabs.size - 1)
+                                        if (next != cur) selectedType = typeTabs[next].first
+                                        next != cur
+                                    }
+                                    else -> false
+                                }
+                                dragAccum = 0f
+                            },
+                            onDragCancel = { dragAccum = 0f }
+                        ) { change, dragAmount ->
+                            change.consume()
+                            dragAccum += dragAmount
+                        }
+                    },
                 verticalArrangement = Arrangement.Top,
                 contentPadding = PaddingValues(bottom = 20.dp)
             ) {
@@ -442,22 +473,77 @@ private fun CloudPromptCard(
                             .clip(RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp))
                     )
                 } else {
-                    // 无预览图：显示提示条
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(80.dp)
-                            .background(Color(0xFF1E1E24))
-                            .clip(RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "视频暂不支持内嵌预览，点击卡片右上角编辑/复制提示词使用",
-                            fontSize = 11.sp,
-                            color = Color.White.copy(alpha = 0.75f),
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        )
+                    // v1.8.7 修复「视频暂不支持内嵌预览」：缓存下载失败时回退远程直连内嵌预览
+                    // （很多 mp4/直链 CDN 可正常内嵌播放，不再直接判死；远程也失败才显示兜底提示）
+                    var remoteFailed by remember { mutableStateOf(false) }
+                    if (!remoteFailed) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(170.dp)
+                                .clip(RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp))
+                        ) {
+                            androidx.compose.ui.viewinterop.AndroidView(
+                                factory = { ctx ->
+                                    android.widget.VideoView(ctx).apply {
+                                        setVideoURI(android.net.Uri.parse(prompt.mediaUrl))
+                                        setOnPreparedListener { mp ->
+                                            mp.isLooping = true
+                                            mp.setVolume(0f, 0f)
+                                            mp.start()
+                                        }
+                                        setOnErrorListener { mp, what, extra ->
+                                            remoteFailed = true
+                                            true
+                                        }
+                                        setOnClickListener {
+                                            if (isPlaying) pause() else start()
+                                        }
+                                    }
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(170.dp)
+                            )
+                            // 远程直连播放：点击激活（仅当前一个带声音）/暂停
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clickable {
+                                        if (isActiveVideo) onVideoActivate("") else onVideoActivate(prompt.id)
+                                    }
+                            )
+                        }
+                    } else {
+                        // 远程也失败：显示预览图或提示条
+                        if (prompt.previewUrl.isNotBlank()) {
+                            AsyncImage(
+                                model = prompt.previewUrl,
+                                contentDescription = prompt.title,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(160.dp)
+                                    .clip(RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp))
+                            )
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(80.dp)
+                                    .background(Color(0xFF1E1E24))
+                                    .clip(RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "视频暂不支持内嵌预览，点击卡片右上角编辑/复制提示词使用",
+                                    fontSize = 11.sp,
+                                    color = Color.White.copy(alpha = 0.75f),
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                    modifier = Modifier.padding(horizontal = 16.dp)
+                                )
+                            }
+                        }
                     }
                 }
             } else if (prompt.previewUrl.isNotBlank()) {
