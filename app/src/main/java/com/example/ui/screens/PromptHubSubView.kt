@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -106,9 +107,9 @@ fun PromptHubSubView(
         // v1.8.7：子分类向右向左滑动切换（LazyRow 横向滚动分类条 + 内容区左右滑手势切换）
         // 分类：全部 / 图片提示词 / 视频提示词
         val typeTabs = listOf(
-            Triple(null as String?, "全部 (${prompts.size})"),
-            Triple("image", "图片提示词 (${imageList.size})"),
-            Triple("video", "视频提示词 (${videoList.size})")
+            Pair(null as String?, "全部 (${prompts.size})"),
+            Pair("image", "图片提示词 (${imageList.size})"),
+            Pair("video", "视频提示词 (${videoList.size})")
         )
         val typeIndex = typeTabs.indexOfFirst { it.first == selectedType }.coerceAtLeast(0)
         LazyRow(
