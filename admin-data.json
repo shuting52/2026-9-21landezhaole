@@ -9,8 +9,8 @@
       "? 软件版块三列一排 + 自动归类分类 + 软件 icon 自动识别"
     ],
     "force": true,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.8.7-1790392857.apk",
-    "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.8.7-1790392857.apk"
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.8.7-1790401869.apk",
+    "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.8.7-1790401869.apk"
   },
   "home": {
     "categories": [
@@ -15731,7 +15731,7 @@
   "console": {
     "version": "1.0.6",
     "code": 31,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v1.0.6-1790392055.apk"
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v1.0.6-1790401869.apk"
   },
   "ipMonitor": {
     "enabled": false,
