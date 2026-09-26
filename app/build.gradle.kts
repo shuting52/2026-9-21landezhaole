@@ -28,8 +28,9 @@ android {
     // v1.8.9：更新弹窗全新重写——最新动态 CSS 手绘风格（手绘描边/流动渐变/涂鸦粒子/对话气泡）
     // v1.9.1：更新弹窗恢复 v1.5 老样式（白卡片 + 圆点列表 + 官方群 + 立即更新）
     // v1.9.2 发布：软件/Skill 闪烁修复 + Skill 技能库下载 + 即存内置解析下载 + 视频延迟优化
-    versionCode = 81
-    versionName = "1.9.2"
+    // v1.0.1（版本体系重置，原 1.9.2）：可爱卡通纯色主题为核心 + 关于我们动态 CSS 标签 + 反馈系统升级；后续统一按 v1.0.x 递增更新
+    versionCode = 82
+    versionName = "1.0.1"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }

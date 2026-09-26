@@ -37,9 +37,24 @@ data class ThemePreset(
 )
 
 object ThemePresetsRepository {
+    // v1.0.1 可爱卡通纯色主题（新默认）：奶油纯色底 + 草莓粉主色 + 暖光粒子氛围
     val defaultTheme = ThemePreset(
-        id = "default_flame",
-        name = "炽热烈焰 (默认)",
+        id = "cute_cartoon",
+        name = "可爱卡通 (默认)",
+        style = "cute",
+        categoryName = "可爱",
+        primaryColor = CutePink,
+        secondaryColor = CutePeach,
+        bgColor = CuteCream,
+        surfaceColor = CuteWhite,
+        textColor = CuteChoco,
+        atmosphereEffect = AtmosphereEffect.FIREFLIES
+    )
+
+    // 老默认「炽热烈焰」保留为可选主题
+    val flameTheme = ThemePreset(
+        id = "flame_glow",
+        name = "炽热烈焰",
         style = "flame",
         categoryName = "经典",
         primaryColor = FlameRed,
@@ -91,6 +106,7 @@ object ThemePresetsRepository {
 
     val allThemes: List<ThemePreset> = listOf(
         defaultTheme,
+        flameTheme,
         cyberpunkTheme,
         auroraTheme,
         obsidianTheme
