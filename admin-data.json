@@ -1,16 +1,17 @@
 {
   "version": {
-    "code": 76,
-    "name": "1.8.7",
+    "code": 77,
+    "name": "1.8.8",
     "changelog": [
-      "⚡ 开屏倒计时流畅度优化：帧级校准，读秒不再卡顿",
-      "? 背景媒体全局应用：设置等白色界面自动转透明磨砂，图片/视频背景全方位呈现",
-      "? Skill 视频预览修复：缓存失败自动回退远程直连，子分类左右滑动切换",
-      "? 软件版块三列一排 + 自动归类分类 + 软件 icon 自动识别"
+      "? 更新弹窗升级：手绘卡通 + CSS 动态进度条，进度条走完直接安装新版本，不再授权未知应用",
+      "? 工具箱升级「? 工具箱合集」：分类收纳式展开/收起，云端工具实时同步",
+      "? 软件版块横排呈现：图标在左、信息在右，卡片更紧凑",
+      "? 首页跑马灯恢复内容 + 24 小时不间断轮播",
+      "? 视频/图片全局背景顶部显示修复：视频铺满全屏不再有黑边"
     ],
     "force": true,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.8.7-1790401869.apk",
-    "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.8.7-1790401869.apk"
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.8.8-1790410010.apk",
+    "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.8.8-1790410010.apk"
   },
   "home": {
     "categories": [
@@ -15697,12 +15698,13 @@
     "buttonText": "开始体验"
   },
   "updateDialog": {
-    "title": "懒得找了 v1.8.7 已上线",
+    "title": "懒得找了 v1.8.8 已上线",
     "changelog": [
-      "⚡ 开屏倒计时流畅度优化：帧级校准，读秒不再卡顿",
-      "? 背景媒体全局应用：设置等白色界面自动转透明磨砂，图片/视频背景全方位呈现",
-      "? Skill 视频预览修复：缓存失败自动回退远程直连，子分类左右滑动切换",
-      "? 软件版块三列一排 + 自动归类分类 + 软件 icon 自动识别"
+      "? 更新弹窗升级：手绘卡通 + CSS 动态进度条，进度条走完直接安装新版本，不再授权未知应用",
+      "? 工具箱升级「? 工具箱合集」：分类收纳式展开/收起，云端工具实时同步",
+      "? 软件版块横排呈现：图标在左、信息在右，卡片更紧凑",
+      "? 首页跑马灯恢复内容 + 24 小时不间断轮播",
+      "? 视频/图片全局背景顶部显示修复：视频铺满全屏不再有黑边"
     ],
     "confirmText": "立即更新",
     "cancelText": "稍后再说",
@@ -15729,9 +15731,9 @@
     ]
   },
   "console": {
-    "version": "1.0.6",
-    "code": 31,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v1.0.6-1790401869.apk"
+    "version": "1.0.7",
+    "code": 32,
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v1.0.7-1790410010.apk"
   },
   "ipMonitor": {
     "enabled": false,
