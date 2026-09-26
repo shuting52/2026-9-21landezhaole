@@ -92,6 +92,8 @@ import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Verified
+import androidx.compose.material.icons.filled.Movie
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -507,6 +509,13 @@ enum class ToolboxTab(
         icon = Icons.Filled.Verified,
         desc = "按分隔符拆分文本并统计"
     ),
+    // v1.9.0：即存视频解析下载入口（实际为独立 Flutter App，工具箱提供检测/打开/下载引导）
+    JICUN(
+        title = "即存解析下载",
+        shortLabel = "即存下载",
+        icon = Icons.Filled.Movie,
+        desc = "粘贴链接解析视频图文并下载：抖音/快手/小红书/B站/视频号…"
+    ),
 }
 
 /** 工具箱合集分类（收纳式：点击分类标题展开/收起该分类全部内容） */
@@ -540,6 +549,7 @@ private fun categoryOf(tab: ToolboxTab): ToolCategory = when (tab) {
     ToolboxTab.UUID_GEN, ToolboxTab.PASSWORD_GEN, ToolboxTab.QRCODE_TEXT, ToolboxTab.COLOR_CARD,
     ToolboxTab.PASSWORD_STRENGTH, ToolboxTab.PHONE_VALIDATE, ToolboxTab.ID_CARD, ToolboxTab.LUHN_CHECK -> ToolCategory.CODE
     ToolboxTab.LOTTERY, ToolboxTab.RPS_GAME, ToolboxTab.GUESS_NUMBER -> ToolCategory.GAME
+    ToolboxTab.JICUN -> ToolCategory.FUN
     else -> ToolCategory.TEXT
 }
 
@@ -752,6 +762,7 @@ fun ToolboxScreen(
                                 ToolboxTab.ID_CARD -> IdCardScreenView()
                                 ToolboxTab.LUHN_CHECK -> LuhnCheckScreenView()
                                 ToolboxTab.TEXT_SPLIT -> TextSplitScreenView()
+                                ToolboxTab.JICUN -> com.example.ui.screens.toolbox.JicunScreenView()
                             }
                         }
                     }

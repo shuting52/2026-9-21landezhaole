@@ -90,10 +90,11 @@ fun PromptHubSubView(
     val imageList = prompts.filter { it.type == "prompt_image" }
     val videoList = prompts.filter { it.type == "prompt_video" }
 
+    // v1.9.0：全部分类列表优化——图片/视频分组，视频按标题排序，视频卡片间加大间距并显示标题分隔条
     val filteredList = remember(selectedType, prompts) {
         when (selectedType) {
             "image" -> imageList
-            "video" -> videoList
+            "video" -> videoList.sortedWith(compareBy<UploadedResourceEntity> { it.title.lowercase() })
             else -> prompts
         }
     }
@@ -202,25 +203,88 @@ fun PromptHubSubView(
                             dragAccum += dragAmount
                         }
                     },
-                verticalArrangement = Arrangement.Top,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
                 contentPadding = PaddingValues(bottom = 20.dp)
             ) {
-                items(filteredList, key = { it.id }) { prompt ->
-                    CloudPromptCard(
-                        prompt = prompt,
-                        activeVideoId = activeVideoId,
-                        onVideoActivate = { id -> stopOtherVideos(id) },
-                        onImageClick = {
-                            previewing = prompt
-                            // 打开全屏预览时停掉列表中的卡片视频，避免同时出声
-                            stopOtherVideos("preview_" + prompt.id)
-                        },
-                        onCopy = { text ->
-                            val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                            cm.setPrimaryClip(ClipData.newPlainText("Prompt", text))
-                            Toast.makeText(context, "已复制提示词！可以直接在Midjourney/FLUX/Sora中使用", Toast.LENGTH_SHORT).show()
+                // v1.9.0：全部分类列表——图片与视频分组展示，视频前显示标题分隔条，间距拉开更直观
+                if (selectedType == null) {
+                    // 图片组
+                    if (imageList.isNotEmpty()) {
+                        item(key = "section_image") {
+                            SectionDivider(
+                                title = "图片提示词",
+                                count = imageList.size,
+                                color = Color(0xFF22C55E)
+                            )
                         }
-                    )
+                        items(imageList, key = { it.id }) { prompt ->
+                            CloudPromptCard(
+                                prompt = prompt,
+                                activeVideoId = activeVideoId,
+                                onVideoActivate = { id -> stopOtherVideos(id) },
+                                onImageClick = {
+                                    previewing = prompt
+                                    stopOtherVideos("preview_" + prompt.id)
+                                },
+                                onCopy = { text ->
+                                    val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    cm.setPrimaryClip(ClipData.newPlainText("Prompt", text))
+                                    Toast.makeText(context, "已复制提示词！可以直接在Midjourney/FLUX/Sora中使用", Toast.LENGTH_SHORT).show()
+                                }
+                            )
+                        }
+                    }
+                    // 视频组（按标题排序，每个视频前显示标题分隔条）
+                    val sortedVideos = videoList.sortedWith(compareBy<UploadedResourceEntity> { it.title.lowercase() })
+                    if (sortedVideos.isNotEmpty()) {
+                        item(key = "section_video") {
+                            SectionDivider(
+                                title = "视频提示词",
+                                count = sortedVideos.size,
+                                color = Color(0xFFF59E0B)
+                            )
+                        }
+                        sortedVideos.forEachIndexed { index, prompt ->
+                            // 每个视频标题作为该视频的独立分隔条（v1.9.0 需求：视频标题作分割线）
+                            item(key = "vt_" + prompt.id) {
+                                VideoTitleDivider(title = prompt.title, index = index + 1)
+                            }
+                            item(key = prompt.id) {
+                                CloudPromptCard(
+                                    prompt = prompt,
+                                    activeVideoId = activeVideoId,
+                                    onVideoActivate = { id -> stopOtherVideos(id) },
+                                    onImageClick = {
+                                        previewing = prompt
+                                        stopOtherVideos("preview_" + prompt.id)
+                                    },
+                                    onCopy = { text ->
+                                        val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                        cm.setPrimaryClip(ClipData.newPlainText("Prompt", text))
+                                        Toast.makeText(context, "已复制提示词！可以直接在Midjourney/FLUX/Sora中使用", Toast.LENGTH_SHORT).show()
+                                    }
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    items(filteredList, key = { it.id }) { prompt ->
+                        CloudPromptCard(
+                            prompt = prompt,
+                            activeVideoId = activeVideoId,
+                            onVideoActivate = { id -> stopOtherVideos(id) },
+                            onImageClick = {
+                                previewing = prompt
+                                // 打开全屏预览时停掉列表中的卡片视频，避免同时出声
+                                stopOtherVideos("preview_" + prompt.id)
+                            },
+                            onCopy = { text ->
+                                val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                cm.setPrimaryClip(ClipData.newPlainText("Prompt", text))
+                                Toast.makeText(context, "已复制提示词！可以直接在Midjourney/FLUX/Sora中使用", Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -237,6 +301,86 @@ fun PromptHubSubView(
                 Toast.makeText(context, "已复制提示词！", Toast.LENGTH_SHORT).show()
             }
         )
+    }
+}
+
+/** v1.9.0：分类分隔条（图片组/视频组分组标题） */
+@Composable
+private fun SectionDivider(
+    title: String,
+    count: Int,
+    color: Color = MaterialTheme.colorScheme.primary
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 6.dp, bottom = 2.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .width(4.dp)
+                .height(16.dp)
+                .background(color, RoundedCornerShape(2.dp))
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = title,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Black,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = "$count 个",
+            fontSize = 11.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        Box(
+            modifier = Modifier
+                .height(1.dp)
+                .weight(1f)
+                .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+        )
+    }
+}
+
+/** v1.9.0：视频标题分隔条（每个视频的标题作为分割线，直观分开展示） */
+@Composable
+private fun VideoTitleDivider(
+    title: String,
+    index: Int = 0
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 4.dp, bottom = 2.dp),
+        shape = RoundedCornerShape(8.dp),
+        color = Color(0xFFF59E0B).copy(alpha = 0.12f),
+        border = BorderStroke(1.dp, Color(0xFFF59E0B).copy(alpha = 0.35f))
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+        ) {
+            Text(
+                text = if (index > 0) "? $index" else "?",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFF59E0B)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = title.ifBlank { "视频提示词" },
+                fontSize = 12.5.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f)
+            )
+        }
     }
 }
 
