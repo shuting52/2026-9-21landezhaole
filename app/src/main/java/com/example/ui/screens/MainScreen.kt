@@ -212,6 +212,19 @@ fun MainScreen(
             bgMediaType = bgType,
             bgMediaUrl = bgUrl
         ) {
+            // v1.8.7：背景媒体（图片/视频）激活时，全局白色 background/surface 自动转为半透明磨砂，
+            // 让背景透出（设置页、卡片、各 Tab 均生效）；无背景媒体时保持原样
+            val mediaBgActive = bgType == "image" || bgType == "video"
+            val frostedScheme = if (mediaBgActive) {
+                MaterialTheme.colorScheme.copy(
+                    surface = Color.White.copy(alpha = 0.38f),
+                    surfaceVariant = Color.White.copy(alpha = 0.22f),
+                    background = Color.White.copy(alpha = 0.16f)
+                )
+            } else {
+                MaterialTheme.colorScheme
+            }
+            MaterialTheme(colorScheme = frostedScheme) {
             Scaffold(
                 containerColor = Color.Transparent,
                 contentWindowInsets = WindowInsets.statusBars,
@@ -347,7 +360,9 @@ fun MainScreen(
                         resources = uploadedSoftware,
                         onDelete = { id -> viewModel.deleteUploadedResource(id) },
                         modifier = Modifier.padding(paddingValues),
-                        showDelete = false
+                        showDelete = false,
+                        // v1.8.7：软件版块三列一排 + 自动归类分组 + icon 自动识别
+                        gridMode = true
                     )
                 }
                 AppBottomTab.SKILL -> {
@@ -404,6 +419,7 @@ fun MainScreen(
                 }
                 AppBottomTab.TOOLBOX -> {
                     ToolboxScreen(
+                        cloudTools = uiState.cloudTools,
                         modifier = Modifier.padding(paddingValues)
                     )
                 }
@@ -419,6 +435,7 @@ fun MainScreen(
                     )
                 }
             }
+        }
         }
     }
 
