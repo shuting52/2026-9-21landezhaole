@@ -1,17 +1,17 @@
 {
   "version": {
-    "code": 77,
-    "name": "1.8.8",
+    "code": 78,
+    "name": "1.8.9",
     "changelog": [
-      "? 更新弹窗升级：手绘卡通 + CSS 动态进度条，进度条走完直接安装新版本，不再授权未知应用",
-      "? 工具箱升级「? 工具箱合集」：分类收纳式展开/收起，云端工具实时同步",
-      "? 软件版块横排呈现：图标在左、信息在右，卡片更紧凑",
-      "? 首页跑马灯恢复内容 + 24 小时不间断轮播",
-      "? 视频/图片全局背景顶部显示修复：视频铺满全屏不再有黑边"
+      "🎨 更新弹窗全新重写：最新动态 CSS 手绘风格——手绘描边/流动渐变/涂鸦粒子/对话气泡，进度条走完直接安装",
+      "🧰 工具箱合集：分类收纳式展开/收起，云端工具实时同步",
+      "📱 软件版块横排呈现：图标在左、信息在右，卡片更紧凑",
+      "📢 首页跑马灯 24 小时不间断轮播",
+      "🎬 视频/图片全局背景顶部显示修复：视频铺满全屏不再有黑边"
     ],
     "force": true,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.8.8-1790410010.apk",
-    "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.8.8-1790410010.apk"
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.8.9-1790413894.apk",
+    "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.8.9-1790413894.apk"
   },
   "home": {
     "categories": [
@@ -15698,13 +15698,13 @@
     "buttonText": "开始体验"
   },
   "updateDialog": {
-    "title": "懒得找了 v1.8.8 已上线",
+    "title": "懒得找了 v1.8.9 已上线",
     "changelog": [
-      "? 更新弹窗升级：手绘卡通 + CSS 动态进度条，进度条走完直接安装新版本，不再授权未知应用",
-      "? 工具箱升级「? 工具箱合集」：分类收纳式展开/收起，云端工具实时同步",
-      "? 软件版块横排呈现：图标在左、信息在右，卡片更紧凑",
-      "? 首页跑马灯恢复内容 + 24 小时不间断轮播",
-      "? 视频/图片全局背景顶部显示修复：视频铺满全屏不再有黑边"
+      "🎨 更新弹窗全新重写：最新动态 CSS 手绘风格——手绘描边/流动渐变/涂鸦粒子/对话气泡，进度条走完直接安装",
+      "🧰 工具箱合集：分类收纳式展开/收起，云端工具实时同步",
+      "📱 软件版块横排呈现：图标在左、信息在右，卡片更紧凑",
+      "📢 首页跑马灯 24 小时不间断轮播",
+      "🎬 视频/图片全局背景顶部显示修复：视频铺满全屏不再有黑边"
     ],
     "confirmText": "立即更新",
     "cancelText": "稍后再说",
@@ -15731,9 +15731,9 @@
     ]
   },
   "console": {
-    "version": "1.0.7",
-    "code": 32,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v1.0.7-1790410010.apk"
+    "version": "1.0.8",
+    "code": 33,
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v1.0.8-1790413894.apk"
   },
   "ipMonitor": {
     "enabled": false,
