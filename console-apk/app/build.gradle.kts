@@ -10,8 +10,9 @@ android {
         applicationId = "com.yuntai"
         minSdk = 24
         targetSdk = 36
-        versionCode = 31
-        versionName = "1.0.6"
+        // v1.0.6：更新弹窗免授权直装 + 软件/Skill 内容识别优化 + 工具箱合集；v1.0.7：版本+1
+        versionCode = 32
+        versionName = "1.0.7"
     }
 
     signingConfigs {
