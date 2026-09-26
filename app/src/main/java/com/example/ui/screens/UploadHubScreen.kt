@@ -258,6 +258,7 @@ fun UploadHubScreen(
                     items(resources, key = { it.id }) { res ->
                         ResourceFileCard(
                             res = res,
+                            resourceType = resourceType,
                             showDelete = showDelete,
                             onDelete = {
                                 onDelete(res.id)
@@ -465,6 +466,7 @@ private fun SoftwareGridCard(
 @Composable
 private fun ResourceFileCard(
     res: UploadedResourceEntity,
+    resourceType: String = "software",
     showDelete: Boolean = true,
     onDelete: () -> Unit
 ) {
@@ -489,6 +491,15 @@ private fun ResourceFileCard(
         isZip -> Color(0xFF6366F1)
         isMd -> Color(0xFFF59E0B)
         else -> MaterialTheme.colorScheme.primary
+    }
+
+    // v1.9.1：Skill 技能库遵循「zip/md 文件 → 可下载到本地、URL → 直接跳转」：
+    // 文件类（apk/zip/md）按钮在 Skill 场景显示「下载」（下载技能包到本地，即下即用），
+    // 软件场景文件类保持「安装」；URL 形式均显示「直达」（点击直接跳转）。
+    val actionText = when {
+        canInstall && resourceType == "skill" -> "下载"
+        canInstall -> "安装"
+        else -> "直达"
     }
 
     fun downloadToLocal(url: String, fileName: String?) {
@@ -748,7 +759,7 @@ private fun ResourceFileCard(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = if (canInstall) "安装" else "直达",
+                        text = actionText,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (canInstall) Color(0xFF22C55E) else MaterialTheme.colorScheme.primary
