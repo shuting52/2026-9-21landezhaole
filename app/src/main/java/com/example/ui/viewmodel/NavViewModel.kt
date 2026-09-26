@@ -19,6 +19,7 @@ import com.example.data.remote.MarqueeDto
 import com.example.data.remote.RemoteConfigRepository
 import com.example.data.remote.SettingsDto
 import com.example.data.remote.SplashDto
+import com.example.data.remote.ToolDto
 import com.example.data.remote.UpdateDialogDto
 import com.example.data.remote.VersionDto
 import com.example.data.remote.WelcomeDto
@@ -82,6 +83,8 @@ data class NavUiState(
     val cloudSettings: SettingsDto? = null,
     val cloudMarquee: MarqueeDto? = null,
     val cloudIpMonitor: IpMonitorDto? = null,
+    // v1.8.7：云端工具箱扩展工具（控制台增删）
+    val cloudTools: List<ToolDto> = emptyList(),
     // 本地背景媒体（主题版块直接本机选择，无需控制台）：type = none/image/video, uri 为本地内容 URI
     val localBgMediaType: String = "none",
     val localBgMediaUri: String = ""
@@ -188,7 +191,9 @@ class NavViewModel(
             cloudUpdate = data.updateDialog,
             cloudSettings = data.settings,
             cloudMarquee = data.marquee,
-            cloudIpMonitor = data.ipMonitor
+            cloudIpMonitor = data.ipMonitor,
+            // v1.8.7：云端工具箱工具列表
+            cloudTools = data.tools
         )
         // 控制台软件/Skill 增删改 → 本体实时同步（删除：云端已移除的条目从本地库同步删除）
         syncCloudResources(data)
@@ -207,13 +212,18 @@ class NavViewModel(
     }
 
     /**
-     * v1.7.8 写死规则：站点只能增加，不能删除原站点（除检测到重复站点）。
-     * 本函数现在仅做「新增 / 更新」，不再删除任何本地条目——即使云端控制台移除了某个 sw_/sk_ 条目，本地依旧保留。
+     * 云端软件/Skill 与本体双向同步（v1.8.7 增强）：
+     * - 云端有 → 本体新增/更新（覆盖同名 id）
+     * - 云端已删除 → 本体同步删除（删除控制台删掉的 sw_/sk_ 条目）
+     * 注意：站点（首页卡片）仍遵守写死规则4「只增不删」，此处只同步软件/Skill 资源库。
      */
     private suspend fun syncCloudResources(data: AdminData) {
         try {
             val cloudSoftwares = data.software
             val cloudSkills = data.skills
+            // ✓ 云端 id 全集（用于删除本地已被云端下架的条目）
+            val cloudSwIds = cloudSoftwares.map { it.id }.toSet()
+            val cloudSkIds = cloudSkills.map { it.id }.toSet()
 
             cloudSoftwares.forEach { sw ->
                 // v1.7.4 修复：控制台文件模式把上传文件直链存在 apkUrl 字段，必须映射到 fileUrl，
@@ -256,7 +266,21 @@ class NavViewModel(
                     )
                 )
             }
-            // ⚠️ v1.7.8 写死规则：站点只能增加不能删除原站点——这里不再做「云端已删 → 本地同步删」动作
+
+            // v1.8.7：云端下架 → 本体同步删除（控制台删除某软件/Skill 后点「应用」，本体实时移除）
+            try {
+                val localAll = repository.getAllUploadedResources()
+                localAll.forEach { local ->
+                    val isCloudSoftware = local.type == "software" && local.id.startsWith("sw_")
+                    val isCloudSkill = (local.type == "skill" || local.type == "prompt_image" || local.type == "prompt_video") && local.id.startsWith("sk_")
+                    val deleted = (isCloudSoftware && local.id !in cloudSwIds) || (isCloudSkill && local.id !in cloudSkIds)
+                    if (deleted) {
+                        repository.deleteUploadedResource(local.id)
+                    }
+                }
+            } catch (e: Exception) {
+                // 本地删除失败不阻断主流程
+            }
         } catch (e: Exception) {
             // 同步失败不阻断主流程
         }
