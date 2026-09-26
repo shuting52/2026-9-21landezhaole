@@ -11,8 +11,9 @@ android {
         minSdk = 24
         targetSdk = 36
         // v1.0.6：更新弹窗免授权直装 + 软件/Skill 内容识别优化 + 工具箱合集；v1.0.7：版本+1
-        versionCode = 32
-        versionName = "1.0.7"
+        // v1.0.8：更新弹窗全新重写——最新动态 CSS 手绘弹窗（手绘双层描边/流动渐变/涂鸦粒子/对话气泡）
+        versionCode = 33
+        versionName = "1.0.8"
     }
 
     signingConfigs {
