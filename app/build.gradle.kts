@@ -24,8 +24,8 @@ android {
     // v1.8.1：站点扩充至 1000+ · 工具箱新增至 50+ 小工具
     // v1.8.2：更新弹窗回退为卡通弹窗（去掉多巴胺 HTML 与「授权未知应用」引导）
     // v1.8.6：恢复站点/软件库 + 开屏倒计时默认 5 秒
-    versionCode = 75
-    versionName = "1.8.6"
+    versionCode = 76
+    versionName = "1.8.7"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
