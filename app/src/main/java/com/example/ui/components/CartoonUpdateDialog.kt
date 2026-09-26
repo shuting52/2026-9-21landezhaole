@@ -44,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -157,7 +158,7 @@ fun CartoonUpdateDialog(
                 .padding(horizontal = 20.dp, vertical = 18.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // v1.8.7：CSS 式动态装饰——顶部流光扫过（类似 web 进度条的 shine 动画）
+            // v1.8.7：CSS 式动态装饰——顶部流光扫过（与卡通角色叠放，不占额外布局）
             val shineTransition = rememberInfiniteTransition(label = "card_shine")
             val shinePhase by shineTransition.animateFloat(
                 initialValue = 0f,
@@ -167,30 +168,36 @@ fun CartoonUpdateDialog(
             )
             Box(
                 modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .fillMaxWidth(0.6f)
-                    .height(230.dp)
-                    .graphicsLayer { translationX = (shinePhase - 0.5f) * 760f }
-                    .background(
-                        Brush.horizontalGradient(
-                            listOf(
-                                Color.Transparent,
-                                Color.White.copy(alpha = 0.055f),
-                                Color.White.copy(alpha = 0.11f),
-                                Color.White.copy(alpha = 0.055f),
-                                Color.Transparent
+                    .fillMaxWidth()
+                    .height(156.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                // 流光扫过层（先绘制，透明渐变边缘）
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .graphicsLayer { translationX = (shinePhase - 0.5f) * 760f }
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(
+                                    Color.Transparent,
+                                    Color.White.copy(alpha = 0.055f),
+                                    Color.White.copy(alpha = 0.11f),
+                                    Color.White.copy(alpha = 0.055f),
+                                    Color.Transparent
+                                )
                             )
                         )
-                    )
-            )
-            // 顶部：动态卡通角色（Canvas 全手绘）
-            MusicCatMascot(
-                mood = mood,
-                isDownloading = state is CartoonUpdateState.Downloading,
-                modifier = Modifier
-                    .size(178.dp, 156.dp)
-                    .testTag("cartoon_mascot")
-            )
+                )
+                // 顶部：动态卡通角色（Canvas 全手绘）
+                MusicCatMascot(
+                    mood = mood,
+                    isDownloading = state is CartoonUpdateState.Downloading,
+                    modifier = Modifier
+                        .size(178.dp, 156.dp)
+                        .testTag("cartoon_mascot")
+                )
+            }
 
             // 标题
             Row(verticalAlignment = Alignment.CenterVertically) {
