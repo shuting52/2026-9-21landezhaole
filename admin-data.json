@@ -1,17 +1,16 @@
 {
   "version": {
-    "code": 82,
-    "name": "1.0.1",
+    "code": 83,
+    "name": "1.0.2",
     "changelog": [
-      "✨ v1.0.1 正式版来啦～",
-      "🎨 全新可爱卡通纯色主题：奶油底色 + 草莓粉主色，暖光粒子氛围，焕然一新",
-      "🏷️ 关于我们升级：动态 CSS 品牌标签「懒得找了-307779523」",
-      "💬 反馈系统全面升级：新增主题外观分类，版本信息自动同步",
+      "✨ v1.0.2 更新来啦～",
+      "? 修复：更新弹窗下载完成后卡在「正在安装」无法安装的问题（新增自动兜底+版本检测，安装不再卡死）",
+      "? 更新弹窗全新 CSS 动态动画呈现：流光横幅 + 漂浮粒子 + 呼吸列表 + 渐变进度条",
       "更多细节优化，等你来发现～"
     ],
     "force": false,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.0.1-1790434250.apk",
-    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.0.1-1790434250.apk"
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.0.2-1790438178.apk",
+    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.0.2-1790438178.apk"
   },
   "home": {
     "categories": [
@@ -15683,12 +15682,11 @@
     "buttonText": "开始体验"
   },
   "updateDialog": {
-    "title": "懒得找了 v1.0.1 正式版已上线",
+    "title": "懒得找了 v1.0.2 已上线",
     "changelog": [
-      "✨ v1.0.1 正式版来啦～",
-      "🎨 全新可爱卡通纯色主题：奶油底色 + 草莓粉主色，暖光粒子氛围，焕然一新",
-      "🏷️ 关于我们升级：动态 CSS 品牌标签「懒得找了-307779523」",
-      "💬 反馈系统全面升级：新增主题外观分类，版本信息自动同步",
+      "✨ v1.0.2 更新来啦～",
+      "? 修复：更新弹窗下载完成后卡在「正在安装」无法安装的问题（新增自动兜底+版本检测，安装不再卡死）",
+      "? 更新弹窗全新 CSS 动态动画呈现：流光横幅 + 漂浮粒子 + 呼吸列表 + 渐变进度条",
       "更多细节优化，等你来发现～"
     ],
     "confirmText": "立即更新",
