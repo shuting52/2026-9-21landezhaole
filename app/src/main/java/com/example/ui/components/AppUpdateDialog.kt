@@ -4,7 +4,32 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import com.example.R
 import com.example.data.remote.UpdateDialogDto
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -13,7 +38,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.FileProvider
 import java.io.File
 import java.util.concurrent.TimeUnit
@@ -28,11 +65,13 @@ const val OFFICIAL_QQ_GROUP_URL =
     "https://qun.qq.com/universal-share/share?ac=1&authKey=gtnBoTi8HEzXQAF9x40Y5GYQtubkWu4pGDJg7OuNQte9oz3sXiFonGqZaUXxjffu&busi_data=eyJncm91cENvZGUiOiI0MzkyMTEzNDciLCJ0b2tlbiI6IkVxeXJDb0tyVjM3Y0VIRmhZQ3M5eDg4VW5MYWU0RW4ybVlSRlBlS2ozQXRxanB5V2ZtNzNHMlRIa2ZRd0VTQnUiLCJ1aW4iOiIzMDc3Nzk1MjMifQ%3D%3D&data=QnUzn164u21Cu1dG7vAVYJqU_4hw0COArsGrrBOIc0vxu7ES6gOJcYyrpu2JgkVs-y3X0ZUGZb_nPBJsBTRccQ&svctype=4&tempid=h5_group_info"
 
 /**
- * 客户端更新弹窗（v1.8.5）：固定呈现「手绘绘制弹窗」
- * 完全采用 Canvas 手绘猫咪动画（进度环 / 均衡器 / 火箭 / 彩带），屏幕中间展示：
- * - 状态流转：发现新版本 → 下载(进度环) → 安装(火箭) → 完成(彩带)
- * - 强制更新时不可关闭，仅「立即更新」+「官方群」入口
- * - 已移除旧版 WebView / customHtml 自定义弹窗分支，云端配置不再影响弹窗样式
+ * 客户端更新弹窗（v1.9.0 恢复老样式）：还原 v1.5「Uiverse.io 白卡片」弹窗
+ * 纯 Jetpack Compose 原生渲染——白卡片 + 圆点列表 + 官方群 + 立即更新：
+ * - 顶部 Protruding Cookie 徽章（uviverse_cookie 资源）
+ * - 更新日志以「•」圆点列表展示（云端 changelog，缺失时兜底写死叮咚文案）
+ * - 下载时展示渐变进度条，状态流转：发现新版本 → 下载 → 安装 → 完成
+ * - 左下「官方群」入口 + 右下「立即更新」按钮（强制更新时不可关闭弹窗）
+ * - 保留 v1.8.x 以来的下载/安装能力：多源下载、签名对比、免授权直装
  */
 @Composable
 fun AppUpdateDialog(
@@ -54,7 +93,7 @@ fun AppUpdateDialog(
     var isSignatureConflict by remember { mutableStateOf(false) }
 
 
-    // v1.8.5：更新内容固定采用 CartoonUpdateInfo.FIXED_NOTES（叮咚文案），不随云端 changelog 变化
+    // v1.9.0 恢复老样式：更新内容采用云端 changelog（老样式行为），缺失时兜底写死「叮咚」文案
 
     /**
      * 安装新版本 APK（v1.7.5 参照 AppUpdater 升级）：
@@ -362,15 +401,21 @@ fun AppUpdateDialog(
         }
     }
 
-    // v1.8.5：更新弹窗固定采用「手绘绘制弹窗」——Canvas 手绘猫咪动画，屏幕中间呈现
-    // 已移除旧版 WebView / customHtml 自定义弹窗分支，无论云端如何配置都只展示卡通手绘弹窗
-    // v1.7.6：完全采用 AppUpdater 风格动态卡通弹窗（Canvas 手绘猫咪 + 进度环 + 均衡器 + 火箭 + 彩带）
-    // 屏幕中间呈现、全动画；更新内容固定写死「叮咚」文案，下载/安装/完成全程动画驱动。
-    val cartoonInfo = CartoonUpdateInfo(
-        versionName = versionName.removePrefix("v"),
-        downloadUrl = apkUrl ?: "",
-        forceUpdate = forceUpdate
-    )
+    // ============================================================
+    // v1.9.0 恢复老样式：还原 v1.5「Uiverse.io 白卡片」更新弹窗
+    // 纯 Jetpack Compose 原生渲染，兼顾 v1.8.x 以来的下载/安装能力
+    // ============================================================
+
+    // 更新日志：老样式直接采用云端 changelog，缺失时兑底写死「叮咚」文案
+    val cloudTitle = update?.title ?: "发现新版本"
+    val cloudLogs: List<String> = update?.changelog?.takeIf { it.isNotEmpty() }
+        ?: listOf(
+            "叮咚～我们又又又更新啦！",
+            "赶紧快来看看新版本有什么好宝贝吧",
+            "我们一直在白嫖的路上，一直在奔跑哟",
+            "快点更新吧～期待您发现自己的新大陆。"
+        )
+    val cloudConfirm = update?.confirmText ?: "立即更新"
 
     // 安装结果（PackageInstaller 广播回调）驱动 安装中→完成/失败 状态
     var installOutcome by remember { mutableStateOf<Boolean?>(null) }
@@ -387,66 +432,252 @@ fun AppUpdateDialog(
         }
     }
 
-    val cartoonState: CartoonUpdateState = when {
-        // 签名冲突：引导卸载（installApk 已自动跳系统卸载页）
-        isSignatureConflict -> CartoonUpdateState.Error(
-            "检测到旧版本签名不同，已引导卸载旧版本\n卸载完成后重新打开本软件即可自动安装新版本",
-            canRetry = false
-        )
-        // 下载完成且安装成功：完成庆祝
-        isUpdating && installOutcome == true -> CartoonUpdateState.Done(installed = true)
-        // 下载完成/安装失败：错误可重试
-        isUpdating && installOutcome == false -> CartoonUpdateState.Error(
-            statusLabel.ifBlank { "安装失败，请重试" },
-            canRetry = true
-        )
-        // 下载中：进度环
-        isUpdating && progress < 100f -> CartoonUpdateState.Downloading(
-            progress = (progress / 100f).coerceIn(0f, 1f),
-            bytesDownloaded = 0L,
-            totalBytes = 0L
-        )
-        // 下载完成准备安装：正在安装
-        isUpdating -> CartoonUpdateState.Installing
-        // 默认：发现新版本（写死叮咚文案）
-        else -> CartoonUpdateState.Found(cartoonInfo)
+    // 按钮文案 & 点击行为（跟随状态流转）
+    val (btnText, btnAction): Pair<String, () -> Unit> = when {
+        installOutcome == true -> "更新完成" to {
+            onUpdateFinished()
+            onDismiss()
+        }
+        installOutcome == false -> "重试" to { startUpdate() }
+        isUpdating && progress >= 100f -> "安装中…" to { }
+        isUpdating -> "更新中…" to { }
+        else -> cloudConfirm to { startUpdate() }
     }
 
-    CartoonUpdateDialog(
-        state = cartoonState,
-        currentVersion = com.example.BuildConfig.VERSION_NAME,
-        newVersion = versionName.removePrefix("v"),
-        onStartDownload = { startUpdate() },
-        onInstall = { startUpdate() },
-        // v1.8.2：移除「授权未知应用程序」引导，改为走系统原生安装流程（FileProvider 打开系统安装器）
-        onOpenInstallSettings = {
-            Toast.makeText(
-                context,
-                "将自动调用系统安装器完成安装，请在弹出的系统页面中确认",
-                Toast.LENGTH_LONG
-            ).show()
-        },
-        onDismiss = { closeUpdate() },
-        onRetry = { startUpdate() },
-        onDone = {
-            onUpdateFinished()
-            onDismiss()
-        },
-        onRestartApp = {
-            onUpdateFinished()
-            onDismiss()
-            try {
-                val launch = context.packageManager.getLaunchIntentForPackage(context.packageName)
-                    ?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                if (launch != null) {
-                    context.startActivity(launch)
-                    Runtime.getRuntime().exit(0)
+    Dialog(
+        onDismissRequest = { closeUpdate() },
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            dismissOnBackPress = !isUpdating && !forceUpdate,
+            dismissOnClickOutside = !isUpdating && !forceUpdate
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.65f))
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = { closeUpdate() }
+                )
+                .testTag("uiverse_dialog_mask"),
+            contentAlignment = Alignment.Center
+        ) {
+            // Uiverse.io Card Container
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                contentAlignment = Alignment.TopCenter
+            ) {
+                // White Rounded Card
+                Box(
+                    modifier = Modifier
+                        .padding(top = 23.dp)
+                        .widthIn(min = 280.dp, max = 310.dp)
+                        .fillMaxWidth()
+                        .shadow(
+                            elevation = 10.dp,
+                            shape = RoundedCornerShape(16.dp),
+                            ambientColor = Color(0x4D3C4043),
+                            spotColor = Color(0x263C4043)
+                        )
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color.White)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = {} // 卡片内部点击不关闭弹窗
+                        )
+                        .testTag("uiverse_dialog_card")
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 36.dp, start = 24.dp, end = 24.dp, bottom = 24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        if (isSignatureConflict) {
+                            // 签名冲突：引导先卸载旧版本再安装
+                            Text(
+                                text = statusLabel,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF3F3F46),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 4.dp)
+                            )
+                            Spacer(modifier = Modifier.height(14.dp))
+                            Text(
+                                text = "卸载完成后重新打开本软件即可自动安装新版本",
+                                fontSize = 12.sp,
+                                color = Color(0xFF52525B),
+                                lineHeight = 16.sp,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(18.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "官方群",
+                                    fontSize = 13.5.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFF71717A),
+                                    modifier = Modifier
+                                        .clickable { openOfficialGroup() }
+                                        .padding(vertical = 6.dp)
+                                )
+                            }
+                        } else {
+                            // Title
+                            Text(
+                                text = cloudTitle,
+                                fontSize = 14.5.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF3F3F46),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag("uiverse_title")
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Dot list logs
+                            if (cloudLogs.isNotEmpty()) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    cloudLogs.take(4).forEach { log ->
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            verticalAlignment = Alignment.Top
+                                        ) {
+                                            Text("•", fontSize = 12.sp, color = Color(0xFF9C6750), fontWeight = FontWeight.Bold)
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Text(log, fontSize = 12.sp, color = Color(0xFF52525B), lineHeight = 16.sp)
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Progress bar (during download / install)
+                            if (isUpdating) {
+                                Spacer(modifier = Modifier.height(14.dp))
+                                Column(modifier = Modifier.fillMaxWidth()) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Text(
+                                            text = when {
+                                                installOutcome == true -> "更新完成，重新打开即最新版"
+                                                progress >= 100f -> "下载完成，正在安装…"
+                                                else -> "正在极速下载…"
+                                            },
+                                            fontSize = 11.sp,
+                                            color = Color(0xFF71717A)
+                                        )
+                                        Text(
+                                            text = "${progress.toInt()}%",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFF634647)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(6.dp)
+                                            .clip(RoundedCornerShape(3.dp))
+                                            .background(Color(0xFFEAB789).copy(alpha = 0.35f))
+                                    ) {
+                                        val animProgress by animateFloatAsState(
+                                            targetValue = progress / 100f,
+                                            animationSpec = tween(durationMillis = 200),
+                                            label = "progress"
+                                        )
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth(fraction = animProgress.coerceIn(0f, 1f))
+                                                .fillMaxHeight()
+                                                .clip(RoundedCornerShape(3.dp))
+                                                .background(Color(0xFFDDAD81))
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(18.dp))
+
+                            // Action buttons row
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // 官方群（强制更新时也保留入口）
+                                Text(
+                                    text = "官方群",
+                                    fontSize = 13.5.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFF71717A),
+                                    modifier = Modifier
+                                        .clickable(enabled = !isUpdating) { openOfficialGroup() }
+                                        .padding(vertical = 6.dp)
+                                        .testTag("uiverse_more_options")
+                                )
+
+                                // 立即更新 / 更新中 / 重试 / 完成
+                                Button(
+                                    onClick = btnAction,
+                                    enabled = !isUpdating || installOutcome != null,
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFFDDAD81),
+                                        contentColor = Color(0xFF634647),
+                                        disabledContainerColor = Color(0xFFDDAD81).copy(alpha = 0.6f),
+                                        disabledContentColor = Color(0xFF634647).copy(alpha = 0.6f)
+                                    ),
+                                    shape = RoundedCornerShape(8.dp),
+                                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 9.dp),
+                                    modifier = Modifier.testTag("uiverse_accept_btn")
+                                ) {
+                                    Text(
+                                        text = btnText,
+                                        fontSize = 13.5.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
-            } catch (e: Exception) { }
-        },
-        // v1.7.8：强制更新弹窗内提供官方群入口（mqq 直拉，失败跳网页）
-        onOpenGroup = { openOfficialGroup() }
-    )
+
+                // Protruding Top SVG Cookie Badge from Uiverse.io
+                Box(
+                    modifier = Modifier
+                        .size(65.dp, 46.dp)
+                        .testTag("uiverse_cookie_badge"),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_uiverse_cookie),
+                        contentDescription = "Uiverse Cookie",
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(65.dp, 46.dp)
+                    )
+                }
+            }
+        }
+    }
 }
 
 // ============ 顶层辅助函数（APK 签名对比，供更新弹窗使用） ============
