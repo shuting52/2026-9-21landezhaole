@@ -27,8 +27,9 @@ android {
     // v1.8.7：控制台深度融合（工具箱云端同步/软件横排/背景媒体）- 更新弹窗免授权直装 + CSS 动态进度条
     // v1.8.9：更新弹窗全新重写——最新动态 CSS 手绘风格（手绘描边/流动渐变/涂鸦粒子/对话气泡）
     // v1.9.1：更新弹窗恢复 v1.5 老样式（白卡片 + 圆点列表 + 官方群 + 立即更新）
-    versionCode = 80
-    versionName = "1.9.1"
+    // v1.9.2 发布：软件/Skill 闪烁修复 + Skill 技能库下载 + 即存内置解析下载 + 视频延迟优化
+    versionCode = 81
+    versionName = "1.9.2"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
