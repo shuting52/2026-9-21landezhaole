@@ -134,30 +134,59 @@ fun CartoonUpdateDialog(
             .testTag("cartoon_update_dialog"),
         contentAlignment = Alignment.Center
     ) {
-        Column(
+        // ===== v1.8.9 最新动态 CSS 手绘弹窗（全新设计）=====
+        Box(
             modifier = Modifier
-                .width(336.dp)
+                .width(340.dp)
                 .graphicsLayer {
                     scaleX = scale
                     scaleY = scale
                     this.alpha = dialogAlpha
                 }
                 .clickable(enabled = true, onClick = { /* 消费点击，阻止穿透 */ })
-                .clip(RoundedCornerShape(30.dp))
-                .background(
-                    brush = Brush.verticalGradient(
-                        listOf(Color(0xFF1C1B2E), Color(0xFF241A3B), Color(0xFF2B1E45))
-                    ),
-                    shape = RoundedCornerShape(30.dp)
-                )
-                .border(
-                    width = 1.5.dp,
-                    brush = Brush.linearGradient(listOf(CuteCyan.copy(alpha = 0.9f), CutePurple, CutePink)),
-                    shape = RoundedCornerShape(30.dp)
-                )
-                .padding(horizontal = 20.dp, vertical = 18.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // 1) 动态流动渐变背景（CSS background 流动效果：色块随时间左右漂移）
+            val bgFlow = rememberInfiniteTransition(label = "card_bg_flow")
+            val bgPhase by bgFlow.animateFloat(
+                initialValue = 0f,
+                targetValue = 1f,
+                animationSpec = infiniteRepeatable(tween(8000, easing = LinearEasing), RepeatMode.Restart),
+                label = "card_bg_flow_phase"
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(30.dp))
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(
+                                Color(0xFF1C1B2E), Color(0xFF33205E), Color(0xFF1E2A5A),
+                                Color(0xFF4A2A6A), Color(0xFF241A3B), Color(0xFF1C1B2E)
+                            ),
+                            start = Offset(-320f + bgPhase * 640f, 0f),
+                            end = Offset(320f + bgPhase * 640f, 520f)
+                        )
+                    )
+            )
+            // 2) 手绘描边（Canvas 抖动线条，涂鸦风，双层笔触）
+            HandDrawnCardBorder(
+                mainColor = Color.White.copy(alpha = 0.7f),
+                accentColor = CutePink,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(2.dp)
+            )
+            // 3) 手绘涂鸦装饰（角落星光 / 波浪线 / 圆点，随 bgPhase 缓慢漂移）
+            DoodleDecorations(
+                modifier = Modifier.fillMaxSize(),
+                phase = bgPhase
+            )
+
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 18.dp, vertical = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
             // v1.8.7：CSS 式动态装饰——顶部流光扫过（与卡通角色叠放，不占额外布局）
             val shineTransition = rememberInfiniteTransition(label = "card_shine")
             val shinePhase by shineTransition.animateFloat(
@@ -169,7 +198,7 @@ fun CartoonUpdateDialog(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(156.dp),
+                    .height(172.dp),
                 contentAlignment = Alignment.Center
             ) {
                 // 流光扫过层（先绘制，透明渐变边缘）
@@ -189,18 +218,59 @@ fun CartoonUpdateDialog(
                             )
                         )
                 )
+                // 手绘对话气泡（涂鸦风，动态弹跳）——CSS 手绘弹窗专属「叮咚」提示
+                val bubble = rememberInfiniteTransition(label = "bubble_bounce")
+                val bubbleDy by bubble.animateFloat(
+                    initialValue = -1.5f,
+                    targetValue = 1.5f,
+                    animationSpec = infiniteRepeatable(tween(1000, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+                    label = "bubble_dy"
+                )
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .offset(x = 58.dp, y = 0.dp)
+                        .graphicsLayer { translationY = bubbleDy }
+                        .background(
+                            color = Color.White.copy(alpha = 0.16f),
+                            shape = RoundedCornerShape(topStart = 14.dp, topEnd = 4.dp, bottomEnd = 14.dp, bottomStart = 14.dp)
+                        )
+                        .border(
+                            width = 1.dp,
+                            color = CuteYellow.copy(alpha = 0.5f),
+                            shape = RoundedCornerShape(topStart = 14.dp, topEnd = 4.dp, bottomEnd = 14.dp, bottomStart = 14.dp)
+                        )
+                        .padding(horizontal = 11.dp, vertical = 5.dp)
+                ) {
+                    Text(
+                        text = "叮咚～发现新版本啦！",
+                        color = Color.White.copy(alpha = 0.95f),
+                        fontSize = 10.5.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
                 // 顶部：动态卡通角色（Canvas 全手绘）
                 MusicCatMascot(
                     mood = mood,
                     isDownloading = state is CartoonUpdateState.Downloading,
                     modifier = Modifier
-                        .size(178.dp, 156.dp)
+                        .size(184.dp, 162.dp)
                         .testTag("cartoon_mascot")
                 )
             }
 
-            // 标题
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            // 标题（手绘涂鸦感：彩虹渐变 + 轻微浮动）
+            val titleFloat = rememberInfiniteTransition(label = "title_float")
+            val titleDy by titleFloat.animateFloat(
+                initialValue = -2.5f,
+                targetValue = 2.5f,
+                animationSpec = infiniteRepeatable(tween(1300, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+                label = "title_dy"
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.graphicsLayer { translationY = titleDy }
+            ) {
                 Text(
                     text = "发现新版本",
                     style = TextStyle(
@@ -310,6 +380,7 @@ fun CartoonUpdateDialog(
                 }
 
                 CartoonUpdateState.Idle -> {}
+            }
             }
         }
     }
@@ -603,7 +674,7 @@ private fun DrawScope.drawSparkle(
     center: Offset,
     r: Float,
     color: Color,
-    alpha: Float,
+    alpha: Float = 1f,
     rotation: Float
 ) {
     rotate(rotation, pivot = center) {
@@ -1197,3 +1268,82 @@ private fun TextButtonGhost(text: String, onClick: () -> Unit, modifier: Modifie
 }
 
 /* ==================== 私有工具 ==================== */
+
+/* ==================== v1.8.9 全新手绘 CSS 风格组件 ==================== */
+
+/**
+ * 手绘描边卡片边框：Canvas 抖动线条绘制涂鸦风圆角矩形，
+ * 外加双层笔触与两枚「连接点」圆点角标，模拟真实手绘感。
+ */
+@Composable
+private fun HandDrawnCardBorder(
+    mainColor: Color,
+    accentColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+        val inset = 4.dp.toPx()
+        val j = 2.2f
+        // 主描边（轻微抖动）
+        val p = Path().apply {
+            moveTo(inset + 10f, inset + j)
+            quadraticTo(inset + w / 2f, inset - j, inset + w - 12f, inset + j)
+            quadraticTo(inset + w + j, inset + 16f, inset + w - j, inset + h / 2f)
+            quadraticTo(inset + w + j, inset + h - 16f, inset + w - 12f, inset + h - j)
+            quadraticTo(inset + w / 2f, inset + h + j, inset + 12f, inset + h - j)
+            quadraticTo(inset - j, inset + h - 16f, inset + j, inset + h / 2f)
+            quadraticTo(inset - j, inset + 16f, inset + 10f, inset + j)
+            close()
+        }
+        drawPath(p, color = mainColor.copy(alpha = 0.8f), style = Stroke(width = 2.2f, cap = StrokeCap.Round))
+        // 第二层更淡的描边：制造「画了两笔」的手绘感
+        val p2 = Path().apply {
+            moveTo(inset + 18f, inset + 6f)
+            quadraticTo(inset + w / 2f, inset + 2f, inset + w - 20f, inset + 6f)
+            quadraticTo(inset + w - 2f, inset + 20f, inset + w - 6f, inset + h / 2f)
+            quadraticTo(inset + w - 2f, inset + h - 20f, inset + w - 20f, inset + h - 6f)
+            quadraticTo(inset + w / 2f, inset + h - 2f, inset + 20f, inset + h - 6f)
+            quadraticTo(inset + 2f, inset + h - 20f, inset + 6f, inset + h / 2f)
+            quadraticTo(inset + 2f, inset + 20f, inset + 18f, inset + 6f)
+            close()
+        }
+        drawPath(p2, color = accentColor.copy(alpha = 0.45f), style = Stroke(width = 1.4f, cap = StrokeCap.Round))
+        // 手绘「连接点」圆点角标
+        drawCircle(accentColor.copy(alpha = 0.9f), radius = 3.2f, center = Offset(inset + 10f, inset + 8f))
+        drawCircle(CuteYellow.copy(alpha = 0.9f), radius = 2.6f, center = Offset(inset + w - 12f, inset + h - 8f))
+    }
+}
+
+/**
+ * 手绘涂鸦装饰：角落星光 + 波浪线 + 圆点（随 bgPhase 缓慢漂移，CSS 粒子感）
+ */
+@Composable
+private fun DoodleDecorations(modifier: Modifier = Modifier, phase: Float = 0f) {
+    Canvas(modifier = modifier) {
+        val w = size.width
+        val h = size.height
+        val drift = phase * 10f
+        // 左上角星光
+        drawSparkle(center = Offset(22f, 26f + drift * 0.3f), r = 6f, color = CuteYellow.copy(alpha = 0.8f), rotation = phase * 40f)
+        // 右上角星光
+        drawSparkle(center = Offset(w - 24f, 22f - drift * 0.2f), r = 5f, color = CuteCyan.copy(alpha = 0.7f), rotation = -phase * 50f)
+        // 底部波浪线（手绘涂鸦）
+        val wave = Path().apply {
+            moveTo(24f, h - 26f)
+            for (i in 0 until 8) {
+                val x0 = 24f + i * (w - 48f) / 8f
+                val x1 = 24f + (i + 1) * (w - 48f) / 8f
+                val y = h - 26f + (if (i % 2 == 0) 4f else -4f) + drift * 0.1f
+                quadraticTo((x0 + x1) / 2f, y, x1, h - 26f)
+            }
+        }
+        drawPath(wave, color = CuteGreen.copy(alpha = 0.45f), style = Stroke(width = 1.6f, cap = StrokeCap.Round))
+        // 底部圆点虚线（漂移）
+        repeat(6) { i ->
+            val x = 30f + i * 52f + phase * 6f
+            drawCircle(Color.White.copy(alpha = 0.18f), radius = 2f, center = Offset(x % (w - 40f) + 20f, h - 12f))
+        }
+    }
+}

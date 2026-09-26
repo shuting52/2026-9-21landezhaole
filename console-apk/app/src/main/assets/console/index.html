@@ -146,29 +146,56 @@ main{padding:12px;max-width:960px;margin:0 auto}
 .dlg-title{font-size:16px;font-weight:800;margin-bottom:4px}
 .dlg-actions{display:flex;gap:10px;margin-top:16px}
 .dlg-actions button{flex:1;padding:12px}
-/* ===== 控制台自更新弹窗（v1.0.6：手绘卡通风格 + CSS 动态进度条，直装不走授权） ===== */
-.upd-mask{position:fixed;inset:0;background:rgba(10,10,30,.72);z-index:150;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+/* ===== 控制台自更新弹窗（v1.0.8：最新动态 CSS 手绘弹窗，直装不走授权） ===== */
+.upd-mask{position:fixed;inset:0;background:radial-gradient(ellipse at 50% 40%,rgba(22,18,52,.88),rgba(6,6,18,.95));z-index:150;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
 .upd-mask.show{display:flex}
-.upd-card{width:min(88vw,380px);background:linear-gradient(160deg,#232447,#2a1f4e 55%,#33205e);border:2px solid rgba(140,120,255,.35);border-radius:22px;padding:20px 20px 18px;text-align:center;animation:updPop .35s cubic-bezier(.34,1.56,.64,1);box-shadow:0 20px 60px #0009;position:relative;overflow:hidden}
-.upd-card::before{content:"";position:absolute;top:-40%;left:-30%;width:160%;height:60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.05),rgba(255,255,255,.12),rgba(255,255,255,.05),transparent);animation:updShine 3.2s linear infinite;transform:rotate(8deg)}
-@keyframes updPop{0%{transform:scale(.7);opacity:0}100%{transform:scale(1);opacity:1}}
-@keyframes updShine{0%{transform:translateX(-70%) rotate(8deg)}100%{transform:translateX(70%) rotate(8deg)}}
-.upd-emoji{font-size:52px;line-height:1;animation:updBounce 1.6s ease-in-out infinite;display:inline-block;filter:drop-shadow(0 6px 10px #0006)}
-@keyframes updBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
-.upd-title{font-size:19px;font-weight:900;color:#fff;margin:10px 0 2px;background:linear-gradient(90deg,#6fe3ff,#b18cff,#ff7ac8);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.upd-sub{font-size:12px;color:#b9c2e8;margin-bottom:12px;line-height:1.7}
-.upd-bar{height:14px;border-radius:99px;background:#171a33;border:1px solid #3a3f6e;overflow:hidden;position:relative;margin:10px 0 6px}
-.upd-fill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#6fe3ff,#8b5cf6,#ff7ac8);background-size:200% 100%;animation:updGrad 1.8s linear infinite;transition:width .25s ease;position:relative}
-.upd-fill::after{content:"";position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);animation:updBarShine 1.4s linear infinite}
-@keyframes updGrad{0%{background-position:0% 0}100%{background-position:200% 0}}
+/* 手绘卡片：流动渐变背景 + 手绘双层描边 + 轻微摇摆 */
+.upd-card{width:min(88vw,384px);background:linear-gradient(135deg,#1e1b3a,#33205e 30%,#1e2a5a 60%,#4a2a6a,#1e1b3a);background-size:400% 400%;border-radius:26px 20px 26px 20px/20px 26px 20px 26px;padding:22px 20px 18px;text-align:center;position:relative;overflow:hidden;box-shadow:0 24px 70px #000b,inset 0 0 44px rgba(139,92,246,.14);animation:updPop .4s cubic-bezier(.34,1.56,.64,1),updBgFlow 9s linear infinite,updWiggle 6s ease-in-out infinite}
+/* 手绘第二笔描边 */
+.upd-card::before{content:"";position:absolute;inset:4px;border-radius:22px 16px 22px 16px/16px 22px 16px 22px;border:2px solid rgba(140,120,255,.45);pointer-events:none}
+/* 手绘第三笔（虚线，更淡） */
+.upd-card::after{content:"";position:absolute;inset:9px;border-radius:18px 12px 18px 12px/12px 18px 12px 18px;border:1px dashed rgba(255,217,61,.35);pointer-events:none}
+/* 流光扫过 */
+.upd-shine{position:absolute;top:-40%;left:-40%;width:180%;height:70%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.05),rgba(255,255,255,.13),rgba(255,255,255,.05),transparent);animation:updShine 3.4s linear infinite;transform:rotate(8deg);pointer-events:none}
+@keyframes updBgFlow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes updPop{0%{transform:scale(.7) rotate(-1.5deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes updShine{0%{transform:translateX(-80%) rotate(8deg)}100%{transform:translateX(80%) rotate(8deg)}}
+@keyframes updWiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(.6deg)}75%{transform:rotate(-.6deg)}}
+/* 涂鸦星光（悬浮粒子） */
+.upd-stars{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.upd-stars i{position:absolute;display:block;width:6px;height:6px;background:#ffd93d;border-radius:50%;opacity:0;left:60%;top:30%;animation:updStar 4s ease-in-out infinite}
+.upd-stars i:nth-child(2){width:5px;height:5px;background:#6fe3ff;animation-delay:1.3s;left:12%;top:20%}
+.upd-stars i:nth-child(3){width:7px;height:7px;background:#ff7ac8;animation-delay:2.2s;left:78%;top:15%}
+.upd-stars i:nth-child(4){width:4px;height:4px;background:#fff;animation-delay:.7s;left:30%;top:72%}
+.upd-stars i:nth-child(5){width:5px;height:5px;background:#8b5cf6;animation-delay:3.1s;left:88%;top:60%}
+@keyframes updStar{0%{transform:translateY(10px) scale(0);opacity:0}20%{opacity:.95}80%{opacity:.95}100%{transform:translateY(-56px) scale(1.1);opacity:0}}
+/* 手绘波浪线（底部涂鸦） */
+.upd-wave{position:absolute;left:0;right:0;bottom:9px;height:10px;pointer-events:none;opacity:.55;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='10' viewBox='0 0 60 10'%3E%3Cpath d='M0 5 Q7.5 0 15 5 T30 5 T45 5 T60 5' fill='none' stroke='%233ee6a0' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") repeat-x;animation:updWave 3s linear infinite}
+@keyframes updWave{from{background-position:0 0}to{background-position:60px 0}}
+/* 手绘猫咪角色 */
+.upd-cat{font-size:56px;line-height:1;display:inline-block;animation:updCatBounce 1.5s ease-in-out infinite;filter:drop-shadow(0 8px 14px rgba(0,0,0,.5))}
+@keyframes updCatBounce{0%,100%{transform:translateY(0) rotate(-2.5deg)}50%{transform:translateY(-10px) rotate(2.5deg)}}
+/* 手绘对话气泡 */
+.upd-bubble{display:inline-block;background:rgba(255,255,255,.16);border:1.5px solid rgba(255,217,61,.6);border-radius:14px 5px 14px 14px;padding:5px 13px;font-size:11px;color:#ffe9b0;font-weight:700;margin:7px auto 2px;animation:updBubble 1.2s ease-in-out infinite;position:relative}
+.upd-bubble::before{content:"";position:absolute;left:-6px;top:50%;width:9px;height:9px;background:rgba(255,255,255,.16);border-left:1.5px solid rgba(255,217,61,.6);border-bottom:1.5px solid rgba(255,217,61,.6);transform:translateY(-50%) rotate(45deg)}
+@keyframes updBubble{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.upd-title{font-size:20px;font-weight:900;color:#fff;margin:8px 0 2px;background:linear-gradient(90deg,#6fe3ff,#b18cff,#ff7ac8,#ffd93d,#6fe3ff);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:updGrad 5s linear infinite}
+.upd-sub{font-size:12px;color:#b9c2e8;margin-bottom:10px;line-height:1.7}
+/* 手绘进度条轨道（虚线描边） */
+.upd-bar{height:16px;border-radius:99px;background:rgba(13,14,28,.85);border:2px dashed rgba(140,120,255,.55);overflow:hidden;position:relative;margin:12px 0 8px}
+.upd-fill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#6fe3ff,#8b5cf6,#ff7ac8,#ffd93d,#6fe3ff);background-size:300% 100%;animation:updGrad 2.2s linear infinite;transition:width .28s cubic-bezier(.25,.8,.35,1);position:relative}
+.upd-fill::after{content:"";position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(100deg,transparent,rgba(255,255,255,.5),transparent);animation:updBarShine 1.3s linear infinite}
+@keyframes updGrad{0%{background-position:0% 0}100%{background-position:300% 0}}
 @keyframes updBarShine{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
-.upd-pct{font-size:13px;font-weight:800;color:#a5f3ff}
+.upd-pct{font-size:15px;font-weight:900;color:#a5f3ff;text-shadow:0 0 12px rgba(111,227,255,.6)}
 .upd-status{font-size:12px;color:#b9c2e8;margin-top:6px;min-height:18px}
-.upd-btn{display:block;width:100%;padding:12px 0;border-radius:99px;border:none;background:linear-gradient(90deg,#6fe3ff,#8b5cf6,#ff7ac8);background-size:200% 100%;animation:updGrad 2.4s linear infinite;color:#fff;font-size:15px;font-weight:900;cursor:pointer;margin-top:14px;box-shadow:0 8px 24px #8b5cf666}
-.upd-btn.gray{background:#3c3f5e;animation:none;box-shadow:none}
+/* 手绘胶囊按钮：双层描边 + 脉冲 */
+.upd-btn{display:block;width:100%;padding:13px 0;border-radius:99px;border:2px solid rgba(255,255,255,.45);outline:2px dashed rgba(255,255,255,.25);outline-offset:3px;background:linear-gradient(90deg,#6fe3ff,#8b5cf6,#ff7ac8);background-size:300% 100%;animation:updGrad 2.6s linear infinite,updBtnPulse 1.6s ease-in-out infinite;color:#fff;font-size:15px;font-weight:900;cursor:pointer;margin-top:16px;box-shadow:0 10px 28px rgba(139,92,246,.5);letter-spacing:1px}
+.upd-btn.gray{background:#3c3f5e;animation:updBtnPulse 2.4s ease-in-out infinite;box-shadow:none;border-color:rgba(255,255,255,.2);outline:2px dashed rgba(255,255,255,.1)}
+@keyframes updBtnPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
 .upd-spin{width:20px;height:20px;border:3px solid #2d3157;border-top-color:#8b5cf6;border-radius:50%;animation:updSpin 1s linear infinite;display:inline-block;vertical-align:middle}
 @keyframes updSpin{to{transform:rotate(360deg)}}
-.upd-check{font-size:44px;line-height:1;animation:updPop .4s cubic-bezier(.34,1.56,.64,1);display:inline-block}
+.upd-check{font-size:46px;line-height:1;animation:updPop .45s cubic-bezier(.34,1.56,.64,1);display:inline-block}
 /* toast */
 #toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:200;background:#1b2440;border:1px solid var(--line);border-radius:12px;padding:10px 18px;font-size:13px;display:none;box-shadow:0 8px 30px #000a;max-width:92vw}
 #toast.ok{border-color:#22c55e;color:#4ade80}#toast.err{border-color:#ef4444;color:#f87171}
@@ -319,8 +346,8 @@ const CONFIG_PATH   = "admin-data.json";
 // 控制台程序内置 versionCode（与 console-apk/app/build.gradle.kts 的 versionCode 保持一致）。
 // v1.0.12 修复：运行时优先读取原生桥回传的「真实已安装 versionCode」，
 // 只有浏览器环境取不到时才回退到该常量，彻底避免常量漏改导致更新判断失效。
-// v1.0.2：同步为 27；v1.0.6：同步为 31；v1.0.7：同步为 32（console-apk build.gradle.kts versionCode=32）。
-const CONSOLE_BUILTIN_VERSION = 32;
+// v1.0.2：同步为 27；v1.0.6：31；v1.0.7：32；v1.0.8：33（console-apk build.gradle.kts versionCode=33）。
+const CONSOLE_BUILTIN_VERSION = 33;
 
 // 取当前控制台程序的真实版本号：APK 内用系统安装包 versionCode，浏览器回退内置常量
 function getLocalConsoleVersion(){
@@ -610,6 +637,9 @@ async function connect(){
     // 老版本也一定能先收到新版本推送弹窗，不再被渲染死锁挡住
     checkConsoleUpdate();
     renderAll();
+    // v1.0.8：延迟 3 秒二次检查控制台更新，确保弹窗不被首页渲染/其他弹窗遮挡，
+    // 双保险保证「发现新版本 → 最新动态 CSS 手绘弹窗」一定弹出
+    setTimeout(function(){ try{ checkConsoleUpdate(); }catch(e){} }, 3000);
     toast("云端数据加载成功" + (via !== "api" ? "（" + via + " 只读）" : ""),"ok");
     // 异步加载仓库已有 APK
     fetchRepoApks(false);
@@ -903,25 +933,37 @@ function closeConsoleUpdateDlg(){ $("updDlgMask").classList.remove("show"); clea
 // 更新确认弹窗（发现新版本 → 点击立即更新 → 进度条直装）
 function askConsoleUpdate(con, localCode){
   __conUpdating = con;
-  consoleUpdateDlg(`<div class="upd-emoji">🚀</div>
-    <div class="upd-title">发现控制台新版本</div>
-    <div class="upd-sub">当前版本 v${esc(String(localCode))} → 最新 <b style="color:#ffd93d">v${esc(String(con.version||con.code))}</b><br>进度条走完将直接下载并安装新版本，自动替换当前控制台程序</div>
-    <div class="row" style="justify-content:center;gap:8px;margin-top:2px">
-      <span class="chip" style="background:#1e2240;color:#a5f3ff">⚡ 无需授权安装</span>
-      <span class="chip" style="background:#1e2240;color:#ffd93d">🔄 自动替换旧版</span>
-    </div>
-    <button class="upd-btn" onclick="beginConsoleUpdate()">立即更新</button>
-    <button class="upd-btn gray" style="margin-top:8px" onclick="closeConsoleUpdateDlg()">稍后再说</button>`);
+  consoleUpdateDlg(`<div class="upd-stars"><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="upd-wave"></div>
+    <div class="upd-shine"></div>
+    <div style="position:relative;z-index:2">
+      <div class="upd-cat">🐱</div>
+      <div class="upd-bubble">叮咚～发现控制台新版本！</div>
+      <div class="upd-title">发现控制台新版本</div>
+      <div class="upd-sub">当前 v${esc(String(localCode))} → 最新 <b style="color:#ffd93d">v${esc(String(con.version||con.code))}</b><br>进度条走完将直接下载并安装，自动替换旧版</div>
+      <div class="row" style="justify-content:center;gap:8px;margin-top:2px">
+        <span class="chip" style="background:#1e2240;color:#a5f3ff">⚡ 无需授权安装</span>
+        <span class="chip" style="background:#1e2240;color:#ffd93d">🔄 自动替换旧版</span>
+      </div>
+      <button class="upd-btn" onclick="beginConsoleUpdate()">立即更新</button>
+      <button class="upd-btn gray" style="margin-top:10px" onclick="closeConsoleUpdateDlg()">稍后再说</button>
+    </div>`);
 }
 
 // 点击「立即更新」：切换为进度界面并通知原生下载安装（原生完成后自动调起系统安装器）
 function beginConsoleUpdate(){
   const con = __conUpdating; if(!con) return;
-  consoleUpdateDlg(`<div class="upd-emoji">⬇️</div>
-    <div class="upd-title">正在下载新版本</div>
-    <div class="upd-bar"><div class="upd-fill" id="updFill" style="width:0%"></div></div>
-    <div class="upd-pct" id="updPct">0%</div>
-    <div class="upd-status" id="updStatus">连接下载源中…</div>`);
+  consoleUpdateDlg(`<div class="upd-stars"><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="upd-wave"></div>
+    <div class="upd-shine"></div>
+    <div style="position:relative;z-index:2">
+      <div class="upd-cat">⬇️🐱</div>
+      <div class="upd-bubble">下载中～请保持网络连接</div>
+      <div class="upd-title">正在下载新版本</div>
+      <div class="upd-bar"><div class="upd-fill" id="updFill" style="width:0%"></div></div>
+      <div class="upd-pct" id="updPct">0%</div>
+      <div class="upd-status" id="updStatus">连接下载源中…</div>
+    </div>`);
   if(typeof Android !== "undefined" && Android.downloadAndInstall){
     try{ localStorage.setItem("lzdz_console_prompted", String(con.code)); }catch(e){}
     Android.downloadAndInstall(con.apkUrl, "console-apk-v" + con.version + ".apk");
@@ -984,10 +1026,13 @@ window.__consoleUpdate = function(progress, status, msg){
       const fill = $("updFill"), pct = $("updPct");
       if(fill) fill.style.width = "100%";
       if(pct) pct.textContent = "100%";
-      consoleUpdateDlg(`<div class="upd-check">🎉</div>
-        <div class="upd-title">更新完成</div>
-        <div class="upd-sub">控制台已更新到新版本，请重新打开控制台享受新版功能</div>
-        <button class="upd-btn gray" onclick="closeConsoleUpdateDlg()">好的</button>`);
+      consoleUpdateDlg(`<div class="upd-stars"><i></i><i></i><i></i><i></i><i></i></div>
+        <div style="position:relative;z-index:2">
+          <div class="upd-check">🎉</div>
+          <div class="upd-title">更新完成</div>
+          <div class="upd-sub">控制台已更新到新版本，请重新打开控制台享受新版功能</div>
+          <button class="upd-btn gray" onclick="closeConsoleUpdateDlg()">好的</button>
+        </div>`);
       clearInterval(__consoleUpdTimer); __consoleUpdTimer = null;
     } else if(status === "error"){
       if(st) st.innerHTML = "❌ " + (msg || "更新未完成，请稍后重试");
