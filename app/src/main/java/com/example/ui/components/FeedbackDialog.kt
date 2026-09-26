@@ -61,6 +61,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.screens.openQqGroup
+import com.example.ui.theme.CutePeach
+import com.example.ui.theme.CutePink
 import com.example.ui.theme.FlameRed
 import com.example.ui.theme.JadeGreen
 import com.example.ui.theme.SunsetOrange
@@ -85,6 +87,7 @@ private data class FeedbackCategoryItem(
 private val FEEDBACK_CATEGORIES = listOf(
     FeedbackCategoryItem("🐛 软件 BUG", "异常闪退、功能报错、页面崩溃"),
     FeedbackCategoryItem("💡 功能优化", "交互体验改进、界面排版建议"),
+    FeedbackCategoryItem("🎨 主题外观", "可爱主题、颜色搭配、动态效果建议"),
     FeedbackCategoryItem("🔍 资源补充", "增加新工具、扩展应用导航收录"),
     FeedbackCategoryItem("⚡ 卡顿闪退", "响应缓慢、内存占用或设备兼容"),
     FeedbackCategoryItem("❓ 其它疑问", "商务合作、交流咨询及其他反馈")
@@ -105,7 +108,8 @@ fun FeedbackDialog(
     var isSending by remember { mutableStateOf(false) }
 
     val deviceInfoSummary = remember {
-        "应用：懒得找了 v2.2.0 | 机型：${Build.MANUFACTURER} ${Build.MODEL} | Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})"
+        // v1.0.1：版本号动态取自 BuildConfig，不再硬编码，避免发版后反馈信息携带旧版本号
+        "应用：懒得找了 v${com.example.BuildConfig.VERSION_NAME} (code ${com.example.BuildConfig.VERSION_CODE}) | 机型：${Build.MANUFACTURER} ${Build.MODEL} | Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})"
     }
 
     val buildFullReport = {
@@ -206,7 +210,7 @@ fun FeedbackDialog(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(RoundedCornerShape(10.dp))
-                            .background(Brush.linearGradient(listOf(FlameRed, SunsetOrange))),
+                            .background(Brush.linearGradient(listOf(CutePink, CutePeach))),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -454,7 +458,7 @@ fun FeedbackDialog(
                             .padding(horizontal = 10.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Filled.Send, contentDescription = null, tint = FlameRed, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Filled.Send, contentDescription = null, tint = CutePink, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "点击「直接发送」将真实送达开发者邮箱（307779523@qq.com），感谢您的宝贵建议！",
@@ -469,7 +473,7 @@ fun FeedbackDialog(
             Button(
                 onClick = { sendDirectFeedback() },
                 enabled = !isSending,
-                colors = ButtonDefaults.buttonColors(containerColor = FlameRed),
+                colors = ButtonDefaults.buttonColors(containerColor = CutePink),
                 shape = RoundedCornerShape(10.dp)
             ) {
                 if (isSending) {
