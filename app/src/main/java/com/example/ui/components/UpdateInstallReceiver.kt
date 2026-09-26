@@ -14,6 +14,10 @@ import kotlinx.coroutines.flow.asSharedFlow
  *
  * v1.8.7 修复「更新弹窗卡在安装中」：系统返回 STATUS_PENDING_USER_ACTION（安装确认页）时，
  * 直接拉起系统安装确认（即「直接呈现新版本安装」），完成后通过 results 驱动弹窗完成动画。
+ *
+ * v1.0.2 修复「卡在下载完成正在安装」：
+ * - Android 13+（API 33+）getParcelableExtra 双参兼容，避免 ClassCastException 崩溃导致回调丢失
+ * - SharedFlow 缓冲加大到 4，避免安装结果在订阅窗口内静默丢弃
  */
 class UpdateInstallReceiver : BroadcastReceiver() {
 
@@ -22,7 +26,13 @@ class UpdateInstallReceiver : BroadcastReceiver() {
         val message = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE).orEmpty()
         // 系统需要用户确认安装（直接呈现新版本安装，不是「允许未知应用」设置页）
         if (status == PackageInstaller.STATUS_PENDING_USER_ACTION) {
-            val confirm = intent.getParcelableExtra<Intent>(Intent.EXTRA_INTENT)
+            // v1.0.2：API 33+ 必须使用双参 getParcelableExtra（单参已废弃，可能 ClassCastException 崩溃）
+            @Suppress("DEPRECATION")
+            val confirm: Intent? = if (android.os.Build.VERSION.SDK_INT >= 33) {
+                intent.getParcelableExtra(Intent.EXTRA_INTENT, Intent::class.java)
+            } else {
+                intent.getParcelableExtra(Intent.EXTRA_INTENT)
+            }
             if (confirm != null) {
                 confirm.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 try {
@@ -42,7 +52,8 @@ class UpdateInstallReceiver : BroadcastReceiver() {
     }
 
     object Results {
-        private val _flow = MutableSharedFlow<Pair<Boolean, String>>(extraBufferCapacity = 1)
+        // v1.0.2：缓冲加大至 4，降低「安装结果先于弹窗订阅到达」导致的事件丢失概率
+        private val _flow = MutableSharedFlow<Pair<Boolean, String>>(extraBufferCapacity = 4)
         val flow: SharedFlow<Pair<Boolean, String>> = _flow.asSharedFlow()
 
         fun emit(success: Boolean, message: String) {
