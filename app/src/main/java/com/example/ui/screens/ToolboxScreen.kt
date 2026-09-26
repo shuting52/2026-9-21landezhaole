@@ -512,7 +512,7 @@ enum class ToolboxTab(
 /** 工具箱合集分类（收纳式：点击分类标题展开/收起该分类全部内容） */
 enum class ToolCategory(
     val id: String,
-    val name: String,
+    val displayName: String,
     val icon: String,
     val defaultExpanded: Boolean = false
 ) {
@@ -785,7 +785,7 @@ private fun ToolCategoryHeader(
             Text(text = category.icon, fontSize = 16.sp)
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = category.name,
+                text = category.displayName,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface,
