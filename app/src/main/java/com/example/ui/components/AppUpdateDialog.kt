@@ -812,7 +812,7 @@ private fun CssLogItem(index: Int, text: String) {
         initialValue = 0.35f,
         targetValue = 0.95f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1500 + index * 250L, easing = FastOutSlowInEasing),
+            animation = tween(durationMillis = 1500 + index * 250, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "dot_alpha_$index"
@@ -821,7 +821,7 @@ private fun CssLogItem(index: Int, text: String) {
         initialValue = 0.8f,
         targetValue = 1.15f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1500 + index * 250L, easing = FastOutSlowInEasing),
+            animation = tween(durationMillis = 1500 + index * 250, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "dot_scale_$index"
@@ -881,7 +881,7 @@ private fun CssFlowProgressBar(progress: Float, flow: Float) {
                 .clip(RoundedCornerShape(50))
                 .background(
                     Brush.horizontalGradient(
-                        colors = listOf(CSS_PINK, CSS_PEACH, CSS_LEMON),
+                        colors = listOf(CSS_PINK, CSS_PEACH, CSS_MINT, CSS_LEMON),
                         startX = 0f,
                         endX = 600f
                     )
