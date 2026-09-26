@@ -15598,7 +15598,7 @@
     "bgColor": "#0b0b1a"
   },
   "welcome": {
-    "enabled": true,
+    "enabled": false,
     "title": "",
     "welcomeText": "嗨～欢迎回家！愿你在这里发现更多宝藏！",
     "content": "为期一周不断迭代优化的新版本终于上线啦～\n新应用可能存在小Bug，欢迎宝贝们及时反馈\n收录站资源丰富，很多资源都可以白嫖哦\n发现Bug请第一时间反馈，我会尽快处理",
