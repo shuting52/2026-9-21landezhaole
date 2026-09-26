@@ -146,6 +146,29 @@ main{padding:12px;max-width:960px;margin:0 auto}
 .dlg-title{font-size:16px;font-weight:800;margin-bottom:4px}
 .dlg-actions{display:flex;gap:10px;margin-top:16px}
 .dlg-actions button{flex:1;padding:12px}
+/* ===== 控制台自更新弹窗（v1.0.6：手绘卡通风格 + CSS 动态进度条，直装不走授权） ===== */
+.upd-mask{position:fixed;inset:0;background:rgba(10,10,30,.72);z-index:150;display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+.upd-mask.show{display:flex}
+.upd-card{width:min(88vw,380px);background:linear-gradient(160deg,#232447,#2a1f4e 55%,#33205e);border:2px solid rgba(140,120,255,.35);border-radius:22px;padding:20px 20px 18px;text-align:center;animation:updPop .35s cubic-bezier(.34,1.56,.64,1);box-shadow:0 20px 60px #0009;position:relative;overflow:hidden}
+.upd-card::before{content:"";position:absolute;top:-40%;left:-30%;width:160%;height:60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.05),rgba(255,255,255,.12),rgba(255,255,255,.05),transparent);animation:updShine 3.2s linear infinite;transform:rotate(8deg)}
+@keyframes updPop{0%{transform:scale(.7);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes updShine{0%{transform:translateX(-70%) rotate(8deg)}100%{transform:translateX(70%) rotate(8deg)}}
+.upd-emoji{font-size:52px;line-height:1;animation:updBounce 1.6s ease-in-out infinite;display:inline-block;filter:drop-shadow(0 6px 10px #0006)}
+@keyframes updBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+.upd-title{font-size:19px;font-weight:900;color:#fff;margin:10px 0 2px;background:linear-gradient(90deg,#6fe3ff,#b18cff,#ff7ac8);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.upd-sub{font-size:12px;color:#b9c2e8;margin-bottom:12px;line-height:1.7}
+.upd-bar{height:14px;border-radius:99px;background:#171a33;border:1px solid #3a3f6e;overflow:hidden;position:relative;margin:10px 0 6px}
+.upd-fill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#6fe3ff,#8b5cf6,#ff7ac8);background-size:200% 100%;animation:updGrad 1.8s linear infinite;transition:width .25s ease;position:relative}
+.upd-fill::after{content:"";position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);animation:updBarShine 1.4s linear infinite}
+@keyframes updGrad{0%{background-position:0% 0}100%{background-position:200% 0}}
+@keyframes updBarShine{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.upd-pct{font-size:13px;font-weight:800;color:#a5f3ff}
+.upd-status{font-size:12px;color:#b9c2e8;margin-top:6px;min-height:18px}
+.upd-btn{display:block;width:100%;padding:12px 0;border-radius:99px;border:none;background:linear-gradient(90deg,#6fe3ff,#8b5cf6,#ff7ac8);background-size:200% 100%;animation:updGrad 2.4s linear infinite;color:#fff;font-size:15px;font-weight:900;cursor:pointer;margin-top:14px;box-shadow:0 8px 24px #8b5cf666}
+.upd-btn.gray{background:#3c3f5e;animation:none;box-shadow:none}
+.upd-spin{width:20px;height:20px;border:3px solid #2d3157;border-top-color:#8b5cf6;border-radius:50%;animation:updSpin 1s linear infinite;display:inline-block;vertical-align:middle}
+@keyframes updSpin{to{transform:rotate(360deg)}}
+.upd-check{font-size:44px;line-height:1;animation:updPop .4s cubic-bezier(.34,1.56,.64,1);display:inline-block}
 /* toast */
 #toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:200;background:#1b2440;border:1px solid var(--line);border-radius:12px;padding:10px 18px;font-size:13px;display:none;box-shadow:0 8px 30px #000a;max-width:92vw}
 #toast.ok{border-color:#22c55e;color:#4ade80}#toast.err{border-color:#ef4444;color:#f87171}
@@ -276,6 +299,10 @@ main{padding:12px;max-width:960px;margin:0 auto}
 
 <div class="mask" id="dlgMask" onclick="if(event.target===this)closeDlg()">
   <div class="dlg" id="dlgBody"></div>
+</div>
+<!-- v1.0.6：控制台自更新弹窗（进度条直装，不走授权页） -->
+<div class="upd-mask" id="updDlgMask">
+  <div class="upd-card" id="updDlgBody"></div>
 </div>
 <div id="toast"></div>
 
@@ -864,11 +891,112 @@ async function cleanupOldApks(){
 }
 
 // ============ 控制台程序自更新（与本体软件更新完全分离） ============
-// v1.0.12 修复「新版本推不到老版本」：
-//   1) 本地版本以真实安装包 versionCode 为准（getLocalConsoleVersion），不再依赖过期常量；
-//   2) 「已提示」标记只在真正调起下载后才写入，避免下载失败却被永久标记为已提示；
-//   3) 用户点「稍后」不落标记，下次连接仍会提醒；
-//   4) 提供手动「检查控制台更新」入口，无论标记如何都能强制重试。
+// v1.0.6：更新弹窗升级为「手绘卡通 + CSS 动态进度条」风格，进度条走完直接下载安装，
+// 全程不走「安装未知应用授权」设置页（原生层已移除设置页跳转）。
+let __consoleUpdTimer = null;
+let __consoleUpdStart = 0; // 安装阶段开始时间（超时保护）
+let __conUpdating = null; // 当前待更新的云端控制台信息
+
+function consoleUpdateDlg(html){ $("updDlgBody").innerHTML = html; $("updDlgMask").classList.add("show"); }
+function closeConsoleUpdateDlg(){ $("updDlgMask").classList.remove("show"); clearInterval(__consoleUpdTimer); __consoleUpdTimer = null; }
+
+// 更新确认弹窗（发现新版本 → 点击立即更新 → 进度条直装）
+function askConsoleUpdate(con, localCode){
+  __conUpdating = con;
+  consoleUpdateDlg(`<div class="upd-emoji">🚀</div>
+    <div class="upd-title">发现控制台新版本</div>
+    <div class="upd-sub">当前版本 v${esc(String(localCode))} → 最新 <b style="color:#ffd93d">v${esc(String(con.version||con.code))}</b><br>进度条走完将直接下载并安装新版本，自动替换当前控制台程序</div>
+    <div class="row" style="justify-content:center;gap:8px;margin-top:2px">
+      <span class="chip" style="background:#1e2240;color:#a5f3ff">⚡ 无需授权安装</span>
+      <span class="chip" style="background:#1e2240;color:#ffd93d">🔄 自动替换旧版</span>
+    </div>
+    <button class="upd-btn" onclick="beginConsoleUpdate()">立即更新</button>
+    <button class="upd-btn gray" style="margin-top:8px" onclick="closeConsoleUpdateDlg()">稍后再说</button>`);
+}
+
+// 点击「立即更新」：切换为进度界面并通知原生下载安装（原生完成后自动调起系统安装器）
+function beginConsoleUpdate(){
+  const con = __conUpdating; if(!con) return;
+  consoleUpdateDlg(`<div class="upd-emoji">⬇️</div>
+    <div class="upd-title">正在下载新版本</div>
+    <div class="upd-bar"><div class="upd-fill" id="updFill" style="width:0%"></div></div>
+    <div class="upd-pct" id="updPct">0%</div>
+    <div class="upd-status" id="updStatus">连接下载源中…</div>`);
+  if(typeof Android !== "undefined" && Android.downloadAndInstall){
+    try{ localStorage.setItem("lzdz_console_prompted", String(con.code)); }catch(e){}
+    Android.downloadAndInstall(con.apkUrl, "console-apk-v" + con.version + ".apk");
+    __consoleUpdStart = Date.now();
+    clearInterval(__consoleUpdTimer);
+    __consoleUpdTimer = setInterval(pollConsoleUpdate, 250);
+  } else {
+    // 浏览器环境：打开下载链接，下载由浏览器负责
+    closeConsoleUpdateDlg();
+    window.open(con.apkUrl, "_blank");
+    toast("已在浏览器打开下载，请下载后安装控制台新版本","ok");
+  }
+}
+
+// 轮询原生进度（getDownloadProgress / getUpdateStatus）驱动进度条与状态文案
+function pollConsoleUpdate(){
+  if(typeof Android === "undefined"){ clearInterval(__consoleUpdTimer); return; }
+  try{
+    const p = parseInt(Android.getDownloadProgress(), 10);
+    const cur = isNaN(p) ? 0 : Math.max(0, Math.min(100, p));
+    const fill = $("updFill"), pct = $("updPct"), st = $("updStatus");
+    if(fill) fill.style.width = cur + "%";
+    if(pct) pct.textContent = cur + "%";
+    if(st && cur < 100){ st.innerHTML = cur > 0 ? "正在下载新版本… <span class='upd-spin' style='width:16px;height:16px;border-width:3px'></span>" : "连接下载源中…"; }
+    const status = Android.getUpdateStatus ? (Android.getUpdateStatus() || "") : "";
+    // 安装阶段超时保护：长时间无结果（如系统安装器被取消/后台接管）时给出提示
+    if(status === "installing" && Date.now() - __consoleUpdStart > 90000){
+      clearInterval(__consoleUpdTimer); __consoleUpdTimer = null;
+      if(st) st.innerHTML = "⚠️ 安装未完成，请重新点击更新再试";
+      return;
+    }
+    if(status === "installing"){
+      clearInterval(__consoleUpdTimer); __consoleUpdTimer = null;
+      if(fill) fill.style.width = "100%";
+      if(pct) pct.textContent = "100%";
+      if(st) st.innerHTML = "下载完成，正在安装新版本… <span class='upd-spin'></span>";
+    } else if(status === "success"){
+      clearInterval(__consoleUpdTimer); __consoleUpdTimer = null;
+      if(fill) fill.style.width = "100%";
+      if(pct) pct.textContent = "100%";
+      if(st) st.innerHTML = "✅ 控制台已更新到新版本，请重新打开";
+    } else if(status === "error"){
+      clearInterval(__consoleUpdTimer); __consoleUpdTimer = null;
+      if(st) st.innerHTML = "❌ 更新未完成，请稍后重试";
+    }
+  }catch(e){}
+}
+
+// 原生 evaluateJavascript 回调：驱动最终状态（与轮询互补，保证不遗漏）
+window.__consoleUpdate = function(progress, status, msg){
+  try{
+    const st = $("updStatus");
+    if(status === "installing"){
+      const fill = $("updFill"), pct = $("updPct");
+      if(fill) fill.style.width = "100%";
+      if(pct) pct.textContent = "100%";
+      if(st) st.innerHTML = "下载完成，正在安装新版本… <span class='upd-spin'></span>";
+      clearInterval(__consoleUpdTimer); __consoleUpdTimer = null;
+    } else if(status === "success"){
+      const fill = $("updFill"), pct = $("updPct");
+      if(fill) fill.style.width = "100%";
+      if(pct) pct.textContent = "100%";
+      consoleUpdateDlg(`<div class="upd-check">🎉</div>
+        <div class="upd-title">更新完成</div>
+        <div class="upd-sub">控制台已更新到新版本，请重新打开控制台享受新版功能</div>
+        <button class="upd-btn gray" onclick="closeConsoleUpdateDlg()">好的</button>`);
+      clearInterval(__consoleUpdTimer); __consoleUpdTimer = null;
+    } else if(status === "error"){
+      if(st) st.innerHTML = "❌ " + (msg || "更新未完成，请稍后重试");
+      clearInterval(__consoleUpdTimer); __consoleUpdTimer = null;
+    }
+  }catch(e){}
+};
+
+// 检查云端控制台版本：有新版则弹「卡通直装」确认弹窗
 function checkConsoleUpdate(){
   try{
     const con = S.admin && S.admin.console;
@@ -880,14 +1008,7 @@ function checkConsoleUpdate(){
       const prompted = parseInt(localStorage.getItem("lzdz_console_prompted") || "0", 10);
       if(prompted >= con.code) return;
     }catch(e){}
-    confirmDlgHtml(
-      `? 发现控制台程序新版本 <b>v${esc(con.version)}</b><br>` +
-      `控制台程序更新与本体软件完全分离，不影响本体软件。<br><br>` +
-      `点击确认将自动下载并安装新版本，替换当前控制台程序。`
-    ).then(ok=>{
-      if(!ok) return; // 选择「稍后」：不写标记，下次连接仍会提示
-      doConsoleUpdate(con);
-    });
+    askConsoleUpdate(con, localCode);
   }catch(e){
     console.warn("checkConsoleUpdate 失败:", e);
   }
@@ -904,28 +1025,7 @@ async function manualCheckConsoleUpdate(){
     toast(`当前控制台已是最新版本 v${Android && Android.getVersionName ? Android.getVersionName() : localCode}`,"ok");
     return;
   }
-  const ok = await confirmDlgHtml(
-    `发现控制台程序新版本 <b>v${esc(con.version)}</b>（当前 code:${localCode} → 最新 code:${con.code}）<br><br>` +
-    `点击确认将下载并自动安装新版本。`
-  );
-  if(ok) doConsoleUpdate(con);
-}
-
-// 执行控制台更新下载+安装；仅在真正调起下载后记录「已提示」
-function doConsoleUpdate(con){
-  try{
-    if(typeof Android !== "undefined" && Android.downloadAndInstall){
-      try{ localStorage.setItem("lzdz_console_prompted", String(con.code)); }catch(e){}
-      toast("正在下载控制台新版本并自动安装…","ok");
-      Android.downloadAndInstall(con.apkUrl, "console-apk-v" + con.version + ".apk");
-    } else {
-      // 浏览器环境：打开下载链接，下载由浏览器负责
-      window.open(con.apkUrl, "_blank");
-      toast("已在浏览器打开下载，请下载后安装控制台新版本","ok");
-    }
-  }catch(e){
-    toast("调起更新失败：" + e.message,"err");
-  }
+  askConsoleUpdate(con, localCode);
 }
 
 // GitHub 删除文件
@@ -1396,6 +1496,7 @@ function renderSoftware(){
   let html = `<div class="card">
     <div class="action-banner">
       <b>📦 软件库管理</b>
+      <span class="chip" style="background:#14351f;color:#4ade80">共 ${list.length} 款（全部同步到本体）</span>
       <span class="hint">支持本地上传 APK / 文件（本体直接下载安装）或填写 URL（本体直接跳转下载），点击「应用」实时同步到本体软件</span>
     </div>
     <div class="row">
@@ -1407,8 +1508,10 @@ function renderSoftware(){
   if(!list.length) html += `<div class="empty">暂无软件，点击上方新增</div>`;
   list.forEach((s, si) => {
     const mode = s.mode === "url" ? "URL跳转" : "文件下载";
+    const icon = s.iconUrl || "";
     html += `<div class="card">
       <div class="item-head">
+        ${icon ? `<img src="${esc(icon)}" style="width:26px;height:26px;border-radius:7px;flex-shrink:0" onerror="this.style.display='none'">` : ""}
         ${s.badge ? `<span class="badge NEW">${esc(s.badge)}</span>` : ""}
         <span class="chip" style="background:#262251;color:#a5b4fc">${mode}</span>
         <span class="item-title">${esc(s.title)}</span>
@@ -1419,6 +1522,7 @@ function renderSoftware(){
       <div class="row" style="margin-top:6px;flex-wrap:wrap">
         <span class="chip">作者：${esc(s.author||"-")}</span>
         <span class="chip">标签：${esc(s.tags||"-")}</span>
+        ${s.url ? `<span class="chip" title="${esc(s.url)}">🌐 官网：${esc(s.url.length>28?s.url.slice(0,28)+"…":s.url)}</span>` : ""}
         ${s.apkUrl ? `<span class="chip" style="background:#14351f;color:#4ade80">✅ ${s.mode==="url"?"URL 已配置":"APK 已就绪"}</span>` : `<span class="chip" style="background:#3a1518;color:#f87171">❌ 未配置下载</span>`}
       </div>
       ${s.previewUrl ? `<img class="preview-img" src="${esc(s.previewUrl)}" onerror="this.style.display='none'">` : ""}
@@ -1597,6 +1701,7 @@ function renderSkill(){
   let html = `<div class="card">
     <div class="action-banner">
       <b>🧠 Skill 技能库 / 提示词区</b>
+      <span class="chip" style="background:#14351f;color:#4ade80">共 ${list.length} 条（全部同步到本体）</span>
       <span class="hint">Skill 支持本地文件和 URL（同软件版块）；提示词区支持预览图与 Prompt 编辑，应用后实时同步本体</span>
     </div>
     <div class="row" style="margin-bottom:10px">
@@ -1631,8 +1736,10 @@ function renderSkill(){
 
 function skillCardHtml(s, si){
   const mode = s.mode === "url" ? "URL跳转" : "文件下载";
+  const icon = s.iconUrl || "";
   return `<div class="card">
     <div class="item-head">
+      ${icon ? `<img src="${esc(icon)}" style="width:26px;height:26px;border-radius:7px;flex-shrink:0" onerror="this.style.display='none'">` : ""}
       ${s.badge ? `<span class="badge BLUE">${esc(s.badge)}</span>` : ""}
       <span class="chip" style="background:#262251;color:#a5b4fc">${mode}</span>
       <span class="item-title">${esc(s.title)}</span>
@@ -1640,12 +1747,14 @@ function skillCardHtml(s, si){
       <button class="btn-mini err" onclick="removeSkill(${si})">🗑️ 删除</button>
     </div>
     <div class="item-sub">${esc(s.desc)}</div>
+    ${s.prompt ? `<div class="code-box">${esc(s.prompt.length>160 ? s.prompt.slice(0,160)+"…" : s.prompt)}</div>` : ""}
     <div class="row" style="margin-top:6px;flex-wrap:wrap">
       <span class="chip">作者：${esc(s.author||"-")}</span>
       <span class="chip">标签：${esc(s.tags||"-")}</span>
-      ${s.url || s.fileUrl ? `<span class="chip" style="background:#14351f;color:#4ade80">✅ 已配置下载</span>` : `<span class="chip" style="background:#3a1518;color:#f87171">❌ 未配置下载</span>`}
+      ${s.url ? `<span class="chip" style="background:#14351f;color:#4ade80">✅ 已配置下载：${esc(s.url.length>30?s.url.slice(0,30)+"…":s.url)}</span>` : `<span class="chip" style="background:#3a1518;color:#f87171">❌ 未配置下载</span>`}
+      ${s.mediaUrl ? `<span class="chip" style="background:#1e1b4b;color:#a5b4fc">🎬 含演示视频</span>` : ""}
     </div>
-    ${s.previewUrl ? `<img class="preview-img" src="${esc(s.previewUrl)}" onerror="this.style.display='none'">` : ""}
+    ${s.mediaUrl ? `<video class="preview-video" src="${esc(s.mediaUrl)}" controls preload="auto" playsinline onerror="this.outerHTML='<div class=preview-img style=text-align:center>视频加载失败，请点击下方「下载/编辑」或尝试刷新后再试</div>'"></video>` : (s.previewUrl ? `<img class="preview-img" src="${esc(s.previewUrl)}" onerror="this.style.display='none'">` : "")}
   </div>`;
 }
 
@@ -1653,6 +1762,7 @@ function promptCardHtml(s, si){
   return `<div class="card">
     <div class="item-head">
       <span class="badge ${s.promptType==="prompt_video"?"GOLD":"NEW"}">${s.promptType==="prompt_video"?"🎬 视频":"🖼 图片"}</span>
+      ${s.badge ? `<span class="chip" style="background:#1e1b4b;color:#a5b4fc" title="目标模型/参数">${esc(s.badge)}</span>` : ""}
       <span class="item-title">${esc(s.title)}</span>
       <button class="btn-mini pri" onclick="promptForm('${esc(s.promptType)}',${si})">✏️ 编辑</button>
       <button class="btn-mini err" onclick="removeSkill(${si})">🗑️ 删除</button>
@@ -1660,6 +1770,8 @@ function promptCardHtml(s, si){
     <div class="item-sub">${esc(s.desc)}</div>
     ${s.prompt ? `<div class="code-box">${esc(s.prompt.length>160 ? s.prompt.slice(0,160)+"…" : s.prompt)}</div>` : ""}
     <div class="row" style="margin-top:6px;flex-wrap:wrap">
+      ${s.author ? `<span class="chip">作者：${esc(s.author)}</span>` : ""}
+      ${s.tags ? `<span class="chip">标签：${esc(s.tags)}</span>` : ""}
       ${s.previewUrl ? `<span class="chip" style="background:#1e1b4b;color:#a5b4fc">✅ 已上传预览图</span>` : `<span class="chip" style="background:#3a1518;color:#f87171">❌ 无预览图</span>`}
       ${s.mediaUrl ? `<span class="chip" style="background:#1e1b4b;color:#a5b4fc">🎬 含演示视频</span>` : ""}
     </div>

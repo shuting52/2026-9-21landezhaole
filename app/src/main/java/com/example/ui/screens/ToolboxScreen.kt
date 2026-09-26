@@ -9,12 +9,17 @@ import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,10 +34,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -50,6 +51,7 @@ import androidx.compose.material.icons.filled.FormatColorFill
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Link
@@ -111,6 +113,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -506,23 +509,71 @@ enum class ToolboxTab(
     ),
 }
 
+/** 工具箱合集分类（收纳式：点击分类标题展开/收起该分类全部内容） */
+enum class ToolCategory(
+    val id: String,
+    val name: String,
+    val icon: String,
+    val defaultExpanded: Boolean = false
+) {
+    CLOUD("cloud", "云端工具", "☁️", true),
+    FUN("fun", "趣味精选", "✨", true),
+    TEXT("text", "文本处理", "🔤", false),
+    MATH("math", "数字计算", "🧮", false),
+    CODE("code", "编码生成", "🔐", false),
+    GAME("game", "娱乐游戏", "🎲", false)
+}
+
+/** 本地工具自动归类（云端工具单独一组，不参与本地归类） */
+private fun categoryOf(tab: ToolboxTab): ToolCategory = when (tab) {
+    ToolboxTab.MOUTHPIECE, ToolboxTab.AGE_CALC, ToolboxTab.CONSTELLATION, ToolboxTab.OFFLINE_TREASURE,
+    ToolboxTab.RELATION_KIN, ToolboxTab.FOOD_PICKER, ToolboxTab.EMOJI_PICKER, ToolboxTab.ZODIAC_QUERY -> ToolCategory.FUN
+    ToolboxTab.BASE64, ToolboxTab.HASH_MD5, ToolboxTab.URL_CODEC, ToolboxTab.TEXT_STATS,
+    ToolboxTab.REVERSE_TEXT, ToolboxTab.CASE_CONVERT, ToolboxTab.LINE_DEDUPE, ToolboxTab.LINE_SORT,
+    ToolboxTab.JSON_FORMAT, ToolboxTab.HTML_ESCAPE, ToolboxTab.UNICODE_CODEC, ToolboxTab.MORSE_CODE,
+    ToolboxTab.CAESAR_CIPHER, ToolboxTab.TEXT_SPLIT -> ToolCategory.TEXT
+    ToolboxTab.TIMESTAMP, ToolboxTab.RANDOM_NUMBER, ToolboxTab.BMI_CALC, ToolboxTab.CALCULATOR,
+    ToolboxTab.BASE_CONV, ToolboxTab.NUM_TO_CN, ToolboxTab.MONEY_UPPER, ToolboxTab.PERCENT_CALC,
+    ToolboxTab.DISCOUNT_CALC, ToolboxTab.MORTGAGE_CALC, ToolboxTab.COMPOUND_INTEREST, ToolboxTab.UNIT_CONV,
+    ToolboxTab.DATE_CALC, ToolboxTab.DATE_DIFF, ToolboxTab.TIME_DIFF, ToolboxTab.FILE_SIZE,
+    ToolboxTab.RGB_HEX, ToolboxTab.BMR_CALC, ToolboxTab.IDEAL_WEIGHT -> ToolCategory.MATH
+    ToolboxTab.UUID_GEN, ToolboxTab.PASSWORD_GEN, ToolboxTab.QRCODE_TEXT, ToolboxTab.COLOR_CARD,
+    ToolboxTab.PASSWORD_STRENGTH, ToolboxTab.PHONE_VALIDATE, ToolboxTab.ID_CARD, ToolboxTab.LUHN_CHECK -> ToolCategory.CODE
+    ToolboxTab.LOTTERY, ToolboxTab.RPS_GAME, ToolboxTab.GUESS_NUMBER -> ToolCategory.GAME
+    else -> ToolCategory.TEXT
+}
+
 @Composable
 fun ToolboxScreen(
     modifier: Modifier = Modifier,
     // v1.8.7：云端工具箱扩展工具（控制台增删，实时同步）
     cloudTools: List<com.example.data.remote.ToolDto> = emptyList()
 ) {
-    // 弹窗交互：主界面为工具分类网格，点击任意工具弹出独立交互框
+    // 弹窗交互：主界面为「工具箱合集」收纳式分类，点击任意工具弹出独立交互框
     var activeTool by remember { mutableStateOf<ToolboxTab?>(null) }
     val context = androidx.compose.ui.platform.LocalContext.current
+
+    // 收纳式分类展开状态：点击分类标题展开/收起该分类全部内容
+    val expanded = remember {
+        mutableStateMapOf<String, Boolean>().apply {
+            ToolCategory.entries.forEach { put(it.id, it.defaultExpanded) }
+        }
+    }
+    // 本地工具按分类归组（云端工具单独一组）
+    val localGroups = remember {
+        ToolCategory.entries.filter { it != ToolCategory.CLOUD }.map { cat ->
+            cat to ToolboxTab.entries.filter { categoryOf(it) == cat }
+        }
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp, vertical = 10.dp)
         ) {
-            // 顶部标题区
+            // 顶部标题区：工具箱合集（收纳式）
             Surface(
                 color = Color.White.copy(alpha = 0.50f),
                 border = BorderStroke(1.dp, Color.White.copy(alpha = 0.65f)),
@@ -536,14 +587,14 @@ fun ToolboxScreen(
                 ) {
                     Column {
                         Text(
-                            text = "懒得找了小工具",
+                            text = "🧰 工具箱合集",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Black,
                             color = MaterialTheme.colorScheme.onBackground
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "点击工具卡片 · 弹窗即开即用 · 本地纯离线运算",
+                            text = "点击分类展开/收纳 · 云端工具实时同步 · 本地纯离线运算",
                             fontSize = 11.5.sp,
                             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                         )
@@ -553,142 +604,43 @@ fun ToolboxScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // v1.8.7：云端工具箱扩展工具（控制台增删）展示在本地工具上方
+            // ===== ☁️ 云端工具（控制台实时同步，收纳式呈现）=====
             if (cloudTools.isNotEmpty()) {
-                Text(
-                    text = "云端工具（控制台实时同步）",
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(start = 2.dp, bottom = 4.dp)
+                ToolCategoryHeader(
+                    category = ToolCategory.CLOUD,
+                    count = cloudTools.size,
+                    isExpanded = expanded[ToolCategory.CLOUD.id] == true,
+                    onToggle = { expanded[ToolCategory.CLOUD.id] = !(expanded[ToolCategory.CLOUD.id] ?: true) }
                 )
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(if (cloudTools.size <= 2) 92.dp else 184.dp)
+                AnimatedVisibility(
+                    visible = expanded[ToolCategory.CLOUD.id] == true,
+                    enter = fadeIn() + expandVertically(),
+                    exit = fadeOut() + shrinkVertically()
                 ) {
-                    gridItems(cloudTools, key = { it.id }) { tool ->
-                        Surface(
-                            onClick = {
-                                // 云端工具：点击打开 URL（无 URL 则提示）
-                                if (tool.url.isNotBlank()) {
-                                    try {
-                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(tool.url))
-                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                        context.startActivity(intent)
-                                    } catch (e: Exception) {
-                                        Toast.makeText(context, "无法打开：${tool.url}", Toast.LENGTH_SHORT).show()
-                                    }
-                                } else {
-                                    Toast.makeText(context, "该云端工具未配置跳转链接", Toast.LENGTH_SHORT).show()
-                                }
-                            },
-                            shape = RoundedCornerShape(12.dp),
-                            color = Color.White.copy(alpha = 0.6f),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 12.dp)
-                            ) {
-                                Text(
-                                    text = tool.icon.ifBlank { "🔧" },
-                                    fontSize = 18.sp,
-                                    modifier = Modifier.padding(end = 8.dp)
-                                )
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = tool.name,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 13.sp,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    if (tool.desc.isNotBlank()) {
-                                        Spacer(modifier = Modifier.height(1.dp))
-                                        Text(
-                                            text = tool.desc,
-                                            fontSize = 9.5.sp,
-                                            maxLines = 2,
-                                            overflow = TextOverflow.Ellipsis,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    CloudToolGrid(cloudTools = cloudTools, context = context)
                 }
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(
-                    text = "本地工具",
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(start = 2.dp, bottom = 4.dp)
-                )
             }
 
-            // 工具分类网格（2列），点击弹出对应工具交互框
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxSize()
-            ) {
-                gridItems(ToolboxTab.entries) { tab ->
-                    Surface(
-                        onClick = { activeTool = tab },
-                        shape = RoundedCornerShape(12.dp),
-                        color = Color.White.copy(alpha = 0.6f),
-                        border = BorderStroke(
-                            1.dp,
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
-                        ),
-                        modifier = Modifier.fillMaxWidth()
+            // ===== 本地工具（按分类收纳式呈现）=====
+            localGroups.forEach { (cat, tabs) ->
+                if (tabs.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    ToolCategoryHeader(
+                        category = cat,
+                        count = tabs.size,
+                        isExpanded = expanded[cat.id] == true,
+                        onToggle = { expanded[cat.id] = !(expanded[cat.id] ?: false) }
+                    )
+                    AnimatedVisibility(
+                        visible = expanded[cat.id] == true,
+                        enter = fadeIn() + expandVertically(),
+                        exit = fadeOut() + shrinkVertically()
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 12.dp)
-                        ) {
-                            Icon(
-                                imageVector = tab.icon,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = tab.shortLabel,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 13.sp,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                if (tab.desc.isNotBlank()) {
-                                    Spacer(modifier = Modifier.height(1.dp))
-                                    Text(
-                                        text = tab.desc,
-                                        fontSize = 9.5.sp,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
+                        ToolGrid(tabs = tabs) { activeTool = it }
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(6.dp))
         }
 
         // 弹窗形式展示每个工具（分类多功能交互框）
@@ -803,6 +755,195 @@ fun ToolboxScreen(
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+/* ==================== 工具箱合集 · 收纳式分类组件（v1.8.7） ==================== */
+
+/** 收纳式分类标题栏：点击展开/收起该分类全部内容 */
+@Composable
+private fun ToolCategoryHeader(
+    category: ToolCategory,
+    count: Int,
+    isExpanded: Boolean,
+    onToggle: () -> Unit
+) {
+    Surface(
+        onClick = onToggle,
+        shape = RoundedCornerShape(12.dp),
+        color = Color.White.copy(alpha = 0.55f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.28f)),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 11.dp)
+        ) {
+            Text(text = category.icon, fontSize = 16.sp)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = category.name,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = "$count 个工具",
+                fontSize = 10.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(end = 6.dp)
+            )
+            Icon(
+                imageVector = if (isExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                contentDescription = if (isExpanded) "收起" else "展开",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+    }
+}
+
+/** 本地工具两列网格（非懒加载，配合外层滚动） */
+@Composable
+private fun ToolGrid(tabs: List<ToolboxTab>, onTabClick: (ToolboxTab) -> Unit) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.padding(top = 8.dp)
+    ) {
+        tabs.chunked(2).forEach { rowTabs ->
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                rowTabs.forEach { tab ->
+                    ToolCell(tab = tab, onClick = { onTabClick(tab) }, modifier = Modifier.weight(1f))
+                }
+                if (rowTabs.size == 1) Spacer(modifier = Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+/** 本地工具小卡片 */
+@Composable
+private fun ToolCell(tab: ToolboxTab, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(12.dp),
+        color = Color.White.copy(alpha = 0.6f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 12.dp)
+        ) {
+            Icon(
+                imageVector = tab.icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = tab.shortLabel,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                if (tab.desc.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(1.dp))
+                    Text(
+                        text = tab.desc,
+                        fontSize = 9.5.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** 云端工具两列网格（点击打开 URL） */
+@Composable
+private fun CloudToolGrid(
+    cloudTools: List<com.example.data.remote.ToolDto>,
+    context: Context
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.padding(top = 8.dp)
+    ) {
+        cloudTools.chunked(2).forEach { rowTools ->
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                rowTools.forEach { tool ->
+                    CloudToolCell(tool = tool, context = context, modifier = Modifier.weight(1f))
+                }
+                if (rowTools.size == 1) Spacer(modifier = Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+/** 云端工具小卡片（控制台实时同步，点击打开 URL） */
+@Composable
+private fun CloudToolCell(
+    tool: com.example.data.remote.ToolDto,
+    context: Context,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        onClick = {
+            if (tool.url.isNotBlank()) {
+                try {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(tool.url))
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(intent)
+                } catch (e: Exception) {
+                    Toast.makeText(context, "无法打开：${tool.url}", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Toast.makeText(context, "该云端工具未配置跳转链接", Toast.LENGTH_SHORT).show()
+            }
+        },
+        shape = RoundedCornerShape(12.dp),
+        color = Color.White.copy(alpha = 0.6f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 12.dp)
+        ) {
+            Text(
+                text = tool.icon.ifBlank { "🔧" },
+                fontSize = 18.sp,
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = tool.name,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                if (tool.desc.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(1.dp))
+                    Text(
+                        text = tool.desc,
+                        fontSize = 9.5.sp,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }

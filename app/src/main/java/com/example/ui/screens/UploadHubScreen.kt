@@ -119,7 +119,7 @@ fun UploadHubScreen(
                 map.toList()
             }
             LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
+                columns = GridCells.Fixed(2),
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 12.dp, vertical = 12.dp),
@@ -271,7 +271,7 @@ fun UploadHubScreen(
     }
 }
 
-/** 软件网格小卡片：自动 icon + 标题 + 类型徽标 */
+/** 软件横排小卡片（v1.8.7：图标在左、信息在右的横排布局，不再竖排堆叠） */
 @Composable
 private fun SoftwareGridCard(
     res: UploadedResourceEntity,
@@ -362,13 +362,14 @@ private fun SoftwareGridCard(
             .fillMaxWidth()
             .clickable { onCardClick() }
     ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 10.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        // v1.8.7：横排呈现——图标在左、标题/描述/按钮在右，卡片更短更紧凑
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 10.dp)
         ) {
-            // 自动识别的软件 icon（云端 icon 优先，回退 favicon，再回退文字徽标）
+            // 左侧：自动识别的软件 icon（云端 icon 优先，回退 favicon，再回退文字徽标）
             Box(
-                modifier = Modifier.size(44.dp),
+                modifier = Modifier.size(42.dp),
                 contentAlignment = Alignment.Center
             ) {
                 if (displayIcon.isNotBlank()) {
@@ -377,14 +378,14 @@ private fun SoftwareGridCard(
                         contentDescription = res.title,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .size(44.dp)
+                            .size(42.dp)
                             .clip(RoundedCornerShape(10.dp))
                     )
                 }
                 // 底层类型徽标（icon 加载失败时可见）
                 Box(
                     modifier = Modifier
-                        .size(44.dp)
+                        .size(42.dp)
                         .clip(RoundedCornerShape(10.dp))
                         .background(badgeColor.copy(alpha = 0.15f)),
                     contentAlignment = Alignment.Center
@@ -397,60 +398,65 @@ private fun SoftwareGridCard(
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = res.title,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-                maxLines = 2,
-                minLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.onSurface,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-            )
-            if (res.desc.isNotBlank()) {
-                Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+            // 右侧：标题 + 描述 + 按钮横排底部
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = res.desc,
-                    fontSize = 10.sp,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                    minLines = 2
-                )
-            }
-            Spacer(modifier = Modifier.height(6.dp))
-            // 自动识别按钮：apk/zip/md →「安装」；URL →「直达」
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(if (canInstall) Color(0xFF22C55E).copy(alpha = 0.12f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
-                    .padding(horizontal = 10.dp, vertical = 4.dp)
-            ) {
-                Icon(
-                    imageVector = if (canInstall) Icons.Filled.Download else Icons.Filled.OpenInNew,
-                    contentDescription = null,
-                    tint = if (canInstall) Color(0xFF22C55E) else MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(12.dp)
-                )
-                Spacer(modifier = Modifier.width(3.dp))
-                Text(
-                    text = if (canInstall) "安装" else "直达",
-                    fontSize = 10.sp,
+                    text = res.title,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (canInstall) Color(0xFF22C55E) else MaterialTheme.colorScheme.primary
+                    maxLines = 2,
+                    minLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-            }
-            if (showDelete) {
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = "删除（云端同步）",
-                    fontSize = 9.sp,
-                    color = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
-                    modifier = Modifier.clickable { onDelete() }.padding(4.dp)
-                )
+                if (res.desc.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = res.desc,
+                        fontSize = 10.sp,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Spacer(modifier = Modifier.height(5.dp))
+                // 自动识别按钮：apk/zip/md →「安装」；URL →「直达」（右侧对齐，横排不占高度）
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (canInstall) Color(0xFF22C55E).copy(alpha = 0.12f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = if (canInstall) Icons.Filled.Download else Icons.Filled.OpenInNew,
+                                contentDescription = null,
+                                tint = if (canInstall) Color(0xFF22C55E) else MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(11.dp)
+                            )
+                            Spacer(modifier = Modifier.width(3.dp))
+                            Text(
+                                text = if (canInstall) "安装" else "直达",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (canInstall) Color(0xFF22C55E) else MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                    if (showDelete) {
+                        Text(
+                            text = "删除",
+                            fontSize = 9.sp,
+                            color = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
+                            modifier = Modifier.clickable { onDelete() }.padding(4.dp)
+                        )
+                    }
+                }
             }
         }
     }

@@ -207,19 +207,56 @@ fun GlobalWindBackground(
                     .background(Color.Black.copy(alpha = 0.35f))
             )
         } else if (bgMediaType == "video" && bgMediaUrl.isNotBlank()) {
+            // v1.8.7 修复「顶部背景未成功显示视频」：VideoView 会按等比缩放导致上下黑边，
+            // 改用 TextureView + MediaPlayer，按屏幕比例裁剪式填充（类似 ContentScale.Crop），
+            // 视频铺满全屏（含顶部状态栏区域），不再出现顶部黑条/未显示。
             androidx.compose.ui.viewinterop.AndroidView(
                 factory = { ctx ->
-                    android.widget.VideoView(ctx).apply {
-                        setVideoURI(android.net.Uri.parse(bgMediaUrl))
-                        setOnPreparedListener { mp ->
-                            mp.isLooping = true
-                            mp.setVolume(0f, 0f)
-                            mp.start()
+                    android.view.TextureView(ctx).apply {
+                        var player: android.media.MediaPlayer? = null
+                        surfaceTextureListener = object : android.view.TextureView.SurfaceTextureListener {
+                            override fun onSurfaceTextureAvailable(surface: android.graphics.SurfaceTexture, width: Int, height: Int) {
+                                try {
+                                    val mp = android.media.MediaPlayer()
+                                    player = mp
+                                    mp.setDataSource(ctx, android.net.Uri.parse(bgMediaUrl))
+                                    mp.setSurface(android.view.Surface(surface))
+                                    mp.isLooping = true
+                                    mp.setVolume(0f, 0f)
+                                    mp.setOnPreparedListener { p ->
+                                        try { p.start() } catch (_: Exception) {}
+                                    }
+                                    // 视频尺寸就绪后按屏幕比例缩放填满（裁剪式填充，铺满全屏含顶部）
+                                    mp.setOnVideoSizeChangedListener { _, vw, vh ->
+                                        if (vw > 0 && vh > 0) {
+                                            val viewW = width.toFloat().coerceAtLeast(1f)
+                                            val viewH = height.toFloat().coerceAtLeast(1f)
+                                            val s = kotlin.math.max(viewW / vw, viewH / vh)
+                                            val matrix = android.graphics.Matrix().apply {
+                                                setScale(s, s)
+                                                postTranslate((viewW - vw * s) / 2f, (viewH - vh * s) / 2f)
+                                            }
+                                            setTransform(matrix)
+                                        }
+                                    }
+                                    mp.setOnErrorListener { _, _, _ ->
+                                        try { mp.release() } catch (_: Exception) {}
+                                        player = null
+                                        true
+                                    }
+                                    mp.prepareAsync()
+                                } catch (_: Exception) {
+                                }
+                            }
+
+                            override fun onSurfaceTextureSizeChanged(surface: android.graphics.SurfaceTexture, width: Int, height: Int) {}
+                            override fun onSurfaceTextureDestroyed(surface: android.graphics.SurfaceTexture): Boolean {
+                                try { player?.release() } catch (_: Exception) {}
+                                player = null
+                                return true
+                            }
+                            override fun onSurfaceTextureUpdated(surface: android.graphics.SurfaceTexture) {}
                         }
-                        layoutParams = android.view.ViewGroup.LayoutParams(
-                            android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-                            android.view.ViewGroup.LayoutParams.MATCH_PARENT
-                        )
                     }
                 },
                 modifier = Modifier.fillMaxSize()
