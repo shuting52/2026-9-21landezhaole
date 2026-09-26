@@ -225,51 +225,79 @@ class NavViewModel(
             val cloudSwIds = cloudSoftwares.map { it.id }.toSet()
             val cloudSkIds = cloudSkills.map { it.id }.toSet()
 
+            // v1.9.1 修复「软件/Skill 版块自动一闪一闪」：改为幂等同步。
+            // 一次性读取本地全部资源，内容未变化的条目直接跳过写入——
+            // 否则每 5 秒轮询对每个资源执行 REPLACE，且 timestamp 每次都更新，
+            // 会持续触发 Room Flow 发射新列表，导致列表频繁无效化闪烁。
+            val localAll = repository.getAllUploadedResources()
+            val localById = localAll.associateBy { it.id }
+
+            /** 判断云端软件/Skill 与本地同 id 条目内容是否一致（一致则跳过写入） */
+            fun unchanged(old: UploadedResourceEntity?, fields: UploadedResourceEntity): Boolean {
+                if (old == null) return false
+                return old.type == fields.type &&
+                    old.title == fields.title &&
+                    old.desc == fields.desc &&
+                    old.url == fields.url &&
+                    old.author == fields.author &&
+                    old.badge == fields.badge &&
+                    old.tags == fields.tags &&
+                    old.fileUrl == fields.fileUrl &&
+                    old.prompt == fields.prompt &&
+                    old.previewUrl == fields.previewUrl &&
+                    old.mediaUrl == fields.mediaUrl &&
+                    old.iconUrl == fields.iconUrl &&
+                    old.mode == fields.mode
+            }
+
             cloudSoftwares.forEach { sw ->
                 // v1.7.4 修复：控制台文件模式把上传文件直链存在 apkUrl 字段，必须映射到 fileUrl，
                 // 否则本体拿不到下载链接（显示「未配置下载」）。URL 模式 apkUrl 为跳转直链。
                 val fileLink = sw.apkUrl.ifBlank { sw.url }
-                repository.saveUploadedResource(
-                    UploadedResourceEntity(
-                        id = sw.id,
-                        type = "software",
-                        title = sw.title,
-                        desc = sw.desc,
-                        url = sw.url,
-                        author = sw.author,
-                        badge = sw.badge.ifBlank { "站长推荐" },
-                        tags = sw.tags,
-                        fileUrl = fileLink,
-                        iconUrl = sw.iconUrl,
-                        mode = sw.mode
-                    )
+                val candidate = UploadedResourceEntity(
+                    id = sw.id,
+                    type = "software",
+                    title = sw.title,
+                    desc = sw.desc,
+                    url = sw.url,
+                    author = sw.author,
+                    badge = sw.badge.ifBlank { "站长推荐" },
+                    tags = sw.tags,
+                    fileUrl = fileLink,
+                    iconUrl = sw.iconUrl,
+                    mode = sw.mode
                 )
+                // v1.9.1：内容未变化跳过写入，避免轮询引发列表闪烁
+                if (!unchanged(localById[sw.id], candidate)) {
+                    repository.saveUploadedResource(candidate)
+                }
             }
             cloudSkills.forEach { sk ->
                 // v1.7.4：Skill 文件模式直链在 url 字段；URL 模式 url 为跳转直链
-                repository.saveUploadedResource(
-                    UploadedResourceEntity(
-                        id = sk.id,
-                        type = if (sk.promptType == "prompt_image" || sk.promptType == "prompt_video") sk.promptType else "skill",
-                        title = sk.title,
-                        desc = sk.desc,
-                        url = sk.url,
-                        author = sk.author,
-                        badge = sk.badge.ifBlank { "站长推荐" },
-                        tags = sk.tags,
-                        fileUrl = sk.url,
-                        prompt = sk.prompt,
-                        previewUrl = sk.previewUrl,
-                        mediaUrl = sk.mediaUrl,
-                        iconUrl = sk.iconUrl,
-                        mode = sk.mode
-                    )
+                val candidate = UploadedResourceEntity(
+                    id = sk.id,
+                    type = if (sk.promptType == "prompt_image" || sk.promptType == "prompt_video") sk.promptType else "skill",
+                    title = sk.title,
+                    desc = sk.desc,
+                    url = sk.url,
+                    author = sk.author,
+                    badge = sk.badge.ifBlank { "站长推荐" },
+                    tags = sk.tags,
+                    fileUrl = sk.url,
+                    prompt = sk.prompt,
+                    previewUrl = sk.previewUrl,
+                    mediaUrl = sk.mediaUrl,
+                    iconUrl = sk.iconUrl,
+                    mode = sk.mode
                 )
+                // v1.9.1：内容未变化跳过写入，避免轮询引发列表闪烁
+                if (!unchanged(localById[sk.id], candidate)) {
+                    repository.saveUploadedResource(candidate)
+                }
             }
 
             // v1.8.7：云端下架 → 本体同步删除（控制台删除某软件/Skill 后点「应用」，本体实时移除）
             try {
-                val localAll = repository.getAllUploadedResources()
                 localAll.forEach { local ->
                     val isCloudSoftware = local.type == "software" && local.id.startsWith("sw_")
                     val isCloudSkill = (local.type == "skill" || local.type == "prompt_image" || local.type == "prompt_video") && local.id.startsWith("sk_")
