@@ -20,6 +20,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -73,6 +74,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -82,6 +84,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ui.theme.CuteLemon
+import com.example.ui.theme.CutePeach
+import com.example.ui.theme.CutePink
 import com.example.ui.theme.FlameRed
 import com.example.ui.theme.SunsetOrange
 import com.example.ui.theme.ThemePreset
@@ -492,9 +497,11 @@ fun SettingsScreen(
                 title = { Text("关于「懒得找了」", fontWeight = FontWeight.Black) },
                 text = {
                     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                        // v1.0.1：全新动态 CSS 品牌标签（渐变流光 + 呼吸动画）
+                        DynamicCssBrandTag()
+                        Spacer(modifier = Modifier.height(12.dp))
                         Text(
-                            text = "版本：v2.2.0\n\n" +
-                                    "「懒得找了」致力于打造一个纯净、聚合、高效的资源与工具导航平台。让大家不用再到处求资源、不用忍受满屏广告垃圾，一键直达互联网精品！\n\n" +
+                            text = "「懒得找了」致力于打造一个纯净、聚合、高效的资源与工具导航平台。让大家不用再到处求资源、不用忍受满屏广告垃圾，一键直达互联网精品！\n\n" +
                                     "✨ 我们的初心与承诺：\n" +
                                     "· 纯净体验：无任何强制广告流，启动极速，开箱即用\n" +
                                     "· 隐私安全：核心浏览与收藏数据皆存放于设备本地加密空间，不上传个人隐私\n" +
@@ -1099,6 +1106,69 @@ private fun ContactQrImage(
                 contentDescription = contentDescription,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Fit
+            )
+        }
+    }
+}
+
+/**
+ * v1.0.1 关于我们·全新动态 CSS 品牌标签：渐变流光 + 呼吸浮动动画
+ * 内容固定为「懒得找了-307779523」，圆角胶囊 + 粉橙黄渐变流光扫过，可爱卡通风格贴合新主题
+ */
+@Composable
+private fun DynamicCssBrandTag() {
+    val infinite = rememberInfiniteTransition(label = "about_css_brand_tag")
+    // 渐变流光：从左侧扫到右侧再循环
+    val shift by infinite.animateFloat(
+        initialValue = -1f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 2600, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "tag_shift"
+    )
+    // 呼吸浮动：轻微放大缩小让标签更有生命力
+    val breathe by infinite.animateFloat(
+        initialValue = 0.96f,
+        targetValue = 1.04f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1100, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "tag_breathe"
+    )
+    Box(
+        modifier = Modifier
+            .padding(vertical = 4.dp)
+            .graphicsLayer {
+                scaleX = breathe
+                scaleY = breathe
+            }
+            .clip(RoundedCornerShape(50))
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(CutePink, CutePeach, CuteLemon, CutePink),
+                    start = Offset(shift * 700f, 0f),
+                    end = Offset(shift * 700f + 460f, 0f)
+                )
+            )
+            .padding(horizontal = 20.dp, vertical = 10.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "🧸",
+                fontSize = 15.sp
+            )
+            Text(
+                text = "懒得找了-307779523",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Black,
+                color = Color.White
             )
         }
     }
