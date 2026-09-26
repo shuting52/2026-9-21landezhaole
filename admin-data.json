@@ -10,7 +10,7 @@
     ],
     "force": false,
     "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.8.6-1790347134.apk",
-    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.8.6-1790347134.apk"
+    "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.8.6-1790347134.apk"
   },
   "home": {
     "categories": [
@@ -816,19 +816,6 @@
             "highlights": ""
           },
           {
-            "id": "site_add_437",
-            "title": "通义千问",
-            "url": "https://tongyi.aliyun.com",
-            "icon": "",
-            "fallbackText": "通义",
-            "badge": "",
-            "badgeType": "",
-            "desc": "阿里云通义大模型对话平台",
-            "categoryId": "ai_models",
-            "subcatId": "models",
-            "highlights": ""
-          },
-          {
             "id": "site_add_439",
             "title": "Kimi 智能助手",
             "url": "https://www.kimi.com",
@@ -933,19 +920,6 @@
             "highlights": ""
           },
           {
-            "id": "site_add_455",
-            "title": "可灵 AI",
-            "url": "https://klingai.com",
-            "icon": "",
-            "fallbackText": "可灵",
-            "badge": "",
-            "badgeType": "",
-            "desc": "快手视频生成大模型",
-            "categoryId": "ai_models",
-            "subcatId": "creative",
-            "highlights": ""
-          },
-          {
             "id": "site_add_457",
             "title": "Midjourney",
             "url": "https://www.midjourney.com",
@@ -972,19 +946,6 @@
             "highlights": ""
           },
           {
-            "id": "site_add_461",
-            "title": "Luma AI",
-            "url": "https://lumalabs.ai",
-            "icon": "",
-            "fallbackText": "LU",
-            "badge": "",
-            "badgeType": "",
-            "desc": "Dream Machine 视频生成",
-            "categoryId": "ai_models",
-            "subcatId": "creative",
-            "highlights": ""
-          },
-          {
             "id": "site_add_463",
             "title": "Runway",
             "url": "https://runwayml.com",
@@ -1006,19 +967,6 @@
             "badge": "",
             "badgeType": "",
             "desc": "AI 视频生成创作平台",
-            "categoryId": "ai_models",
-            "subcatId": "creative",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_467",
-            "title": "Ideogram",
-            "url": "https://ideogram.ai",
-            "icon": "",
-            "fallbackText": "ID",
-            "badge": "",
-            "badgeType": "",
-            "desc": "文字排版 AI 绘图",
             "categoryId": "ai_models",
             "subcatId": "creative",
             "highlights": ""
@@ -1086,19 +1034,6 @@
             "desc": "设计平台与 AI 生成",
             "categoryId": "ai_models",
             "subcatId": "creative",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_479",
-            "title": "即梦视频",
-            "url": "https://jimeng.jianying.com/ai-tool/video/generate",
-            "icon": "",
-            "fallbackText": "即梦",
-            "badge": "",
-            "badgeType": "",
-            "desc": "即梦 AI 视频生成入口",
-            "categoryId": "ai_models",
-            "subcatId": "all",
             "highlights": ""
           },
           {
@@ -1648,19 +1583,6 @@
             "highlights": "支持万人级设计系统规范与流畅画布缩放；深受国内顶尖互联网团队青睐"
           },
           {
-            "id": "site_edimakor_2026",
-            "title": "Edimakor AI Studio",
-            "url": "https://app.edimakor.ai/tw/studio/home?from=tab",
-            "icon": "https://app.edimakor.ai/edimakor.ico",
-            "fallbackText": "🎬",
-            "badge": "新动态",
-            "badgeType": "NEW",
-            "desc": "Edimakor AI 在线创作平台 · 一键生成 AI 图片与 AI 视频 · 无需写提示词",
-            "categoryId": "ai_canvas",
-            "subcatId": "all",
-            "highlights": "AI 创作 · 图生视频 · 无需提示词"
-          },
-          {
             "id": "site_add_537",
             "title": "Miro",
             "url": "https://miro.com",
@@ -1682,19 +1604,6 @@
             "badge": "",
             "badgeType": "",
             "desc": "协作式 UI 设计画布",
-            "categoryId": "ai_canvas",
-            "subcatId": "canvas",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_541",
-            "title": "FigJam",
-            "url": "https://www.figma.com/figjam",
-            "icon": "",
-            "fallbackText": "FI",
-            "badge": "",
-            "badgeType": "",
-            "desc": "Figma 创意白板协作",
             "categoryId": "ai_canvas",
             "subcatId": "canvas",
             "highlights": ""
@@ -1895,19 +1804,6 @@
             "highlights": ""
           },
           {
-            "id": "site_add_573",
-            "title": "Fotor 设计",
-            "url": "https://www.fotor.com/design",
-            "icon": "",
-            "fallbackText": "FO",
-            "badge": "",
-            "badgeType": "",
-            "desc": "在线平面设计画布",
-            "categoryId": "ai_canvas",
-            "subcatId": "canvas",
-            "highlights": ""
-          },
-          {
             "id": "site_add_575",
             "title": "PicMonkey",
             "url": "https://www.picmonkey.com",
@@ -2009,19 +1905,6 @@
             "desc": "在线设计发布画布",
             "categoryId": "ai_canvas",
             "subcatId": "canvas",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_591",
-            "title": "Stable Video",
-            "url": "https://stability.ai/stable-video",
-            "icon": "",
-            "fallbackText": "ST",
-            "badge": "",
-            "badgeType": "",
-            "desc": "Stability AI 视频生成",
-            "categoryId": "ai_canvas",
-            "subcatId": "video",
             "highlights": ""
           },
           {
@@ -2506,19 +2389,6 @@
             "highlights": ""
           },
           {
-            "id": "site_add_643",
-            "title": "OpenPrompt",
-            "url": "https://github.com/thunlp/OpenPrompt",
-            "icon": "",
-            "fallbackText": "OP",
-            "badge": "",
-            "badgeType": "",
-            "desc": "清华开源提示词框架",
-            "categoryId": "ai_prompts",
-            "subcatId": "prompt",
-            "highlights": ""
-          },
-          {
             "id": "site_add_645",
             "title": "PromptStorm",
             "url": "https://www.promptstorm.ai",
@@ -2540,19 +2410,6 @@
             "badge": "",
             "badgeType": "",
             "desc": "ChatGPT 提示词精选集",
-            "categoryId": "ai_prompts",
-            "subcatId": "prompt",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_649",
-            "title": "Awesome ChatGPT Prompts",
-            "url": "https://github.com/f/awesome-chatgpt-prompts",
-            "icon": "",
-            "fallbackText": "AW",
-            "badge": "",
-            "badgeType": "",
-            "desc": "GitHub 热门提示词仓库",
             "categoryId": "ai_prompts",
             "subcatId": "prompt",
             "highlights": ""
@@ -2675,32 +2532,6 @@
             "highlights": ""
           },
           {
-            "id": "site_add_669",
-            "title": "PromptBase 中文教程",
-            "url": "https://www.promptbase.com/blog",
-            "icon": "",
-            "fallbackText": "PR",
-            "badge": "",
-            "badgeType": "",
-            "desc": "提示词撰写官方博客",
-            "categoryId": "ai_prompts",
-            "subcatId": "prompt",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_671",
-            "title": "GPT Store",
-            "url": "https://chatgpt.com/gpts",
-            "icon": "",
-            "fallbackText": "GP",
-            "badge": "HOT",
-            "badgeType": "HOT",
-            "desc": "OpenAI 官方 GPT 应用商店",
-            "categoryId": "ai_prompts",
-            "subcatId": "skill",
-            "highlights": ""
-          },
-          {
             "id": "site_add_673",
             "title": "Coze 商店",
             "url": "https://www.coze.cn/store",
@@ -2709,19 +2540,6 @@
             "badge": "",
             "badgeType": "",
             "desc": "扣子 Bot 应用商店",
-            "categoryId": "ai_prompts",
-            "subcatId": "skill",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_675",
-            "title": "Dify 模板",
-            "url": "https://dify.ai/explore",
-            "icon": "",
-            "fallbackText": "DI",
-            "badge": "",
-            "badgeType": "",
-            "desc": "Dify 应用模板探索",
             "categoryId": "ai_prompts",
             "subcatId": "skill",
             "highlights": ""
@@ -2787,32 +2605,6 @@
             "badge": "",
             "badgeType": "",
             "desc": "开源 AI 聊天插件框架",
-            "categoryId": "ai_prompts",
-            "subcatId": "skill",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_687",
-            "title": "NextChat",
-            "url": "https://github.com/ChatGPTNextWeb/NextChat",
-            "icon": "",
-            "fallbackText": "NE",
-            "badge": "",
-            "badgeType": "",
-            "desc": "开源 ChatGPT 界面项目",
-            "categoryId": "ai_prompts",
-            "subcatId": "skill",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_689",
-            "title": "Poe 机器人",
-            "url": "https://poe.com/bots",
-            "icon": "",
-            "fallbackText": "PO",
-            "badge": "",
-            "badgeType": "",
-            "desc": "Poe 自定义机器人商店",
             "categoryId": "ai_prompts",
             "subcatId": "skill",
             "highlights": ""
@@ -3039,19 +2831,6 @@
             "highlights": ""
           },
           {
-            "id": "magic_tool-3\\",
-            "title": "GitHub",
-            "url": "https://github.com/",
-            "icon": "",
-            "fallbackText": "Git",
-            "badge": "全球开源",
-            "badgeType": "BLUE",
-            "desc": "全球最大开发者代码开源与协作平台",
-            "categoryId": "tools_magic",
-            "subcatId": "dev",
-            "highlights": ""
-          },
-          {
             "id": "magic_tool-4\\",
             "title": "Runable",
             "url": "https://runable.com/",
@@ -3088,19 +2867,6 @@
             "desc": "全球即时资讯、科技动态与意见领袖主阵地",
             "categoryId": "tools_magic",
             "subcatId": "daily",
-            "highlights": ""
-          },
-          {
-            "id": "magic_tool-7\\",
-            "title": "Gemini",
-            "url": "https://gemini.google.com/app",
-            "icon": "",
-            "fallbackText": "G",
-            "badge": "谷歌AI",
-            "badgeType": "GOLD",
-            "desc": "Google新一代原生多模态超强推理大模型",
-            "categoryId": "tools_magic",
-            "subcatId": "dev",
             "highlights": ""
           },
           {
@@ -4079,19 +3845,6 @@
             "highlights": ""
           },
           {
-            "id": "site_add_823",
-            "title": "HuggingFace",
-            "url": "https://huggingface.co",
-            "icon": "",
-            "fallbackText": "HU",
-            "badge": "HOT",
-            "badgeType": "HOT",
-            "desc": "AI 模型托管社区",
-            "categoryId": "tools_magic",
-            "subcatId": "dev",
-            "highlights": ""
-          },
-          {
             "id": "site_add_825",
             "title": "Google Fonts",
             "url": "https://fonts.google.com",
@@ -4418,19 +4171,6 @@
             "highlights": ""
           },
           {
-            "id": "site_add_851",
-            "title": "番茄短剧",
-            "url": "https://fanqienovel.com",
-            "icon": "",
-            "fallbackText": "番茄",
-            "badge": "",
-            "badgeType": "",
-            "desc": "番茄小说短剧配套",
-            "categoryId": "short_drama",
-            "subcatId": "popular",
-            "highlights": ""
-          },
-          {
             "id": "site_add_853",
             "title": "河马剧场",
             "url": "https://www.hemajuchang.com",
@@ -4465,32 +4205,6 @@
             "badge": "",
             "badgeType": "",
             "desc": "快手星芒短剧频道",
-            "categoryId": "short_drama",
-            "subcatId": "popular",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_859",
-            "title": "抖音短剧",
-            "url": "https://www.douyin.com",
-            "icon": "",
-            "fallbackText": "抖音",
-            "badge": "",
-            "badgeType": "",
-            "desc": "抖音短剧频道",
-            "categoryId": "short_drama",
-            "subcatId": "popular",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_861",
-            "title": "腾讯短剧",
-            "url": "https://v.qq.com",
-            "icon": "",
-            "fallbackText": "腾讯",
-            "badge": "",
-            "badgeType": "",
-            "desc": "腾讯视频短剧专区",
             "categoryId": "short_drama",
             "subcatId": "popular",
             "highlights": ""
@@ -7438,19 +7152,6 @@
             "highlights": ""
           },
           {
-            "id": "site_add_1155",
-            "title": "洛雪音乐",
-            "url": "https://github.com/lyswhut/lx-music-desktop",
-            "icon": "",
-            "fallbackText": "洛雪",
-            "badge": "",
-            "badgeType": "",
-            "desc": "开源聚合听歌工具",
-            "categoryId": "music",
-            "subcatId": "lossless",
-            "highlights": ""
-          },
-          {
             "id": "site_add_1157",
             "title": "Listen1",
             "url": "https://listen1.github.io/listen1_desktop/",
@@ -7633,32 +7334,6 @@
             "highlights": ""
           },
           {
-            "id": "site_add_1185",
-            "title": "MusicFree",
-            "url": "https://github.com/maotoumao/MusicFree",
-            "icon": "",
-            "fallbackText": "MU",
-            "badge": "",
-            "badgeType": "",
-            "desc": "开源无损音乐播放器",
-            "categoryId": "music",
-            "subcatId": "downloader",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_1187",
-            "title": "歌词适配",
-            "url": "https://github.com/jakim929/cloud-music-lyrics",
-            "icon": "",
-            "fallbackText": "歌词",
-            "badge": "",
-            "badgeType": "",
-            "desc": "歌词文件下载工具",
-            "categoryId": "music",
-            "subcatId": "downloader",
-            "highlights": ""
-          },
-          {
             "id": "site_add_1189",
             "title": "漫音下载站",
             "url": "https://www.manymusic.com",
@@ -7771,19 +7446,6 @@
             "badge": "",
             "badgeType": "",
             "desc": "MP3 音乐搜索引擎",
-            "categoryId": "music",
-            "subcatId": "downloader",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_1207",
-            "title": "Audio Library",
-            "url": "https://www.youtube.com/audiolibrary",
-            "icon": "",
-            "fallbackText": "AU",
-            "badge": "",
-            "badgeType": "",
-            "desc": "YouTube 版权音乐库",
             "categoryId": "music",
             "subcatId": "downloader",
             "highlights": ""
@@ -8673,19 +8335,6 @@
             "highlights": ""
           },
           {
-            "id": "gam-8",
-            "title": "植物大战僵尸全集",
-            "url": "https://pan.quark.cn/s/3f82680fcb81",
-            "icon": "",
-            "fallbackText": "PVZ",
-            "badge": "童年经典",
-            "badgeType": "GOLD",
-            "desc": "PVZ原版加杂交版改版合集",
-            "categoryId": "game",
-            "subcatId": "pc",
-            "highlights": ""
-          },
-          {
             "id": "gam-10",
             "title": "在线小霸王红白机",
             "url": "https://www.yikm.net/",
@@ -9115,19 +8764,6 @@
             "highlights": ""
           },
           {
-            "id": "site_add_1353",
-            "title": "Poki 中文",
-            "url": "https://poki.com/zh",
-            "icon": "",
-            "fallbackText": "PO",
-            "badge": "",
-            "badgeType": "",
-            "desc": "中文免费网页游戏",
-            "categoryId": "game",
-            "subcatId": "online_game",
-            "highlights": ""
-          },
-          {
             "id": "site_add_1355",
             "title": "DOS 游戏中文站",
             "url": "https://www.gamesbbs.com",
@@ -9392,19 +9028,6 @@
             "highlights": ""
           },
           {
-            "id": "too-6",
-            "title": "PDF24 Tools",
-            "url": "https://tools.pdf24.org/zh/",
-            "icon": "",
-            "fallbackText": "PDF",
-            "badge": "免费全能",
-            "badgeType": "ROSE",
-            "desc": "免费无限制的在线PDF合并、压缩与转换",
-            "categoryId": "tools",
-            "subcatId": "file_proc",
-            "highlights": ""
-          },
-          {
             "id": "too-7",
             "title": "文叔叔-传文件",
             "url": "https://www.wenshushu.cn/",
@@ -9439,19 +9062,6 @@
             "badge": "免安装",
             "badgeType": "GOLD",
             "desc": "浏览器端直接打开PSD图层修图编辑",
-            "categoryId": "tools",
-            "subcatId": "img_proc",
-            "highlights": ""
-          },
-          {
-            "id": "too-10",
-            "title": "在线一键抠图",
-            "url": "https://www.remove.bg/zh",
-            "icon": "",
-            "fallbackText": "抠",
-            "badge": "5秒抠图",
-            "badgeType": "ROSE",
-            "desc": "精准发丝级透明背景智能移除",
             "categoryId": "tools",
             "subcatId": "img_proc",
             "highlights": ""
@@ -10172,19 +9782,6 @@
             "highlights": ""
           },
           {
-            "id": "pc_-15",
-            "title": "Steam游戏平台",
-            "url": "https://store.steampowered.com/about/",
-            "icon": "",
-            "fallbackText": "Steam",
-            "badge": "正版游戏",
-            "badgeType": "ROSE",
-            "desc": "全球最大的正版数字游戏分发与社区平台",
-            "categoryId": "pc_setup",
-            "subcatId": "soft_must",
-            "highlights": ""
-          },
-          {
             "id": "pc_-16",
             "title": "谷歌Chrome",
             "url": "https://www.google.cn/intl/zh-CN/chrome/",
@@ -10310,19 +9907,6 @@
             "badge": "",
             "badgeType": "",
             "desc": "多系统启动盘工具",
-            "categoryId": "pc_setup",
-            "subcatId": "system",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_1461",
-            "title": "Rufus",
-            "url": "https://rufus.ie",
-            "icon": "",
-            "fallbackText": "RU",
-            "badge": "",
-            "badgeType": "",
-            "desc": "U 盘启动盘制作",
             "categoryId": "pc_setup",
             "subcatId": "system",
             "highlights": ""
@@ -10572,19 +10156,6 @@
             "desc": "驱动之家硬件资讯",
             "categoryId": "pc_setup",
             "subcatId": "hardware",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_1501",
-            "title": "EveryThing",
-            "url": "https://www.voidtools.com",
-            "icon": "",
-            "fallbackText": "EV",
-            "badge": "",
-            "badgeType": "",
-            "desc": "本地文件秒搜工具",
-            "categoryId": "pc_setup",
-            "subcatId": "soft_must",
             "highlights": ""
           },
           {
@@ -11183,19 +10754,6 @@
             "desc": "二次元趣味社区",
             "categoryId": "explore",
             "subcatId": "fun",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_1559",
-            "title": "GitHub Trending",
-            "url": "https://github.com/trending",
-            "icon": "",
-            "fallbackText": "GI",
-            "badge": "",
-            "badgeType": "",
-            "desc": "热门开源项目榜",
-            "categoryId": "explore",
-            "subcatId": "dev",
             "highlights": ""
           },
           {
@@ -12390,19 +11948,6 @@
             "highlights": ""
           },
           {
-            "id": "bot_add_dify",
-            "title": "Dify.AI",
-            "url": "https://dify.ai/zh",
-            "icon": "https://dify.ai/favicon.ico",
-            "fallbackText": "Dify",
-            "badge": "Agent开发",
-            "badgeType": "GOLD",
-            "desc": "开源且易用的LLM应用开发平台，可视化构建Agent与工作流",
-            "categoryId": "ai_bot_ecosystem",
-            "subcatId": "tools_all",
-            "highlights": "编排多模型应用、知识库RAG与企业级工作流；支持一键发布与API集成"
-          },
-          {
             "id": "bot_add_fastgpt",
             "title": "FastGPT",
             "url": "https://fastgpt.in/",
@@ -12427,19 +11972,6 @@
             "categoryId": "ai_bot_ecosystem",
             "subcatId": "tools_all",
             "highlights": "像搭积木一样轻松组装各类AI智能体、记忆库与外部工具集成"
-          },
-          {
-            "id": "site_add_1685",
-            "title": "GitHub Copilot",
-            "url": "https://github.com/features/copilot",
-            "icon": "",
-            "fallbackText": "GI",
-            "badge": "HOT",
-            "badgeType": "HOT",
-            "desc": "AI 代码助手",
-            "categoryId": "ai_bot_ecosystem",
-            "subcatId": "coding_agent",
-            "highlights": ""
           },
           {
             "id": "site_add_1687",
@@ -12585,32 +12117,6 @@
             "highlights": ""
           },
           {
-            "id": "site_add_1709",
-            "title": "BigBench",
-            "url": "https://github.com/google/BIG-bench",
-            "icon": "",
-            "fallbackText": "BI",
-            "badge": "",
-            "badgeType": "",
-            "desc": "大模型能力基准测试",
-            "categoryId": "ai_bot_ecosystem",
-            "subcatId": "research_eval",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_1711",
-            "title": "HumanEval",
-            "url": "https://github.com/openai/human-eval",
-            "icon": "",
-            "fallbackText": "HU",
-            "badge": "",
-            "badgeType": "",
-            "desc": "代码生成评估基准",
-            "categoryId": "ai_bot_ecosystem",
-            "subcatId": "research_eval",
-            "highlights": ""
-          },
-          {
             "id": "site_add_1713",
             "title": "LMSYS Chatbot Arena",
             "url": "https://chat.lmsys.org",
@@ -12645,19 +12151,6 @@
             "badge": "",
             "badgeType": "",
             "desc": "中文大模型综合测评",
-            "categoryId": "ai_bot_ecosystem",
-            "subcatId": "research_eval",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_1719",
-            "title": "MMLU 评测",
-            "url": "https://github.com/hendrycks/test",
-            "icon": "",
-            "fallbackText": "MM",
-            "badge": "",
-            "badgeType": "",
-            "desc": "多任务语言理解测试",
             "categoryId": "ai_bot_ecosystem",
             "subcatId": "research_eval",
             "highlights": ""
@@ -12806,19 +12299,6 @@
             "highlights": ""
           },
           {
-            "id": "site_add_1743",
-            "title": "HuggingFace 模型库",
-            "url": "https://huggingface.co/models",
-            "icon": "",
-            "fallbackText": "HU",
-            "badge": "",
-            "badgeType": "",
-            "desc": "全球模型仓库",
-            "categoryId": "ai_bot_ecosystem",
-            "subcatId": "all",
-            "highlights": ""
-          },
-          {
             "id": "site_add_1745",
             "title": "ModelScope 魔搭",
             "url": "https://modelscope.cn",
@@ -12840,97 +12320,6 @@
             "badge": "",
             "badgeType": "",
             "desc": "数据检索框架",
-            "categoryId": "ai_bot_ecosystem",
-            "subcatId": "all",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_1749",
-            "title": "Transformers 库",
-            "url": "https://huggingface.co/docs/transformers",
-            "icon": "",
-            "fallbackText": "TR",
-            "badge": "",
-            "badgeType": "",
-            "desc": "HuggingFace 核心库",
-            "categoryId": "ai_bot_ecosystem",
-            "subcatId": "all",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_1751",
-            "title": "ComfyUI",
-            "url": "https://github.com/comfyanonymous/ComfyUI",
-            "icon": "",
-            "fallbackText": "CO",
-            "badge": "",
-            "badgeType": "",
-            "desc": "节点式 AI 绘图框架",
-            "categoryId": "ai_bot_ecosystem",
-            "subcatId": "all",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_1753",
-            "title": "Stable Diffusion WebUI",
-            "url": "https://github.com/AUTOMATIC1111/stable-diffusion-webui",
-            "icon": "",
-            "fallbackText": "ST",
-            "badge": "",
-            "badgeType": "",
-            "desc": "AI 绘图 WebUI",
-            "categoryId": "ai_bot_ecosystem",
-            "subcatId": "all",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_1755",
-            "title": "Fooocus",
-            "url": "https://github.com/lllyasviel/Fooocus",
-            "icon": "",
-            "fallbackText": "FO",
-            "badge": "",
-            "badgeType": "",
-            "desc": "极简 AI 绘图工具",
-            "categoryId": "ai_bot_ecosystem",
-            "subcatId": "all",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_1757",
-            "title": "LMDeploy",
-            "url": "https://github.com/InternLM/lmdeploy",
-            "icon": "",
-            "fallbackText": "LM",
-            "badge": "",
-            "badgeType": "",
-            "desc": "大模型部署工具",
-            "categoryId": "ai_bot_ecosystem",
-            "subcatId": "all",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_1759",
-            "title": "vLLM",
-            "url": "https://github.com/vllm-project/vllm",
-            "icon": "",
-            "fallbackText": "VL",
-            "badge": "",
-            "badgeType": "",
-            "desc": "GPU 推理加速库",
-            "categoryId": "ai_bot_ecosystem",
-            "subcatId": "all",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_1761",
-            "title": "LoRA 模型库",
-            "url": "https://civitai.com/models",
-            "icon": "",
-            "fallbackText": "LO",
-            "badge": "",
-            "badgeType": "",
-            "desc": "LoRA 微调模型",
             "categoryId": "ai_bot_ecosystem",
             "subcatId": "all",
             "highlights": ""
@@ -13009,19 +12398,6 @@
             "highlights": "输入界面设计描述与需求，毫秒级实时生成可交互、高颜值的现代前端组件与页面代码"
           },
           {
-            "id": "new_site_3",
-            "title": "讯飞星辰MaaS",
-            "url": "https://xinghuo.xfyun.cn/maas-home",
-            "icon": "https://xinghuo.xfyun.cn/favicon.ico",
-            "fallbackText": "星辰",
-            "badge": "NEW",
-            "badgeType": "NEW",
-            "desc": "科大讯飞一站式大模型训练、微调与MaaS推理服务平台",
-            "categoryId": "coding_tools",
-            "subcatId": "maas",
-            "highlights": "依托讯飞星火超强底座，提供全链路模型精调与私有化部署；低门槛构建行业专属高精度垂直模型"
-          },
-          {
             "id": "new_site_4",
             "title": "BigModel",
             "url": "https://www.bigmodel.cn/",
@@ -13059,32 +12435,6 @@
             "categoryId": "coding_tools",
             "subcatId": "maas",
             "highlights": "支持200万超长Token上下文实验；官方API Key申请与代码生成导出；极速测试多模态音频与视频输入"
-          },
-          {
-            "id": "new_site_7",
-            "title": "扣子-AI办公",
-            "url": "https://www.coze.cn/",
-            "icon": "https://www.coze.cn/favicon.ico",
-            "fallbackText": "扣子",
-            "badge": "NEW",
-            "badgeType": "NEW",
-            "desc": "字节跳动新一代AI智能体开发平台，快速构建办公与对话机器人",
-            "categoryId": "coding_tools",
-            "subcatId": "agent",
-            "highlights": "支持将Agent一键发布至飞书、微信公众号等办公渠道；海量官方丰富插件与知识库组件库"
-          },
-          {
-            "id": "new_site_8",
-            "title": "方舟 Coding Plan",
-            "url": "https://www.volcengine.com/product/ark",
-            "icon": "https://www.volcengine.com/favicon.ico",
-            "fallbackText": "方舟",
-            "badge": "NEW",
-            "badgeType": "NEW",
-            "desc": "火山引擎大模型服务平台方舟，专为开发者提供代码与模型方案",
-            "categoryId": "coding_tools",
-            "subcatId": "maas",
-            "highlights": "豆包大模型商业化开放生态；高吞吐、低延迟API调用与企业算力保障；全流程模型评测与推理优化"
           },
           {
             "id": "new_site_9",
@@ -14244,19 +13594,6 @@
             "highlights": "毫秒级响应不卡顿；深度解析工程依赖与架构脉络；让双手永远保持心流编写状态"
           },
           {
-            "id": "code_site_9",
-            "title": "Kimi Code",
-            "url": "https://www.kimi.com/code",
-            "icon": "https://www.kimi.com/favicon.ico",
-            "fallbackText": "Kimi",
-            "badge": "超长",
-            "badgeType": "ROSE",
-            "desc": "月之暗面长文本AI代码助手，完整读入整套工程架构与长篇API文档",
-            "categoryId": "coding_tools",
-            "subcatId": "assistant",
-            "highlights": "支持百万级上下文直接加载全部源码；解决复杂跨模块跨仓库联合排障与代码阅读痛点"
-          },
-          {
             "id": "code_site_10",
             "title": "Kilo Code",
             "url": "https://kilo.ai/",
@@ -14569,19 +13906,6 @@
             "highlights": "聚焦前沿开发生产力与智能体工作流，助力工程师探索自动化编程无限可能"
           },
           {
-            "id": "code_add_ollama",
-            "title": "Ollama",
-            "url": "https://ollama.com/",
-            "icon": "https://ollama.com/favicon.ico",
-            "fallbackText": "Oll",
-            "badge": "本地模型",
-            "badgeType": "GOLD",
-            "desc": "本地极速运行Llama 3、DeepSeek等大模型的轻量级命令行工具",
-            "categoryId": "coding_tools",
-            "subcatId": "assistant",
-            "highlights": "一行命令拉取、运行并管理海量开源大模型；支持开箱即用OpenAI兼容API"
-          },
-          {
             "id": "code_add_lmstudio",
             "title": "LM Studio",
             "url": "https://lmstudio.ai/",
@@ -14764,19 +14088,6 @@
             "highlights": ""
           },
           {
-            "id": "site_add_1771",
-            "title": "MetaGPT",
-            "url": "https://github.com/geekan/MetaGPT",
-            "icon": "",
-            "fallbackText": "ME",
-            "badge": "",
-            "badgeType": "",
-            "desc": "多智能体软件开发框架",
-            "categoryId": "coding_tools",
-            "subcatId": "agent",
-            "highlights": ""
-          },
-          {
             "id": "site_add_1773",
             "title": "AutoGen",
             "url": "https://microsoft.github.io/autogen/",
@@ -14785,19 +14096,6 @@
             "badge": "",
             "badgeType": "",
             "desc": "微软多智能体框架",
-            "categoryId": "coding_tools",
-            "subcatId": "agent",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_1775",
-            "title": "Prompt Flow",
-            "url": "https://microsoft.github.io/promptflow/",
-            "icon": "",
-            "fallbackText": "PR",
-            "badge": "",
-            "badgeType": "",
-            "desc": "LLM 应用开发工具",
             "categoryId": "coding_tools",
             "subcatId": "agent",
             "highlights": ""
@@ -15037,19 +14335,6 @@
             "highlights": ""
           },
           {
-            "id": "site_add_1813",
-            "title": "OpenAI API 文档",
-            "url": "https://platform.openai.com/docs",
-            "icon": "",
-            "fallbackText": "OP",
-            "badge": "",
-            "badgeType": "",
-            "desc": "OpenAI 接口文档",
-            "categoryId": "coding_tools",
-            "subcatId": "maas",
-            "highlights": ""
-          },
-          {
             "id": "site_add_1815",
             "title": "Anthropic API",
             "url": "https://docs.anthropic.com",
@@ -15110,32 +14395,6 @@
             "badge": "",
             "badgeType": "",
             "desc": "JetBrains 旗舰 IDE",
-            "categoryId": "coding_tools",
-            "subcatId": "ide",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_1825",
-            "title": "PyCharm",
-            "url": "https://www.jetbrains.com/pycharm/",
-            "icon": "",
-            "fallbackText": "PY",
-            "badge": "",
-            "badgeType": "",
-            "desc": "Python 开发 IDE",
-            "categoryId": "coding_tools",
-            "subcatId": "ide",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_1827",
-            "title": "VS Code 中文",
-            "url": "https://code.visualstudio.com/docs/getstarted/locale",
-            "icon": "",
-            "fallbackText": "VS",
-            "badge": "",
-            "badgeType": "",
-            "desc": "VS Code 中文设置",
             "categoryId": "coding_tools",
             "subcatId": "ide",
             "highlights": ""
@@ -15258,19 +14517,6 @@
             "highlights": ""
           },
           {
-            "id": "site_add_1847",
-            "title": "Rider",
-            "url": "https://www.jetbrains.com/rider/",
-            "icon": "",
-            "fallbackText": "RI",
-            "badge": "",
-            "badgeType": "",
-            "desc": ".NET 跨平台 IDE",
-            "categoryId": "coding_tools",
-            "subcatId": "ide",
-            "highlights": ""
-          },
-          {
             "id": "site_add_1849",
             "title": "Kite",
             "url": "https://www.kite.com",
@@ -15318,19 +14564,6 @@
             "badge": "",
             "badgeType": "",
             "desc": "开源 AI 代码助手插件",
-            "categoryId": "coding_tools",
-            "subcatId": "assistant",
-            "highlights": ""
-          },
-          {
-            "id": "site_add_1857",
-            "title": "星火编程助手",
-            "url": "https://www.xfyun.cn/assistant",
-            "icon": "",
-            "fallbackText": "星火",
-            "badge": "",
-            "badgeType": "",
-            "desc": "讯飞编程助手",
             "categoryId": "coding_tools",
             "subcatId": "assistant",
             "highlights": ""
@@ -15600,11 +14833,11 @@
   "welcome": {
     "enabled": false,
     "title": "",
-    "content": "为期一周不断迭代优化的新版本终于上线啦～\n新应用可能存在小Bug，欢迎宝贝们及时反馈\n收录站资源丰富，很多资源都可以白嫖哦\n发现Bug请第一时间反馈，我会尽快处理",
     "welcomeText": "嗨～欢迎回家！愿你在这里发现更多宝藏！",
+    "content": "为期一周不断迭代优化的新版本终于上线啦～\n新应用可能存在小Bug，欢迎宝贝们及时反馈\n收录站资源丰富，很多资源都可以白嫖哦\n发现Bug请第一时间反馈，我会尽快处理",
+    "ratio": "standard",
     "imageUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790152223860_Screenshot_20260919_200948.jpg",
-    "buttonText": "开始体验",
-    "ratio": "standard"
+    "buttonText": "开始体验"
   },
   "updateDialog": {
     "title": "懒得找了 v1.8.6 已上线",
