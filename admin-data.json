@@ -3,6 +3,10 @@
     "code": 75,
     "name": "1.8.6",
     "changelog": [
+      "【09:33】删除软件「NetShort 短剧」",
+      "【09:33】删除软件「河马剧场」",
+      "【09:33】删除软件「番茄短剧」",
+      "【09:32】一键去重：删除 59 个重复站点",
       "【09:32】一键去重：删除 59 个重复站点",
       "【09:32】一键去重：删除 59 个重复站点",
       "? v1.8.6：恢复全部站点与软件库，1161+ 不重复站点完整在线",
@@ -14694,51 +14698,6 @@
       "iconUrl": "",
       "previewUrl": "",
       "mode": "url"
-    },
-    {
-      "id": "sw_1790272498603_2",
-      "type": "software",
-      "title": "番茄短剧",
-      "desc": "番茄小说短剧版块 · 原著小说无缝衔接",
-      "author": "懒得找了官方推荐",
-      "badge": "热门",
-      "tags": "短剧 免费 番茄",
-      "url": "https://fanqienovel.com/short-play",
-      "apkUrl": "",
-      "fileUrl": "https://fanqienovel.com/short-play",
-      "iconUrl": "",
-      "previewUrl": "",
-      "mode": "url"
-    },
-    {
-      "id": "sw_1790272498603_3",
-      "type": "software",
-      "title": "河马剧场",
-      "desc": "高品质短剧平台 · 微短剧/网络短剧",
-      "author": "懒得找了官方推荐",
-      "badge": "精品",
-      "tags": "短剧 剧场 官方",
-      "url": "https://www.hemashort.com/",
-      "apkUrl": "",
-      "fileUrl": "https://www.hemashort.com/",
-      "iconUrl": "",
-      "previewUrl": "",
-      "mode": "url"
-    },
-    {
-      "id": "sw_1790272498603_4",
-      "type": "software",
-      "title": "NetShort 短剧",
-      "desc": "高分热播短剧免费在线观看",
-      "author": "懒得找了官方推荐",
-      "badge": "精选",
-      "tags": "短剧 免费 在线",
-      "url": "https://netshort.com/zh",
-      "apkUrl": "",
-      "fileUrl": "https://netshort.com/zh",
-      "iconUrl": "",
-      "previewUrl": "",
-      "mode": "url"
     }
   ],
   "skills": [
@@ -14844,6 +14803,10 @@
   "updateDialog": {
     "title": "懒得找了 v1.8.6 已上线",
     "changelog": [
+      "【09:33】删除软件「NetShort 短剧」",
+      "【09:33】删除软件「河马剧场」",
+      "【09:33】删除软件「番茄短剧」",
+      "【09:32】一键去重：删除 59 个重复站点",
       "【09:32】一键去重：删除 59 个重复站点",
       "【09:32】一键去重：删除 59 个重复站点",
       "? v1.8.6：恢复全部站点与软件库，1161+ 不重复站点完整在线",
