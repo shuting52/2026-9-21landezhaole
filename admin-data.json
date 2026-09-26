@@ -3,15 +3,14 @@
     "code": 76,
     "name": "1.8.7",
     "changelog": [
-      "? v1.8.7：控制台与本体100%融合，云端增删软件/Skill/工具箱工具实时同步",
       "⚡ 开屏倒计时流畅度优化：帧级校准，读秒不再卡顿",
       "? 背景媒体全局应用：设置等白色界面自动转透明磨砂，图片/视频背景全方位呈现",
       "? Skill 视频预览修复：缓存失败自动回退远程直连，子分类左右滑动切换",
       "? 软件版块三列一排 + 自动归类分类 + 软件 icon 自动识别"
     ],
-    "force": false,
+    "force": true,
     "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.8.7-1790392857.apk",
-    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.8.7-1790392857.apk"
+    "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.8.7-1790392857.apk"
   },
   "home": {
     "categories": [
@@ -15599,18 +15598,17 @@
     "bgColor": "#0b0b1a"
   },
   "welcome": {
-    "enabled": false,
+    "enabled": true,
     "title": "",
-    "content": "为期一周不断迭代优化的新版本终于上线啦～\n新应用可能存在小Bug，欢迎宝贝们及时反馈\n收录站资源丰富，很多资源都可以白嫖哦\n发现Bug请第一时间反馈，我会尽快处理",
     "welcomeText": "嗨～欢迎回家！愿你在这里发现更多宝藏！",
+    "content": "为期一周不断迭代优化的新版本终于上线啦～\n新应用可能存在小Bug，欢迎宝贝们及时反馈\n收录站资源丰富，很多资源都可以白嫖哦\n发现Bug请第一时间反馈，我会尽快处理",
+    "ratio": "standard",
     "imageUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790152223860_Screenshot_20260919_200948.jpg",
-    "buttonText": "开始体验",
-    "ratio": "standard"
+    "buttonText": "开始体验"
   },
   "updateDialog": {
     "title": "懒得找了 v1.8.7 已上线",
     "changelog": [
-      "? v1.8.7：控制台与本体100%融合，云端增删软件/Skill/工具箱工具实时同步",
       "⚡ 开屏倒计时流畅度优化：帧级校准，读秒不再卡顿",
       "? 背景媒体全局应用：设置等白色界面自动转透明磨砂，图片/视频背景全方位呈现",
       "? Skill 视频预览修复：缓存失败自动回退远程直连，子分类左右滑动切换",
