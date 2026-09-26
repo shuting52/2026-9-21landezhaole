@@ -26,8 +26,8 @@ android {
     // v1.8.6：恢复站点/软件库 + 开屏倒计时默认 5 秒
     // v1.8.7：控制台深度融合（工具箱云端同步/软件横排/背景媒体）- 更新弹窗免授权直装 + CSS 动态进度条
     // v1.8.9：更新弹窗全新重写——最新动态 CSS 手绘风格（手绘描边/流动渐变/涂鸦粒子/对话气泡）
-    versionCode = 78
-    versionName = "1.8.9"
+    versionCode = 79
+    versionName = "1.9.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
