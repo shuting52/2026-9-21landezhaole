@@ -14,7 +14,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.Settings;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -56,6 +55,12 @@ import java.util.List;
  *   · 安装优先走 PackageInstaller 系统会话（原子替换、保留数据），失败回退 FileProvider。
  *   · 签名不一致（INSTALL_FAILED_UPDATE_INCOMPATIBLE）时明确提示并引导卸载旧版本。
  *   · 下载失败自动尝试 jsDelivr 镜像，避免 raw.githubusercontent.com 被墙导致更新失败。
+ *
+ * ── v1.0.6 更新弹窗直装优化 ──
+ *   · 彻底移除「安装未知应用授权」设置页跳转（不再引导 Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES）：
+ *     页面点击更新 → 进度条走完 → 直接调用系统安装器呈现新版本安装（PackageInstaller 会话优先）。
+ *   · 新增 getDownloadProgress()/getUpdateStatus() JS 桥，页面可轮询显示下载进度条。
+ *   · 安装结果（成功/失败/签名冲突）通过 evaluateJavascript 实时回传页面弹窗。
  */
 public class MainActivity extends Activity {
 
@@ -66,6 +71,11 @@ public class MainActivity extends Activity {
     private WebView webView;
     private ValueCallback<Uri[]> uploadMessage;
     private BroadcastReceiver installReceiver;
+
+    // 控制台自更新下载进度（0~100），供 JS 进度条轮询显示
+    private volatile int downloadProgress = 0;
+    // 最近一次下载/安装结果描述，供 JS 弹窗展示
+    private volatile String lastUpdateStatus = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -150,12 +160,15 @@ public class MainActivity extends Activity {
             }
 
             // 控制台自更新：下载新版本 APK 到应用私有目录，然后自动触发安装（替换老版本）
+            // v1.0.6 优化：一律不走「安装未知应用授权」设置页——进度条走完后直接调用系统安装器
+            // 呈现新版本安装（PackageInstaller 会话优先，失败回退 FileProvider，全程不再跳系统设置页）
             @JavascriptInterface
             public void downloadAndInstall(final String url, final String name) {
                 final String safeName = (name == null || name.trim().isEmpty())
                         ? "console-update.apk"
                         : name.replaceAll("[^a-zA-Z0-9._\\-]", "_");
-                if (!ensureInstallPermission()) return;
+                downloadProgress = 0;
+                lastUpdateStatus = "downloading";
                 new Thread(() -> {
                     File apk = null;
                     String lastError = "";
@@ -172,14 +185,35 @@ public class MainActivity extends Activity {
                     final String err = lastError;
                     runOnUiThread(() -> {
                         if (result != null && isValidApk(result)) {
+                            downloadProgress = 100;
+                            lastUpdateStatus = "installing";
+                            notifyJs("window.__consoleUpdate && window.__consoleUpdate(100,'installing','')");
                             installApk(result);
                         } else if (result != null) {
+                            lastUpdateStatus = "error";
+                            notifyJs("window.__consoleUpdate && window.__consoleUpdate(100,'error','控制台安装包不完整，请稍后重试')");
                             toast("控制台安装包不完整，请稍后重试");
                         } else {
+                            lastUpdateStatus = "error";
+                            String jsErr = (err == null ? "" : err);
+                            jsErr = jsErr.replace("\\", "\\\\").replace("'", "\\'").replace("\"", "\\\"").replace("\r", " ").replace("\n", " ");
+                            notifyJs("window.__consoleUpdate && window.__consoleUpdate(0,'error','" + jsErr + "')");
                             toast("控制台更新下载失败：" + err + "（请检查网络后重试）");
                         }
                     });
                 }).start();
+            }
+
+            // 下载进度百分比（0~100），供页面进度条轮询
+            @JavascriptInterface
+            public String getDownloadProgress() {
+                return String.valueOf(downloadProgress);
+            }
+
+            // 最近一次自更新状态：downloading / installing / success / error
+            @JavascriptInterface
+            public String getUpdateStatus() {
+                return lastUpdateStatus;
             }
 
             // 真实已安装版本号（versionCode）——控制台据此判断是否需要更新
@@ -235,6 +269,7 @@ public class MainActivity extends Activity {
             throw new IOException("HTTP " + code);
         }
         long total = 0;
+        final long contentLength = conn.getContentLengthLong();
         try (InputStream in = conn.getInputStream();
              OutputStream out = new FileOutputStream(apkFile)) {
             byte[] buf = new byte[16384];
@@ -242,6 +277,11 @@ public class MainActivity extends Activity {
             while ((n = in.read(buf)) > 0) {
                 out.write(buf, 0, n);
                 total += n;
+                // 实时进度回传：JS 进度条轮询 getDownloadProgress() 即可看到增长
+                if (contentLength > 0) {
+                    downloadProgress = (int) (total * 100 / contentLength);
+                    if (downloadProgress > 99) downloadProgress = 99;
+                }
             }
             out.flush();
         } finally {
@@ -349,7 +389,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    /** 安装结果接收器：驱动「安装中 → 完成 / 失败（含签名冲突引导卸载）」 */
+    /** 安装结果接收器：驱动「安装中 → 完成 / 失败（含签名冲突引导卸载）」，并同步给 JS 弹窗 */
     private void registerInstallReceiver() {
         installReceiver = new BroadcastReceiver() {
             @Override
@@ -358,6 +398,7 @@ public class MainActivity extends Activity {
                 int status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, Integer.MIN_VALUE);
                 String message = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE);
                 if (status == PackageInstaller.STATUS_PENDING_USER_ACTION) {
+                    // 系统安装确认页（直接呈现新版本安装），不是「允许未知应用」设置页
                     Intent confirm = intent.getParcelableExtra(Intent.EXTRA_INTENT);
                     if (confirm != null) {
                         confirm.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -369,6 +410,8 @@ public class MainActivity extends Activity {
                     return;
                 }
                 if (status == PackageInstaller.STATUS_SUCCESS) {
+                    lastUpdateStatus = "success";
+                    notifyJs("window.__consoleUpdate && window.__consoleUpdate(100,'success','控制台已更新到新版本，请重新打开')");
                     toastInternal("控制台已更新到新版本，请重新打开");
                     return;
                 }
@@ -377,11 +420,17 @@ public class MainActivity extends Activity {
                         || msg.contains("signatures do not match")
                         || msg.contains("signature");
                 if (signatureConflict) {
+                    lastUpdateStatus = "error";
+                    notifyJs("window.__consoleUpdate && window.__consoleUpdate(100,'error','新版本与已安装版本签名不一致，需先卸载旧版控制台再安装')");
                     toastInternal("新版本与已安装版本签名不一致，需先卸载旧版控制台再安装");
                     openUninstall();
                 } else if (status == PackageInstaller.STATUS_FAILURE_ABORTED) {
+                    lastUpdateStatus = "error";
+                    notifyJs("window.__consoleUpdate && window.__consoleUpdate(100,'error','已取消安装')");
                     toastInternal("已取消安装");
                 } else {
+                    lastUpdateStatus = "error";
+                    notifyJs("window.__consoleUpdate && window.__consoleUpdate(100,'error','安装失败，请稍后重试')");
                     toastInternal("安装失败，请稍后重试");
                 }
             }
@@ -390,23 +439,20 @@ public class MainActivity extends Activity {
         ContextCompat.registerReceiver(this, installReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED);
     }
 
-    /** Android 8+ 需要「允许安装未知应用」权限 */
-    private boolean ensureInstallPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+    /** 向页面 JS 推送更新进度/结果（evaluateJavascript，UI 线程执行） */
+    private void notifyJs(final String js) {
+        runOnUiThread(() -> {
             try {
-                if (!getPackageManager().canRequestPackageInstalls()) {
-                    Intent i = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-                            Uri.parse("package:" + getPackageName()));
-                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(i);
-                    toastInternal("请先允许「安装未知应用」，返回后重试");
-                    return false;
+                if (webView != null) {
+                    webView.evaluateJavascript(js, null);
                 }
             } catch (Exception ignored) {
             }
-        }
-        return true;
+        });
     }
+
+    /** 控制台自更新 v1.0.6：不再提供「允许安装未知应用」设置页引导（已删除 ensureInstallPermission），
+     *  进度条走完直接调用系统安装器呈现新版本安装。 */
 
     private void openUninstall() {
         try {
