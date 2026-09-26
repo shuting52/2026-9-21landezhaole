@@ -22,7 +22,19 @@ data class AdminData(
     val updateDialog: UpdateDialogDto? = null,
     val marquee: MarqueeDto? = null,
     val console: ConsoleDto? = null,
-    val ipMonitor: IpMonitorDto? = null
+    val ipMonitor: IpMonitorDto? = null,
+    // v1.8.7：控制台可增删的「云端工具箱工具」
+    val tools: List<ToolDto> = emptyList()
+)
+
+/** 云端工具箱扩展工具（控制台增删，实时同步到本体工具箱页） */
+data class ToolDto(
+    val id: String = "",
+    val name: String = "",
+    val desc: String = "",
+    val url: String = "",
+    val icon: String = "🔧",
+    val badge: String = ""
 )
 
 /** 控制台程序自身版本（与本体软件更新完全分离，不参与本体版本判断） */
