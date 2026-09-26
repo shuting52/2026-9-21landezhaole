@@ -4,6 +4,7 @@
     "name": "1.8.6",
     "changelog": [
       "【09:32】一键去重：删除 59 个重复站点",
+      "【09:32】一键去重：删除 59 个重复站点",
       "? v1.8.6：恢复全部站点与软件库，1161+ 不重复站点完整在线",
       "⚡ 软件库恢复：红果短剧/番茄短剧/河马剧场/NetShort 已重新上架",
       "? Skill 与联系作者版块保持完整（微信/QQ/支付宝/官方群）",
@@ -14844,6 +14845,7 @@
     "title": "懒得找了 v1.8.6 已上线",
     "changelog": [
       "【09:32】一键去重：删除 59 个重复站点",
+      "【09:32】一键去重：删除 59 个重复站点",
       "? v1.8.6：恢复全部站点与软件库，1161+ 不重复站点完整在线",
       "⚡ 软件库恢复：红果短剧/番茄短剧/河马剧场/NetShort 已重新上架",
       "? Skill 与联系作者版块保持完整（微信/QQ/支付宝/官方群）",
@@ -14855,7 +14857,7 @@
     "customHtml": ""
   },
   "marquee": {
-    "enabled": true,
+    "enabled": false,
     "icon": "📢",
     "defaultText": "本软件集成了上百款站点和应用，有些内容都是可以白嫖的哟～具体内容请自行发掘体验。后续我们会陆续的更新新内容的，请尽情期待吧～  懒得找了 官宣",
     "segments": [
@@ -14879,7 +14881,7 @@
     "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v1.0.5-1790385730.apk"
   },
   "ipMonitor": {
-    "enabled": false,
+    "enabled": true,
     "url": "https://myip.ipip.net/"
   }
 }
