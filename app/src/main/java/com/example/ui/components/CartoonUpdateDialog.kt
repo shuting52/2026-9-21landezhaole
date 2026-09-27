@@ -94,7 +94,6 @@ fun CartoonUpdateDialog(
     newVersion: String? = null,
     onStartDownload: () -> Unit,
     onInstall: () -> Unit,
-    onOpenInstallSettings: () -> Unit,
     onDismiss: () -> Unit,
     onRetry: () -> Unit,
     onDone: () -> Unit,
@@ -329,16 +328,6 @@ fun CartoonUpdateDialog(
                         onRetry = onRetry,
                         onDismiss = onDismiss,
                         showDismiss = !isForce
-                    )
-                }
-
-                CartoonUpdateState.NeedInstallPermission -> {
-                    // v1.7.8：强制更新时不允许「暂不更新」跳过，只能去开权限或继续
-                    NeedPermissionSection(
-                        onOpenSettings = onOpenInstallSettings,
-                        onInstall = onInstall,
-                        onDismiss = onDismiss,
-                        force = isForce
                     )
                 }
 
@@ -1129,52 +1118,6 @@ private fun ErrorSection(
                     pulsing = true
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun NeedPermissionSection(
-    onOpenSettings: () -> Unit,
-    onInstall: () -> Unit,
-    onDismiss: () -> Unit,
-    force: Boolean = false
-) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = "安装未完成，可点击下方按钮重新尝试\n系统将自动调用安装器完成安装",
-            color = Color.White.copy(alpha = 0.85f),
-            fontSize = 13.sp,
-            lineHeight = 19.sp,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        GradientButton(
-            text = "重新安装",
-            gradient = listOf(CuteCyan, CutePurple, CutePink),
-            modifier = Modifier.fillMaxWidth(),
-            onClick = onInstall,
-            pulsing = true
-        )
-        Spacer(modifier = Modifier.height(6.dp))
-        Text(
-            text = "点击后将自动继续安装流程",
-            color = Color.White.copy(alpha = 0.45f),
-            fontSize = 10.5.sp
-        )
-        Spacer(modifier = Modifier.height(6.dp))
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            // v1.7.8：强制更新时隐藏「暂不更新」，只能去开权限或继续安装
-            if (!force) {
-                TextButtonGhost(text = "暂不更新", onClick = onDismiss, modifier = Modifier.weight(1f))
-            }
-            GradientButton(
-                text = "重新安装",
-                gradient = listOf(CuteGreen, CuteCyan),
-                modifier = Modifier.weight(1.2f),
-                onClick = onInstall,
-                pulsing = true
-            )
         }
     }
 }

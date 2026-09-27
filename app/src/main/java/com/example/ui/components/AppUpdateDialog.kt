@@ -418,14 +418,6 @@ fun AppUpdateDialog(
         newVersion = versionName.removePrefix("v"),
         onStartDownload = { startUpdate() },
         onInstall = { startUpdate() },
-        // v1.8.2：移除「授权未知应用程序」引导，改为走系统原生安装流程（FileProvider 打开系统安装器）
-        onOpenInstallSettings = {
-            Toast.makeText(
-                context,
-                "将自动调用系统安装器完成安装，请在弹出的系统页面中确认",
-                Toast.LENGTH_LONG
-            ).show()
-        },
         onDismiss = { closeUpdate() },
         onRetry = { startUpdate() },
         onDone = {
