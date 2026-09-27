@@ -3,6 +3,8 @@
     "code": 83,
     "name": "1.0.2",
     "changelog": [
+      "【23:44】删除Skill「生日祝福Skill」",
+      "【23:44】删除Skill「系统桌面趣味视频」",
       "✨ v1.0.2 更新来啦～",
       "? 修复：更新弹窗下载完成后卡在「正在安装」无法安装的问题（新增自动兜底+版本检测，安装不再卡死）",
       "? 更新弹窗全新 CSS 动态动画呈现：流光横幅 + 漂浮粒子 + 呼吸列表 + 渐变进度条",
@@ -10,7 +12,7 @@
     ],
     "force": false,
     "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.0.2-1790438178.apk",
-    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.0.2-1790438178.apk"
+    "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.0.2-1790438178.apk"
   },
   "home": {
     "categories": [
@@ -15643,6 +15645,21 @@
       "mediaUrl": "",
       "iconUrl": "",
       "mode": "url"
+    },
+    {
+      "id": "sk_muj2i3ku67tu",
+      "type": "skill",
+      "promptType": "prompt_video",
+      "title": "卡点变装",
+      "desc": "",
+      "prompt": "测试",
+      "author": "",
+      "badge": "",
+      "tags": "",
+      "previewUrl": "",
+      "mediaUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790468070560_卡点换装.mp4",
+      "url": "",
+      "mode": "file"
     }
   ],
   "settings": {
@@ -15684,6 +15701,8 @@
   "updateDialog": {
     "title": "懒得找了 v1.0.2 已上线",
     "changelog": [
+      "【23:44】删除Skill「生日祝福Skill」",
+      "【23:44】删除Skill「系统桌面趣味视频」",
       "✨ v1.0.2 更新来啦～",
       "? 修复：更新弹窗下载完成后卡在「正在安装」无法安装的问题（新增自动兜底+版本检测，安装不再卡死）",
       "? 更新弹窗全新 CSS 动态动画呈现：流光横幅 + 漂浮粒子 + 呼吸列表 + 渐变进度条",
