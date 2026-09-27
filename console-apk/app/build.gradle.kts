@@ -12,8 +12,9 @@ android {
         targetSdk = 36
         // v1.0.6：更新弹窗免授权直装 + 软件/Skill 内容识别优化 + 工具箱合集；v1.0.7：版本+1
         // v1.0.8：更新弹窗全新重写——最新动态 CSS 手绘弹窗（手绘双层描边/流动渐变/涂鸦粒子/对话气泡）
-        versionCode = 33
-        versionName = "1.0.8"
+        // v1.0.9：设置版块新增「软件停止运营」开关（本体强制弹窗并退出）+ 强化型安全加密加固说明
+        versionCode = 34
+        versionName = "1.0.9"
     }
 
     signingConfigs {

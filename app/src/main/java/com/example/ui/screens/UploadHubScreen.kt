@@ -115,7 +115,7 @@ fun UploadHubScreen(
 
     Box(modifier = modifier.fillMaxSize()) {
         if (gridMode && resourceType == "software") {
-            // ===== 软件版块：三列网格 + 自动归类 =====
+            // ===== 软件版块：一排三个横排网格 + 自动归类 + 自动识别 icon（v1.0.4 升级） =====
             // 自动归类分组（保持云端的顺序，仅分组显示）
             val grouped = remember(resources) {
                 val map = LinkedHashMap<String, MutableList<UploadedResourceEntity>>()
@@ -123,7 +123,7 @@ fun UploadHubScreen(
                 map.toList()
             }
             LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
+                columns = GridCells.Fixed(3),
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 12.dp, vertical = 12.dp),

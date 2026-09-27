@@ -572,7 +572,11 @@ fun SettingsScreen(
     // Modal Dialogs for Policies & About Us
     when (activeDialogType) {
         "feedback_bug" -> {
-            FeedbackDialog(onDismiss = { activeDialogType = null })
+            FeedbackDialog(
+                onDismiss = { activeDialogType = null },
+                // v1.0.4：读取官方反馈邮箱，修复反馈收不到问题
+                cloudSettings = cloudSettings
+            )
         }
         "update" -> {
             AppUpdateDialog(
@@ -791,11 +795,7 @@ private fun SettingsClickableItem(
 }
 
 fun openQqGroup(context: Context, groupUrl: String = OFFICIAL_QQ_GROUP_URL, groupUin: String = "439211347") {
-    // 1. Copy group number to clipboard
-    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    clipboard.setPrimaryClip(ClipData.newPlainText("官方QQ群号", groupUin))
-
-    // 2. Try launching QQ app directly via card intent
+    // v1.0.4：不再自动复制群号，点击「官方交流群」直接唤起 QQ 加群 / 跳转指定群链接
     var launched = false
     try {
         val qqIntent = Intent(
@@ -806,7 +806,7 @@ fun openQqGroup(context: Context, groupUrl: String = OFFICIAL_QQ_GROUP_URL, grou
         }
         context.startActivity(qqIntent)
         launched = true
-        Toast.makeText(context, "已复制群号($groupUin)，正在唤起QQ加群...", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, "正在唤起QQ加入官方群...", Toast.LENGTH_SHORT).show()
     } catch (_: Exception) {
     }
 
@@ -816,9 +816,9 @@ fun openQqGroup(context: Context, groupUrl: String = OFFICIAL_QQ_GROUP_URL, grou
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             context.startActivity(webIntent)
-            Toast.makeText(context, "已复制群号($groupUin)，正在打开官方群...", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "正在打开官方群...", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
-            Toast.makeText(context, "已复制官方QQ群号: $groupUin，请在QQ中搜索加入", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, "打开失败，请手动在QQ中搜索群号: $groupUin", Toast.LENGTH_LONG).show()
         }
     }
 }

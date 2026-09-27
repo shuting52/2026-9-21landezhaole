@@ -107,7 +107,9 @@ private val FEEDBACK_CATEGORIES = listOf(
 @Composable
 fun FeedbackDialog(
     onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    // v1.0.4：读取控制台配置的官方反馈邮箱（formsubmit 送达目标）
+    cloudSettings: com.example.data.remote.SettingsDto? = null
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -117,6 +119,11 @@ fun FeedbackDialog(
     var userContact by remember { mutableStateOf("") }
     var includeDeviceInfo by remember { mutableStateOf(true) }
     var isSending by remember { mutableStateOf(false) }
+
+    // v1.0.4：官方反馈邮箱 = 控制台 settings.feedbackEmail（优先），未配置则回退内置邮箱
+    val feedbackEmail = remember(cloudSettings) {
+        cloudSettings?.feedbackEmail?.trim()?.takeIf { it.isNotBlank() } ?: "307779523@qq.com"
+    }
 
     val deviceInfoSummary = remember {
         // v1.0.1：版本号动态取自 BuildConfig，不再硬编码，避免发版后反馈信息携带旧版本号
@@ -147,8 +154,9 @@ fun FeedbackDialog(
             isSending = true
             coroutineScope.launch {
                 val fullReport = buildFullReport()
-                // 优先通过 FormSubmit 邮件服务真实送达开发者邮箱（无需用户安装邮件客户端）
-                val email = "307779523@qq.com"
+                // v1.0.4：优先通过 FormSubmit 邮件服务真实送达官方反馈邮箱（无需用户安装邮件客户端）
+                val email = feedbackEmail
+                var sentMsg = ""
                 val ok = withContext(Dispatchers.IO) {
                     try {
                         val client = OkHttpClient.Builder()
@@ -159,6 +167,7 @@ fun FeedbackDialog(
                             put("_subject", "【懒得找了·软件反馈】${selectedCategory.title}")
                             put("_template", "table")
                             put("_captcha", "false")
+                            put("_replyto", userContact.ifBlank { "" })
                             put("反馈类型", selectedCategory.title)
                             put("反馈内容", feedbackContent)
                             put("联系方式", userContact.ifBlank { "未留" })
@@ -171,9 +180,11 @@ fun FeedbackDialog(
                             .post(body)
                             .build()
                         client.newCall(request).execute().use { resp ->
-                            resp.isSuccessful || resp.code == 200
+                            sentMsg = resp.body?.string() ?: ""
+                            resp.isSuccessful || resp.code == 200 || resp.code == 201
                         }
                     } catch (e: Exception) {
+                        sentMsg = e.message ?: ""
                         false
                     }
                 }
@@ -185,10 +196,14 @@ fun FeedbackDialog(
                         val prev = sp.getString("history", "") ?: ""
                         sp.edit().putString("history", "$fullReport\n---\n$prev").apply()
                     } catch (_: Exception) {}
-                    Toast.makeText(context, "✅ 反馈已真实送达开发者邮箱！感谢您的宝贵建议", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, "✅ 反馈已送达官方邮箱（$email），感谢您的宝贵建议", Toast.LENGTH_LONG).show()
                     onDismiss()
                 } else {
-                    // 失败回退：系统邮件客户端发送
+                    // v1.0.4 修复收不到反馈：失败时先复制到剪贴板保证不丢失，再尝试邮件客户端代发
+                    try {
+                        val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        cm.setPrimaryClip(ClipData.newPlainText("反馈信息", fullReport))
+                    } catch (_: Exception) {}
                     try {
                         val subject = Uri.encode("【懒得找了·软件反馈】${selectedCategory.title}")
                         val body = Uri.encode(fullReport)
@@ -196,9 +211,13 @@ fun FeedbackDialog(
                         val intent = Intent(Intent.ACTION_SENDTO, Uri.parse(mailto))
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         context.startActivity(intent)
-                        Toast.makeText(context, "网络发送失败，已打开邮件客户端代发（首次使用请在邮箱中点击确认激活）", Toast.LENGTH_LONG).show()
+                        Toast.makeText(
+                            context,
+                            "网络发送未成功（${sentMsg.take(30)}），已复制反馈并打开邮件客户端代发；首次使用请在邮箱中点击确认激活后即可正常接收",
+                            Toast.LENGTH_LONG
+                        ).show()
                     } catch (e: Exception) {
-                        Toast.makeText(context, "发送失败：请检查网络或安装邮箱客户端后重试", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "发送失败，反馈已复制到剪贴板（请粘贴发至 $email）", Toast.LENGTH_LONG).show()
                     }
                 }
             }

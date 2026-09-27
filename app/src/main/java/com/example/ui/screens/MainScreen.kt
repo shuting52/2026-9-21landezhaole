@@ -190,6 +190,8 @@ fun MainScreen(
     var showCloudUpdateDialog by remember { mutableStateOf(false) }
     var updateDialogDismissed by remember { mutableStateOf(false) }
     var welcomeDialogDismissed by remember { mutableStateOf(false) }
+    // v1.0.9：软件停止运营强制弹窗（控制台开关控制）
+    var showShutdownDialog by remember { mutableStateOf(false) }
 
     // 启动时恢复自定义背景（跨重启持久）
     LaunchedEffect(Unit) {
@@ -211,7 +213,10 @@ fun MainScreen(
         }
         GlobalWindBackground(
             bgMediaType = bgType,
-            bgMediaUrl = bgUrl
+            bgMediaUrl = bgUrl,
+            // v1.0.4：主题切换优化——背景跟随软件背景（主题背景色）同步
+            themeBgColor = uiState.currentTheme.bgColor,
+            themePrimaryColor = uiState.currentTheme.primaryColor
         ) {
             // v1.8.7：背景媒体（图片/视频）激活时，全局白色 background/surface 自动转为半透明磨砂，
             // 让背景透出（设置页、卡片、各 Tab 均生效）；无背景媒体时保持原样
@@ -361,8 +366,9 @@ fun MainScreen(
                         resources = uploadedSoftware,
                         onDelete = { id -> viewModel.deleteUploadedResource(id) },
                         modifier = Modifier.padding(paddingValues),
-                        showDelete = false
-                        // v1.9.0：恢复软件版块之前的内容——回到单列大卡片样式（移除 v1.8.7 的三列网格）
+                        showDelete = false,
+                        // v1.0.4：软件自动分类/自动icon + 一排三个横排网格呈现
+                        gridMode = true
                     )
                 }
                 AppBottomTab.SKILL -> {
@@ -446,6 +452,53 @@ fun MainScreen(
             splash = uiState.cloudSplash,
             splashReady = uiState.isCloudReady
         )
+
+        // v1.0.9：软件停止运营——控制台开关开启时强制弹窗，仅「确认」按钮，点击后强行退出
+        val shutdownCfg = uiState.cloudSettings?.serverShutdown
+        LaunchedEffect(uiState.isCloudReady, shutdownCfg?.enabled) {
+            if (uiState.isCloudReady && shutdownCfg?.enabled == true) {
+                showShutdownDialog = true
+            }
+        }
+        if (showShutdownDialog) {
+            androidx.compose.material3.AlertDialog(
+                onDismissRequest = { /* 强制弹窗，不可关闭 */ },
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("⛔", fontSize = 20.sp)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("软件停止运营", fontWeight = FontWeight.Black, color = Color(0xFFE53935))
+                    }
+                },
+                text = {
+                    Text(
+                        text = shutdownCfg?.notice?.ifBlank {
+                            "感谢您一直以来的支持！本软件已停止运营，由此给您带来的不便敬请谅解。"
+                        } ?: "感谢您一直以来的支持！本软件已停止运营，由此给您带来的不便敬请谅解。",
+                        fontSize = 13.5.sp,
+                        lineHeight = 21.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            // 点击「确认」后软件强制关闭
+                            try {
+                                (context as? android.app.Activity)?.finish()
+                            } catch (_: Exception) {}
+                            kotlin.system.exitProcess(0)
+                        },
+                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFE53935)
+                        ),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text("确认", fontWeight = FontWeight.Bold)
+                    }
+                }
+            )
+        }
 
         // 云端实时更新弹窗：控制台发布新版本后，本体启动自动弹出更新提醒。
         // 已展示过的版本号持久化记录，避免重复弹窗；新版本安装后（本地code==云端code）不再提示。

@@ -45,6 +45,9 @@ fun GlobalWindBackground(
     modifier: Modifier = Modifier,
     bgMediaType: String = "none",
     bgMediaUrl: String = "",
+    // v1.0.4：主题切换优化——背景跟随软件背景（主题背景色）同步
+    themeBgColor: Color? = null,
+    themePrimaryColor: Color? = null,
     content: @Composable BoxScope.() -> Unit
 ) {
     val uiverse = LocalUiverseState.current
@@ -161,32 +164,78 @@ fun GlobalWindBackground(
                 Box(modifier = Modifier.fillMaxSize().background(uiverse.customStyle.backgroundColor))
             }
             else -> {
-                // Background Gradient Layer - warm peach breeze gradient
-                val gradientColors = listOf(
-                    WindPeach1,
-                    WindPeach2,
-                    WindPeach3,
-                    WindPeach4,
-                    WindPeach5
-                )
-
-                // Canvas for animated 85deg linear gradient
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    val width = size.width
-                    val height = size.height
-
-                    val startX = -width * 0.2f + windShift * width * 0.3f
-                    val startY = 0f + windShift * height * 0.1f
-                    val endX = width * 1.1f + windShift * width * 0.2f
-                    val endY = height * 1.0f
-
-                    drawRect(
-                        brush = Brush.linearGradient(
-                            colors = gradientColors,
-                            start = Offset(startX, startY),
-                            end = Offset(endX, endY)
+                // v1.0.4：主题背景同步——无 uiverse 特殊样式/自定义媒体时，
+                // 背景渐变跟随当前主题的背景色/主色（切换主题即同步换背景）
+                if (themeBgColor != null) {
+                    val base = themeBgColor
+                    val accent = themePrimaryColor ?: themeBgColor
+                    Canvas(modifier = Modifier.fillMaxSize()) {
+                        val width = size.width
+                        val height = size.height
+                        val startX = -width * 0.2f + windShift * width * 0.3f
+                        val startY = 0f + windShift * height * 0.1f
+                        val endX = width * 1.1f + windShift * width * 0.2f
+                        val endY = height * 1.0f
+                        drawRect(
+                            brush = Brush.linearGradient(
+                                colors = listOf(
+                                    base,
+                                    base.copy(alpha = 0.92f),
+                                    androidx.compose.ui.graphics.Color(
+                                        red = (base.red + accent.red) / 2f,
+                                        green = (base.green + accent.green) / 2f,
+                                        blue = (base.blue + accent.blue) / 2f
+                                    ).copy(alpha = 0.9f),
+                                    base
+                                ),
+                                start = Offset(startX, startY),
+                                end = Offset(endX, endY)
+                            )
                         )
+                        // 主题主色轻光晕（氛围点缀，让背景与主题更协调）
+                        drawCircle(
+                            brush = Brush.radialGradient(
+                                colors = listOf(accent.copy(alpha = 0.16f), Color.Transparent),
+                                center = Offset(width * (0.30f + windShift * 0.15f), height * 0.28f),
+                                radius = width * 0.55f
+                            )
+                        )
+                        drawCircle(
+                            brush = Brush.radialGradient(
+                                colors = listOf(accent.copy(alpha = 0.10f), Color.Transparent),
+                                center = Offset(width * (0.72f - windShift * 0.15f), height * 0.78f),
+                                radius = width * 0.5f
+                            )
+                        )
+                    }
+                } else {
+                    // Background Gradient Layer - warm peach breeze gradient
+                    val gradientColors = listOf(
+                        WindPeach1,
+                        WindPeach2,
+                        WindPeach3,
+                        WindPeach4,
+                        WindPeach5
                     )
+
+                    // Canvas for animated 85deg linear gradient
+                    Canvas(modifier = Modifier.fillMaxSize()) {
+                        val width = size.width
+                        val height = size.height
+
+                        val startX = -width * 0.2f + windShift * width * 0.3f
+                        val startY = 0f + windShift * height * 0.1f
+                        val endX = width * 1.1f + windShift * width * 0.2f
+                        val endY = height * 1.0f
+
+                        drawRect(
+                            brush = Brush.linearGradient(
+                                colors = gradientColors,
+                                start = Offset(startX, startY),
+                                end = Offset(endX, endY)
+                            )
+                        )
+                    }
                 }
             }
         }

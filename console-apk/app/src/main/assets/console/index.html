@@ -738,6 +738,11 @@ function collectAllForms(){
         security: {
           enabled: $("fSecEnabled").value === "true",
           expectedSha: $("fSecSha").value.trim()
+        },
+        // v1.0.9：软件停止运营开关
+        serverShutdown: {
+          enabled: $("fShutdownEnabled").value === "true",
+          notice: ($("fShutdownNotice") ? $("fShutdownNotice").value : "") || ""
         }
       };
       S.admin.marquee = {
@@ -2114,6 +2119,15 @@ function renderSettings(){
     <div id="brandLogoPreview">${s.logoUrl ? `<img class="preview-img" src="${esc(s.logoUrl)}" onerror="this.style.display='none'">` : ""}</div>
     <div class="hint">说明：名称/图标更改后点击「应用」即实时同步到本体；包名更改需在本地重新构建并签名 APK 后上传新版本。</div>
     <div class="divider"></div>
+    <h3>⛔ 软件停止运营开关（v1.0.9）</h3>
+    <div class="hint" style="margin-bottom:6px">开启后：本体软件每次启动显示「软件停止运营」强制警告弹窗（仅一个「确认」按钮，点击后软件强行关闭）。关闭后恢复正常使用。</div>
+    <select id="fShutdownEnabled">
+      <option value="false" ${(s.serverShutdown||{}).enabled?"":"selected"}>✅ 正常运行（关闭停止运营提示）</option>
+      <option value="true" ${(s.serverShutdown||{}).enabled?"selected":""}>⛔ 停止运营（本体强制提示并退出）</option>
+    </select>
+    <label>停止运营提示文案（可选）</label>
+    <textarea id="fShutdownNotice" class="mono" style="min-height:56px" placeholder="感谢您一直以来的支持！本软件已停止运营…">${esc((s.serverShutdown||{}).notice||"")}</textarea>
+    <div class="divider"></div>
     <h3>🔒 安全加密加固（防止破解二改）</h3>
     <label>加固开关</label>
     <select id="fSecEnabled">
@@ -2221,6 +2235,11 @@ function saveSettings(){
     security: {
       enabled: $("fSecEnabled").value === "true",
       expectedSha: $("fSecSha").value.trim()
+    },
+    // v1.0.9：软件停止运营开关
+    serverShutdown: {
+      enabled: $("fShutdownEnabled").value === "true",
+      notice: ($("fShutdownNotice") ? $("fShutdownNotice").value : "") || ""
     }
   };
   // 跑马灯公告

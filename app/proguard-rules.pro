@@ -73,3 +73,27 @@
 
 # ---------- 防调试/防篡改（配合 SecurityGuard 运行时校验） ----------
 -keep class com.example.ui.viewmodel.NavViewModel { *; }
+
+# ============================================================
+# v1.0.9 强化型加密加固（控制台安全大升级）
+# ============================================================
+
+# ---------- 混淆字典：类名/方法名/包名使用无规律混淆名（防反编译可读） ----------
+-obfuscationdictionary obfuscation-dictionary.txt
+-classobfuscationdictionary obfuscation-dictionary.txt
+-packageobfuscationdictionary obfuscation-dictionary.txt
+
+# ---------- 全模式优化（强化混淆深度与代码精简，提高逆向难度） ----------
+-allowaccessmodification
+-mergeinterfacesaggressively
+-optimizationpasses 8
+
+# ---------- Android 组件：Manifest 声明的组件类必须保留原名（防止打包/启动崩溃） ----------
+-keep class com.example.MainActivity { *; }
+-keep class com.example.ui.components.UpdateInstallReceiver { *; }
+
+# ---------- 资源/反射安全 ----------
+# 保留所有资源 ID 引用（Compose 动态访问 R 内部字段）
+-keep class com.example.R$* { *; }
+# 保留 WebView/Theme 相关避免资源混淆崩溃
+-keepattributes ResourceId,SourceDebugExtension
