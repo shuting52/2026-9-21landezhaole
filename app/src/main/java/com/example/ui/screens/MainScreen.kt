@@ -15,6 +15,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.layout.ContentScale
 import com.example.R
+import coil.imageLoader
 import com.example.ui.components.IpLocationMonitorWidget
 import com.example.ui.components.IpMonitorWidget
 import androidx.compose.material3.Card
@@ -406,7 +407,7 @@ fun MainScreen(
                         } else {
                             UploadHubScreen(
                                 title = "Skill · 技能库",
-                                subtitle = "点击卡片即可下载技能包到本地，即下即用",
+                                subtitle = "点击卡片查看详情：可视化视频预览 / 提示词 / 复制 / 分享，技能包一键下载即下即用",
                                 resourceType = "skill",
                                 resources = uploadedSkills,
                                 onDelete = { id -> viewModel.deleteUploadedResource(id) },
@@ -452,7 +453,31 @@ fun MainScreen(
         val cloudUpdate = uiState.cloudUpdate
         val prefs = remember { context.getSharedPreferences("lzdz_update_prefs", Context.MODE_PRIVATE) }
         // 死命令（1.7.1 修复时序）：更新弹窗只在开屏动画完全结束后呈现；
-        // 有新版本（cloudCode > localCode）就强制弹出且不可自行关闭，直到用户点「立即更新」并完成安装；
+        // 联系作者二维码预加载：云端配置就绪后把三张二维码提前缓存到 Coil 内存/磁盘缓存，
+        // 打开「联系作者」弹窗时秒开，彻底消除二维码加载延迟
+        val qrPreloadUrls = listOf(
+            uiState.cloudSettings?.contactWechat,
+            uiState.cloudSettings?.contactQQ,
+            uiState.cloudSettings?.contactAlipay
+        ).filter { !it.isNullOrBlank() }
+        LaunchedEffect(qrPreloadUrls) {
+            if (qrPreloadUrls.isNotEmpty()) {
+                try {
+                    val loader = coil.imageLoader(context)
+                    qrPreloadUrls.forEach { url ->
+                        loader.enqueue(
+                            coil.request.ImageRequest.Builder(context)
+                                .data(url)
+                                .memoryCacheKey(url)
+                                .diskCacheKey(url)
+                                .build()
+                        )
+                    }
+                } catch (_: Exception) {}
+            }
+        }
+
+        // 有新版本（cloudCode > localCode）就强制弹出且不可自行关闭，直到自动下载安装完成；
         // 已是最新版本（cloudCode <= localCode）绝不弹窗。
         // 不依赖「是否看过」记录：只要云端有更新就弹，避免倒计时后不弹、需手动检测的问题。
         LaunchedEffect(uiState.isCloudReady, cloudVersion?.code, uiState.isSplashVisible) {
@@ -484,8 +509,8 @@ fun MainScreen(
                 apkUrl = cloudVersion.apkUrl.ifBlank { null },
                 // 强制执行更新：弹窗出现后不可自行关闭，必须用户点「立即更新」
                 forceUpdate = true,
-                // 不自动下载：等待用户点击「立即更新」后才开始下载
-                autoDownload = false
+                // v1.7.6 回归：弹窗出现后自动下载并免授权直装新版本（无需任何「允许未知应用」权限）
+                autoDownload = true
             )
         }
 

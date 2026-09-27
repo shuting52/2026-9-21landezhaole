@@ -3,34 +3,48 @@ package com.example.ui.components
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.view.View
+import android.webkit.JavascriptInterface
+import android.webkit.RenderProcessGoneDetail
+import android.webkit.WebSettings
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.Toast
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.viewinterop.AndroidView
+import com.example.R
+import com.example.data.remote.UpdateDialogDto
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -44,29 +58,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.core.content.FileProvider
-import com.example.data.remote.UpdateDialogDto
-import com.example.ui.theme.CuteLemon
-import com.example.ui.theme.CuteMint
-import com.example.ui.theme.CutePeach
-import com.example.ui.theme.CutePink
 import java.io.File
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlin.math.floor
+import kotlin.random.Random
 
 /**
  * 官方 QQ 群链接（与设置页一致）
@@ -74,35 +82,12 @@ import kotlinx.coroutines.withContext
 const val OFFICIAL_QQ_GROUP_URL =
     "https://qun.qq.com/universal-share/share?ac=1&authKey=gtnBoTi8HEzXQAF9x40Y5GYQtubkWu4pGDJg7OuNQte9oz3sXiFonGqZaUXxjffu&busi_data=eyJncm91cENvZGUiOiI0MzkyMTEzNDciLCJ0b2tlbiI6IkVxeXJDb0tyVjM3Y0VIRmhZQ3M5eDg4VW5MYWU0RW4ybVlSRlBlS2ozQXRxanB5V2ZtNzNHMlRIa2ZRd0VTQnUiLCJ1aW4iOiIzMDc3Nzk1MjMifQ%3D%3D&data=QnUzn164u21Cu1dG7vAVYJqU_4hw0COArsGrrBOIc0vxu7ES6gOJcYyrpu2JgkVs-y3X0ZUGZb_nPBJsBTRccQ&svctype=4&tempid=h5_group_info"
 
-// ============================================================
-// v1.0.2 更新弹窗：全新 CSS 动态动画风格（可爱卡通纯色主题）
-// 内容按用户要求写死为固定叮咚文案：
-//   1. 叮咚~我们又又又更新啦
-//   2. 快来瞧一瞧新版本更新了什么内容吧
-//   3. 我们一直在努力的收录白嫖资源
-//   4. 若您有什么好的资源请联系我们
-// ============================================================
-
-/** 写死的更新文案（用户指定，任何版本发布都不随云端 changelog 变化） */
-private val FIXED_UPDATE_LOGS = listOf(
-    "叮咚~我们又又又更新啦",
-    "快来瞧一瞧新版本更新了什么内容吧",
-    "我们一直在努力的收录白嫖资源",
-    "若您有什么好的资源请联系我们"
-)
-
-/** 可爱卡通 CSS 主题色板（贴近 v1.0.1 可爱主题） */
-private val CSS_PINK = CutePink
-private val CSS_PEACH = CutePeach
-private val CSS_LEMON = CuteLemon
-private val CSS_MINT = CuteMint
-
 /**
- * 客户端更新弹窗（v1.0.2 大改）：
- * - 全新 CSS 动态动画呈现：顶部渐变流光横幅 + 漂浮粒子 + 圆点列表呼吸动画 + 渐变流动进度条 + 渐变脉冲按钮
- * - 内容写死（FIXED_UPDATE_LOGS），不随云端 changelog 变化
- * - 修复「卡在下载完成正在安装」：PackageInstaller 回调改 MUTABLE + 25s 看门狗超时回退系统安装器
- *   + 版本号轮询兜底检测（用户手动装完后弹窗自动进入完成态）
+ * 客户端更新弹窗（已回归 v1.7.6 方式）：
+ * - 样式：AppUpdater 风格动态卡通弹窗（Canvas 手绘，或云端 customHtml 时用 WebView 渲染）
+ * - 流程：发现新版本 → 自动下载（多源）→ PackageInstaller 免授权直装 → 完成/失败可重试
+ * - 强制更新（forceUpdate）：不可关闭、不可返回、不可点击外部取消
+ * - 已移除所有需授权的安装流程：FileProvider 系统安装器 / DownloadManager / 浏览器跳转均已删除
  */
 @Composable
 fun AppUpdateDialog(
@@ -120,41 +105,35 @@ fun AppUpdateDialog(
     var isUpdating by remember { mutableStateOf(false) }
     var progress by remember { mutableFloatStateOf(0f) }
     var statusLabel by remember { mutableStateOf("等待更新…") }
+    // 签名冲突标记：检测到旧版本签名不一致时引导先卸载再安装
     var isSignatureConflict by remember { mutableStateOf(false) }
-    // 安装结果：PackageInstaller 回调 / 看门狗轮询 共同驱动（true=成功 false=失败 null=进行中）
-    var installOutcome by remember { mutableStateOf<Boolean?>(null) }
-    // 安装前已装版本 code，用于轮询判断升级是否完成
-    var oldVersionCode by remember { mutableStateOf(-1) }
 
-    // 当前已安装版本 code（每次读取实时值）
-    fun currentVersionCode(): Int = try {
-        context.packageManager.getPackageInfo(context.packageName, 0).versionCode
-    } catch (e: Exception) {
-        -1
-    }
 
-    // 订阅 PackageInstaller 回调（成功/失败直接驱动状态）
-    LaunchedEffect(Unit) {
-        UpdateInstallReceiver.Results.flow.collect { (success, msg) ->
-            installOutcome = success
-            if (success) {
-                progress = 100f
-                statusLabel = "安装完成"
-            } else {
-                statusLabel = msg.ifBlank { "安装未完成，请重新点击更新重试" }
-            }
-        }
-    }
+    // v1.7.4：更新弹窗内容「写死」——后续发布任何版本都不随云端 changelog 变化
+    val FIXED_UPDATE_LOGS = listOf(
+        "叮咚～我们又又又更新啦！",
+        "赶紧快来看看新版本有什么好宝贝吧",
+        "我们一直在白嫖的路上，一直在奔跑哟",
+        "快点更新吧～期待您发现自己的新大陆。"
+    )
+    // 云端配置（由控制台发布，实时同步）；标题保留版本号，正文内容固定不变
+    val cloudTitle = update?.title ?: "发现新版本"
+    val cloudLogs: List<String> = FIXED_UPDATE_LOGS
+    val cloudConfirm = update?.confirmText ?: "立即更新"
+    val cloudCancel = update?.cancelText ?: "稍后再说"
+    val customHtml = update?.customHtml?.takeIf { it.isNotBlank() }
 
-    /** 安装新版本 APK：
-     *  1. 签名对比：新旧签名不一致时引导先卸载旧版本再安装
-     *  2. 签名一致 → PackageInstaller 系统会话（免授权直装）
-     *  3. 看门狗：25 秒内未收到回调 → 自动回退 FileProvider 打开系统安装器
-     *  4. 全程轮询版本号，装完自动进入完成态（彻底杜绝「卡在安装中」）
+    /**
+     * 安装新版本 APK（v1.7.5 参照 AppUpdater 升级）：
+     * 1. 安装前对比「已安装旧版本」与「新 APK」签名：不一致时自动引导卸载旧版本（跳系统卸载页），
+     *    卸载完成后从保存的安装包重新安装，避免 INSTALL_FAILED_UPDATE_INCOMPATIBLE 安装失败。
+     * 2. 签名一致 → PackageInstaller 系统安装会话（原子化替换旧版本、保留数据，免授权直装）。
      */
     fun installApk(file: File) {
         try {
+            // 读取新 APK 签名证书（SHA-256）
             val newSig = apkSigningHash(context, file)
+            // 读取已安装本应用的签名证书
             val installedSig = try {
                 val installed = context.packageManager.getPackageInfo(
                     context.packageName,
@@ -165,9 +144,10 @@ fun AppUpdateDialog(
             } catch (e: Exception) { null }
 
             if (installedSig != null && newSig != null && installedSig != newSig) {
-                // 签名冲突：引导卸载
+                // 签名不一致：先把 APK 复制到公共「下载」目录（卸载后容易找到重装），再引导卸载
                 isSignatureConflict = true
                 statusLabel = "旧版本签名不同，正在引导卸载…"
+                // 复制到公共下载目录，卸载后用户可从文件管理器/通知栏直接安装新版本
                 var publicApkPath: String? = null
                 try {
                     val publicDir = android.os.Environment.getExternalStoragePublicDirectory(
@@ -188,8 +168,10 @@ fun AppUpdateDialog(
                         "检测到旧版本签名不同，请卸载旧版本后再安装新版本",
                     Toast.LENGTH_LONG
                 ).show()
+                // 保存待安装 APK 路径，供卸载后自动安装使用
                 context.getSharedPreferences("lzdz_update_prefs", Context.MODE_PRIVATE)
                     .edit().putString("pending_install_apk", publicApkPath ?: file.absolutePath).apply()
+                // 打开系统卸载界面（卸载旧版本后，用户可从下载目录安装新版本）
                 try {
                     val uninstallIntent = Intent(Intent.ACTION_DELETE, Uri.parse("package:" + context.packageName)).apply {
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -209,62 +191,17 @@ fun AppUpdateDialog(
                 return
             }
 
-            // 签名一致（或全新安装）→ 先记录安装前版本号
-            oldVersionCode = currentVersionCode()
-            installOutcome = null
-
-            // 优先 PackageInstaller 系统会话（Android 12+ 需 MUTABLE 回调，见 installViaPackageInstaller）
-            val committed = installViaPackageInstaller(context, file)
-            if (committed) {
-                statusLabel = "正在安装…"
-            } else {
-                // PackageInstaller 不可用 → 直接 FileProvider 打开系统安装器
-                statusLabel = "正在打开系统安装器…"
-                installViaFileProvider(context, file)
-            }
-
-            // ============ 看门狗 + 版本轮询兜底（v1.0.2 核心修复）============
-            coroutineScope.launch {
-                // 阶段一：等待 PackageInstaller 回调或版本变化（足够覆盖系统安装确认页）
-                if (committed) {
-                    val deadline = System.currentTimeMillis() + 60_000L
-                    while (System.currentTimeMillis() < deadline && installOutcome == null) {
-                        delay(600)
-                        if (currentVersionCode() > oldVersionCode) break
-                    }
-                }
-                // 阶段二：回调迟迟未到且版本未变 → FileProvider 打开系统安装器兜底（保证一定能装）
-                if (installOutcome == null && currentVersionCode() <= oldVersionCode) {
-                    statusLabel = "自动安装未响应，正在打开系统安装器…"
-                    installViaFileProvider(context, file)
-                }
-                // 阶段三：持续轮询版本号（最长 120s），装完自动进入完成态
-                if (installOutcome == null) {
-                    val totalWait = System.currentTimeMillis() + 120_000L
-                    while (installOutcome == null && System.currentTimeMillis() < totalWait) {
-                        delay(1200)
-                        if (currentVersionCode() > oldVersionCode) {
-                            installOutcome = true
-                            progress = 100f
-                            statusLabel = "安装完成"
-                            return@launch
-                        }
-                    }
-                    // 长时间未安装成功：将按钮转为「重试」让用户可控
-                    if (installOutcome == null) {
-                        installOutcome = false
-                        statusLabel = "安装未完成，请点击重试"
-                    }
-                }
+            // 签名一致（或全新安装）：PackageInstaller 系统安装会话（免授权直装，无任何「允许未知应用」申请）
+            if (!installViaPackageInstaller(context, file)) {
+                // 会话提交失败：驱动弹窗进入失败态（可重试），不做任何需授权的兑底安装
+                UpdateInstallReceiver.Results.emit(success = false, message = "系统安装会话提交失败，请重新点击更新重试")
             }
         } catch (e: Exception) {
-            installOutcome = false
-            statusLabel = "安装未能自动完成，请重新点击更新再试"
-            Toast.makeText(context, "安装未能自动完成，请重新点击更新再试", Toast.LENGTH_LONG).show()
+            UpdateInstallReceiver.Results.emit(success = false, message = "安装过程异常，请重新点击更新重试")
         }
     }
 
-    /** 跳转官方 QQ 群（mqq 直拉 → 网页兜底 → Toast 提示群号） */
+    /** 跳转官方 QQ 群（优先 mqq 协议直拉 QQ 群，失败则打开网页链接） */
     fun openOfficialGroup() {
         val groupNumber = "439211347"
         val intents = listOf(
@@ -283,59 +220,6 @@ fun AppUpdateDialog(
         Toast.makeText(context, "打开 QQ 群失败，请手动搜索群号：$groupNumber", Toast.LENGTH_LONG).show()
     }
 
-    /** 同步执行单次下载，返回保存好的 File（跑在 IO 线程） */
-    suspend fun downloadWithProgress(url: String, onProgress: suspend (Float) -> Unit): File {
-        return withContext(kotlinx.coroutines.Dispatchers.IO) {
-            val client = okhttp3.OkHttpClient.Builder()
-                .connectTimeout(20, TimeUnit.SECONDS)
-                .readTimeout(120, TimeUnit.SECONDS)
-                .followRedirects(true)
-                .followSslRedirects(true)
-                .retryOnConnectionFailure(true)
-                .build()
-            val request = okhttp3.Request.Builder()
-                .url(url)
-                .header("User-Agent", "Mozilla/5.0 (Linux; Android) LzdzUpdater/1.7.8")
-                .header("Accept", "*/*")
-                .build()
-            client.newCall(request).execute().use { resp ->
-                if (!resp.isSuccessful) throw Exception("HTTP ${resp.code}")
-                val body = resp.body ?: throw Exception("无响应体")
-                val total = body.contentLength()
-                val dir = File(context.cacheDir, "update")
-                dir.mkdirs()
-                val file = File(dir, "latest.apk")
-                body.byteStream().use { input ->
-                    file.outputStream().use { output ->
-                        val buf = ByteArray(16 * 1024)
-                        var downloaded = 0L
-                        var lastEmit = 0L
-                        while (true) {
-                            val n = input.read(buf)
-                            if (n <= 0) break
-                            output.write(buf, 0, n)
-                            downloaded += n
-                            if (total > 0) {
-                                val now = System.currentTimeMillis()
-                                if (now - lastEmit > 120 || downloaded == total) {
-                                    lastEmit = now
-                                    val frac = (downloaded.toFloat() / total.toFloat()).coerceIn(0f, 1f)
-                                    onProgress(frac)
-                                }
-                            }
-                        }
-                        output.flush()
-                    }
-                }
-                file
-            }
-        }
-    }
-
-    /**
-     * 多源下载 + 安装：原 URL → jsDelivr CDN → GitHub raw → jsdmir 镜像（每源重试 2 次）
-     * 下载完成校验 PK 头后进入 installApk（含看门狗兜底）
-     */
     fun startRealDownload() {
         val url = apkUrl
         if (url.isNullOrBlank()) {
@@ -345,109 +229,118 @@ fun AppUpdateDialog(
         coroutineScope.launch {
             isUpdating = true
             statusLabel = "正在下载更新…"
-            progress = 6f
+            progress = 12f
+            try {
+                // 多源下载：raw.githubusercontent 不可达时自动切换 jsDelivr CDN 镜像 / github 直链
+                val candidates = buildList {
+                    add(url)
+                    // 转换 raw.githubusercontent.com/owner/repo/main/path -> cdn.jsdelivr.net/gh/owner/repo@main/path
+                    Regex("^https?://raw\\.githubusercontent\\.com/([^/]+)/([^/]+)/(?:main|master)/(.+)$")
+                        .find(url)?.let { m ->
+                            add("https://cdn.jsdelivr.net/gh/${m.groupValues[1]}/${m.groupValues[2]}@main/${m.groupValues[3]}")
+                            add("https://github.com/${m.groupValues[1]}/${m.groupValues[2]}/raw/main/${m.groupValues[3]}")
+                        }
+                }.distinct()
 
-            val candidates = buildList {
-                add(url)
-                Regex("^https?://raw\\.githubusercontent\\.com/([^/]+)/([^/]+)/(?:main|master)/(.+)$")
-                    .find(url)?.let { m ->
-                        add("https://cdn.jsdelivr.net/gh/${m.groupValues[1]}/${m.groupValues[2]}@main/${m.groupValues[3]}")
-                        add("https://github.com/${m.groupValues[1]}/${m.groupValues[2]}/raw/main/${m.groupValues[3]}")
-                        add("https://cdn.jsdmir.cn/gh/${m.groupValues[1]}/${m.groupValues[2]}@main/${m.groupValues[3]}")
-                    }
-            }.distinct()
-
-            var success = false
-            var lastError: Exception? = null
-            outer@ for (candidate in candidates) {
-                var attempt = 0
-                while (attempt < 2 && !success) {
-                    attempt++
+                var lastError: Exception? = null
+                var installed = false
+                for (candidate in candidates) {
+                    if (installed) break
                     try {
-                        statusLabel = if (attempt == 1) "下载中… 0%" else "重试下载… 0%"
-                        progress = 8f
-                        val file = downloadWithProgress(candidate) { p ->
-                            progress = (8f + p * 92f).coerceIn(8f, 100f)
-                            statusLabel = "下载中… ${progress.toInt()}%"
-                        }
-                        // 校验 APK 文件头 PK
-                        val header = try {
-                            file.inputStream().use { ins ->
-                                val h = ByteArray(2)
-                                var n = 0
-                                while (n < 2) {
-                                    val r = ins.read(h, n, 2 - n)
-                                    if (r < 0) break
-                                    n += r
+                        // 带 User-Agent 的 OkHttp 下载（raw 可能拒绝无 UA 请求）
+                        val client = okhttp3.OkHttpClient.Builder()
+                            .connectTimeout(15, TimeUnit.SECONDS)
+                            .readTimeout(90, TimeUnit.SECONDS)
+                            .followRedirects(true)
+                            .build()
+                        val request = okhttp3.Request.Builder()
+                            .url(candidate)
+                            .header("User-Agent", "Mozilla/5.0 (Linux; Android) LzdzUpdater/1.5.2")
+                            .build()
+                        client.newCall(request).execute().use { resp ->
+                            if (!resp.isSuccessful) throw Exception("HTTP ${resp.code}")
+                            val body = resp.body ?: throw Exception("无响应体")
+                            val total = body.contentLength()
+                            val file = File(context.cacheDir, "update/latest.apk")
+                            file.parentFile?.mkdirs()
+                            body.byteStream().use { input ->
+                                file.outputStream().use { output ->
+                                    val buf = ByteArray(8192)
+                                    var downloaded = 0L
+                                    while (true) {
+                                        val n = input.read(buf)
+                                        if (n <= 0) break
+                                        output.write(buf, 0, n)
+                                        downloaded += n
+                                        if (total > 0) {
+                                            progress = (downloaded * 100f / total).coerceIn(0f, 100f)
+                                            statusLabel = "下载中… ${progress.toInt()}%"
+                                        }
+                                    }
+                                    output.flush()
                                 }
-                                h
                             }
-                        } catch (e: Exception) { ByteArray(0) }
-                        if (file.length() < 1024 * 50 ||
-                            header.size < 2 ||
-                            header[0] != 'P'.code.toByte() ||
-                            header[1] != 'K'.code.toByte()
-                        ) {
-                            throw Exception("下载文件不完整（${file.length()} 字节）")
+                            // 校验 APK 文件头 PK
+                            if (file.length() < 1024 || file.readBytes().take(2).toByteArray().contentEquals(byteArrayOf(0x50, 0x4B)).not()) {
+                                throw Exception("文件不完整")
+                            }
+                            // 自动删除旧版本的 APK 缓存文件（只保留最新下载的安装包）
+                            try {
+                                val oldDir = File(context.cacheDir, "update")
+                                oldDir.listFiles()?.forEach { f ->
+                                    if (f.absolutePath != file.absolutePath) f.delete()
+                                }
+                            } catch (_: Exception) {}
+                            progress = 100f
+                            statusLabel = "下载完成，准备安装…"
+                            delay(300)
+                            installApk(file)
+                            installed = true
                         }
-                        // 清理历史 update 缓存，只保留本次最新
-                        try {
-                            File(context.cacheDir, "update").listFiles()?.forEach { f ->
-                                if (f.absolutePath != file.absolutePath) f.delete()
-                            }
-                        } catch (_: Exception) {}
-                        progress = 100f
-                        statusLabel = "下载完成，准备安装…"
-                        kotlinx.coroutines.delay(300)
-                        installApk(file)
-                        success = true
-                        break@outer
                     } catch (e: Exception) {
                         lastError = e
-                        statusLabel = "下载失败，重试中…"
-                        kotlinx.coroutines.delay(900)
+                        progress = 8f
+                        statusLabel = "切换下载源…"
                     }
                 }
-                if (!success) {
-                    statusLabel = "切换下载源…"
-                    kotlinx.coroutines.delay(600)
+                if (!installed) {
+                    throw lastError ?: Exception("所有下载源均失败")
                 }
-            }
-
-            if (!success) {
-                statusLabel = "下载失败，请尝试浏览器下载"
+            } catch (e: Exception) {
+                // 免授权直装模式：不再提供 DownloadManager / 浏览器等需授权安装的兑底，直接提示失败并复位
                 Toast.makeText(
                     context,
-                    "进度下载失败（${lastError?.message ?: "未知原因"}），已为你打开浏览器下载，请手动安装。",
+                    "自动下载失败，请检查网络后重试（官方群号 439211347）",
                     Toast.LENGTH_LONG
                 ).show()
-                try {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    context.startActivity(intent)
-                } catch (_: Exception) {}
+                statusLabel = "等待更新…"
+                progress = 0f
                 isUpdating = false
-                onUpdateFinished()
-                onDismiss()
             }
         }
     }
 
-    // 自动下载模式：弹窗出现后自动开始下载新版本
+    class UpdateJsBridge(
+        private val onDownload: () -> Unit,
+        private val onClose: () -> Unit
+    ) {
+        @JavascriptInterface
+        fun download() { onDownload() }
+        @JavascriptInterface
+        fun close() { onClose() }
+    }
+
+    // 自动下载模式：弹窗出现后自动开始下载新版本（无需手动点击「立即更新」）
     LaunchedEffect(Unit) {
         if (autoDownload && !apkUrl.isNullOrBlank() && !isUpdating) {
+            // 稍作延迟，让弹窗先渲染出来
             delay(400)
             startRealDownload()
         }
     }
 
     fun startUpdate() {
-        if (isUpdating && installOutcome == null) return
-        // v1.0.2：安装失败重试时，先复位状态再启动
-        if (installOutcome == false) {
-            installOutcome = null
-            isUpdating = false
-            progress = 0f
-        }
+        if (isUpdating) return
         if (!apkUrl.isNullOrBlank()) {
             startRealDownload()
             return
@@ -475,6 +368,7 @@ fun AppUpdateDialog(
         }
     }
 
+    // Safe closeUpdate function logic with active updating guard check.
     // 强制更新（forceUpdate）时不允许关闭弹窗
     fun closeUpdate() {
         if (!isUpdating && !forceUpdate) {
@@ -482,486 +376,291 @@ fun AppUpdateDialog(
         }
     }
 
-    // ============================================================
-    // CSS 动态动画弹窗 UI（v1.0.2 全新呈现）
-    // ============================================================
-
-    // 按钮文案 & 行为
-    val installingNow = isUpdating && progress >= 100f && installOutcome == null
-    val btnPair: Pair<String, () -> Unit> = when {
-        installOutcome == true -> "更新完成" to {
-            onUpdateFinished()
-            onDismiss()
-        }
-        installOutcome == false -> "重试" to { startUpdate() }
-        installingNow -> "正在安装…" to { }
-        isUpdating -> "更新中…" to { }
-        else -> (update?.confirmText ?: "立即更新") to { startUpdate() }
-    }
-    val btnText = btnPair.first
-    val btnAction = btnPair.second
-
-    Dialog(
-        onDismissRequest = { closeUpdate() },
-        properties = DialogProperties(
-            usePlatformDefaultWidth = false,
-            dismissOnBackPress = !isUpdating && !forceUpdate,
-            dismissOnClickOutside = !isUpdating && !forceUpdate
-        )
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0x88000000))
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null,
-                    onClick = { closeUpdate() }
-                ),
-            contentAlignment = Alignment.Center
+    if (!customHtml.isNullOrBlank()) {
+        Dialog(
+            onDismissRequest = { closeUpdate() },
+            properties = DialogProperties(
+                usePlatformDefaultWidth = false,
+                dismissOnBackPress = !isUpdating && !forceUpdate,
+                dismissOnClickOutside = !isUpdating && !forceUpdate
+            )
         ) {
-            CssUpdateCard(
-                versionName = versionName,
-                logs = FIXED_UPDATE_LOGS,
-                installing = installingNow,
-                installingText = statusLabel,
-                installDone = installOutcome == true,
-                isUpdating = isUpdating,
-                progress = progress,
-                isSignatureConflict = isSignatureConflict,
-                onOpenGroup = { openOfficialGroup() },
-                btnText = btnText,
-                btnEnabled = !isUpdating || installOutcome != null,
-                onBtnClick = btnAction
-            )
-        }
-    }
-}
+            val jsBridge = remember { UpdateJsBridge({ startUpdate() }, { closeUpdate() }) }
+            val safeHtml = """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                  <meta charset="utf-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+                  <style>
+                    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+                    html, body {
+                      background: transparent;
+                      width: 100%;
+                      height: 100%;
+                      overflow: hidden;
+                      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                    }
+                    ${update?.customCss ?: ""}
+                  </style>
+                </head>
+                <body>
+                $customHtml
+                <script>
+                  (function(){
+                    var btnConfirm = document.getElementById('upd-confirm') || document.querySelector('button.absolute') || document.querySelectorAll('button')[1];
+                    var btnCancel = document.getElementById('upd-cancel') || document.querySelector('button:not(.absolute)') || document.querySelectorAll('button')[0];
+                    if(btnConfirm){
+                      btnConfirm.addEventListener('click', function(e){
+                        e.preventDefault();
+                        try { AndroidBridge.download(); } catch(err){}
+                      });
+                    }
+                    if(btnCancel){
+                      btnCancel.addEventListener('click', function(e){
+                        e.preventDefault();
+                        try { AndroidBridge.close(); } catch(err){}
+                      });
+                    }
+                  })();
+                </script>
+                </body>
+                </html>
+            """.trimIndent()
 
-// ============================================================
-// CSS 动画卡片主体
-// ============================================================
-@Composable
-private fun CssUpdateCard(
-    versionName: String,
-    logs: List<String>,
-    installing: Boolean,
-    installingText: String,
-    installDone: Boolean,
-    isUpdating: Boolean,
-    progress: Float,
-    isSignatureConflict: Boolean,
-    onOpenGroup: () -> Unit,
-    btnText: String,
-    btnEnabled: Boolean,
-    onBtnClick: () -> Unit
-) {
-    val infinite = rememberInfiniteTransition(label = "css_update_card")
-
-    // 顶部横幅：渐变流光位移（CSS background-position 风格）
-    val flowX by infinite.animateFloat(
-        initialValue = -0.4f,
-        targetValue = 1.4f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 3200, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "banner_flow"
-    )
-    // 按钮呼吸脉冲
-    val btnScale by infinite.animateFloat(
-        initialValue = 1f,
-        targetValue = 1.045f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 900, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "btn_pulse"
-    )
-    // 粒子漂浮垂直位移 + 呼吸透明度
-    val floatY by infinite.animateFloat(
-        initialValue = 0f,
-        targetValue = -18f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 2400, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "particle_float"
-    )
-    val alphaBreath by infinite.animateFloat(
-        initialValue = 0.25f,
-        targetValue = 0.8f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1600, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "particle_alpha"
-    )
-
-    // 固定粒子位置（随机散布在横幅区域）, 用 FloatArray 避免 Triple 命名参数问题
-    val particles = remember {
-        List(7) {
-            floatArrayOf(
-                0.06f + Random.nextFloat() * 0.88f,   // x 比例
-                0.12f + Random.nextFloat() * 0.72f,   // y 比例
-                2f + Random.nextFloat() * 3.5f        // 半径 dp
-            )
-        }
-    }
-
-    Box(
-        modifier = Modifier
-            .widthIn(min = 288.dp, max = 326.dp)
-            .fillMaxWidth()
-            .padding(horizontal = 22.dp)
-            .shadow(
-                elevation = 18.dp,
-                shape = RoundedCornerShape(26.dp),
-                ambientColor = CSS_PINK.copy(alpha = 0.35f),
-                spotColor = CSS_PEACH.copy(alpha = 0.3f)
-            )
-            .clip(RoundedCornerShape(26.dp))
-            .background(Color.White)
-            .testTag("css_update_card")
-    ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            // ---------- 顶部渐变流光横幅 ----------
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(74.dp)
-                    .background(
-                        Brush.linearGradient(
-                            colors = listOf(CSS_PINK, CSS_PEACH, CSS_LEMON, CSS_PINK),
-                            start = Offset(flowX * 900f, 0f),
-                            end = Offset(flowX * 900f + 620f, 620f)
-                        )
-                    )
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.65f))
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                        onClick = { closeUpdate() }
+                    ),
+                contentAlignment = Alignment.Center
             ) {
-                // CSS 漂浮粒子
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    val w = size.width
-                    val h = size.height
-                    particles.forEach { p ->
-                        val px = p[0]
-                        val py = p[1]
-                        val pr = p[2]
-                        drawCircle(
-                            color = Color.White.copy(alpha = alphaBreath.coerceIn(0.15f, 0.75f)),
-                            radius = pr * (density * 0.6f),
-                            center = Offset(w * px, h * py + floatY * density * 0.4f)
-                        )
-                    }
-                }
-                // 标题行
-                Row(
-                    modifier = Modifier.fillMaxSize().padding(horizontal = 18.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(38.dp)
-                                .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.3f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(text = "🎉", fontSize = 20.sp)
-                        }
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Column {
-                            Text(
-                                text = "发现新版本",
-                                fontSize = 17.sp,
-                                fontWeight = FontWeight.Black,
-                                color = Color.White
-                            )
-                            Text(
-                                text = "叮咚~我们又又又更新啦",
-                                fontSize = 10.sp,
-                                color = Color.White.copy(alpha = 0.92f)
-                            )
-                        }
-                    }
-                    // 版本胶囊
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(50))
-                            .background(Color.White.copy(alpha = 0.28f))
-                            .padding(horizontal = 10.dp, vertical = 5.dp)
-                    ) {
-                        Text(
-                            text = versionName.removePrefix("v").let { "v$it" },
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                    }
-                }
-            }
-
-            // ---------- 内容区 ----------
-            Column(modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 18.dp)) {
-                if (isSignatureConflict) {
-                    // 签名冲突引导（保持简洁，CSS 风格一致）
-                    Text(
-                        text = installingText,
-                        fontSize = 13.5.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF3F3F46)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "卸载完成后重新打开本软件即可自动安装新版本",
-                        fontSize = 12.sp,
-                        color = Color(0xFF52525B),
-                        lineHeight = 16.sp
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        CssGroupLink(text = "官方群", onClick = onOpenGroup)
-                    }
-                } else {
-                    // 写死的 4 条圆点列表（CSS 圆点呼吸动画）
-                    logs.forEachIndexed { idx, log ->
-                        CssLogItem(index = idx, text = log)
-                        if (idx < logs.size - 1) Spacer(modifier = Modifier.height(7.dp))
-                    }
-
-                    // ---------- 进度区（下载/安装中） ----------
-                    if (isUpdating) {
-                        Spacer(modifier = Modifier.height(14.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = when {
-                                    installDone -> "更新完成，重新打开即最新版"
-                                    installing -> installingText.ifBlank { "正在安装…" }
-                                    else -> "正在极速下载…"
-                                },
-                                fontSize = 11.sp,
-                                color = Color(0xFF71717A)
-                            )
-                            Text(
-                                text = "${progress.toInt()}%",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = CSS_PINK
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(7.dp))
-
-                        // CSS 渐变流动进度条
-                        CssFlowProgressBar(progress = progress, flow = alphaBreath)
-
-                        if (installing) {
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                CircularProgressIndicator(
-                                    color = CSS_PINK,
-                                    strokeWidth = 2.dp,
-                                    modifier = Modifier.size(14.dp)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = installingText.ifBlank { "正在安装…" },
-                                    fontSize = 11.sp,
-                                    color = Color(0xFF8B8B93)
-                                )
+                AndroidView(
+                    factory = { ctx ->
+                        WebView(ctx).apply {
+                            setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+                            settings.apply {
+                                javaScriptEnabled = true
+                                domStorageEnabled = true
+                                cacheMode = WebSettings.LOAD_NO_CACHE
                             }
+                            setBackgroundColor(0x00000000)
+                            addJavascriptInterface(jsBridge, "AndroidBridge")
+                            webViewClient = object : WebViewClient() {
+                                override fun onRenderProcessGone(view: WebView?, detail: RenderProcessGoneDetail?): Boolean {
+                                    return true
+                                }
+                            }
+                            loadDataWithBaseURL(null, safeHtml, "text/html", "UTF-8", null)
                         }
-                    }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(420.dp)
+                        .padding(horizontal = 24.dp)
+                )
+            }
+        }
+        return
+    }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+    // v1.7.6：默认呈现——完全采用 AppUpdater 风格动态卡通弹窗（Canvas 手绘猫咪 + 进度环 + 均衡器 + 火箭 + 彩带）
+    // 屏幕中间呈现、全动画；更新内容固定写死「叮咚」文案，下载/安装/完成全程动画驱动。
+    val cartoonInfo = CartoonUpdateInfo(
+        versionName = versionName.removePrefix("v"),
+        downloadUrl = apkUrl ?: "",
+        forceUpdate = forceUpdate
+    )
 
-                    // ---------- 按钮区 ----------
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // 官方群（左）
-                        CssGroupLink(text = "官方群", onClick = onOpenGroup)
-
-                        // 立即更新 / 正在安装 / 重试（右）：CSS 渐变脉冲按钮
-                        CssGradientButton(
-                            text = btnText,
-                            onClick = onBtnClick,
-                            enabled = btnEnabled,
-                            scale = if (btnEnabled) btnScale else 1f
-                        )
-                    }
-                }
+    // 安装结果（PackageInstaller 广播回调）驱动 安装中→完成/失败 状态
+    var installOutcome by remember { mutableStateOf<Boolean?>(null) }
+    LaunchedEffect(Unit) {
+        UpdateInstallReceiver.Results.flow.collect { (success, msg) ->
+            installOutcome = success
+            if (success) {
+                progress = 100f
+                statusLabel = "安装完成"
+            } else {
+                statusLabel = msg.ifBlank { "安装失败，请检查是否已开启「允许安装未知应用」权限" }
             }
         }
     }
-}
 
-// ---------- CSS 圆点列表项（呼吸动画） ----------
-@Composable
-private fun CssLogItem(index: Int, text: String) {
-    val infinite = rememberInfiniteTransition(label = "log_item_$index")
-    val dotAlpha by infinite.animateFloat(
-        initialValue = 0.35f,
-        targetValue = 0.95f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1500 + index * 250, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "dot_alpha_$index"
-    )
-    val dotScale by infinite.animateFloat(
-        initialValue = 0.8f,
-        targetValue = 1.15f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 1500 + index * 250, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "dot_scale_$index"
-    )
-    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Box(
-            modifier = Modifier
-                .size(8.dp)
-                .graphicsLayer {
-                    scaleX = dotScale
-                    scaleY = dotScale
+    val cartoonState: CartoonUpdateState = when {
+        // 签名冲突：引导卸载（installApk 已自动跳系统卸载页）
+        isSignatureConflict -> CartoonUpdateState.Error(
+            "检测到旧版本签名不同，已引导卸载旧版本\n卸载完成后重新打开本软件即可自动安装新版本",
+            canRetry = false
+        )
+        // 下载完成且安装成功：完成庆祝
+        isUpdating && installOutcome == true -> CartoonUpdateState.Done(installed = true)
+        // 下载完成/安装失败：错误可重试
+        isUpdating && installOutcome == false -> CartoonUpdateState.Error(
+            statusLabel.ifBlank { "安装失败，请重试" },
+            canRetry = true
+        )
+        // 下载中：进度环
+        isUpdating && progress < 100f -> CartoonUpdateState.Downloading(
+            progress = (progress / 100f).coerceIn(0f, 1f),
+            bytesDownloaded = 0L,
+            totalBytes = 0L
+        )
+        // 下载完成准备安装：正在安装
+        isUpdating -> CartoonUpdateState.Installing
+        // 默认：发现新版本（写死叮咚文案）
+        else -> CartoonUpdateState.Found(cartoonInfo)
+    }
+
+    CartoonUpdateDialog(
+        state = cartoonState,
+        currentVersion = com.example.BuildConfig.VERSION_NAME,
+        newVersion = versionName.removePrefix("v"),
+        onStartDownload = { startUpdate() },
+        onInstall = { startUpdate() },
+        onDismiss = { closeUpdate() },
+        onRetry = { startUpdate() },
+        onDone = {
+            onUpdateFinished()
+            onDismiss()
+        },
+        onRestartApp = {
+            onUpdateFinished()
+            onDismiss()
+            try {
+                val launch = context.packageManager.getLaunchIntentForPackage(context.packageName)
+                    ?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                if (launch != null) {
+                    context.startActivity(launch)
+                    Runtime.getRuntime().exit(0)
                 }
-                .clip(CircleShape)
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(CSS_PINK, CSS_PEACH),
-                        start = Offset(0f, 0f),
-                        end = Offset(80f, 80f)
-                    )
-                )
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = text,
-            fontSize = 12.5.sp,
-            color = Color(0xFF4A4A52),
-            lineHeight = 17.sp
-        )
-        // 右侧呼吸光点（纯 CSS 装饰）
-        Spacer(modifier = Modifier.weight(1f))
-        Box(
-            modifier = Modifier
-                .size(5.dp)
-                .graphicsLayer { alpha = dotAlpha }
-                .clip(CircleShape)
-                .background(CSS_LEMON.copy(alpha = 0.8f))
-        )
-    }
-}
-
-// ---------- CSS 渐变流动进度条 ----------
-@Composable
-private fun CssFlowProgressBar(progress: Float, flow: Float) {
-    val frac = progress.coerceIn(0f, 100f) / 100f
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(10.dp)
-            .clip(RoundedCornerShape(50))
-            .background(Color(0xFFF2E8EC))
-    ) {
-        // 已填充部分：粉橙渐变 + 顶部白色流光高光
-        Box(
-            modifier = Modifier
-                .fillMaxWidth(fraction = frac)
-                .fillMaxSize()
-                .clip(RoundedCornerShape(50))
-                .background(
-                    Brush.horizontalGradient(
-                        colors = listOf(CSS_PINK, CSS_PEACH, CSS_MINT, CSS_LEMON),
-                        startX = 0f,
-                        endX = 600f
-                    )
-                )
-        )
-        // 顶部高光（玻璃反光效果，透明度随 flow 呼吸）
-        Box(
-            modifier = Modifier
-                .fillMaxWidth(fraction = frac)
-                .fillMaxHeight()
-                .clip(RoundedCornerShape(50))
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = (0.25f + flow * 0.2f).coerceIn(0.15f, 0.55f)),
-                            Color.White.copy(alpha = 0.02f)
-                        )
-                    )
-                )
-        )
-    }
-}
-
-// ---------- CSS 渐变脉冲按钮 ----------
-@Composable
-private fun CssGradientButton(
-    text: String,
-    onClick: () -> Unit,
-    enabled: Boolean,
-    scale: Float
-) {
-    Box(
-        modifier = Modifier
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            }
-            .testTag("css_update_btn")
-            .clip(RoundedCornerShape(50))
-            .background(
-                Brush.linearGradient(
-                    colors = listOf(CSS_PINK, CSS_PEACH),
-                    start = Offset(0f, 0f),
-                    end = Offset(800f, 800f)
-                )
-            )
-            .clickable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = 26.dp, vertical = 10.dp)
-    ) {
-        Text(
-            text = text,
-            fontSize = 13.5.sp,
-            fontWeight = FontWeight.Bold,
-            color = if (enabled) Color.White else Color.White.copy(alpha = 0.7f)
-        )
-    }
-}
-
-// ---------- 官方群链接 ----------
-@Composable
-private fun CssGroupLink(text: String, onClick: () -> Unit) {
-    Text(
-        text = text,
-        fontSize = 13.sp,
-        fontWeight = FontWeight.SemiBold,
-        color = Color(0xFF9C9399),
-        modifier = Modifier
-            .clickable { onClick() }
-            .padding(vertical = 6.dp)
+            } catch (e: Exception) { }
+        }
     )
 }
 
-// ============================================================
-// 底层辅助：签名对比 / PackageInstaller / FileProvider
-// ============================================================
+@Composable
+private fun LogItem(text: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Top
+    ) {
+        Text(
+            text = "✦",
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Black,
+            color = Color(0xFFFF2D78)
+        )
+        Spacer(modifier = Modifier.width(6.dp))
+        Text(
+            text = text,
+            fontSize = 12.sp,
+            lineHeight = 18.sp,
+            color = Color.White.copy(alpha = 0.75f)
+        )
+    }
+}
+
+private const val UIVERSE_UPDATE_HTML = """<!-- From Uiverse.io by ilkhoeri --> 
+<div
+  class="[--shadow:rgba(60,64,67,0.3)_0_1px_2px_0,rgba(60,64,67,0.15)_0_2px_6px_2px] w-4/5 h-auto rounded-2xl bg-white [box-shadow:var(--shadow)] max-w-[300px]"
+>
+  <div
+    class="flex flex-col items-center justify-between pt-9 px-6 pb-6 relative"
+  >
+    <span class="relative mx-auto -mt-16 mb-8">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        height="46"
+        width="65"
+      >
+        <path
+          stroke="#000"
+          fill="#EAB789"
+          d="M49.157 15.69L44.58.655l-12.422 1.96L21.044.654l-8.499 2.615-6.538 5.23-4.576 9.153v11.114l4.576 8.5 7.846 5.23 10.46 1.96 7.845-2.614 9.153 2.615 11.768-2.615 7.846-7.846 1.96-5.884.655-7.191-7.846-1.308-6.537-3.922z"
+        ></path>
+        <path
+          fill="#9C6750"
+          d="M32.286 3.749c-6.94 3.65-11.69 11.053-11.69 19.591 0 8.137 4.313 15.242 10.724 19.052a20.513 20.513 0 01-8.723 1.937c-11.598 0-21-9.626-21-21.5 0-11.875 9.402-21.5 21-21.5 3.495 0 6.79.874 9.689 2.42z"
+          clip-rule="evenodd"
+          fill-rule="evenodd"
+        ></path>
+        <path
+          fill="#634647"
+          d="M64.472 20.305a.954.954 0 00-1.172-.824 4.508 4.508 0 01-3.958-.934.953.953 0 00-1.076-.11c-.46.252-.977.383-1.502.382a3.154 3.154 0 01-2.97-2.11.954.954 0 00-.833-.634 4.54 4.54 0 01-4.205-4.507c.002-.23.022-.46.06-.687a.952.952 0 00-.213-.767 3.497 3.497 0 01-.614-3.5.953.953 0 00-.382-1.138 3.522 3.522 0 01-1.5-3.992.951.951 0 00-.762-1.227A22.611 22.611 0 0032.3 2.16 22.41 22.41 0 0022.657.001a22.654 22.654 0 109.648 43.15 22.644 22.644 0 0032.167-22.847zM22.657 43.4a20.746 20.746 0 110-41.493c2.566-.004 5.11.473 7.501 1.407a22.64 22.64 0 00.003 38.682 20.6 20.6 0 01-7.504 1.404zm19.286 0a20.746 20.746 0 112.131-41.384 5.417 5.417 0 001.918 4.635 5.346 5.346 0 00-.133 1.182A5.441 5.441 0 0046.879 11a5.804 5.804 0 00-.028.568 6.456 6.456 0 005.38 6.345 5.053 5.053 0 006.378 2.472 6.412 6.412 0 004.05 1.12 20.768 20.768 0 01-20.716 21.897z"
+        ></path>
+        <path
+          fill="#644647"
+          d="M54.962 34.3a17.719 17.719 0 01-2.602 2.378.954.954 0 001.14 1.53 19.637 19.637 0 002.884-2.634.955.955 0 00-1.422-1.274z"
+        ></path>
+        <path
+          stroke-width="1.8"
+          stroke="#644647"
+          fill="#845556"
+          d="M44.5 32.829c-.512 0-1.574.215-2 .5-.426.284-.342.263-.537.736a2.59 2.59 0 104.98.99c0-.686-.458-1.241-.943-1.726-.485-.486-.814-.5-1.5-.5zm-30.916-2.5c-.296 0-.912.134-1.159.311-.246.177-.197.164-.31.459a1.725 1.725 0 00-.086.932c.058.312.2.6.41.825.21.226.477.38.768.442.291.062.593.03.867-.092s.508-.329.673-.594a1.7 1.7 0 00.253-.896c0-.428-.266-.774-.547-1.076-.281-.302-.471-.31-.869-.311zm17.805-11.375c-.143-.492-.647-1.451-1.04-1.78-.392-.33-.348-.255-.857-.31a2.588 2.588 0 10.441 5.06c.66-.194 1.064-.788 1.395-1.39.33-.601.252-.92.06-1.58zm-22 2c-.143-.492-.647-1.451-1.04-1.78-.391-.33-.347-.255-.856-.31a2.589 2.589 0 10.44 5.06c.66-.194 1.064-.788 1.395-1.39.33-.601.252-.92.06-1.58zM38.112 7.329c-.395 0-1.216.179-1.545.415-.328.236-.263.218-.415.611-.151.393-.19.826-.114 1.243.078.417.268.8.548 1.1.28.301.636.506 1.024.59.388.082.79.04 1.155-.123.366-.163.678-.438.898-.792.22-.354.337-.77.337-1.195 0-.57-.354-1.031-.73-1.434-.374-.403-.628-.415-1.158-.415zm-19.123.703c.023-.296-.062-.92-.219-1.18-.157-.26-.148-.21-.432-.347a1.726 1.726 0 00-.922-.159 1.654 1.654 0 00-.856.344 1.471 1.471 0 00-.501.73c-.085.285-.077.589.023.872.1.282.287.532.538.718a1.7 1.7 0 00.873.323c.427.033.793-.204 1.116-.46.324-.256.347-.445.38-.841z"
+        ></path>
+        <path
+          fill="#634647"
+          d="M15.027 15.605a.954.954 0 00-1.553 1.108l1.332 1.863a.955.955 0 001.705-.77.955.955 0 00-.153-.34l-1.331-1.861z"
+        ></path>
+        <path
+          fill="#644647"
+          d="M43.31 23.21a.954.954 0 101.553-1.11l-1.266-1.772a.954.954 0 10-1.552 1.11l1.266 1.772z"
+        ></path>
+        <path
+          fill="#634647"
+          d="M19.672 35.374a.954.954 0 00-.954.953v2.363a.954.954 0 001.907 0v-2.362a.954.954 0 00-.953-.954z"
+        ></path>
+        <path
+          fill="#644647"
+          d="M33.129 29.18l-2.803 1.065a.953.953 0 00-.053 1.764.957.957 0 00.73.022l2.803-1.065a.953.953 0 00-.677-1.783v-.003zm24.373-3.628l-2.167.823a.956.956 0 00-.054 1.764.954.954 0 00.73.021l2.169-.823a.954.954 0 10-.678-1.784v-.001z"
+        ></path>
+      </svg>
+    </span>
+
+    <h5 class="text-sm font-semibold mb-2 text-left mr-auto text-zinc-700">
+      Your privacy is important to us
+    </h5>
+
+    <p class="w-full mb-4 text-sm text-justify">
+      We process your personal information to measure and improve our sites and
+      services, to assist our campaigns and to provide personalised content.
+      <br />
+      For more information see our
+      <a
+        class="mb-2 text-sm cursor-pointer font-semibold transition-colors hover:text-[#634647] underline underline-offset-2"
+        >Privacy Policy</a
+      >
+    </p>
+
+    <button
+      class="mb-2 text-sm mr-auto text-zinc-600 cursor-pointer font-semibold transition-colors hover:text-[#634647] hover:underline underline-offset-2"
+    >
+      More Options
+    </button>
+    <button
+      class="absolute font-semibold right-6 bottom-6 cursor-pointer py-2 px-8 w-max break-keep text-sm rounded-lg transition-colors text-[#634647] hover:text-[#ddad81] bg-[#ddad81] hover:bg-[#634647]"
+      type="button"
+    >
+      Accept
+    </button>
+  </div>
+</div>"""
+
+
+// ============ 顶层辅助函数（APK 签名对比，供更新弹窗使用） ============
 
 /**
- * PackageInstaller 系统安装会话：
- * - v1.0.2 修复：PendingIntent 改 FLAG_MUTABLE（Android 12+ 系统需向回调 intent 注入安装状态，
- *   使用 IMMUTABLE 会导致部分设备上安装结果回调永远不送达 → 弹窗卡在「正在安装」）
+ * PackageInstaller 系统安装会话（v1.7.5 参照 AppUpdater）：
+ * 由系统原子化完成「卸载旧版本 + 安装新版本」替换，签名一致时自动覆盖、数据保留。
+ * @return 是否成功提交会话
  */
 private fun installViaPackageInstaller(context: Context, apkFile: File): Boolean {
     return try {
@@ -984,28 +683,12 @@ private fun installViaPackageInstaller(context: Context, apkFile: File): Boolean
             context,
             100,
             receiverIntent,
-            // v1.0.2：必须 MUTABLE，否则系统无法向回调 PendingIntent 注入 EXTRA_STATUS
-            android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_MUTABLE
+            android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
         )
         session.commit(pending.intentSender)
         true
     } catch (e: Exception) {
         false
-    }
-}
-
-/** FileProvider + 系统安装器（最通用的兜底方案） */
-private fun installViaFileProvider(context: Context, file: File) {
-    try {
-        val uri = FileProvider.getUriForFile(context, context.packageName + ".fileprovider", file)
-        val intent = Intent(Intent.ACTION_VIEW).apply {
-            setDataAndType(uri, "application/vnd.android.package-archive")
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-        context.startActivity(intent)
-    } catch (e: Exception) {
-        Toast.makeText(context, "无法打开系统安装器，请稍后到文件管理器中手动安装更新包", Toast.LENGTH_LONG).show()
     }
 }
 
