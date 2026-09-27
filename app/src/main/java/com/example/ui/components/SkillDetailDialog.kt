@@ -67,7 +67,7 @@ import com.example.data.local.db.UploadedResourceEntity
 import com.example.data.util.VideoCache
 import com.example.ui.theme.CuteMint
 import com.example.ui.theme.CutePink
-import com.example.ui.theme.CutePurple
+import com.example.ui.theme.NeonPurple
 import kotlinx.coroutines.launch
 
 /**
@@ -157,7 +157,7 @@ fun SkillDetailDialog(
                             modifier = Modifier
                                 .size(42.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Brush.linearGradient(listOf(CutePurple, CutePink))),
+                                .background(Brush.linearGradient(listOf(NeonPurple, CutePink))),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -243,13 +243,13 @@ fun SkillDetailDialog(
                                     .fillMaxWidth()
                                     .height(120.dp)
                                     .clip(RoundedCornerShape(16.dp))
-                                    .background(Brush.linearGradient(listOf(CutePurple.copy(alpha = 0.18f), CutePink.copy(alpha = 0.18f)))),
+                                    .background(Brush.linearGradient(listOf(NeonPurple.copy(alpha = 0.18f), CutePink.copy(alpha = 0.18f)))),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Filled.Image,
                                     contentDescription = null,
-                                    tint = CutePurple.copy(alpha = 0.6f),
+                                    tint = NeonPurple.copy(alpha = 0.6f),
                                     modifier = Modifier.size(40.dp)
                                 )
                             }
