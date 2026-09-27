@@ -27,10 +27,10 @@ android {
     // v1.8.7：控制台深度融合（工具箱云端同步/软件横排/背景媒体）- 更新弹窗免授权直装 + CSS 动态进度条
     // v1.8.9：更新弹窗全新重写——最新动态 CSS 手绘风格（手绘描边/流动渐变/涂鸦粒子/对话气泡）
     // v1.9.1：更新弹窗恢复 v1.5 老样式（白卡片 + 圆点列表 + 官方群 + 立即更新）
-    // v1.9.2 发布：软件/Skill 闪烁修复 + Skill 技能库下载 + 即存内置解析下载 + 视频延迟优化
-    // v1.0.1（版本体系重置，原 1.9.2）：可爱卡通纯色主题为核心 + 关于我们动态 CSS 标签 + 反馈系统升级；后续统一按 v1.0.x 递增更新
-    versionCode = 83
-    versionName = "1.0.2"
+    // v1.0.3 发布：更新弹窗回退 1.7.6 卡通自动更新 + Skill 独立弹窗 + 百鸟科普音频 + 反馈横屏 + 二维码预加载 + 检查更新优化
+    // 与云端 admin-data.json version.code=84 / name=1.0.3 四要素对齐（含 apkUrl 指向真实 1.0.3 安装包）
+    versionCode = 84
+    versionName = "1.0.3"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
