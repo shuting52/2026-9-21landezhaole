@@ -2,7 +2,8 @@ package com.example.ui.components
 
 /**
  * 卡通更新弹窗状态机（v1.7.6 参照 AppUpdater 移植）。
- * AppUpdateDialog 将现有云端更新流程映射为该状态，驱动卡通弹窗渲染。
+ * 由 CartoonUpdateDialog 业务入口将现有云端更新流程映射为该状态，驱动卡通弹窗渲染。
+ * （AppUpdateDialog.kt 已永久删除，更新弹窗统一由 CartoonUpdateDialog 接管）
  */
 sealed class CartoonUpdateState {
     /** 初始空闲态 */
