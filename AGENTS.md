@@ -33,6 +33,7 @@ GitHub 仓库（唯一真相源）
 3. **预留 AgentAI 对接**：关键操作必须可脚本/API 完成；CI 一键构建；新 AI 先读本文件。
 4. **站点只增不删 + 自动去重**：本地站点永远保留；按规范化 URL 去重（云端覆盖同名、本地独有保留、重复跳过）。
 5. **联系方式/二维码锁定**：微信/QQ/支付宝二维码、QQ 群链接任何版本迭代不得改动；唯一变更途径=控制台主动上传新二维码并更新 admin-data.json。
+6. **定点开发铁律（新增）**：说哪改哪，禁止牵连改动。当前 main 代码即基线；每次开发先对照 `文件功能清单.md` 确定目标文件白名单，只动白名单内文件；严禁顺手重构/格式化/修无关 bug/删历史代码；确需动白名单外文件必须先经用户确认；commit 前用 `git diff --stat` 自查，多余改动一律还原。(详见 写死规则.md)
 
 ---
 
@@ -92,6 +93,14 @@ GitHub API → jsdelivr-testingcf → jsdelivr-cdn → jsdelivr-fastly → jsdel
 3. 更新 `admin-data.json` 的 `console` 字段（version/code/apkUrl）
 4. 已装旧控制台的用户连接云端后自动收到升级提示
 
+### D. 定点开发（改代码 · 说哪改哪 · 铁律）
+1. 先读 `文件功能清单.md`，把“想改的功能 → 对应文件”抄成**白名单清单**。
+2. 只改白名单内文件，且只在目标功能代码块内动刀。
+3. 不改无关代码：不顺手格式化、不重构、不修无关 bug、不删“看着没用”的代码、不复制粘贴扩散。
+4. 若必须动白名单外文件（基础类/资源/配置），先说明原因征得用户同意再动。
+5. commit 前自查：`git diff --stat` 必须与白名单一致，多余文件 `git checkout --` 还原；逐文件 diff 确认无无关改动。
+6. commit 首行含功能名，正文列改动文件清单。
+
 ---
 
 ## 五、AgentAI / 开发者常见操作速查
@@ -105,6 +114,7 @@ GitHub API → jsdelivr-testingcf → jsdelivr-cdn → jsdelivr-fastly → jsdel
 | 修复控制台连接报错 | 检查多镜像链是否完整 + 网页劫持检测；有效 Token 必须能连 |
 | 上传新 APK | CI 打 tag 构建 或 控制台上传 `dist/apk/` |
 | 改二维码 | **只有控制台主动更新** `settings.contact*` 才允许（规则5） |
+| 改任何代码 | 先查 `文件功能清单.md` 定位目标文件 → 按工作流 D 定点改，不允许牵连改动（规则6） |
 
 ---
 
@@ -116,4 +126,4 @@ GitHub API → jsdelivr-testingcf → jsdelivr-cdn → jsdelivr-fastly → jsdel
 
 ---
 
-*维护：shuting52/2026-9-21landezhaole · 最后更新：2026-09-25*
+*维护：shuting52/2026-9-21landezhaole · 最后更新：2026-09-27*
