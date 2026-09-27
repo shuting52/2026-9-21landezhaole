@@ -30,8 +30,9 @@ android {
     // v1.0.4 发布：开屏CSS粒子动画 + 软件三列网格 + 工具箱精简(4工具+紧急电话) + 设置优化(主题背景同步/官方群跳转/反馈修复) + 新增500+热门站点
     // 控制台 v1.0.9：软件停止运营开关 + 强化型安全加密加固
     // 与云端 admin-data.json version.code=85 / name=1.0.4 四要素对齐（含 apkUrl 指向真实 1.0.4 安装包）
-    versionCode = 85
-    versionName = "1.0.4"
+    // v1.0.5：更新弹窗固化「手绘CSS + 免授权直装」——永久删除 WebView 弹窗（写死规则7）
+    versionCode = 86
+    versionName = "1.0.5"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
