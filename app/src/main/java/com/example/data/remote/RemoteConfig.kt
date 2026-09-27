@@ -143,6 +143,8 @@ data class SettingsDto(
     val packageName: String = "",
     // 安全加固：签名自校验
     val security: SecurityDto? = null,
+    // v1.0.9：软件停止运营开关（控制台设置，开=本体强制提示并退出）
+    val serverShutdown: ServerShutdownDto? = null,
     // 全局背景媒体（控制台上传图片/视频，url 空则用内置）
     val bgMedia: BgMediaDto? = null,
     // 内置歌手海报（控制台可上传替换）
@@ -155,6 +157,12 @@ data class SettingsDto(
 data class SecurityDto(
     val enabled: Boolean = false,
     val expectedSha: String = ""
+)
+
+/** v1.0.9：软件停止运营开关（控制台设置） */
+data class ServerShutdownDto(
+    val enabled: Boolean = false,
+    val notice: String = ""
 )
 
 /** 全局背景媒体：图片 / 视频 */
