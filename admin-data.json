@@ -1,18 +1,18 @@
 {
   "version": {
-    "code": 86,
-    "name": "1.0.5",
+    "code": 85,
+    "name": "1.0.4",
     "changelog": [
-      "✨ v1.0.5 更新来啦～",
-      "? 更新弹窗固化「手绘CSS + 免授权直装」：进度条走满直接安装新版本，不再走授权未知应用",
-      "? 更新弹窗全新手绘卡通风格：手绘猫咪 + 对话气泡 + 双层描边 + 涂鸦粒子 + 动态进度条",
+      "✨ v1.0.4 更新来啦～",
+      "开屏 CSS 粒子动态特效 · 软件三列网格 · 工具箱精简(4工具+紧急电话) · 设置升级 · 新增500+热门站点",
+      "更新弹窗固定「手绘卡通」呈现（同 1.0.3），自动下载免授权直装",
       "? 两程序更新弹窗实现已写死（写死规则7），以后所有版本统一沿用，不再回退 WebView",
       "? 控制台内置版本号与安装包对齐修复",
       "功能与体验全面升级，等你来发现～"
     ],
-    "force": true,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.0.5-1790522848.apk",
-    "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.0.5-1790522848.apk"
+    "force": false,
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.0.4-1790530180.apk",
+    "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.0.4-1790530180.apk"
   },
   "home": {
     "categories": [
@@ -22278,9 +22278,9 @@
     ]
   },
   "console": {
-    "version": "1.0.10",
-    "code": 35,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v1.0.10-1790522848.apk"
+    "version": "1.0.9",
+    "code": 34,
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v1.0.9-1790530264.apk"
   },
   "ipMonitor": {
     "enabled": false,
