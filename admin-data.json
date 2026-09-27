@@ -11,7 +11,7 @@
       "? 更新弹窗全新 CSS 动态动画呈现：流光横幅 + 漂浮粒子 + 呼吸列表 + 渐变进度条",
       "更多细节优化，等你来发现～"
     ],
-    "force": false,
+    "force": true,
     "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.0.2-1790438178.apk",
     "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.0.2-1790438178.apk"
   },
