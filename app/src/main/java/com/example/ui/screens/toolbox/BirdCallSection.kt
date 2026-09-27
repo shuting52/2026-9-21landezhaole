@@ -49,6 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -322,7 +323,7 @@ private fun BirdRow(
                     .size(32.dp)
                     .clip(CircleShape)
                     .background(
-                        if (isPlaying) Color(0xFF2E7D32)
+                        if (isPlaying) SolidColor(Color(0xFF2E7D32))
                         else Brush.linearGradient(listOf(Color(0xFF66BB6A), Color(0xFF2E7D32)))
                     ),
                 contentAlignment = Alignment.Center
@@ -378,7 +379,7 @@ private fun BirdRow(
                     .size(38.dp)
                     .clip(CircleShape)
                     .background(
-                        if (isPlaying) Color(0xFF2E7D32)
+                        if (isPlaying) SolidColor(Color(0xFF2E7D32))
                         else Brush.linearGradient(listOf(Color(0xFF66BB6A), Color(0xFF43A047)))
                     ),
                 contentAlignment = Alignment.Center

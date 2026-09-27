@@ -27,9 +27,6 @@ sealed class CartoonUpdateState {
     /** 正在安装（系统安装会话提交中） */
     object Installing : CartoonUpdateState()
 
-    /** 需要用户先开启「允许安装未知应用」权限 */
-    object NeedInstallPermission : CartoonUpdateState()
-
     /** 更新成功 */
     data class Done(val installed: Boolean) : CartoonUpdateState()
 

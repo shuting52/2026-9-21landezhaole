@@ -463,7 +463,7 @@ fun MainScreen(
         LaunchedEffect(qrPreloadUrls) {
             if (qrPreloadUrls.isNotEmpty()) {
                 try {
-                    val loader = coil.imageLoader(context)
+                    val loader = coil.ImageLoader.Builder(context).build()
                     qrPreloadUrls.forEach { url ->
                         loader.enqueue(
                             coil.request.ImageRequest.Builder(context)

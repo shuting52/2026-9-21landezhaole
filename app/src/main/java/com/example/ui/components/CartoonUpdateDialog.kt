@@ -71,7 +71,7 @@ import kotlin.math.sin
 
 // 弹窗专属配色（霓虹卡通风）
 private val CuteCyan = Color(0xFF4DE3FF)
-private val CutePurple = Color(0xFF8B5CF6)
+val CutePurple = Color(0xFF8B5CF6)
 private val CutePink = Color(0xFFFF5FA2)
 private val CuteYellow = Color(0xFFFFD93D)
 private val CuteOrange = Color(0xFFFF9F43)
