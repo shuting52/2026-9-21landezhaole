@@ -50,7 +50,7 @@ import com.example.data.remote.VersionDto
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import com.example.ui.components.AppRatingDialog
-import com.example.ui.components.AppUpdateDialog
+import com.example.ui.components.CartoonUpdateDialog
 import com.example.ui.components.OfficialWebsiteDialog
 import com.example.ui.components.ShareSoftwareDialog
 import androidx.compose.material3.AlertDialog
@@ -579,7 +579,7 @@ fun SettingsScreen(
             )
         }
         "update" -> {
-            AppUpdateDialog(
+            CartoonUpdateDialog(
                 onDismiss = { activeDialogType = null },
                 versionName = "v${cloudVersion?.name ?: "2.0.0"}",
                 onUpdateFinished = {
