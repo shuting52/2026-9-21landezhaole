@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.data.local.db.UploadedResourceEntity
 import com.example.data.util.VideoCache
+import com.example.ui.components.SkillDetailDialog
 
 /** v1.8.7：资源自动归类关键词（用于自动识别软件是做什么的） */
 private val AUTO_CATEGORY_RULES = listOf(
@@ -108,6 +109,9 @@ fun UploadHubScreen(
     gridMode: Boolean = false
 ) {
     val context = LocalContext.current
+
+    // Skill 技能库：点击卡片弹独立详情（视频预览/提示词/复制/分享）
+    var skillDetail by remember { mutableStateOf<UploadedResourceEntity?>(null) }
 
     Box(modifier = modifier.fillMaxSize()) {
         if (gridMode && resourceType == "software") {
@@ -260,6 +264,9 @@ fun UploadHubScreen(
                             res = res,
                             resourceType = resourceType,
                             showDelete = showDelete,
+                            onClickOverride = if (resourceType == "skill") {
+                                { skillDetail = res }
+                            } else null,
                             onDelete = {
                                 onDelete(res.id)
                                 Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
@@ -269,6 +276,40 @@ fun UploadHubScreen(
                 }
             }
         }
+    }
+
+    // Skill 技能详情独立弹窗
+    skillDetail?.let { res ->
+        SkillDetailDialog(
+            res = res,
+            onDismiss = { skillDetail = null },
+            onDownload = { url, fileName ->
+                try {
+                    val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                    val safeName = (fileName?.ifBlank { null } ?: url.substringAfterLast('/').ifBlank { "download.bin" })
+                        .replace(" ", "_")
+                        .replace(Regex("[\\\\/:*?\"<>|]"), "_")
+                    val request = DownloadManager.Request(Uri.parse(url))
+                        .setTitle("懒得找了 · ${res.title}")
+                        .setDescription("正在下载 $safeName")
+                        .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                        .setAllowedOverMetered(true)
+                        .setMimeType(
+                            when {
+                                url.endsWith(".apk", true) -> "application/vnd.android.package-archive"
+                                url.endsWith(".zip", true) -> "application/zip"
+                                url.endsWith(".md", true) -> "text/markdown"
+                                else -> "application/octet-stream"
+                            }
+                        )
+                        .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, safeName)
+                    dm.enqueue(request)
+                    Toast.makeText(context, "已开始下载到手机「下载」文件夹，完成后可在通知栏查看", Toast.LENGTH_LONG).show()
+                } catch (e: Exception) {
+                    Toast.makeText(context, "下载失败，请稍后重试", Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
     }
 }
 
@@ -468,6 +509,7 @@ private fun ResourceFileCard(
     res: UploadedResourceEntity,
     resourceType: String = "software",
     showDelete: Boolean = true,
+    onClickOverride: (() -> Unit)? = null,
     onDelete: () -> Unit
 ) {
     val context = LocalContext.current
@@ -559,7 +601,7 @@ private fun ResourceFileCard(
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)),
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onCardClick() }
+            .clickable { (onClickOverride ?: onCardClick)() }
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {

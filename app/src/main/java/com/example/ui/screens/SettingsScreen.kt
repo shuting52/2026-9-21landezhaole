@@ -129,6 +129,8 @@ fun SettingsScreen(
     val coroutineScope = rememberCoroutineScope()
     var activeDialogType by remember { mutableStateOf<String?>(null) }
     var isCheckingUpdate by remember { mutableStateOf(false) }
+    // 检查更新反馈弹窗：无新版本时点击「检查更新」弹出独立弹窗「已是最新版本」
+    var showLatestVersionDialog by remember { mutableStateOf(false) }
 
     // 云端新版本检测：云端 versionCode 大于本地时视为有新版本
     val hasNewCloudVersion = (cloudVersion?.code ?: 0) > com.example.BuildConfig.VERSION_CODE
@@ -287,6 +289,80 @@ fun SettingsScreen(
             border = CardDefaults.outlinedCardBorder()
         ) {
             Column(modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp)) {
+                // 独立动态警告标识：检测到有新版本时，以醒目呼吸横幅告知用户「有新版本请立即更新」
+                if (hasNewCloudVersion) {
+                    val alertBlink by rememberInfiniteTransition(label = "update_alert_blink")
+                        .animateFloat(
+                            initialValue = 0.55f,
+                            targetValue = 1f,
+                            animationSpec = infiniteRepeatable(
+                                animation = tween(550, easing = androidx.compose.animation.core.LinearEasing),
+                                repeatMode = RepeatMode.Reverse
+                            ),
+                            label = "updateAlertBlink"
+                        )
+                    val alertSlide by rememberInfiniteTransition(label = "update_alert_slide")
+                        .animateFloat(
+                            initialValue = 0.97f,
+                            targetValue = 1f,
+                            animationSpec = infiniteRepeatable(
+                                animation = tween(900, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+                                repeatMode = RepeatMode.Reverse
+                            ),
+                            label = "updateAlertSlide"
+                        )
+                    Surface(
+                        onClick = { activeDialogType = "update" },
+                        color = Color(0xFFFDE8E8),
+                        border = BorderStroke(1.5.dp, Color(0xFFE53935).copy(alpha = 0.45f)),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp)
+                            .graphicsLayer { alpha = alertBlink; scaleX = alertSlide }
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(26.dp)
+                                    .clip(CircleShape)
+                                    .background(Brush.linearGradient(listOf(Color(0xFFE53935), Color(0xFFFF7043))))
+                                ,
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.CloudDownload,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(15.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "⚠️ 有新版本请立即更新",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = Color(0xFFE53935)
+                                )
+                                Text(
+                                    text = "发现新版本 v${cloudVersion?.name ?: ""}，点击立即更新！",
+                                    fontSize = 10.5.sp,
+                                    color = Color(0xFFE53935).copy(alpha = 0.75f)
+                                )
+                            }
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                                contentDescription = null,
+                                tint = Color(0xFFE53935),
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                }
                 // 检查更新（云端自动检测，有新版本时展示提示并一键直达更新下载）
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Row(
@@ -300,10 +376,10 @@ fun SettingsScreen(
                                         val (hasNew, ver) = onCheckUpdate()
                                         isCheckingUpdate = false
                                         if (hasNew) {
-                                            Toast.makeText(context, "发现新版本 v${ver?.name ?: ""}~请及时更新", Toast.LENGTH_SHORT).show()
                                             activeDialogType = "update"
                                         } else {
-                                            Toast.makeText(context, "该版本已是最新版本~无需更新", Toast.LENGTH_SHORT).show()
+                                            // 无新版本：独立弹窗反馈「已是最新版本」
+                                            showLatestVersionDialog = true
                                         }
                                     }
                                 } else {
@@ -381,24 +457,13 @@ fun SettingsScreen(
                                 )
                             } else {
                                 Spacer(modifier = Modifier.height(2.dp))
-                                // v1.7.3：无新版本显示「已是最新版本」；有新版本用红色动态呼吸标识提醒更新
+                                // v1.7.3：无新版本显示「已是最新版本」；有新版本由上方独立动态警告横幅提示
                                 if (hasNewCloudVersion) {
-                                    val blink by rememberInfiniteTransition(label = "update_red_blink")
-                                        .animateFloat(
-                                            initialValue = 0.35f,
-                                            targetValue = 1f,
-                                            animationSpec = infiniteRepeatable(
-                                                animation = tween(650, easing = LinearEasing),
-                                                repeatMode = RepeatMode.Reverse
-                                            ),
-                                            label = "updateRedBlink"
-                                        )
                                     Text(
-                                        text = "⚠️ 有新版本更新，点击立即更新！",
+                                        text = "点击进入更新",
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFFE53935),
-                                        modifier = Modifier.graphicsLayer { alpha = blink }
+                                        color = Color(0xFFE53935)
                                     )
                                 } else {
                                     Text(
@@ -462,6 +527,46 @@ fun SettingsScreen(
         com.example.ui.components.TypewriterFooter()
     }
 
+    // 检查更新反馈：无新版本时点击「检查更新」→ 独立弹窗「已是最新版本」
+    if (showLatestVersionDialog) {
+        AlertDialog(
+            onDismissRequest = { showLatestVersionDialog = false },
+            title = { Text("检查更新", fontWeight = FontWeight.Black) },
+            text = {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp)
+                ) {
+                    Text("✅", fontSize = 42.sp)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "已是最新版本",
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Black,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "当前 v${com.example.BuildConfig.VERSION_NAME} 已是最新版本，无需更新～",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showLatestVersionDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF22C55E))
+                ) {
+                    Text("知道了", fontWeight = FontWeight.Bold)
+                }
+            }
+        )
+    }
+
     // Modal Dialogs for Policies & About Us
     when (activeDialogType) {
         "feedback_bug" -> {
@@ -476,7 +581,9 @@ fun SettingsScreen(
                 },
                 update = cloudUpdate,
                 apkUrl = cloudVersion?.apkUrl?.ifBlank { null },
-                forceUpdate = cloudVersion?.force == true
+                forceUpdate = cloudVersion?.force == true,
+                // 检查更新进入弹窗后同样自动下载并免授权直装
+                autoDownload = true
             )
         }
         "official_website" -> {
@@ -1092,11 +1199,14 @@ private fun ContactQrImage(
             .clip(RoundedCornerShape(12.dp))
     ) {
         if (url.isNotBlank()) {
-            // 已有控制台上传二维码：只显示云端图，不叠加内置图
+            // 已有控制台上传二维码：显示云端图（加载中/失败时用内置图即时兑底，杜绝空白与延迟）
             coil.compose.AsyncImage(
                 model = url,
                 contentDescription = contentDescription,
                 contentScale = ContentScale.Fit,
+                placeholder = painterResource(id = fallbackRes),
+                error = painterResource(id = fallbackRes),
+                fallback = painterResource(id = fallbackRes),
                 modifier = Modifier.fillMaxSize()
             )
         } else {
