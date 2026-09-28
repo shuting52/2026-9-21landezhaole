@@ -3,9 +3,9 @@
     "code": 88,
     "name": "1.0.7",
     "changelog": [
+      "【14:23】更新欢迎弹窗：欢迎语嗨～欢迎回家！愿你在这里发现更多宝藏！，比例standard",
       "✨ v1.0.7 更新来啦～",
       "? 工具箱版块优化：分类默认收纳呈现，清爽不臃肿",
-      "? 联系作者修复：二维码无延迟呈现，删除自带占位二维码，只保留控制台上传",
       "? Skill 技能库新增 CSS 动态 NEW 角标，一眼发现新功能",
       "? 软件版块升级：分类上下收纳、点击展开，横排卡片更美观",
       "? 本体 UI 主题升级：清爽干净的浅红主题，焕然一新",
@@ -13,7 +13,7 @@
     ],
     "force": false,
     "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.0.7-1790572133.apk",
-    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.0.7-1790572133.apk"
+    "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.0.7-1790572133.apk"
   },
   "home": {
     "categories": [
@@ -22236,7 +22236,7 @@
     "bgColor": "#0b0b1a"
   },
   "welcome": {
-    "enabled": true,
+    "enabled": false,
     "title": "",
     "welcomeText": "嗨～欢迎回家！愿你在这里发现更多宝藏！",
     "content": "为期一周不断迭代优化的新版本终于上线啦～\n新应用可能存在小Bug，欢迎宝贝们及时反馈\n收录站资源丰富，很多资源都可以白嫖哦\n发现Bug请第一时间反馈，我会尽快处理",
@@ -22247,9 +22247,9 @@
   "updateDialog": {
     "title": "懒得找了 v1.0.7 已上线",
     "changelog": [
+      "【14:23】更新欢迎弹窗：欢迎语嗨～欢迎回家！愿你在这里发现更多宝藏！，比例standard",
       "✨ v1.0.7 更新来啦～",
       "? 工具箱版块优化：分类默认收纳呈现，清爽不臃肿",
-      "? 联系作者修复：二维码无延迟呈现，删除自带占位二维码，只保留控制台上传",
       "? Skill 技能库新增 CSS 动态 NEW 角标，一眼发现新功能",
       "? 软件版块升级：分类上下收纳、点击展开，横排卡片更美观",
       "? 本体 UI 主题升级：清爽干净的浅红主题，焕然一新",
