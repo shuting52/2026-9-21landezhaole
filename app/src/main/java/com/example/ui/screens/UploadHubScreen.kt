@@ -27,11 +27,13 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.items as gridItems
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -114,8 +116,8 @@ fun UploadHubScreen(
     var skillDetail by remember { mutableStateOf<UploadedResourceEntity?>(null) }
 
     Box(modifier = modifier.fillMaxSize()) {
-        if (gridMode && resourceType == "software") {
-            // ===== 软件版块：一排三个横排网格 + 自动归类 + 自动识别 icon（v1.0.4 升级） =====
+        if (gridMode && (resourceType == "software" || resourceType == "skill")) {
+            // ===== 软件/Skill：一排三个横排网格 + 自动归类 + 自动识别 icon（v1.0.4/1.0.5） =====
             // 自动归类分组（保持云端的顺序，仅分组显示）
             val grouped = remember(resources) {
                 val map = LinkedHashMap<String, MutableList<UploadedResourceEntity>>()
@@ -198,14 +200,27 @@ fun UploadHubScreen(
                             }
                         }
                         gridItems(list, key = { it.id }) { res ->
-                            SoftwareGridCard(
-                                res = res,
-                                showDelete = showDelete,
-                                onDelete = {
-                                    onDelete(res.id)
-                                    Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
-                                }
-                            )
+                            if (resourceType == "skill") {
+                                // Skill 技能包：横排网格卡片（预览图/视频标识/标题），点击打开详情弹窗
+                                SkillGridCard(
+                                    res = res,
+                                    onClick = { skillDetail = res },
+                                    showDelete = showDelete,
+                                    onDelete = {
+                                        onDelete(res.id)
+                                        Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
+                                    }
+                                )
+                            } else {
+                                SoftwareGridCard(
+                                    res = res,
+                                    showDelete = showDelete,
+                                    onDelete = {
+                                        onDelete(res.id)
+                                        Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -310,6 +325,117 @@ fun UploadHubScreen(
                 }
             }
         )
+    }
+}
+
+/** Skill 技能包横排网格卡片（v1.0.5：竖排改横排后使用）：
+ *  顶部预览区（视频/图片缩略图或渐变占位） + 底部标题与类型标识，点击打开详情弹窗 */
+@Composable
+private fun SkillGridCard(
+    res: UploadedResourceEntity,
+    onClick: () -> Unit,
+    showDelete: Boolean = true,
+    onDelete: () -> Unit
+) {
+    val isVideo = res.mediaUrl.isNotBlank() &&
+        Regex("\\.(mp4|webm|mov|m4v)(\\?.*)?$", RegexOption.IGNORE_CASE).containsMatchIn(res.mediaUrl)
+    val isZip = res.fileUrl.endsWith(".zip", ignoreCase = true)
+    val isMd = res.fileUrl.endsWith(".md", ignoreCase = true)
+
+    Surface(
+        shape = RoundedCornerShape(14.dp),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)),
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column {
+            // 预览区：有视频/预览图则展示缩略图，否则渐变占位
+            if (res.previewUrl.isNotBlank()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(64.dp)
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    coil.compose.AsyncImage(
+                        model = res.previewUrl,
+                        contentDescription = res.title,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                    if (isVideo) {
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clip(CircleShape)
+                                .background(Color.Black.copy(alpha = 0.55f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.PlayArrow,
+                                contentDescription = "视频",
+                                tint = Color.White,
+                                modifier = Modifier.size(13.dp)
+                            )
+                        }
+                    }
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(64.dp)
+                        .background(
+                            Brush.linearGradient(
+                                listOf(
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.22f),
+                                    MaterialTheme.colorScheme.tertiary.copy(alpha = 0.18f)
+                                )
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(if (isVideo) "🎬" else if (isZip) "📦" else if (isMd) "📄" else "🧠", fontSize = 22.sp)
+                }
+            }
+            // 标题 + 类型标识
+            Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 7.dp)) {
+                Text(
+                    text = res.title,
+                    fontSize = 11.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = when {
+                            isVideo -> "视频"
+                            isZip -> "ZIP"
+                            isMd -> "MD"
+                            else -> "Skill"
+                        },
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    if (res.author.isNotBlank()) {
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Text(
+                            text = res.author,
+                            fontSize = 9.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 

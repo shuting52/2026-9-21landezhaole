@@ -413,12 +413,14 @@ fun MainScreen(
                         } else {
                             UploadHubScreen(
                                 title = "Skill · 技能库",
-                                subtitle = "点击卡片查看详情：可视化视频预览 / 提示词 / 复制 / 分享，技能包一键下载即下即用",
+                                subtitle = "Skill 技能包横排网格 · 点击卡片查看详情（视频预览 / 下载 / 复制）",
                                 resourceType = "skill",
                                 resources = uploadedSkills,
                                 onDelete = { id -> viewModel.deleteUploadedResource(id) },
                                 modifier = Modifier.fillMaxSize(),
-                                showDelete = false
+                                showDelete = false,
+                                // v1.0.5：软件版块统一“竖排改横排”，Skill 技能库也采用一排三个横排网格
+                                gridMode = true
                             )
                         }
                     }

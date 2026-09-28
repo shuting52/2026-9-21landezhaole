@@ -8,7 +8,6 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,22 +20,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -58,28 +58,30 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
 import com.example.ui.theme.FlameRed
-import com.example.ui.theme.JadeGreen
-import kotlin.math.min
 
 /**
- * 紧急电话工具（v1.0.4）
+ * 紧急电话工具（v1.0.5 全面升级）
  *
- * - 全域服务电话逐一分类（急救救援/交通出行/政务服务/社会保障/劳动劳务/投诉举报/银行/快递/电商/外卖/通信/生活/保险/儿童救助）
- * - 每个紧急电话后都有「拨打」按钮，可一键快捷呼出
- * - 覆盖全国：支持地区选择（省 → 市/区/县），选择地区后本地热线随地区展示
- * - 每个分类自动匹配相关 icon（emoji 图标）
- * - 号码均为公开真实权威热线
+ * - 全域服务电话逐一分类（急救救援/交通出行/政务服务/…），并采用「上下收纳」形式呈现：
+ *   所有分类自上而下排布，点击分类标题展开/收起该分类的号码（默认展开第一个）；
+ * - 每个紧急电话后都有「拨打」按钮，可一键快捷呼出（无权限自动打开拨号盘预填）；
+ * - 覆盖全中国：地区选择精确到 省 → 市 → 县(区) → 镇(乡) → 村 六级，
+ *   内置 34 个省级行政区全部地级市/区县，镇乡村可自由输入覆盖任意村落
  */
 @Composable
 fun EmergencyPhoneSection() {
     val context = LocalContext.current
 
-    // 当前地区选择（默认全国）
+    // 当前地区选择（省/市/县/镇/乡/村 六级）
     var selectedProvince by remember { mutableStateOf<String?>(null) }
-    var selectedRegion by remember { mutableStateOf<RegionCity?>(null) }
+    var selectedCity by remember { mutableStateOf<RegionCity?>(null) }
+    var selectedCounty by remember { mutableStateOf<RegionCounty?>(null) }
+    var townText by remember { mutableStateOf("") }
+    var villageText by remember { mutableStateOf("") }
     var showRegionPicker by remember { mutableStateOf(false) }
-    // 当前分类
-    var activeCategoryId by remember { mutableStateOf(NATIONAL_EMERGENCY_CATEGORIES.first().id) }
+
+    // 分类收纳：展开中的分类 id 集合（默认展开第一个「急救救援」）
+    var expandedCats by remember { mutableStateOf(setOf(NATIONAL_EMERGENCY_CATEGORIES.first().id)) }
 
     fun callNumber(number: String) {
         val clean = number.filter { it.isDigit() || it == '+' }
@@ -112,7 +114,7 @@ fun EmergencyPhoneSection() {
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 8.dp)) {
+    Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 12.dp, vertical = 8.dp)) {
         // ---------- 顶部横幅 ----------
         Surface(
             modifier = Modifier.fillMaxWidth(),
@@ -136,13 +138,13 @@ fun EmergencyPhoneSection() {
                 Spacer(modifier = Modifier.width(10.dp))
                 Column {
                     Text(
-                        text = "紧急电话 · 覆盖全国",
+                        text = "紧急电话 · 覆盖全中国",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Black,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "全域服务分类 · 一键快捷呼出 · 支持地区选择",
+                        text = "全域服务分类 · 一键快捷呼出 · 支持省/市/县/镇/乡/村选择",
                         fontSize = 10.5.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -168,17 +170,22 @@ fun EmergencyPhoneSection() {
                 Spacer(modifier = Modifier.width(8.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "当前地区",
+                        text = "当前地区（省 → 市 → 县 → 镇/乡 → 村）",
                         fontSize = 10.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = buildString {
                             append(selectedProvince ?: "全国")
-                            selectedRegion?.let { append(" · ${it.name}") }
-                        },
-                        fontSize = 14.sp,
+                            selectedCity?.let { append(" · ${it.name}") }
+                            selectedCounty?.let { append(" · ${it.name}") }
+                            if (townText.isNotBlank()) append(" · $townText")
+                            if (villageText.isNotBlank()) append(" · $villageText")
+                        }.ifBlank { "全国" },
+                        fontSize = 13.5.sp,
                         fontWeight = FontWeight.Bold,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
@@ -193,139 +200,96 @@ fun EmergencyPhoneSection() {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // ---------- 分类横向选择（自动匹配 icon） ----------
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(NATIONAL_EMERGENCY_CATEGORIES) { cat ->
-                val selected = cat.id == activeCategoryId
-                Surface(
-                    onClick = { activeCategoryId = cat.id },
-                    shape = RoundedCornerShape(50),
-                    color = if (selected) FlameRed.copy(alpha = 0.15f) else Color.White.copy(alpha = 0.55f),
-                    border = BorderStroke(
-                        1.dp,
-                        if (selected) FlameRed.copy(alpha = 0.6f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
-                    )
+        // ---------- 分类收纳列表（上下展示，点击标题展开/收起） ----------
+        NATIONAL_EMERGENCY_CATEGORIES.forEach { cat ->
+            val isExpanded = cat.id in expandedCats
+            // 分类标题栏（点击展开/收起）
+            Surface(
+                onClick = {
+                    expandedCats = if (isExpanded) expandedCats - cat.id else expandedCats + cat.id
+                },
+                shape = RoundedCornerShape(12.dp),
+                color = if (isExpanded) FlameRed.copy(alpha = 0.10f) else Color.White.copy(alpha = 0.55f),
+                border = BorderStroke(
+                    1.dp,
+                    if (isExpanded) FlameRed.copy(alpha = 0.45f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.18f)
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 6.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 11.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(text = cat.icon, fontSize = 13.sp)
-                        Spacer(modifier = Modifier.width(5.dp))
-                        Text(
-                            text = cat.title,
-                            fontSize = 11.5.sp,
-                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                            color = if (selected) FlameRed else MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // ---------- 号码列表 ----------
-        val activeCat = NATIONAL_EMERGENCY_CATEGORIES.firstOrNull { it.id == activeCategoryId }
-            ?: NATIONAL_EMERGENCY_CATEGORIES.first()
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            // 地区本地热线（选择地区后展示该地区专属号码）
-            if (selectedRegion != null) {
-                item {
-                    RegionLocalCard(
-                        region = selectedRegion!!,
-                        onCall = { number -> callNumber(number) }
+                    Text(text = cat.icon, fontSize = 16.sp)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = cat.title,
+                        fontSize = 13.5.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isExpanded) FlameRed else MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = "${cat.numbers.size} 个号码",
+                        fontSize = 10.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(end = 4.dp)
+                    )
+                    Icon(
+                        imageVector = if (isExpanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                        contentDescription = if (isExpanded) "收起" else "展开",
+                        tint = if (isExpanded) FlameRed else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
-            items(activeCat.numbers, key = { it.number }) { num ->
-                EmergencyNumberRow(
-                    name = num.name,
-                    number = num.number,
-                    desc = num.desc,
-                    icon = activeCat.icon,
-                    onCall = { callNumber(num.number) }
-                )
+            // 展开的号码列表
+            if (isExpanded) {
+                cat.numbers.forEach { num ->
+                    EmergencyNumberRow(
+                        name = num.name,
+                        number = num.number,
+                        desc = num.desc,
+                        icon = cat.icon,
+                        onCall = { callNumber(num.number) }
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                }
+                Spacer(modifier = Modifier.height(2.dp))
             }
         }
+        Spacer(modifier = Modifier.height(10.dp))
     }
 
-    // ---------- 地区选择弹窗（省 → 市/区/县） ----------
+    // ---------- 地区选择弹窗（省 → 市 → 县/区 → 镇/乡 → 村 六级） ----------
     if (showRegionPicker) {
         RegionPickerDialog(
             regions = NATIONAL_REGIONS,
             currentProvince = selectedProvince,
-            onSelect = { province, city ->
+            currentCity = selectedCity,
+            currentCounty = selectedCounty,
+            currentTown = townText,
+            currentVillage = villageText,
+            onSelect = { province, city, county, town, village ->
                 selectedProvince = province
-                selectedRegion = city
+                selectedCity = city
+                selectedCounty = county
+                townText = town
+                villageText = village
                 showRegionPicker = false
             },
             onClear = {
                 selectedProvince = null
-                selectedRegion = null
+                selectedCity = null
+                selectedCounty = null
+                townText = ""
+                villageText = ""
                 showRegionPicker = false
             },
             onDismiss = { showRegionPicker = false }
         )
-    }
-}
-
-/** 地区本地热线卡片（政务/查询/本地应急，全国通用本地接入） */
-@Composable
-private fun RegionLocalCard(region: RegionCity, onCall: (String) -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = FlameRed.copy(alpha = 0.08f)),
-        border = BorderStroke(1.dp, FlameRed.copy(alpha = 0.3f))
-    ) {
-        Column(modifier = Modifier.padding(10.dp)) {
-            Text(
-                text = "📍 ${region.name} 本地服务热线",
-                fontSize = 12.5.sp,
-                fontWeight = FontWeight.Black,
-                color = FlameRed
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                MiniCallChip(name = "本地政务服务", number = "12345", onCall = { onCall("12345") }, modifier = Modifier.weight(1f))
-                MiniCallChip(name = "本地医疗急救", number = "120", onCall = { onCall("120") }, modifier = Modifier.weight(1f))
-            }
-            Spacer(modifier = Modifier.height(6.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                MiniCallChip(name = "本地公安报警", number = "110", onCall = { onCall("110") }, modifier = Modifier.weight(1f))
-                MiniCallChip(name = "本地查号", number = "114", onCall = { onCall("114") }, modifier = Modifier.weight(1f))
-            }
-        }
-    }
-}
-
-/** 小号调用卡片 */
-@Composable
-private fun MiniCallChip(name: String, number: String, onCall: () -> Unit, modifier: Modifier = Modifier) {
-    Surface(
-        onClick = onCall,
-        shape = RoundedCornerShape(10.dp),
-        color = Color.White.copy(alpha = 0.6f),
-        border = BorderStroke(1.dp, FlameRed.copy(alpha = 0.2f)),
-        modifier = modifier
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(text = name, fontSize = 9.5.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
-            Text(text = number, fontSize = 13.sp, fontWeight = FontWeight.Black, color = FlameRed)
-        }
     }
 }
 
@@ -402,16 +366,36 @@ private fun EmergencyNumberRow(
     }
 }
 
-/** 地区选择弹窗：省份列表 → 城市/区县列表 */
+/**
+ * 地区选择弹窗：省 → 市 → 县/区 → 镇/乡 → 村 六级
+ * 省/市/县(区) 内置全中国数据逐级选择；镇/乡、村两级提供「自由输入」覆盖任意村落
+ */
 @Composable
 private fun RegionPickerDialog(
     regions: List<Region>,
     currentProvince: String?,
-    onSelect: (String, RegionCity) -> Unit,
+    currentCity: RegionCity?,
+    currentCounty: RegionCounty?,
+    currentTown: String,
+    currentVillage: String,
+    onSelect: (String, RegionCity, RegionCounty?, String, String) -> Unit,
     onClear: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    var selectedProvince by remember { mutableStateOf(currentProvince) }
+    // 当前选择的省/市/县对象（进入时沿用现有选择）
+    var selProvince by remember { mutableStateOf(currentProvince) }
+    var selCity by remember { mutableStateOf(currentCity) }
+    var selCounty by remember { mutableStateOf(currentCounty) }
+    var town by remember { mutableStateOf(currentTown) }
+    var village by remember { mutableStateOf(currentVillage) }
+    // 当前所在层级：0 省 / 1 市 / 2 县 / 3 镇乡村确认
+    var level by remember { mutableStateOf(if (currentProvince == null) 0 else if (currentCity == null) 1 else if (currentCounty == null) 2 else 3) }
+
+    fun confirm() {
+        val p = selProvince ?: "全国"
+        val reg = regions.firstOrNull { it.province == p }
+        onSelect(p, selCity ?: reg?.cities?.firstOrNull() ?: RegionCity(name = p), selCounty, town, village)
+    }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -420,24 +404,44 @@ private fun RegionPickerDialog(
         Surface(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp)
+                .padding(20.dp)
                 .clip(RoundedCornerShape(18.dp)),
             color = MaterialTheme.colorScheme.background,
             tonalElevation = 6.dp
         ) {
-            Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+            Column(modifier = Modifier.fillMaxSize().padding(14.dp)) {
                 // 标题栏
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        text = if (selectedProvince == null) "选择省份" else "选择城市 / 区县 · $selectedProvince",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Black,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = when (level) {
+                                0 -> "① 选择省份"
+                                1 -> "② 选择市 / 自治州"
+                                2 -> "③ 选择县 / 区"
+                                else -> "④ 填写镇 / 乡 / 村"
+                            },
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Black,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = buildString {
+                                append(selProvince ?: "全国")
+                                selCity?.let { append(" · ${it.name}") }
+                                selCounty?.let { append(" · ${it.name}") }
+                                if (town.isNotBlank()) append(" · $town")
+                                if (village.isNotBlank()) append(" · $village")
+                            }.ifBlank { "尚未选择" },
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
                     Row {
                         OutlinedButton(
                             onClick = onClear,
@@ -454,88 +458,159 @@ private fun RegionPickerDialog(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-                if (selectedProvince == null) {
-                    // 省份列表
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        items(regions) { region ->
-                            val pName = region.province
-                            Surface(
-                                onClick = { selectedProvince = pName },
-                                shape = RoundedCornerShape(10.dp),
-                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = pName,
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        modifier = Modifier.weight(1f)
+                when (level) {
+                    // ========== ① 省份 ==========
+                    0 -> {
+                        LazyColumn(verticalArrangement = Arrangement.spacedBy(5.dp), modifier = Modifier.fillMaxSize()) {
+                            items(regions, key = { it.province }) { region ->
+                                SelectRow(
+                                    text = region.province + "（${region.cities.size}市）",
+                                    onClick = {
+                                        selProvince = region.province
+                                        selCity = null
+                                        selCounty = null
+                                        town = ""
+                                        village = ""
+                                        level = 1
+                                    }
+                                )
+                            }
+                        }
+                    }
+                    // ========== ② 市 / 自治州 ==========
+                    1 -> {
+                        val prov = regions.firstOrNull { it.province == selProvince }
+                        LazyColumn(verticalArrangement = Arrangement.spacedBy(5.dp), modifier = Modifier.fillMaxSize()) {
+                            item {
+                                BackRow(text = "◂ 返回省份（${selProvince ?: ""}）") { level = 0 }
+                            }
+                            if (prov != null) {
+                                items(prov.cities, key = { it.name }) { city ->
+                                    SelectRow(
+                                        text = city.name + "（区号 ${city.areaCode}）",
+                                        onClick = {
+                                            selCity = city
+                                            selCounty = null
+                                            town = ""
+                                            village = ""
+                                            level = 2
+                                        }
                                     )
-                                    Text("▸", color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
                         }
                     }
-                } else {
-                    // 城市 / 区县列表（返回省份按钮）
-                    val region = regions.firstOrNull { it.province == selectedProvince }
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        item {
-                            Surface(
-                                onClick = { selectedProvince = null },
-                                shape = RoundedCornerShape(10.dp),
-                                color = Color.Transparent,
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text("◂ 返回省份", fontSize = 12.5.sp, fontWeight = FontWeight.Bold, color = FlameRed)
+                    // ========== ③ 县 / 区 ==========
+                    2 -> {
+                        val city = selCity
+                        LazyColumn(verticalArrangement = Arrangement.spacedBy(5.dp), modifier = Modifier.fillMaxSize()) {
+                            item {
+                                BackRow(text = "◂ 返回市（${city?.name ?: ""}）") { level = 1 }
+                            }
+                            if (city != null && city.counties.isNotEmpty()) {
+                                items(city.counties, key = { it.name }) { county ->
+                                    SelectRow(
+                                        text = county.name,
+                                        onClick = {
+                                            selCounty = county
+                                            town = ""
+                                            village = ""
+                                            level = 3
+                                        }
+                                    )
                                 }
+                            } else {
+                                item { Text("该市暂无区县数据，可直接进入下一步填写镇/乡/村", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                                item { Spacer(modifier = Modifier.height(4.dp)) }
                             }
                         }
-                        if (region != null) {
-                            items(region.cities) { city ->
-                                Surface(
-                                    onClick = { onSelect(region.province, city) },
-                                    shape = RoundedCornerShape(10.dp),
-                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Column(modifier = Modifier.weight(1f)) {
-                                            Text(
-                                                text = city.name,
-                                                fontSize = 14.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = MaterialTheme.colorScheme.onSurface
-                                            )
-                                            Text(
-                                                text = "区号 ${city.areaCode}",
-                                                fontSize = 10.sp,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                        }
-                                        Text("拨打本地热线 ✓", fontSize = 10.5.sp, color = JadeGreen, fontWeight = FontWeight.Bold)
-                                    }
-                                }
+                    }
+                    // ========== ④ 镇 / 乡 / 村（自由输入） ==========
+                    else -> {
+                        Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                            if (selCounty != null) {
+                                BackRow(text = "◂ 返回县/区（${selCounty?.name}）") { level = 2 }
+                                Spacer(modifier = Modifier.height(8.dp))
                             }
+                            Text("镇 / 乡（可自由输入，覆盖任意镇/乡）", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            OutlinedTextField(
+                                value = town,
+                                onValueChange = { town = it },
+                                placeholder = { Text("如：西丽街道 / 南村镇 / 城关镇…", fontSize = 12.sp) },
+                                singleLine = true,
+                                shape = RoundedCornerShape(10.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text("村（可自由输入，覆盖任意村）", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            OutlinedTextField(
+                                value = village,
+                                onValueChange = { village = it },
+                                placeholder = { Text("如：上村 / 中心村 / 大坪村…", fontSize = 12.sp) },
+                                singleLine = true,
+                                shape = RoundedCornerShape(10.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(
+                                onClick = { confirm() },
+                                colors = ButtonDefaults.buttonColors(containerColor = FlameRed),
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.fillMaxWidth().height(46.dp)
+                            ) {
+                                Text("✅ 确定地区（点击保存）", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            }
+                            Spacer(modifier = Modifier.height(12.dp))
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+/** 普通选择行 */
+@Composable
+private fun SelectRow(text: String, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(10.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = text,
+                fontSize = 13.5.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
+            )
+            Text("▸", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+/** 返回行 */
+@Composable
+private fun BackRow(text: String, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(10.dp),
+        color = Color.Transparent,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text, fontSize = 12.5.sp, fontWeight = FontWeight.Bold, color = FlameRed)
         }
     }
 }

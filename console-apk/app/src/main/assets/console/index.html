@@ -346,8 +346,8 @@ const CONFIG_PATH   = "admin-data.json";
 // 控制台程序内置 versionCode（与 console-apk/app/build.gradle.kts 的 versionCode 保持一致）。
 // v1.0.12 修复：运行时优先读取原生桥回传的「真实已安装 versionCode」，
 // 只有浏览器环境取不到时才回退到该常量，彻底避免常量漏改导致更新判断失效。
-// v1.0.2：27；v1.0.6：31；v1.0.7：32；v1.0.8：33；v1.0.9：34（与 build.gradle.kts 对齐；v1.0.10/35 处发布后被回退）。
-const CONSOLE_BUILTIN_VERSION = 34;
+// v1.0.2：27；v1.0.6：31；v1.0.7：32；v1.0.8：33；v1.0.9：34；v1.0.10：35（与 build.gradle.kts 对齐）。
+const CONSOLE_BUILTIN_VERSION = 35;
 
 // 取当前控制台程序的真实版本号：APK 内用系统安装包 versionCode，浏览器回退内置常量
 function getLocalConsoleVersion(){
@@ -2488,7 +2488,231 @@ function renderUpdate(){
       <button class="btn-bump" onclick="bumpAndPublishUpdate()">🚀 发布新版本 (v${Number(v.code)+1})</button>
     </div>
     <div class="hint" style="margin-top:8px">💡 更新日志自动读取各版块本次操作内容并过滤机器日志，无需手工逐条填写。</div>
+  </div>
+  <div class="card">
+    <div class="action-banner">
+      <b>🧪 更新弹窗测试与文件管理</b>
+      <span class="hint">测试更新弹窗样式与下载功能 · 自动识别更新弹窗相关代码文件（可增删/编辑/实时同步）</span>
+    </div>
+    <div class="row" style="flex-wrap:wrap;gap:8px">
+      <button class="btn-pri grow" onclick="testPreviewUpdateDialog()">👀 预览本体更新弹窗（手绘样式）</button>
+      <button class="btn-bump grow" onclick="testDownloadApk()">⬇️ 测试下载功能（检查 apkUrl）</button>
+    </div>
+    <div id="updTestResult" style="margin-top:8px"></div>
+    <div class="divider"></div>
+    <div class="row" style="flex-wrap:wrap;gap:8px">
+      <button class="btn-pri" onclick="listUpdateFiles()">📂 自动识别更新弹窗相关文件</button>
+      <button class="btn-pri" onclick="newUpdateFile()">➕ 新建更新弹窗文件</button>
+    </div>
+    <div class="hint" style="margin-top:6px">识别范围：app/src/main/java/com/example/ui/components/ 下名称含 Update/Dialog 的 Kotlin 文件（AppUpdateDialog / CartoonUpdateDialog / CartoonUpdateState / UpdateInstallReceiver 等）。</div>
+    <div id="updateFileList" style="margin-top:8px"></div>
   </div>`;
+}
+
+// ============ 更新弹窗测试与文件管理（v1.0.5 新增） ============
+
+/** 预览本体更新弹窗：复用控制台 upd-* 手绘 CSS 弹窗，模拟本体 Cartoon 弹窗样式 */
+function testPreviewUpdateDialog(){
+  const v = S.admin && S.admin.version || {};
+  const u = S.admin && S.admin.updateDialog || {};
+  const title = u.title || "懒得找了 发现新版本";
+  const logs = (v.changelog && v.changelog.length ? v.changelog : (u.changelog || [])).slice(0, 5);
+  const force = v.force === true;
+  consoleUpdateDlg(`<div class="upd-stars"><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="upd-wave"></div>
+    <div class="upd-shine"></div>
+    <div style="position:relative;z-index:2">
+      <div class="upd-cat">😺</div>
+      <div class="upd-bubble">叮咚～发现新版本！</div>
+      <div class="upd-title">${esc(title)}</div>
+      <div class="upd-sub">当前 <b style="color:#ffd93d">v${esc(String(v.name || "1.0.4"))}</b>${force ? "<br>⚠️ 强制更新：不可关闭，必须更新才可继续使用" : "<br>非强制更新"}</div>
+      <div class="code-box" style="text-align:left;font-size:11px;max-height:130px;overflow:auto">${logs.map(x=>esc(x)).join("<br>")}</div>
+      <button class="upd-btn" onclick="testAutoInstall()">立即更新 · 自动下载安装</button>
+      <button class="upd-btn gray" onclick="closeConsoleUpdateDlg()">${force ? "更新中不可关闭" : "稍后再说"}</button>
+    </div>`);
+  toast("已弹出本体更新弹窗预览（与 CartoonUpdateDialog 同风格）","ok");
+}
+
+/** 弹窗内点击立即更新 → 模拟自动下载安装流程 */
+function testAutoInstall(){
+  const v = S.admin && S.admin.version || {};
+  const url = v.apkUrl || "";
+  consoleUpdateDlg(`<div class="upd-stars"><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="upd-wave"></div>
+    <div class="upd-shine"></div>
+    <div style="position:relative;z-index:2">
+      <div class="upd-cat">⬇️😺</div>
+      <div class="upd-bubble">正在下载新版本…</div>
+      <div class="upd-title">自动下载中</div>
+      <div class="upd-bar"><div class="upd-fill" id="updFill" style="width:0%"></div></div>
+      <div class="upd-pct" id="updPct">0%</div>
+      <div class="upd-status" id="updStatus">${url ? "模拟下载进度（真实下载需在本体端执行）…" : "⚠️ 云端未配置 apkUrl，无法测试下载"}</div>
+    </div>`);
+  if(!url){ toast("未配置 apkUrl，请先在上方保存更新配置","err"); return; }
+  // 模拟进度条（本体真实链路：多源下载 → PackageInstaller 免授权直装）
+  let p = 0;
+  clearInterval(window.__updSim);
+  window.__updSim = setInterval(()=>{
+    p += Math.random() * 14;
+    if(p >= 100){
+      p = 100;
+      clearInterval(window.__updSim);
+      const fill = $("updFill"), pct = $("updPct"), st = $("updStatus");
+      if(fill) fill.style.width = "100%";
+      if(pct) pct.textContent = "100%";
+      if(st) st.innerHTML = "✅ 下载完成，正在免授权直装（PackageInstaller）…";
+      setTimeout(()=>{
+        consoleUpdateDlg(`<div class="upd-stars"><i></i><i></i><i></i><i></i><i></i></div>
+          <div style="position:relative;z-index:2">
+            <div class="upd-check">🎉</div>
+            <div class="upd-title">更新完成</div>
+            <div class="upd-sub">新版本安装成功，测试通过 ✅<br>（实际运行时由本体 CartoonUpdateDialog 驱动真实下载安装）</div>
+            <button class="upd-btn gray" onclick="closeConsoleUpdateDlg()">好的</button>
+          </div>`);
+      }, 1200);
+      return;
+    }
+    const fill = $("updFill"), pct = $("updPct"), st = $("updStatus");
+    if(fill) fill.style.width = p + "%";
+    if(pct) pct.textContent = Math.round(p) + "%";
+    if(st) st.innerHTML = "下载中… " + Math.round(p) + "%";
+  }, 160);
+}
+
+/** 测试下载功能：对 apkUrl 发起 HEAD/GET 请求验证可访问 */
+async function testDownloadApk(){
+  const box = $("updTestResult");
+  const v = S.admin && S.admin.version || {};
+  const url = v.apkUrl || "";
+  if(!url){ box.innerHTML = `<div class="hint" style="color:#f87171">⚠️ 云端未配置 apkUrl，无法测试。请在上方填写「新版本 APK 下载链接」并保存。</div>`; return; }
+  box.innerHTML = `<div class="hint">⏳ 正在检测下载链接… ${esc(url)}</div>`;
+  try{
+    // 先 HEAD，许多 CDN 不支持 HEAD 时再降级 GET range
+    let resp = await fetch(url, { method: "HEAD" });
+    if(!resp.ok) resp = await fetch(url, { method: "GET", headers: { "Range": "bytes=0-0" } });
+    const len = resp.headers.get("content-length");
+    const ct = resp.headers.get("content-type");
+    box.innerHTML = `<div class="code-box">✅ 下载链接检测通过（HTTP ${resp.status}）\n类型：${esc(ct || "未知")}\n大小：${len ? (Number(len)/1024/1024).toFixed(2)+" MB" : "未知"}\n链接：${esc(url)}</div>`;
+  }catch(e){
+    box.innerHTML = `<div class="hint" style="color:#f87171">❌ 下载链接检测失败：${esc(e && e.message || e)}</div>`;
+  }
+}
+
+/** 更新弹窗相关代码文件白名单（自动识别范围） */
+function updateFileCandidates(){
+  return [
+    "app/src/main/java/com/example/ui/components/CartoonUpdateDialog.kt",
+    "app/src/main/java/com/example/ui/components/CartoonUpdateState.kt",
+    "app/src/main/java/com/example/ui/components/UpdateInstallReceiver.kt",
+    "app/src/main/java/com/example/ui/components/AppUpdateDialog.kt"
+  ];
+}
+
+/** 识别仓库中实际存在的更新弹窗相关文件（Contents API 列出目录并过滤） */
+async function listUpdateFiles(){
+  const box = $("updateFileList");
+  box.innerHTML = `<div class="hint">⏳ 正在自动识别仓库中的更新弹窗相关文件…</div>`;
+  try{
+    // 读取 components 目录
+    const dir = await ghGet("app/src/main/java/com/example/ui/components");
+    const all = Array.isArray(dir) ? dir.filter(f => f.type === "file" && f.name.endsWith(".kt")) : [];
+    // 过滤出更新弹窗相关：名称含 Update 或 Dialog
+    const related = all.filter(f => /(update|dialog)/i.test(f.name));
+    // 保留完整候选路径（含已删除标记）
+    const candidates = updateFileCandidates();
+    const rows = [];
+    for(const f of related){
+      rows.push({ path: f.path, exists: true, sha: f.sha });
+    }
+    // 白名单中不存在于目录的文件标记为「已删除/可新建」
+    const existPaths = new Set(rows.map(r => r.path));
+    for(const c of candidates){
+      if(!existPaths.has(c)) rows.push({ path: c, exists: false, sha: null });
+    }
+    if(rows.length === 0){ box.innerHTML = `<div class="hint">未识别到更新弹窗相关文件，可手动新建。</div>`; return; }
+    box.innerHTML = rows.map(r => `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--line)">
+      <span class="chip">${r.exists ? "📄" : "🗑️ 已删除"}</span>
+      <span class="grow" style="font-family:monospace;font-size:11px;word-break:break-all">${esc(r.path.replace("app/src/main/java/com/example/ui/components/", ""))}</span>
+      <button class="btn-pri" style="padding:4px 10px;font-size:11px" onclick="viewUpdateFile('${esc(r.path)}')">查看/编辑</button>
+      ${r.exists ? `<button class="btn-err" style="padding:4px 10px;font-size:11px" onclick="delUpdateFile('${esc(r.path)}')">删除</button>` : `<button class="btn-pri" style="padding:4px 10px;font-size:11px" onclick="newUpdateFile('${esc(r.path)}')">新建</button>`}
+    </div>`).join("");
+  }catch(e){
+    box.innerHTML = `<div class="hint" style="color:#f87171">❌ 识别失败：${esc(e && e.message || e)}</div>`;
+  }
+}
+
+/** 查看并编辑指定文件 */
+async function viewUpdateFile(path){
+  try{
+    const meta = await ghGet(encodeURI(path));
+    const content = b64DecodeUtf8(meta.content);
+    openDlg(`<div class="dlg-title">✏️ 编辑 ${esc(path)}</div>
+      <div style="color:var(--tx2);font-size:11px;margin:4px 0 8px">${esc((meta.content||"").length/1.0 | 0)} 字符 · 保存后实时同步到 GitHub</div>
+      <textarea id="editFileBody" class="mono" style="width:100%;min-height:280px;box-sizing:border-box">${esc(content)}</textarea>
+      <div class="dlg-actions">
+        <button class="btn-err" onclick="closeDlg()">取消</button>
+        <button class="btn-ok" onclick="saveUpdateFile('${esc(path)}')">💾 保存并实时同步</button>
+      </div>`);
+    window.__editSha = meta.sha;
+  }catch(e){
+    toast("读取失败：" + (e && e.message || e),"err");
+  }
+}
+
+/** 保存文件到 GitHub（实时同步） */
+async function saveUpdateFile(path){
+  const body = $("editFileBody");
+  if(!body){ toast("编辑区不存在","err"); return; }
+  const content = body.value;
+  try{
+    await ghPut(encodeURI(path), content, "console: 更新弹窗文件实时同步 " + path.split("/").pop(), window.__editSha || undefined);
+    window.__editSha = null;
+    closeDlg();
+    toast("已实时同步到 " + path.split("/").pop() + " ✅","ok");
+    listUpdateFiles();
+  }catch(e){
+    toast("保存失败：" + (e && e.message || e),"err");
+  }
+}
+
+/** 删除文件 */
+async function delUpdateFile(path){
+  if(!await confirmDlg("确认删除 " + path + " ？\n\n删除后仓库中的该代码文件将被永久移除（可后续通过「新建」恢复）。")) return;
+  try{
+    const meta = await ghGet(encodeURI(path));
+    await ghDelete(encodeURI(path), meta.sha);
+    toast("已删除 " + path.split("/").pop() + " ✅","ok");
+    listUpdateFiles();
+  }catch(e){
+    toast("删除失败：" + (e && e.message || e),"err");
+  }
+}
+
+/** 新建文件（可指定默认路径） */
+async function newUpdateFile(defaultPath){
+  const defPath = defaultPath || "app/src/main/java/com/example/ui/components/CartoonUpdateDialog.kt";
+  openDlg(`<div class="dlg-title">➕ 新建更新弹窗文件</div>
+    <label>目标路径（自动识别范围内）</label>
+    <input id="newFilePath" value="${esc(defPath)}" style="width:100%;box-sizing:border-box">
+    <label style="margin-top:6px">文件内容（Kotlin）</label>
+    <textarea id="newFileBody" class="mono" style="width:100%;min-height:200px;box-sizing:border-box" placeholder="package com.example.ui.components\n\n// 在此编写更新弹窗代码…">${defaultPath ? "" : "package com.example.ui.components\n\n/** 新建更新弹窗文件 */\n"}</textarea>
+    <div class="dlg-actions">
+      <button class="btn-err" onclick="closeDlg()">取消</button>
+      <button class="btn-ok" onclick="doCreateUpdateFile()">🚀 创建并实时同步</button>
+    </div>`);
+}
+
+async function doCreateUpdateFile(){
+  const path = ($("newFilePath") || {}).value, body = ($("newFileBody") || {}).value;
+  if(!path || !body){ toast("请填写路径与内容","err"); return; }
+  try{
+    await ghPut(encodeURI(path), body, "console: 新增更新弹窗文件 " + path.split("/").pop(), undefined);
+    closeDlg();
+    toast("已创建并实时同步 " + path.split("/").pop() + " ✅","ok");
+    listUpdateFiles();
+  }catch(e){
+    toast("创建失败：" + (e && e.message || e),"err");
+  }
 }
 
 function saveUpdate(){
