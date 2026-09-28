@@ -1205,7 +1205,8 @@ private fun ContactQrImage(
             // v1.0.7：只显示控制台上传的二维码（永久保留、无延迟），已删除软件自带内置二维码
             // 用 remember + 预加载缓存：首次加载后立即呈现，不再有延迟
             val ctx = LocalContext.current
-            val loader = coil.imageLoader(ctx)
+            // v1.0.7：显式创建 ImageLoader 预加载二维码到内存缓存，打开弹窗即无延迟呈现
+            val loader = remember { coil.ImageLoader.Builder(ctx).build() }
             LaunchedEffect(url) {
                 loader.enqueue(
                     coil.request.ImageRequest.Builder(ctx)
