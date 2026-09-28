@@ -139,7 +139,7 @@ import com.example.data.model.NavCard
 import com.example.data.remote.UpdateDialogDto
 import com.example.data.remote.VersionDto
 import com.example.ui.components.AddSiteDialog
-import com.example.ui.components.CartoonUpdateDialog
+import com.example.ui.components.AppUpdateDialog
 import com.example.ui.components.AtmosphereOverlay
 import com.example.ui.components.CategorySitesDialog
 import com.example.ui.components.CustomRadioBottomNav
@@ -544,7 +544,7 @@ fun MainScreen(
             }
         }
         if (showCloudUpdateDialog && cloudVersion != null) {
-            CartoonUpdateDialog(
+            AppUpdateDialog(
                 onDismiss = {
                     showCloudUpdateDialog = false
                     updateDialogDismissed = true
