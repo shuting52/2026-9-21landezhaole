@@ -36,6 +36,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -399,7 +400,17 @@ fun MainScreen(
                                 FilterChip(
                                     selected = skillSubTabIndex == 1,
                                     onClick = { skillSubTabIndex = 1 },
-                                    label = { Text("Skill 技能库", fontWeight = FontWeight.Bold, fontSize = 11.5.sp) },
+                                    label = {
+                                        // v1.0.7：Skill 技能库带 CSS 动态特效新标签角标（流光呼吸「NEW」）
+                                        Box(contentAlignment = Alignment.Center) {
+                                            Text("Skill 技能库", fontWeight = FontWeight.Bold, fontSize = 11.5.sp)
+                                            DynamicNewBadge(
+                                                modifier = Modifier
+                                                    .align(Alignment.TopEnd)
+                                                    .offset(x = 22.dp, y = (-10).dp)
+                                            )
+                                        }
+                                    },
                                     modifier = Modifier.weight(1f)
                                 )
                             }
@@ -1866,4 +1877,59 @@ private fun shareText(context: Context, text: String) {
     }
     val shareIntent = Intent.createChooser(sendIntent, "分享链接")
     context.startActivity(shareIntent)
+}
+
+/**
+ * v1.0.7：Skill 技能库 CSS 动态特效「NEW」角标
+ * 渐变流光扫过 + 呼吸缩放动画，叠加在技能库标签右上角
+ */
+@Composable
+private fun DynamicNewBadge(modifier: Modifier = Modifier) {
+    val infinite = rememberInfiniteTransition(label = "skill_new_badge")
+    val flow by infinite.animateFloat(
+        initialValue = -1f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1500, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "badge_flow"
+    )
+    val breathe by infinite.animateFloat(
+        initialValue = 0.92f,
+        targetValue = 1.08f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 700, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "badge_breathe"
+    )
+    Box(
+        modifier = modifier
+            .graphicsLayer {
+                scaleX = breathe
+                scaleY = breathe
+            }
+            .clip(RoundedCornerShape(50))
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(
+                        Color(0xFFFF6B9D),
+                        Color(0xFFFFB199),
+                        Color(0xFFFFE08A),
+                        Color(0xFFFF6B9D)
+                    ),
+                    start = androidx.compose.ui.geometry.Offset(flow * 300f, 0f),
+                    end = androidx.compose.ui.geometry.Offset(flow * 300f + 220f, 0f)
+                )
+            )
+            .padding(horizontal = 6.dp, vertical = 2.dp)
+    ) {
+        Text(
+            text = "NEW",
+            fontSize = 8.sp,
+            fontWeight = FontWeight.Black,
+            color = Color.White
+        )
+    }
 }

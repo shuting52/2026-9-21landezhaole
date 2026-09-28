@@ -997,7 +997,7 @@ private fun ContactAuthorDialog(
                                         .padding(10.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    ContactQrImage(url = aliQr, fallbackRes = R.drawable.img_contact_alipay, contentDescription = "支付宝扫码")
+                                    ContactQrImage(url = aliQr, contentDescription = "支付宝扫码")
                                 }
                             }
 
@@ -1056,7 +1056,7 @@ private fun ContactAuthorDialog(
                                         .padding(10.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    ContactQrImage(url = qqQr, fallbackRes = R.drawable.img_contact_qq, contentDescription = "QQ扫码")
+                                    ContactQrImage(url = qqQr, contentDescription = "QQ扫码")
                                 }
                             }
 
@@ -1115,7 +1115,7 @@ private fun ContactAuthorDialog(
                                         .padding(10.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    ContactQrImage(url = wxQr, fallbackRes = R.drawable.img_contact_wechat, contentDescription = "微信扫码")
+                                    ContactQrImage(url = wxQr, contentDescription = "微信扫码")
                                 }
                             }
 
@@ -1192,33 +1192,48 @@ private fun ContactAuthorDialog(
 @Composable
 private fun ContactQrImage(
     url: String,
-    fallbackRes: Int,
     contentDescription: String
 ) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .clip(RoundedCornerShape(12.dp))
+            .background(Color(0xFFFAFAFA), RoundedCornerShape(12.dp)),
+        contentAlignment = Alignment.Center
     ) {
         if (url.isNotBlank()) {
-            // 已有控制台上传二维码：显示云端图（加载中/失败时用内置图即时兑底，杜绝空白与延迟）
+            // v1.0.7：只显示控制台上传的二维码（永久保留、无延迟），已删除软件自带内置二维码
+            // 用 remember + 预加载缓存：首次加载后立即呈现，不再有延迟
+            val ctx = LocalContext.current
+            val loader = coil.imageLoader(ctx)
+            LaunchedEffect(url) {
+                loader.enqueue(
+                    coil.request.ImageRequest.Builder(ctx)
+                        .data(url)
+                        .memoryCacheKey("contact_qr_$url")
+                        .build()
+                )
+            }
             coil.compose.AsyncImage(
                 model = url,
                 contentDescription = contentDescription,
                 contentScale = ContentScale.Fit,
-                placeholder = painterResource(id = fallbackRes),
-                error = painterResource(id = fallbackRes),
-                fallback = painterResource(id = fallbackRes),
                 modifier = Modifier.fillMaxSize()
             )
         } else {
-            // 从未上传：内置占位图
-            Image(
-                painter = painterResource(id = fallbackRes),
-                contentDescription = contentDescription,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Fit
-            )
+            // 控制台未上传二维码时：显示文字提示（不展示任何内置二维码图）
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(12.dp)
+            ) {
+                Text(text = "?", fontSize = 22.sp)
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "二维码待上传",
+                    fontSize = 11.sp,
+                    color = Color(0xFF9E9E9E)
+                )
+            }
         }
     }
 }

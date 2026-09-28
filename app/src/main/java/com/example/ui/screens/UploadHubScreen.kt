@@ -43,6 +43,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -124,6 +125,8 @@ fun UploadHubScreen(
                 resources.forEach { map.getOrPut(autoCategorize(it)) { mutableListOf() }.add(it) }
                 map.toList()
             }
+            // v1.0.7：软件/Skill 版块分类收纳——默认收起，点击分类标题才展开（横排网格不变）
+            val expandedCats = remember(resources) { mutableStateMapOf<String, Boolean>() }
             LazyVerticalGrid(
                 columns = GridCells.Fixed(3),
                 modifier = Modifier
@@ -173,10 +176,16 @@ fun UploadHubScreen(
                     }
                 } else {
                     grouped.forEach { (cat, list) ->
-                        item(span = { GridItemSpan(3) }) {
+                        val isExpanded = expandedCats[cat] == true
+                        // v1.0.7：分类标题行可点击展开/收起（收纳式，点击时才展开）
+                        item(span = { GridItemSpan(3) }, key = "cat_$cat") {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(top = 10.dp, bottom = 2.dp)
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .clickable { expandedCats[cat] = !isExpanded }
+                                    .padding(top = 10.dp, bottom = 2.dp, start = 2.dp, end = 2.dp)
                             ) {
                                 Box(
                                     modifier = Modifier
@@ -193,33 +202,41 @@ fun UploadHubScreen(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "${list.size} 款",
+                                    text = if (isExpanded) "收起 ▴" else "展开 ▾ · ${list.size} 款",
                                     fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.weight(1f))
+                                Text(
+                                    text = if (isExpanded) "▾" else "▸",
+                                    fontSize = 12.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
-                        gridItems(list, key = { it.id }) { res ->
-                            if (resourceType == "skill") {
-                                // Skill 技能包：横排网格卡片（预览图/视频标识/标题），点击打开详情弹窗
-                                SkillGridCard(
-                                    res = res,
-                                    onClick = { skillDetail = res },
-                                    showDelete = showDelete,
-                                    onDelete = {
-                                        onDelete(res.id)
-                                        Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
-                                    }
-                                )
-                            } else {
-                                SoftwareGridCard(
-                                    res = res,
-                                    showDelete = showDelete,
-                                    onDelete = {
-                                        onDelete(res.id)
-                                        Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
-                                    }
-                                )
+                        if (isExpanded) {
+                            gridItems(list, key = { it.id }) { res ->
+                                if (resourceType == "skill") {
+                                    // Skill 技能包：横排网格卡片（预览图/视频标识/标题），点击打开详情弹窗
+                                    SkillGridCard(
+                                        res = res,
+                                        onClick = { skillDetail = res },
+                                        showDelete = showDelete,
+                                        onDelete = {
+                                            onDelete(res.id)
+                                            Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
+                                        }
+                                    )
+                                } else {
+                                    SoftwareGridCard(
+                                        res = res,
+                                        showDelete = showDelete,
+                                        onDelete = {
+                                            onDelete(res.id)
+                                            Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
