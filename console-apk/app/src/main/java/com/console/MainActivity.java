@@ -278,10 +278,13 @@ public class MainActivity extends Activity {
                 out.write(buf, 0, n);
                 total += n;
                 // 实时进度回传：JS 进度条轮询 getDownloadProgress() 即可看到增长
+                // v1.0.11 修复：chunked/无 Content-Length 时按 3.5MB 估算推进，避免进度条卡住不动
                 if (contentLength > 0) {
                     downloadProgress = (int) (total * 100 / contentLength);
-                    if (downloadProgress > 99) downloadProgress = 99;
+                } else {
+                    downloadProgress = (int) (total * 100 / (3_500_000L)); // 控制台 APK 约 2.8MB，估 3.5MB
                 }
+                if (downloadProgress > 99) downloadProgress = 99;
             }
             out.flush();
         } finally {
