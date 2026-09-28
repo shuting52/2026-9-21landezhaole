@@ -62,15 +62,19 @@ import kotlinx.coroutines.launch
  * 官方 QQ 群链接（与设置页一致）
  */
 const val OFFICIAL_QQ_GROUP_URL =
-    "https://qun.qq.com/universal-share/share?ac=1&authKey=gtnBoTi8HEzXQAF9x40Y5GYQtubkWu4pGDJg7OuNQte9oz3sXiFonGqZaUXxjffu&busi_data=eyJncm91cENvZGUiOiI0MzkyMTEzNDciLCJ0b2tlbiI6IkVxeXJDb0tyVjM3Y0VIRmhZQ3M5eDg4VW5MYWU0RW4ybVlSRlBlS2ozQXRxanB5V2ZtNzNHMlRIa2ZRd0VTQnUiLCJ1aW4iOiIzMDc3Nzk1MjMifQ%3D%3D&data=QnUzn164u21Cu1dG7vAVYJqU_4hw0COArsGrrBOIc0vxu7ES6gOJcYyrpu2JgkVs-y3X0ZUGZb_nPBJsBTRccQ&svctype=4&tempid=h5_group_info"
+    // v1.0.11 修复：同步为官方 qm.qq.com 短链（与 admin-data.json settings.qqGroupUrl 一致）。
+    // 旧 qun.qq.com/universal-share 长链带 authKey 签名，部分环境下被拦截/打开异常，导致「官方群跳不过去」。
+    "https://qm.qq.com/q/BnUzn164u21Cu1dG7vAVYJqU_4hw0COArsGrrBOIc0vxu7ES6gOJcYyrpu2JgkVs"
 
 // ============================================================
 // v1.0.2+ 更新弹窗：Uiverse.io 白卡片老样式（v1.5 原版还原）
 // 纯 Jetpack Compose 原生渲染——白卡片 + 圆点列表 + 官方群 + 立即更新
 // - 内容写死（不再随云端 changelog 变化）
-// - v1.0.10 追溯 1.0.3 下载/安装方式：多源 OkHttp 串行下载 → PackageInstaller 会话直装（免授权），
+// - v1.0.11 追溯 1.0.3 下载/安装方式：多源 OkHttp 串行下载（raw/jsDelivr/jsdmir/github 四源）→
+//   流式 PK 头校验（修复 readBytes 整读 OOM）→ PackageInstaller 会话直装（免授权），
 //   仅由 receiver 回调驱动结果，不再叠加看门狗/FileProvider/版本轮询兜底（避免安装界面打架）
-// - 官方群：mqqapi/mqqwpa/网页逐级 try/catch 直拉（不再 resolveActivity 预检，防误判 null 跳过 QQ）
+// - 官方群：mqqapi(sharecard)/universal-share 网页/qqmobile/mqqwpa 逐级 try/catch 直拉
+//   （修复 source=qrcode 扫码页假成功阻断后续兜底，导致「官方群点了没反应」）
 // （旧手绘猫咪弹窗已彻底删除，统一由本入口接管）
 // ============================================================
 
@@ -197,18 +201,24 @@ fun AppUpdateDialog(
         }
     }
 
-    /** 跳转官方 QQ 群：新版 mqqapi 加群协议 → 老版 mqqwpa → 网页加群页 → Toast 提示群号
+    /** 跳转官方 QQ 群（v1.0.11 修复「点了没反应/跳不到群」）：
+     *  1. mqqapi 加群卡片协议（source=sharecard 新版分享卡片；旧版 source=qrcode 是扫码场景，
+     *     QQ 打开后只显示扫码页不显示群卡片，且 startActivity 成功即 return 阻断后续兜底——这是「无法跳转」根因）
+     *  2. 官方 universal-share 长链网页（qun.qq.com 官方加群页，浏览器必开，页内「打开QQ」可二次拉起 QQ 群）
+     *  3. qqmobile 网页（老版加群页兜底）
+     *  4. mqqwpa 老协议（QQ 新版已停用，放最后避免无效拉起阻断网页兜底）
+     *  5. 全部失败 Toast 群号
      *  v1.0.10 修复：去掉 resolveActivity 预检（Android 11+ 对自定义 scheme 预检常误判 null 而跳过 QQ 协议），
      *  直接 startActivity try/catch 逐级尝试，确保能拉起 QQ 或浏览器。 */
     fun openOfficialGroup() {
         val groupNumber = "439211347"
         val now = System.currentTimeMillis() / 1000
-        // 新版 QQ 已停用 mqqwpa，改用 mqqapi 加群卡片协议优先；网页用长期有效的 qqmobile 加群页
+        // 新版 QQ 加群卡片：source=sharecard（分享卡片场景，直接展示群信息）；source=qrcode 是扫码场景不适用
         val intents = listOf(
-            Intent(Intent.ACTION_VIEW, Uri.parse("mqqapi://card/show_pslcard?src_type=internal&version=1&uin=$groupNumber&card_type=group&source=qrcode")),
-            Intent(Intent.ACTION_VIEW, Uri.parse("mqqwpa://im/chat?chat_type=group&uin=$groupNumber&version=1&src_type=web&web_src=oicqzone.com")),
+            Intent(Intent.ACTION_VIEW, Uri.parse("mqqapi://card/show_pslcard?src_type=internal&version=1&uin=$groupNumber&card_type=group&source=sharecard")),
+            Intent(Intent.ACTION_VIEW, Uri.parse(OFFICIAL_QQ_GROUP_URL)),
             Intent(Intent.ACTION_VIEW, Uri.parse("https://qun.qq.com/qqmobile/?uin=$groupNumber&clicktime=$now")),
-            Intent(Intent.ACTION_VIEW, Uri.parse(OFFICIAL_QQ_GROUP_URL))
+            Intent(Intent.ACTION_VIEW, Uri.parse("mqqwpa://im/chat?chat_type=group&uin=$groupNumber&version=1&src_type=web&web_src=oicqzone.com"))
         )
         for (intent in intents) {
             try {
@@ -223,8 +233,9 @@ fun AppUpdateDialog(
     }
 
     /**
-     * 多源下载 + 安装（v1.0.10 追溯 1.0.3 方式）：
-     * 原 URL → jsDelivr CDN → GitHub raw 串行尝试（每源一次），下载校验 PK 头后进入 installApk。
+     * 多源下载 + 安装（v1.0.11 追溯 1.0.3 方式）：
+     * 原 URL → jsDelivr CDN → jsdmir 国内镜像 → GitHub raw 串行尝试（每源一次），
+     * 下载流式校验 PK 头后进入 installApk。
      * 全部失败时复位状态并提示重试（不做浏览器/DownloadManager 等需授权的兜底）。
      */
     fun startRealDownload() {
@@ -238,13 +249,14 @@ fun AppUpdateDialog(
             statusLabel = "正在下载更新…"
             progress = 12f
             try {
-                // 多源下载：raw.githubusercontent 不可达时自动切换 jsDelivr CDN 镜像 / github 直链
+                // 多源下载：raw.githubusercontent 不可达时自动切换 jsDelivr CDN 镜像 / jsdmir 国内镜像 / github 直链
                 val candidates = buildList {
                     add(url)
                     // 转换 raw.githubusercontent.com/owner/repo/main/path -> cdn.jsdelivr.net/gh/owner/repo@main/path
                     Regex("^https?://raw\\.githubusercontent\\.com/([^/]+)/([^/]+)/(?:main|master)/(.+)$")
                         .find(url)?.let { m ->
                             add("https://cdn.jsdelivr.net/gh/${m.groupValues[1]}/${m.groupValues[2]}@main/${m.groupValues[3]}")
+                            add("https://cdn.jsdmir.cn/gh/${m.groupValues[1]}/${m.groupValues[2]}@main/${m.groupValues[3]}")
                             add("https://github.com/${m.groupValues[1]}/${m.groupValues[2]}/raw/main/${m.groupValues[3]}")
                         }
                 }.distinct()
@@ -287,9 +299,27 @@ fun AppUpdateDialog(
                                     output.flush()
                                 }
                             }
-                            // 校验 APK 文件头 PK
-                            if (file.length() < 1024 || file.readBytes().take(2).toByteArray().contentEquals(byteArrayOf(0x50, 0x4B)).not()) {
-                                throw Exception("文件不完整")
+                            // 校验 APK 文件头 PK（ZIP/APK 魔数）。
+                            // v1.0.11 修复（追溯 1.0.3）：禁止 readBytes() 整读——大 APK 会 OOM 崩溃导致「下载完安装错误」，
+                            // 改为流式读前 2 字节（read 循环兼容 minSdk 24，避免 readNBytes 仅 API 33+ 的 lint 报错）。
+                            val header = try {
+                                file.inputStream().use { ins ->
+                                    val h = ByteArray(2)
+                                    var n = 0
+                                    while (n < 2) {
+                                        val r = ins.read(h, n, 2 - n)
+                                        if (r < 0) break
+                                        n += r
+                                    }
+                                    h
+                                }
+                            } catch (e: Exception) { ByteArray(0) }
+                            if (file.length() < 1024 * 50 ||
+                                header.size < 2 ||
+                                header[0] != 'P'.code.toByte() ||
+                                header[1] != 'K'.code.toByte()
+                            ) {
+                                throw Exception("下载文件不完整（${file.length()} 字节）")
                             }
                             // 自动删除旧版本的 APK 缓存文件（只保留最新下载的安装包）
                             try {

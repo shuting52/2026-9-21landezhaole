@@ -364,11 +364,13 @@ public class MainActivity extends Activity {
                 session.close();
             }
             Intent resultIntent = new Intent(ACTION_INSTALL_RESULT).setPackage(getPackageName());
+            // v1.0.14 修复：FLAG_IMMUTABLE 在 Android 12+ 上系统无法向 PendingIntent 附加安装状态回调，
+            // 导致「安装完成/失败」永远不送达 → 弹窗卡死、下载完"安装错误"。必须与本体一致改用 FLAG_MUTABLE。
             PendingIntent pending = PendingIntent.getBroadcast(
                     this,
                     INSTALL_RESULT_REQUEST_CODE,
                     resultIntent,
-                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE
             );
             session.commit(pending.getIntentSender());
             return true;
