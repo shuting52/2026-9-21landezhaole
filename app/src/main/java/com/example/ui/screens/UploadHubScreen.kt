@@ -126,6 +126,7 @@ fun UploadHubScreen(
             val expandedCats = remember(resources) { mutableStateMapOf<String, Boolean>() }
             // 主题色渐变（软件卡片专用，v1.0.9 主题升级）
             val themePrimary = MaterialTheme.colorScheme.primary
+            val themeSecondary = MaterialTheme.colorScheme.secondary
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
