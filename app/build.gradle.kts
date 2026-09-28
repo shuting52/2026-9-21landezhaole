@@ -31,8 +31,10 @@ android {
     // 控制台 v1.0.9：软件停止运营开关 + 强化型安全加密加固
     // 与云端 admin-data.json version.code=85 / name=1.0.4 四要素对齐（含 apkUrl 指向真实 1.0.4 安装包）
     // v1.0.5：更新弹窗固化「手绘CSS + 免授权直装」——永久删除 WebView 弹窗（写死规则7）
-    versionCode = 91
-    versionName = "1.0.10"
+    // v1.0.11：修复官方群跳转（source=qrcode→sharecard，网页兜底提前）+ 追溯1.0.3下载（流式PK校验防OOM + jsdmir镜像）
+    // 与云端 admin-data.json version.code=92 / name=1.0.11 四要素对齐（含 apkUrl 指向真实 1.0.11 安装包）
+    versionCode = 92
+    versionName = "1.0.11"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
