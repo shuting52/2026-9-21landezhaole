@@ -119,8 +119,9 @@ enum class ToolCategory(
     val icon: String,
     val defaultExpanded: Boolean = false
 ) {
-    CLOUD("cloud", "云端工具", "☁️", true),
-    CORE("core", "精选工具", "✨", true)
+    // v1.0.7：分类默认收起（收纳形式呈现），点击标题栏才展开
+    CLOUD("cloud", "云端工具", "☁️", false),
+    CORE("core", "精选工具", "✨", false)
 }
 
 @Composable

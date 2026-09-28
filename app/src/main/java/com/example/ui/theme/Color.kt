@@ -28,6 +28,11 @@ val CuteMint = Color(0xFF7FE0C3)        // 薄荷绿（点缀）
 val CuteLemon = Color(0xFFFFE08A)       // 柠檬黄（点缀）
 val CuteLavender = Color(0xFFC9B8FF)    // 香芋紫（点缀）
 
+// v1.0.7 清爽浅红主题色（清新干净的浅红色系）
+val LightRedMain = Color(0xFFFF8A80)     // 浅红（主色，Material LightRed 300）
+val LightRedAccent = Color(0xFFFFB3AB)   // 浅红辅助（更浅的珊瑚红）
+val LightRedDeep = Color(0xFFE57373)     // 深一档浅红（强调/按钮压重）
+
 // Badge Gradient Colors
 val BadgeRose1 = Color(0xFFFF416C)
 val BadgeRose2 = Color(0xFFFF4B2B)
