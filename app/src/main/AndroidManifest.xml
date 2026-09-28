@@ -44,6 +44,15 @@
             <action android:name="android.intent.action.SENDTO" />
             <data android:scheme="mailto" />
         </intent>
+        <!-- v1.0.8：官方群直拉——新版 mqqapi / 老版 mqqwpa 协议（Android 11+ 需显式声明才能解析到 QQ） -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="mqqwpa" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="mqqapi" />
+        </intent>
     </queries>
 
     <application
@@ -60,6 +69,16 @@
         <receiver
             android:name=".ui.components.UpdateInstallReceiver"
             android:exported="false" />
+        <!-- v1.0.8：FileProvider 共享更新下载的 APK（回退安装/签名冲突时拷贝到下载目录均依赖它） -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -58,7 +58,6 @@ import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 /**
@@ -250,15 +249,21 @@ fun AppUpdateDialog(
         }
     }
 
-    /** 跳转官方 QQ 群（mqq 直拉 → 网页兜底 → Toast 提示群号） */
+    /** 跳转官方 QQ 群：新版 mqqapi 加群协议 → 老版 mqqwpa → 网页加群页 → Toast 提示群号（v1.0.8 修复点击无效） */
     fun openOfficialGroup() {
         val groupNumber = "439211347"
+        val now = System.currentTimeMillis() / 1000
+        // 新版 QQ 已停用 mqqwpa，改用 mqqapi 加群卡片协议优先；网页用长期有效的 qqmobile 加群页
         val intents = listOf(
+            Intent(Intent.ACTION_VIEW, Uri.parse("mqqapi://card/show_pslcard?src_type=internal&version=1&uin=$groupNumber&card_type=group&source=qrcode")),
             Intent(Intent.ACTION_VIEW, Uri.parse("mqqwpa://im/chat?chat_type=group&uin=$groupNumber&version=1&src_type=web&web_src=oicqzone.com")),
+            Intent(Intent.ACTION_VIEW, Uri.parse("https://qun.qq.com/qqmobile/?uin=$groupNumber&clicktime=$now")),
             Intent(Intent.ACTION_VIEW, Uri.parse(OFFICIAL_QQ_GROUP_URL))
         )
         for (intent in intents) {
             try {
+                // Android 11+ 隐式 intent 需 resolveActivity 预检，无法解析则静默跳过
+                if (intent.resolveActivity(context.packageManager) == null) continue
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 context.startActivity(intent)
                 return
@@ -269,25 +274,30 @@ fun AppUpdateDialog(
         Toast.makeText(context, "打开 QQ 群失败，请手动搜索群号：$groupNumber", Toast.LENGTH_LONG).show()
     }
 
-    /** 同步执行单次下载，返回保存好的 File（跑在 IO 线程） */
-    suspend fun downloadWithProgress(url: String, onProgress: suspend (Float) -> Unit): File {
+    /** 同步执行单次下载，返回保存好的 File（跑在 IO 线程；v1.0.8 修复卡 8%：无 Content-Length 时按估算推进进度） */
+    suspend fun downloadWithProgress(url: String, onProgress: (Float) -> Unit): File {
         return withContext(kotlinx.coroutines.Dispatchers.IO) {
             val client = okhttp3.OkHttpClient.Builder()
-                .connectTimeout(20, TimeUnit.SECONDS)
-                .readTimeout(120, TimeUnit.SECONDS)
+                .connectTimeout(12, TimeUnit.SECONDS)
+                .readTimeout(40, TimeUnit.SECONDS)
+                .writeTimeout(40, TimeUnit.SECONDS)
                 .followRedirects(true)
                 .followSslRedirects(true)
                 .retryOnConnectionFailure(true)
+                .callTimeout(70, TimeUnit.SECONDS)
                 .build()
             val request = okhttp3.Request.Builder()
                 .url(url)
                 .header("User-Agent", "Mozilla/5.0 (Linux; Android) LzdzUpdater/1.7.8")
                 .header("Accept", "*/*")
+                .header("Accept-Encoding", "identity")
                 .build()
             client.newCall(request).execute().use { resp ->
                 if (!resp.isSuccessful) throw Exception("HTTP ${resp.code}")
                 val body = resp.body ?: throw Exception("无响应体")
                 val total = body.contentLength()
+                // 本体 APK 约 16MB，用于无 Content-Length（chunked）时的进度估算
+                val estTotal = 18L * 1024 * 1024
                 val dir = File(context.cacheDir, "update")
                 dir.mkdirs()
                 val file = File(dir, "latest.apk")
@@ -301,13 +311,16 @@ fun AppUpdateDialog(
                             if (n <= 0) break
                             output.write(buf, 0, n)
                             downloaded += n
-                            if (total > 0) {
-                                val now = System.currentTimeMillis()
-                                if (now - lastEmit > 120 || downloaded == total) {
-                                    lastEmit = now
-                                    val frac = (downloaded.toFloat() / total.toFloat()).coerceIn(0f, 1f)
-                                    runBlocking { onProgress(frac) }
+                            val now = System.currentTimeMillis()
+                            if (now - lastEmit > 120 || downloaded == total || downloaded >= estTotal) {
+                                lastEmit = now
+                                // 有 Content-Length 按真实比例；无则按估算推进（保底 0~0.96 平滑增长）
+                                val frac = if (total > 0) {
+                                    (downloaded.toFloat() / total.toFloat()).coerceIn(0f, 1f)
+                                } else {
+                                    (downloaded.toFloat() / estTotal.toFloat()).coerceIn(0f, 0.96f)
                                 }
+                                onProgress(frac)
                             }
                         }
                         output.flush()
@@ -347,14 +360,14 @@ fun AppUpdateDialog(
             var lastError: Exception? = null
             outer@ for (candidate in candidates) {
                 var attempt = 0
-                while (attempt < 2 && !success) {
+                while (attempt < 3 && !success) {
                     attempt++
                     try {
-                        statusLabel = if (attempt == 1) "下载中… 0%" else "重试下载… 0%"
-                        progress = 8f
+                        statusLabel = "正在极速下载…"
+                        progress = 8f + (attempt - 1) * 2f
                         val file = downloadWithProgress(candidate) { p ->
-                            progress = (8f + p * 92f).coerceIn(8f, 100f)
-                            statusLabel = "下载中… ${progress.toInt()}%"
+                            progress = (8f + p * 90f).coerceIn(8f, 99f)
+                            statusLabel = "正在极速下载… ${progress.toInt()}%"
                         }
                         // 校验 APK 文件头 PK
                         val header = try {
