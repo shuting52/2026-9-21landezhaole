@@ -1,18 +1,17 @@
 {
   "version": {
-    "code": 89,
-    "name": "1.0.8",
+    "code": 90,
+    "name": "1.0.9",
     "changelog": [
-      "✨ v1.0.8 更新来啦～",
-      "? 修复：更新弹窗进度条卡在 8% 不动（无 Content-Length 镜像现已正常推进）",
-      "? 修复：官方群点击无效（新增新版加群协议 + 网页加群页兜底）",
-      "? 修复：下载安装失败（补回 FileProvider 共享 + 超时优化，安装更稳）",
-      "? 优化：下载提速、多源自动切换更智能",
-      "功能与体验全面提升，等你来发现～"
+      "✨ v1.0.9 更新来啦～",
+      "? 软件版块横屏呈现：分类收纳 + 一排排横向滑动卡片，不再竖排",
+      "? 软件版块主题升级：清爽浅红顶栏横幅 + 主题色分类胶囊 + 渐变描边卡片",
+      "? 控制台工具箱新增「链接识别 → Skill 提示词/视频」：粘贴链接精准识别类型，提取提示词与视频内容，实时同步到 Skill 提示词区",
+      "? 更多细节优化，等你来发现～"
     ],
     "force": true,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.0.8-1790592807.apk",
-    "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.0.8-1790592807.apk"
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.0.9-1790598455.apk",
+    "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.0.9-1790598455.apk"
   },
   "home": {
     "categories": [
@@ -22244,14 +22243,13 @@
     "buttonText": "开始体验"
   },
   "updateDialog": {
-    "title": "懒得找了 v1.0.8 已上线",
+    "title": "懒得找了 v1.0.9 已上线",
     "changelog": [
-      "✨ v1.0.8 更新来啦～",
-      "? 修复：更新弹窗进度条卡在 8% 不动（无 Content-Length 镜像现已正常推进）",
-      "? 修复：官方群点击无效（新增新版加群协议 + 网页加群页兜底）",
-      "? 修复：下载安装失败（补回 FileProvider 共享 + 超时优化，安装更稳）",
-      "? 优化：下载提速、多源自动切换更智能",
-      "功能与体验全面提升，等你来发现～"
+      "✨ v1.0.9 更新来啦～",
+      "? 软件版块横屏呈现：分类收纳 + 一排排横向滑动卡片，不再竖排",
+      "? 软件版块主题升级：清爽浅红顶栏横幅 + 主题色分类胶囊 + 渐变描边卡片",
+      "? 控制台工具箱新增「链接识别 → Skill 提示词/视频」：粘贴链接精准识别类型，提取提示词与视频内容，实时同步到 Skill 提示词区",
+      "? 更多细节优化，等你来发现～"
     ],
     "confirmText": "立即更新",
     "cancelText": "稍后再说",
@@ -22278,9 +22276,9 @@
     ]
   },
   "console": {
-    "version": "1.0.11",
-    "code": 36,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v1.0.11-1790592807.apk"
+    "version": "1.0.12",
+    "code": 37,
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v1.0.12-1790598455.apk"
   },
   "ipMonitor": {
     "enabled": false,
