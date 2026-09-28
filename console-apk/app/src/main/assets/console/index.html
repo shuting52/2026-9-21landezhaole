@@ -347,7 +347,7 @@ const CONFIG_PATH   = "admin-data.json";
 // v1.0.12 修复：运行时优先读取原生桥回传的「真实已安装 versionCode」，
 // 只有浏览器环境取不到时才回退到该常量，彻底避免常量漏改导致更新判断失效。
 // v1.0.2：27；v1.0.6：31；v1.0.7：32；v1.0.8：33；v1.0.9：34；v1.0.10：35（与 build.gradle.kts 对齐）。
-const CONSOLE_BUILTIN_VERSION = 36;
+const CONSOLE_BUILTIN_VERSION = 37;
 
 // 取当前控制台程序的真实版本号：APK 内用系统安装包 versionCode，浏览器回退内置常量
 function getLocalConsoleVersion(){
@@ -2857,6 +2857,18 @@ function renderToolbox(){
       <button class="btn-bump" onclick="publish(true,'工具箱云端工具更新')">? 推送并触发本体更新弹窗</button>
     </div>
   </div>`;
+  // v1.0.9：工具箱新增「链接识别 → Skill 提示词/视频」快捷功能
+  html += `<div class="card" style="border:1px solid #3d4a75;background:linear-gradient(135deg,#141b3340,#2a1f4e40)">
+    <div class="action-banner" style="margin-bottom:0">
+      <b>🔗 链接识别 → Skill 提示词/视频</b>
+      <span class="hint">粘贴链接一键精准识别：视频直链自动识别为「视频提示词」，图片直链自动识别为「图片提示词」，平台分享链接自动归类。提取提示词/视频内容后实时同步到本体 Skill 提示词区（保存即同步）。</span>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <input id="ltLinkInput" style="flex:1;min-width:160px" placeholder="粘贴链接，如视频直链 .mp4 / 图片直链 / 抖音·B站·小红书分享链接">
+      <button class="btn-pri" onclick="linkRecognize()">🔍 识别</button>
+    </div>
+    <div id="ltRecognizeResult" style="margin-top:8px;display:none"></div>
+  </div>`;
   if(!tools.length){
     html += `<div class="card"><div class="empty">暂无云端工具。点击上方「＋ 新增云端工具」添加（如在线工具箱、小工具页面等），保存后可增删并实时同步本体。</div></div>`;
   } else {
@@ -2916,6 +2928,133 @@ function removeTool(i){
     tools.splice(i,1); renderToolbox(); toast("已删除「"+t.name+"」，点「应用」同步到本体","ok");
     logChange("删除工具箱「"+t.name+"」");
   });
+}
+
+// ============ 链接识别 → Skill 提示词/视频（v1.0.9） ============
+// 粘贴链接一键精准识别：视频直链→视频提示词、图片直链→图片提示词、平台分享链接→自动归类。
+// 提取「提示词文本 + 视频/图片内容」保存为 Skill 条目，实时同步到本体 Skill 提示词区。
+
+/** 从链接推导标题（取文件名/域名，供自动填充） */
+function linkDeriveTitle(url){
+  try{
+    const u = new URL(url);
+    const pathName = decodeURIComponent(u.pathname || "");
+    const last = pathName.split("/").filter(Boolean).pop() || "";
+    const name = last.replace(/\.[a-z0-9]+$/i, "");
+    if(name && name.length > 2) return name;
+    let host = u.hostname.replace(/^www\./, "");
+    if(host.includes("douyin")) return "抖音视频";
+    if(host.includes("bilibili") || host.includes("b23")) return "哔哩哔哩视频";
+    if(host.includes("xiaohongshu") || host.includes("xhslink")) return "小红书内容";
+    if(host.includes("kuaishou")) return "快手视频";
+    if(host.includes("weibo")) return "微博内容";
+    return host || "链接资源";
+  }catch(e){
+    return "链接资源";
+  }
+}
+
+/** 链接类型识别：video / image / platform_video / link */
+function linkRecognizeType(url){
+  const lower = String(url || "").trim().toLowerCase();
+  if(!lower) return null;
+  // 视频直链
+  if(/\.(mp4|webm|mov|m4v|mkv|flv)(\?[^\s]*)?$/.test(lower)) return "video";
+  // 图片直链
+  if(/\.(jpe?g|png|gif|webp|bmp|avif)(\?[^\s]*)?$/.test(lower)) return "image";
+  // 平台分享链接（视频类为主）
+  if(/(v\.douyin\.com|douyin\.com\/video|b23\.tv|bilibili\.com\/video|xhslink\.com|xiaohongshu\.com|kuaishou\.com|weibo\.com\/tv|youtube\.com|youtu\.be|mp\.weixin\.qq\.com)/.test(lower)) return "platform_video";
+  return "link";
+}
+
+/** 识别入口：根据链接类型渲染识别结果 + 提示词/视频内容提取表单 */
+function linkRecognize(){
+  const url = $("ltLinkInput") ? $("ltLinkInput").value.trim() : "";
+  const box = $("ltRecognizeResult");
+  if(!url){ toast("请先粘贴链接","err"); return; }
+  const type = linkRecognizeType(url);
+  if(!type){ toast("链接格式不正确","err"); return; }
+  const autoTitle = linkDeriveTitle(url);
+  const typeBadge = type === "video" ? "🎬 视频提示词" : type === "image" ? "🖼 图片提示词" : type === "platform_video" ? "🎬 平台视频链接" : "🔗 网页链接";
+  const typeHint = type === "video"
+    ? "已识别为视频直链，将保存为<b style='color:#fbbf24'>视频提示词</b>（mediaUrl 用此直链，本体提示词区可直接播放）"
+    : type === "image"
+    ? "已识别为图片直链，将保存为<b style='color:#fbbf24'>图片提示词</b>（预览图用此直链）"
+    : type === "platform_video"
+    ? "已识别为<b style='color:#fbbf24'>平台视频分享链接</b>，将保存为视频提示词（mediaUrl 用此链接，本体点击跳转播放）。如需直链请粘贴 .mp4 结尾的地址"
+    : "已识别为普通网页链接，可作为图片/视频资源补充；下方提示词文本将一并保存";
+  box.style.display = "block";
+  box.innerHTML = `<div style="margin-top:8px">
+    <div class="row">
+      <span class="btn-mini ok">${typeBadge}</span>
+      <span class="hint" style="color:#a5f3ff">${typeHint}</span>
+    </div>
+    <div class="divider"></div>
+    <label>提示词标题 *</label><input id="ltTitle" value="${esc(autoTitle)}" placeholder="如 赛博都市 · 霓虹夜景">
+    <label>提取出的提示词文本（从链接页面复制粘贴，可选）</label>
+    <textarea id="ltPrompt" style="min-height:90px" class="mono" placeholder="你是一位资深...（此处填从链接内容中提取的提示词正文）"></textarea>
+    <label>中文说明（可选）</label><input id="ltDesc" value="" placeholder="这个提示词是干嘛的，方便本体用户理解">
+    <div class="two-col">
+      <div><label>作者/来源（可选）</label><input id="ltAuthor" value="" placeholder="如 小红书博主"></div>
+      <div><label>标签（空格分隔）</label><input id="ltTags" value="" placeholder="如 赛博 写实 视频"></div>
+    </div>
+    <input type="hidden" id="ltUrl" value="${esc(url)}">
+    <input type="hidden" id="ltType" value="${type}">
+    <div class="dlg-actions"><button onclick="$('ltRecognizeResult').style.display='none'">取消</button><button class="btn-pri" onclick="linkRecognizeSave()">💾 保存并同步 Skill 提示词区</button></div>
+  </div>`;
+}
+
+/** 保存识别结果：构造 Skill 条目（只提取提示词文本 + 视频/图片内容），push 到 skills 并实时同步本体 */
+function linkRecognizeSave(){
+  const title = $("ltTitle").value.trim();
+  if(!title){ toast("提示词标题必填","err"); return; }
+  const url = $("ltUrl").value.trim();
+  const type = $("ltType").value;
+  const promptText = $("ltPrompt").value;
+  const desc = $("ltDesc").value.trim();
+  const author = $("ltAuthor").value.trim();
+  const tags = $("ltTags").value.trim();
+
+  // 只提取「提示词文本 + 视频/图片内容」两个核心部分（v1.0.9 明确定位）
+  const isVideo = type === "video" || type === "platform_video";
+  const isImage = type === "image";
+  const item = {
+    id: uid("sk"),
+    type: "skill",
+    promptType: isVideo ? "prompt_video" : isImage ? "prompt_image" : "prompt_image",
+    title: title,
+    desc: desc,
+    prompt: promptText,
+    url: "",
+    author: author || "链接识别",
+    badge: isVideo ? "🎬 视频" : "🖼 图片",
+    tags: tags || (isVideo ? "视频 提示词" : "图片 提示词"),
+    previewUrl: isImage ? url : "",
+    mediaUrl: isVideo ? url : "",
+    iconUrl: "",
+    mode: "file"
+  };
+  S.admin.skills = S.admin.skills || [];
+  S.admin.skills.push(item);
+  logChange((isVideo ? "新增视频提示词「" : "新增图片提示词「") + title + "」（链接识别）");
+  // 收起识别表单，跳转 Skill 提示词区展示最新结果
+  $("ltRecognizeResult").style.display = "none";
+  if($("ltLinkInput")) $("ltLinkInput").value = "";
+  switchPage("skillPage");
+  skillSubTab = isVideo ? "prompt_video" : "prompt_image";
+  renderSkill();
+  // 实时同步：写回云端 + purge CDN，本体 5 秒轮询即可在 Skill 提示词区看到新条目
+  publish(false).then(() => {
+    toast("✅ 已保存并实时同步到本体 Skill 提示词区（" + (isVideo ? "视频" : "图片") + "提示词）","ok");
+  });
+}
+
+// 页面切换辅助
+function switchPage(id){
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+  const page = $(id); if(page) page.classList.add("active");
+  const btn = document.querySelector('[data-page="'+id+'"]'); if(btn) btn.classList.add("active");
 }
 
 // 手机下载 APK：Android WebView 内用原生下载器；浏览器内用隐藏 iframe 触发下载（修复手机无法下载的问题）

@@ -22,11 +22,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -118,40 +115,69 @@ fun UploadHubScreen(
 
     Box(modifier = modifier.fillMaxSize()) {
         if (gridMode && (resourceType == "software" || resourceType == "skill")) {
-            // ===== 软件/Skill：一排三个横排网格 + 自动归类 + 自动识别 icon（v1.0.4/1.0.5） =====
+            // ===== 软件/Skill：分类收纳 + 一排排横向滑动（LazyRow）的横屏卡片（v1.0.9） =====
             // 自动归类分组（保持云端的顺序，仅分组显示）
             val grouped = remember(resources) {
                 val map = LinkedHashMap<String, MutableList<UploadedResourceEntity>>()
                 resources.forEach { map.getOrPut(autoCategorize(it)) { mutableListOf() }.add(it) }
                 map.toList()
             }
-            // v1.0.7：软件/Skill 版块分类收纳——默认收起，点击分类标题才展开（横排网格不变）
+            // v1.0.7：分类收纳——默认收起，点击分类标题才展开
             val expandedCats = remember(resources) { mutableStateMapOf<String, Boolean>() }
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
+            // 主题色渐变（软件卡片专用，v1.0.9 主题升级）
+            val themePrimary = MaterialTheme.colorScheme.primary
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 12.dp, vertical = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                item(span = { GridItemSpan(3) }) {
+                item {
                     Column(modifier = Modifier.padding(bottom = 6.dp)) {
+                        // v1.0.9 主题横幅：主题色渐变 + 圆点装饰，软件版块主题感立现
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(
+                                    Brush.horizontalGradient(
+                                        listOf(
+                                            themePrimary.copy(alpha = 0.85f),
+                                            themeSecondary.copy(alpha = 0.7f)
+                                        )
+                                    )
+                                )
+                                .padding(horizontal = 14.dp, vertical = 12.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text("📦", fontSize = 18.sp)
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = title,
+                                        fontSize = 19.sp,
+                                        fontWeight = FontWeight.Black,
+                                        color = Color.White
+                                    )
+                                    Text(
+                                        text = subtitle + (if (resources.isNotEmpty()) "　·　共 ${resources.size} 款" else ""),
+                                        fontSize = 11.sp,
+                                        color = Color.White.copy(alpha = 0.9f),
+                                        maxLines = 2
+                                    )
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = title,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Black,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                        Text(
-                            text = subtitle + (if (resources.isNotEmpty()) "　·　共 ${resources.size} 款" else ""),
-                            fontSize = 12.sp,
+                            text = "↔ 横屏滑动浏览 · 点击分类展开",
+                            fontSize = 11.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
                 if (resources.isEmpty()) {
-                    item(span = { GridItemSpan(3) }) {
+                    item {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -177,65 +203,81 @@ fun UploadHubScreen(
                 } else {
                     grouped.forEach { (cat, list) ->
                         val isExpanded = expandedCats[cat] == true
-                        // v1.0.7：分类标题行可点击展开/收起（收纳式，点击时才展开）
-                        item(span = { GridItemSpan(3) }, key = "cat_$cat") {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
+                        // 分类标题行：主题色胶囊样式，可点击展开/收起（收纳式）
+                        item(key = "cat_$cat") {
+                            Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(10.dp))
+                                    .background(themePrimary.copy(alpha = 0.10f))
                                     .clickable { expandedCats[cat] = !isExpanded }
-                                    .padding(top = 10.dp, bottom = 2.dp, start = 2.dp, end = 2.dp)
+                                    .padding(horizontal = 10.dp, vertical = 8.dp)
                             ) {
-                                Box(
-                                    modifier = Modifier
-                                        .width(3.dp)
-                                        .height(14.dp)
-                                        .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(2.dp))
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = cat,
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = if (isExpanded) "收起 ▴" else "展开 ▾ · ${list.size} 款",
-                                    fontSize = 11.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Spacer(modifier = Modifier.weight(1f))
-                                Text(
-                                    text = if (isExpanded) "▾" else "▸",
-                                    fontSize = 12.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    // 主题色小图标块
+                                    Box(
+                                        modifier = Modifier
+                                            .size(22.dp)
+                                            .background(themePrimary, RoundedCornerShape(7.dp)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(cat.firstOrNull()?.toString() ?: "📁", fontSize = 11.sp, color = Color.White)
+                                    }
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = cat,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Black,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = if (isExpanded) "收起 ▴" else "展开 ▾ · ${list.size} 款",
+                                        fontSize = 11.sp,
+                                        color = themePrimary,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Spacer(modifier = Modifier.weight(1f))
+                                    Text(
+                                        text = if (isExpanded) "▾" else "▸",
+                                        fontSize = 13.sp,
+                                        color = themePrimary
+                                    )
+                                }
                             }
                         }
                         if (isExpanded) {
-                            gridItems(list, key = { it.id }) { res ->
-                                if (resourceType == "skill") {
-                                    // Skill 技能包：横排网格卡片（预览图/视频标识/标题），点击打开详情弹窗
-                                    SkillGridCard(
-                                        res = res,
-                                        onClick = { skillDetail = res },
-                                        showDelete = showDelete,
-                                        onDelete = {
-                                            onDelete(res.id)
-                                            Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
-                                        }
+                            // v1.0.9：横屏呈现——每个分类一排横向滑动卡片（LazyRow），不再竖排网格
+                            item(key = "row_$cat") {
+                                LazyRow(
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                    contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                                        start = 2.dp, end = 6.dp, top = 2.dp, bottom = 4.dp
                                     )
-                                } else {
-                                    SoftwareGridCard(
-                                        res = res,
-                                        showDelete = showDelete,
-                                        onDelete = {
-                                            onDelete(res.id)
-                                            Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
+                                ) {
+                                    items(list, key = { it.id }) { res ->
+                                        if (resourceType == "skill") {
+                                            SkillGridCard(
+                                                res = res,
+                                                onClick = { skillDetail = res },
+                                                showDelete = showDelete,
+                                                onDelete = {
+                                                    onDelete(res.id)
+                                                    Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
+                                                }
+                                            )
+                                        } else {
+                                            // 横屏软件卡片（宽 176dp 固定宽、主题渐变描边）
+                                            SoftwareHorizontalCard(
+                                                res = res,
+                                                showDelete = showDelete,
+                                                onDelete = {
+                                                    onDelete(res.id)
+                                                    Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
+                                                }
+                                            )
                                         }
-                                    )
+                                    }
                                 }
                             }
                         }
@@ -642,6 +684,188 @@ private fun SoftwareGridCard(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+/**
+ * 软件横屏卡片（v1.0.9 全新横屏呈现）：固定宽度横向滑动，图标在上、信息在下，
+ * 主题渐变描边 + 主题色角标，适合一排排横向滑动浏览（LazyRow）。
+ */
+@Composable
+private fun SoftwareHorizontalCard(
+    res: UploadedResourceEntity,
+    showDelete: Boolean = true,
+    onDelete: () -> Unit
+) {
+    val context = LocalContext.current
+    val isFileMode = res.mode != "url"
+    val fileLink = res.fileUrl.ifBlank { res.url }
+    val url = if (isFileMode) fileLink else res.url.ifBlank { res.fileUrl }
+    val isApk = url.endsWith(".apk", ignoreCase = true)
+    val isZip = url.endsWith(".zip", ignoreCase = true)
+    val isMd = url.endsWith(".md", ignoreCase = true)
+    val canInstall = isApk || isZip || isMd
+
+    val badgeText = when {
+        isApk -> "APK"
+        isZip -> "ZIP"
+        isMd -> "MD"
+        else -> "直达"
+    }
+    val badgeColor = when {
+        isApk -> Color(0xFF22C55E)
+        isZip -> Color(0xFF6366F1)
+        isMd -> Color(0xFFF59E0B)
+        else -> MaterialTheme.colorScheme.primary
+    }
+
+    // 自动识别 icon（优先云端 iconUrl，其次 Google favicon 服务）
+    val displayIcon = res.iconUrl.ifBlank { autoFaviconUrl(res.url.ifBlank { res.fileUrl }) }
+    // v1.0.9 主题：卡片描边用主题主色渐变（清爽浅红系）
+    val themePrimary = MaterialTheme.colorScheme.primary
+    val themeSecondary = MaterialTheme.colorScheme.secondary
+
+    fun downloadToLocal(url: String, fileName: String?) {
+        try {
+            val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+            val safeName = (fileName?.ifBlank { null } ?: url.substringAfterLast('/').ifBlank { "download.bin" })
+                .replace(" ", "_")
+                .replace(Regex("[\\\\/:*?\"<>|]"), "_")
+            val request = DownloadManager.Request(Uri.parse(url))
+                .setTitle("懒得找了 · ${res.title}")
+                .setDescription("正在下载 $safeName")
+                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                .setAllowedOverMetered(true)
+                .setMimeType(
+                    when {
+                        isApk -> "application/vnd.android.package-archive"
+                        isZip -> "application/zip"
+                        isMd -> "text/markdown"
+                        else -> "application/octet-stream"
+                    }
+                )
+                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, safeName)
+            dm.enqueue(request)
+            Toast.makeText(context, "已开始下载到手机「下载」文件夹", Toast.LENGTH_LONG).show()
+        } catch (e: Exception) {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+            } catch (e2: Exception) {
+                Toast.makeText(context, "下载失败，请稍后重试", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    val onCardClick = {
+        if (url.isNotBlank()) {
+            if (canInstall) {
+                downloadToLocal(url, res.title + (if (isZip) ".zip" else if (isApk) ".apk" else if (isMd) ".md" else ""))
+            } else {
+                try {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(intent)
+                } catch (e: Exception) {
+                    Toast.makeText(context, "无法打开：$url", Toast.LENGTH_SHORT).show()
+                }
+            }
+        } else {
+            Toast.makeText(context, "该资源暂未配置下载链接", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // 横屏卡片：固定宽 176dp，主题渐变描边，适合横向滑动
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
+        border = BorderStroke(
+            1.dp,
+            Brush.linearGradient(listOf(themePrimary.copy(alpha = 0.7f), themeSecondary.copy(alpha = 0.4f)))
+        ),
+        modifier = Modifier
+            .width(176.dp)
+            .clickable { onCardClick() }
+    ) {
+        Column(modifier = Modifier.padding(10.dp)) {
+            // 顶部：icon + 角标
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier.size(40.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (displayIcon.isNotBlank()) {
+                        coil.compose.AsyncImage(
+                            model = displayIcon,
+                            contentDescription = res.title,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                        )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(badgeColor.copy(alpha = 0.15f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = badgeText,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Black,
+                            color = badgeColor
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(themePrimary.copy(alpha = 0.18f))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = if (canInstall) "安装" else "直达",
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = themePrimary
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            // 标题
+            Text(
+                text = res.title,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 2,
+                minLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            if (res.desc.isNotBlank()) {
+                Spacer(modifier = Modifier.height(3.dp))
+                Text(
+                    text = res.desc,
+                    fontSize = 10.sp,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            if (showDelete) {
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "删除",
+                    fontSize = 9.sp,
+                    color = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
+                    modifier = Modifier.clickable { onDelete() }.padding(top = 2.dp)
+                )
             }
         }
     }
