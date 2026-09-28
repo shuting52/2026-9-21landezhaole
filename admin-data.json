@@ -3,6 +3,7 @@
     "code": 87,
     "name": "1.0.6",
     "changelog": [
+      "【12:44】更新欢迎弹窗：欢迎语嗨～欢迎回家！愿你在这里发现更多宝藏！，比例standard",
       "✨ v1.0.6 更新来啦～",
       "? 更新弹窗恢复经典 Uiverse 白卡片样式（清爽圆点列表 + 官方群 + 立即更新）",
       "✅ 修复下载完成后卡在安装的问题（自动兜底 + 版本检测，安装不再卡死）",
@@ -22233,17 +22234,18 @@
     "bgColor": "#0b0b1a"
   },
   "welcome": {
-    "enabled": false,
+    "enabled": true,
     "title": "",
     "welcomeText": "嗨～欢迎回家！愿你在这里发现更多宝藏！",
     "content": "为期一周不断迭代优化的新版本终于上线啦～\n新应用可能存在小Bug，欢迎宝贝们及时反馈\n收录站资源丰富，很多资源都可以白嫖哦\n发现Bug请第一时间反馈，我会尽快处理",
     "ratio": "standard",
-    "imageUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790152223860_Screenshot_20260919_200948.jpg",
+    "imageUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/uploads/1790570656030_Screenshot_2026_0908_002006.png",
     "buttonText": "开始体验"
   },
   "updateDialog": {
     "title": "懒得找了 v1.0.6 已上线",
     "changelog": [
+      "【12:44】更新欢迎弹窗：欢迎语嗨～欢迎回家！愿你在这里发现更多宝藏！，比例standard",
       "✨ v1.0.6 更新来啦～",
       "? 更新弹窗恢复经典 Uiverse 白卡片样式（清爽圆点列表 + 官方群 + 立即更新）",
       "✅ 修复下载完成后卡在安装的问题（自动兜底 + 版本检测，安装不再卡死）",
