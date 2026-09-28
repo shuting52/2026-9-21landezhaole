@@ -84,7 +84,8 @@ fun SkillDetailDialog(
 ) {
     val context = LocalContext.current
 
-    val isVideo = res.mediaUrl.isNotBlank() && res.mediaUrl.contains(".mp4", ignoreCase = true)
+    val isVideo = res.mediaUrl.isNotBlank() &&
+        Regex("\\.(mp4|webm|mov|m4v|mkv)(\\?.*)?$", RegexOption.IGNORE_CASE).containsMatchIn(res.mediaUrl)
     val fileUrl = res.fileUrl.ifBlank { res.url }
     val hasDownload = res.mode != "url" && fileUrl.isNotBlank()
 
@@ -407,7 +408,7 @@ private fun VideoPreviewBox(
                             setVideoURI(android.net.Uri.fromFile(java.io.File(lp)))
                             tag = "local:$lp"
                         } else {
-                            setVideoURI(android.net.Uri.parse(videoUrl))
+                            setVideoURI(android.net.Uri.parse(com.example.data.util.VideoCache.normalizeMediaUrl(videoUrl)))
                             tag = "remote"
                         }
                         setOnPreparedListener { mp ->

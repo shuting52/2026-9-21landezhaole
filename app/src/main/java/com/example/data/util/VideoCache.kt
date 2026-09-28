@@ -32,6 +32,47 @@ object VideoCache {
     private const val MAX_CACHE_BYTES = 200L * 1024 * 1024 // 200MB
     private const val MIN_BYTES = 8L * 1024 // < 8KB 视为无效
 
+    /**
+     * URL 路径百分号编码（v1.0.5 修复视频无法播放）：
+     * 控制台上传的视频文件名带中文（如「卡点换装.mp4」「确认.mp4」），
+     * OkHttp 的 Request.Builder().url() 遇到未编码的非 ASCII 字符会抛 IllegalArgumentException
+     * （unexpected char），导致缓存下载失败 → 视频黑屏无法播放。
+     * 本函数仅对「含非 ASCII 字符的路径段」做百分号编码：
+     * - 已编码段（全 ASCII，含 %XX）保持不变，避免二次编码；
+     * - 非 ASCII 段按 UTF-8 编码（空格 → %20，保留 / 分隔符）。
+     */
+    fun normalizeMediaUrl(raw: String): String {
+        if (raw.isBlank()) return raw
+        return try {
+            val u = java.net.URI(raw)
+            // 已能解析（纯 ASCII 或已编码）→ 原样返回
+            if (u.rawPath != null && u.rawPath == u.path) return raw
+            raw
+        } catch (_: Exception) {
+            // 含未编码中文 → 手动逐段编码
+            try {
+                val schemeIdx = raw.indexOf("://")
+                if (schemeIdx < 0) return raw
+                val head = raw.indexOf('/', schemeIdx + 3)
+                if (head < 0) return raw
+                val schemeHost = raw.substring(0, head)
+                val rest = raw.substring(head)
+                val path = rest.substringBefore('?')
+                val query = rest.substringAfter('?', "")
+                val encPath = path.split('/').joinToString("/") { seg ->
+                    if (seg.any { it.code > 127 }) {
+                        java.net.URLEncoder.encode(seg, "UTF-8")
+                            .replace("+", "%20")
+                            .replace("%2F", "/")
+                    } else seg
+                }
+                schemeHost + encPath + if (query.isNotEmpty()) "?" + query else ""
+            } catch (_: Exception) {
+                raw
+            }
+        }
+    }
+
     private val client: OkHttpClient by lazy {
         OkHttpClient.Builder()
             .connectTimeout(20, TimeUnit.SECONDS)
@@ -145,22 +186,27 @@ object VideoCache {
         val list = mutableListOf<String>()
         if (url.isNotBlank()) list.add(url)
         try {
-            val m = Regex("^https?://raw\\.githubusercontent\\.com/([^/]+)/([^/]+)/(?:main|master)/(.+)$")
+            val m = Regex("^https?://([^/]+)/([^/]+)/([^/]+)/(?:main|master)/(.+)$")
                 .find(url)
             if (m != null) {
-                val owner = m.groupValues[1]
-                val repo = m.groupValues[2]
-                val path = m.groupValues[3]
-                list.add("https://testingcf.jsdelivr.net/gh/$owner/$repo@main/$path")
-                list.add("https://cdn.jsdelivr.net/gh/$owner/$repo@main/$path")
-                list.add("https://fastly.jsdelivr.net/gh/$owner/$repo@main/$path")
-                list.add("https://gcore.jsdelivr.net/gh/$owner/$repo@main/$path")
-                list.add("https://ghfast.top/https://raw.githubusercontent.com/$owner/$repo/main/$path")
-                list.add("https://ghproxy.net/https://raw.githubusercontent.com/$owner/$repo/main/$path")
-                list.add("https://raw.gitmirror.com/$owner/$repo/main/$path")
+                val host = m.groupValues[1]
+                val owner = m.groupValues[2]
+                val repo = m.groupValues[3]
+                val path = m.groupValues[4]
+                if (host == "raw.githubusercontent.com") {
+                    val cdnBase = "https://testingcf.jsdelivr.net/gh/$owner/$repo@main/$path"
+                    list.add(cdnBase)
+                    list.add(cdnBase.replace("testingcf.jsdelivr.net", "cdn.jsdelivr.net"))
+                    list.add(cdnBase.replace("testingcf.jsdelivr.net", "fastly.jsdelivr.net"))
+                    list.add(cdnBase.replace("testingcf.jsdelivr.net", "gcore.jsdelivr.net"))
+                    list.add("https://ghfast.top/https://raw.githubusercontent.com/$owner/$repo/main/$path")
+                    list.add("https://ghproxy.net/https://raw.githubusercontent.com/$owner/$repo/main/$path")
+                    list.add("https://raw.gitmirror.com/$owner/$repo/main/$path")
+                }
             }
         } catch (_: Exception) {}
-        return list.distinct()
+        // 对含非 ASCII 字符的候选源统一做百分号编码（修复中文文件名视频无法播放）
+        return list.map(::normalizeMediaUrl).distinct()
     }
 
     private fun cacheDir(context: Context): File {

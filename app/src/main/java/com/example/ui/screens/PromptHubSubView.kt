@@ -492,7 +492,7 @@ private fun CloudPromptCard(
                                         setVideoURI(android.net.Uri.fromFile(java.io.File(lp)))
                                         tag = "local:$lp"
                                     } else {
-                                        setVideoURI(android.net.Uri.parse(prompt.mediaUrl))
+                                        setVideoURI(android.net.Uri.parse(com.example.data.util.VideoCache.normalizeMediaUrl(prompt.mediaUrl)))
                                         tag = "remote"
                                     }
                                     setOnPreparedListener { mp ->
@@ -641,7 +641,7 @@ private fun CloudPromptCard(
                             androidx.compose.ui.viewinterop.AndroidView(
                                 factory = { ctx ->
                                     android.widget.VideoView(ctx).apply {
-                                        setVideoURI(android.net.Uri.parse(prompt.mediaUrl))
+                                        setVideoURI(android.net.Uri.parse(com.example.data.util.VideoCache.normalizeMediaUrl(prompt.mediaUrl)))
                                         setOnPreparedListener { mp ->
                                             mp.isLooping = true
                                             mp.setVolume(0f, 0f)
@@ -893,7 +893,7 @@ private fun CloudPromptPreviewDialog(
                                 setVideoURI(android.net.Uri.fromFile(java.io.File(lp)))
                                 tag = "local:$lp"
                             } else {
-                                setVideoURI(android.net.Uri.parse(prompt.mediaUrl))
+                                setVideoURI(android.net.Uri.parse(com.example.data.util.VideoCache.normalizeMediaUrl(prompt.mediaUrl)))
                                 tag = "remote"
                             }
                             setOnPreparedListener { mp ->
@@ -1051,7 +1051,7 @@ private fun CloudPromptPreviewDialog(
                                                 setVideoURI(android.net.Uri.fromFile(java.io.File(lp)))
                                                 tag = "local:$lp"
                                             } else {
-                                                setVideoURI(android.net.Uri.parse(prompt.mediaUrl))
+                                                setVideoURI(android.net.Uri.parse(com.example.data.util.VideoCache.normalizeMediaUrl(prompt.mediaUrl)))
                                                 tag = "remote"
                                             }
                                             setOnPreparedListener { mp ->
