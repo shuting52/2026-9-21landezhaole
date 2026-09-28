@@ -50,7 +50,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.core.content.FileProvider
 import com.example.R
 import com.example.data.remote.UpdateDialogDto
 import java.io.File
@@ -58,7 +57,6 @@ import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  * 官方 QQ 群链接（与设置页一致）
@@ -70,7 +68,9 @@ const val OFFICIAL_QQ_GROUP_URL =
 // v1.0.2+ 更新弹窗：Uiverse.io 白卡片老样式（v1.5 原版还原）
 // 纯 Jetpack Compose 原生渲染——白卡片 + 圆点列表 + 官方群 + 立即更新
 // - 内容写死（不再随云端 changelog 变化）
-// - 安装卡死修复：MUTABLE 回调 + API33 兼容 + 看门狗超时回退 + 版本轮询兜底
+// - v1.0.10 追溯 1.0.3 下载/安装方式：多源 OkHttp 串行下载 → PackageInstaller 会话直装（免授权），
+//   仅由 receiver 回调驱动结果，不再叠加看门狗/FileProvider/版本轮询兜底（避免安装界面打架）
+// - 官方群：mqqapi/mqqwpa/网页逐级 try/catch 直拉（不再 resolveActivity 预检，防误判 null 跳过 QQ）
 // （旧手绘猫咪弹窗已彻底删除，统一由本入口接管）
 // ============================================================
 
@@ -105,17 +105,8 @@ fun AppUpdateDialog(
     var statusLabel by remember { mutableStateOf("等待更新…") }
     // 签名冲突标记：检测到旧版本签名不一致时引导先卸载再安装
     var isSignatureConflict by remember { mutableStateOf(false) }
-    // 安装结果：PackageInstaller 回调 / 看门狗轮询 共同驱动（true=成功 false=失败 null=进行中）
+    // 安装结果：PackageInstaller 回调驱动（true=成功 false=失败 null=进行中）
     var installOutcome by remember { mutableStateOf<Boolean?>(null) }
-    // 安装前已装版本 code，用于轮询判断升级是否完成
-    var oldVersionCode by remember { mutableStateOf(-1) }
-
-    // 当前已安装版本 code（每次读取实时值）
-    fun currentVersionCode(): Int = try {
-        context.packageManager.getPackageInfo(context.packageName, 0).versionCode
-    } catch (e: Exception) {
-        -1
-    }
 
     // 订阅 PackageInstaller 回调（成功/失败直接驱动状态）
     LaunchedEffect(Unit) {
@@ -130,11 +121,10 @@ fun AppUpdateDialog(
         }
     }
 
-    /** 安装新版本 APK：
+    /** 安装新版本 APK（v1.0.10 追溯 1.0.3 方式）：
      *  1. 签名对比：新旧签名不一致时引导先卸载旧版本再安装
-     *  2. 签名一致 → PackageInstaller 系统会话（免授权直装）
-     *  3. 看门狗：30 秒内未收到回调 → 自动回退 FileProvider 打开系统安装器
-     *  4. 全程轮询版本号，装完自动进入完成态（彻底杜绝「卡在正在安装」）
+     *  2. 签名一致 → PackageInstaller 系统会话（免授权直装），仅由 receiver 回调驱动结果
+     *  3. 会话提交失败 → 驱动弹窗进入失败态（可重试），不做需授权的兑底安装
      */
     fun installApk(file: File) {
         try {
@@ -151,7 +141,7 @@ fun AppUpdateDialog(
             } catch (e: Exception) { null }
 
             if (installedSig != null && newSig != null && installedSig != newSig) {
-                // 签名不一致：引导卸载
+                // 签名不一致：先把 APK 复制到公共「下载」目录（卸载后容易找到重装），再引导卸载
                 isSignatureConflict = true
                 statusLabel = "旧版本签名不同，正在引导卸载…"
                 var publicApkPath: String? = null
@@ -195,61 +185,21 @@ fun AppUpdateDialog(
                 return
             }
 
-            // 签名一致（或全新安装）→ 先记录安装前版本号
-            oldVersionCode = currentVersionCode()
-            installOutcome = null
-
-            // 优先 PackageInstaller 系统会话（MUTABLE 回调保证结果送达，见 installViaPackageInstaller）
-            val committed = installViaPackageInstaller(context, file)
-            if (committed) {
-                statusLabel = "正在安装…"
-            } else {
-                statusLabel = "正在打开系统安装器…"
-                installViaFileProvider(context, file)
-            }
-
-            // ============ 看门狗 + 版本轮询兜底（核心修复，杜绝卡死）============
-            coroutineScope.launch {
-                // 阶段一：30 秒内等待 PackageInstaller 回调或版本变化
-                if (committed) {
-                    val deadline = System.currentTimeMillis() + 30_000L
-                    while (System.currentTimeMillis() < deadline && installOutcome == null) {
-                        delay(500)
-                        if (currentVersionCode() > oldVersionCode) break
-                    }
-                }
-                // 阶段二：回调迟迟未到且版本未变 → FileProvider 打开系统安装器兜底
-                if (installOutcome == null && currentVersionCode() <= oldVersionCode) {
-                    statusLabel = "自动安装未响应，正在打开系统安装器…"
-                    installViaFileProvider(context, file)
-                }
-                // 阶段三：持续轮询版本号（最长 120s），装完自动进入完成态
-                if (installOutcome == null) {
-                    val totalWait = System.currentTimeMillis() + 120_000L
-                    while (installOutcome == null && System.currentTimeMillis() < totalWait) {
-                        delay(1200)
-                        if (currentVersionCode() > oldVersionCode) {
-                            installOutcome = true
-                            progress = 100f
-                            statusLabel = "安装完成"
-                            return@launch
-                        }
-                    }
-                    // 长时间未安装成功：将按钮转为「重试」让用户可控
-                    if (installOutcome == null) {
-                        installOutcome = false
-                        statusLabel = "安装未完成，请点击重试"
-                    }
-                }
+            // 签名一致（或全新安装）：PackageInstaller 系统安装会话（免授权直装，无任何「允许未知应用」申请）
+            // v1.0.10 追溯 1.0.3 方式：提交会话后只等 receiver 回调驱动结果，
+            // 不再叠加看门狗/FileProvider/版本轮询兜底——避免「系统确认页 + 兜底安装器」两个安装界面打架导致安装错误
+            if (!installViaPackageInstaller(context, file)) {
+                // 会话提交失败：驱动弹窗进入失败态（可重试），不做任何需授权的兑底安装
+                UpdateInstallReceiver.Results.emit(success = false, message = "系统安装会话提交失败，请重新点击更新重试")
             }
         } catch (e: Exception) {
-            installOutcome = false
-            statusLabel = "安装未能自动完成，请重新点击更新再试"
-            Toast.makeText(context, "安装未能自动完成，请重新点击更新再试", Toast.LENGTH_LONG).show()
+            UpdateInstallReceiver.Results.emit(success = false, message = "安装过程异常，请重新点击更新重试")
         }
     }
 
-    /** 跳转官方 QQ 群：新版 mqqapi 加群协议 → 老版 mqqwpa → 网页加群页 → Toast 提示群号（v1.0.8 修复点击无效） */
+    /** 跳转官方 QQ 群：新版 mqqapi 加群协议 → 老版 mqqwpa → 网页加群页 → Toast 提示群号
+     *  v1.0.10 修复：去掉 resolveActivity 预检（Android 11+ 对自定义 scheme 预检常误判 null 而跳过 QQ 协议），
+     *  直接 startActivity try/catch 逐级尝试，确保能拉起 QQ 或浏览器。 */
     fun openOfficialGroup() {
         val groupNumber = "439211347"
         val now = System.currentTimeMillis() / 1000
@@ -262,78 +212,20 @@ fun AppUpdateDialog(
         )
         for (intent in intents) {
             try {
-                // Android 11+ 隐式 intent 需 resolveActivity 预检，无法解析则静默跳过
-                if (intent.resolveActivity(context.packageManager) == null) continue
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 context.startActivity(intent)
                 return
             } catch (e: Exception) {
-                // 继续尝试下一个
+                // 未安装 QQ / 无法解析：继续尝试下一个（网页链接总能被浏览器接收）
             }
         }
         Toast.makeText(context, "打开 QQ 群失败，请手动搜索群号：$groupNumber", Toast.LENGTH_LONG).show()
     }
 
-    /** 同步执行单次下载，返回保存好的 File（跑在 IO 线程；v1.0.8 修复卡 8%：无 Content-Length 时按估算推进进度） */
-    suspend fun downloadWithProgress(url: String, onProgress: (Float) -> Unit): File {
-        return withContext(kotlinx.coroutines.Dispatchers.IO) {
-            val client = okhttp3.OkHttpClient.Builder()
-                .connectTimeout(12, TimeUnit.SECONDS)
-                .readTimeout(40, TimeUnit.SECONDS)
-                .writeTimeout(40, TimeUnit.SECONDS)
-                .followRedirects(true)
-                .followSslRedirects(true)
-                .retryOnConnectionFailure(true)
-                .callTimeout(70, TimeUnit.SECONDS)
-                .build()
-            val request = okhttp3.Request.Builder()
-                .url(url)
-                .header("User-Agent", "Mozilla/5.0 (Linux; Android) LzdzUpdater/1.7.8")
-                .header("Accept", "*/*")
-                .header("Accept-Encoding", "identity")
-                .build()
-            client.newCall(request).execute().use { resp ->
-                if (!resp.isSuccessful) throw Exception("HTTP ${resp.code}")
-                val body = resp.body ?: throw Exception("无响应体")
-                val total = body.contentLength()
-                // 本体 APK 约 16MB，用于无 Content-Length（chunked）时的进度估算
-                val estTotal = 18L * 1024 * 1024
-                val dir = File(context.cacheDir, "update")
-                dir.mkdirs()
-                val file = File(dir, "latest.apk")
-                body.byteStream().use { input ->
-                    file.outputStream().use { output ->
-                        val buf = ByteArray(16 * 1024)
-                        var downloaded = 0L
-                        var lastEmit = 0L
-                        while (true) {
-                            val n = input.read(buf)
-                            if (n <= 0) break
-                            output.write(buf, 0, n)
-                            downloaded += n
-                            val now = System.currentTimeMillis()
-                            if (now - lastEmit > 120 || downloaded == total || downloaded >= estTotal) {
-                                lastEmit = now
-                                // 有 Content-Length 按真实比例；无则按估算推进（保底 0~0.96 平滑增长）
-                                val frac = if (total > 0) {
-                                    (downloaded.toFloat() / total.toFloat()).coerceIn(0f, 1f)
-                                } else {
-                                    (downloaded.toFloat() / estTotal.toFloat()).coerceIn(0f, 0.96f)
-                                }
-                                onProgress(frac)
-                            }
-                        }
-                        output.flush()
-                    }
-                }
-                file
-            }
-        }
-    }
-
     /**
-     * 多源下载 + 安装：原 URL → jsDelivr CDN → GitHub raw → jsdmir 镜像（每源重试 2 次）
-     * 下载完成校验 PK 头后进入 installApk（含看门狗兜底）
+     * 多源下载 + 安装（v1.0.10 追溯 1.0.3 方式）：
+     * 原 URL → jsDelivr CDN → GitHub raw 串行尝试（每源一次），下载校验 PK 头后进入 installApk。
+     * 全部失败时复位状态并提示重试（不做浏览器/DownloadManager 等需授权的兜底）。
      */
     fun startRealDownload() {
         val url = apkUrl
@@ -344,89 +236,93 @@ fun AppUpdateDialog(
         coroutineScope.launch {
             isUpdating = true
             statusLabel = "正在下载更新…"
-            progress = 6f
+            progress = 12f
+            try {
+                // 多源下载：raw.githubusercontent 不可达时自动切换 jsDelivr CDN 镜像 / github 直链
+                val candidates = buildList {
+                    add(url)
+                    // 转换 raw.githubusercontent.com/owner/repo/main/path -> cdn.jsdelivr.net/gh/owner/repo@main/path
+                    Regex("^https?://raw\\.githubusercontent\\.com/([^/]+)/([^/]+)/(?:main|master)/(.+)$")
+                        .find(url)?.let { m ->
+                            add("https://cdn.jsdelivr.net/gh/${m.groupValues[1]}/${m.groupValues[2]}@main/${m.groupValues[3]}")
+                            add("https://github.com/${m.groupValues[1]}/${m.groupValues[2]}/raw/main/${m.groupValues[3]}")
+                        }
+                }.distinct()
 
-            val candidates = buildList {
-                add(url)
-                Regex("^https?://raw\\.githubusercontent\\.com/([^/]+)/([^/]+)/(?:main|master)/(.+)$")
-                    .find(url)?.let { m ->
-                        add("https://cdn.jsdelivr.net/gh/${m.groupValues[1]}/${m.groupValues[2]}@main/${m.groupValues[3]}")
-                        add("https://github.com/${m.groupValues[1]}/${m.groupValues[2]}/raw/main/${m.groupValues[3]}")
-                        add("https://cdn.jsdmir.cn/gh/${m.groupValues[1]}/${m.groupValues[2]}@main/${m.groupValues[3]}")
-                    }
-            }.distinct()
-
-            var success = false
-            var lastError: Exception? = null
-            outer@ for (candidate in candidates) {
-                var attempt = 0
-                while (attempt < 3 && !success) {
-                    attempt++
+                var lastError: Exception? = null
+                var installed = false
+                for (candidate in candidates) {
+                    if (installed) break
                     try {
-                        statusLabel = "正在极速下载…"
-                        progress = 8f + (attempt - 1) * 2f
-                        val file = downloadWithProgress(candidate) { p ->
-                            progress = (8f + p * 90f).coerceIn(8f, 99f)
-                            statusLabel = "正在极速下载… ${progress.toInt()}%"
-                        }
-                        // 校验 APK 文件头 PK
-                        val header = try {
-                            file.inputStream().use { ins ->
-                                val h = ByteArray(2)
-                                var n = 0
-                                while (n < 2) {
-                                    val r = ins.read(h, n, 2 - n)
-                                    if (r < 0) break
-                                    n += r
+                        // 带 User-Agent 的 OkHttp 下载（raw 可能拒绝无 UA 请求）
+                        val client = okhttp3.OkHttpClient.Builder()
+                            .connectTimeout(15, TimeUnit.SECONDS)
+                            .readTimeout(90, TimeUnit.SECONDS)
+                            .followRedirects(true)
+                            .build()
+                        val request = okhttp3.Request.Builder()
+                            .url(candidate)
+                            .header("User-Agent", "Mozilla/5.0 (Linux; Android) LzdzUpdater/1.5.2")
+                            .build()
+                        client.newCall(request).execute().use { resp ->
+                            if (!resp.isSuccessful) throw Exception("HTTP ${resp.code}")
+                            val body = resp.body ?: throw Exception("无响应体")
+                            val total = body.contentLength()
+                            val file = File(context.cacheDir, "update/latest.apk")
+                            file.parentFile?.mkdirs()
+                            body.byteStream().use { input ->
+                                file.outputStream().use { output ->
+                                    val buf = ByteArray(8192)
+                                    var downloaded = 0L
+                                    while (true) {
+                                        val n = input.read(buf)
+                                        if (n <= 0) break
+                                        output.write(buf, 0, n)
+                                        downloaded += n
+                                        if (total > 0) {
+                                            progress = (downloaded * 100f / total).coerceIn(0f, 100f)
+                                            statusLabel = "下载中… ${progress.toInt()}%"
+                                        }
+                                    }
+                                    output.flush()
                                 }
-                                h
                             }
-                        } catch (e: Exception) { ByteArray(0) }
-                        if (file.length() < 1024 * 50 ||
-                            header.size < 2 ||
-                            header[0] != 'P'.code.toByte() ||
-                            header[1] != 'K'.code.toByte()
-                        ) {
-                            throw Exception("下载文件不完整（${file.length()} 字节）")
+                            // 校验 APK 文件头 PK
+                            if (file.length() < 1024 || file.readBytes().take(2).toByteArray().contentEquals(byteArrayOf(0x50, 0x4B)).not()) {
+                                throw Exception("文件不完整")
+                            }
+                            // 自动删除旧版本的 APK 缓存文件（只保留最新下载的安装包）
+                            try {
+                                val oldDir = File(context.cacheDir, "update")
+                                oldDir.listFiles()?.forEach { f ->
+                                    if (f.absolutePath != file.absolutePath) f.delete()
+                                }
+                            } catch (_: Exception) {}
+                            progress = 100f
+                            statusLabel = "下载完成，准备安装…"
+                            delay(300)
+                            installApk(file)
+                            installed = true
                         }
-                        // 清理历史 update 缓存，只保留本次最新
-                        try {
-                            File(context.cacheDir, "update").listFiles()?.forEach { f ->
-                                if (f.absolutePath != file.absolutePath) f.delete()
-                            }
-                        } catch (_: Exception) {}
-                        progress = 100f
-                        statusLabel = "下载完成，准备安装…"
-                        delay(300)
-                        installApk(file)
-                        success = true
-                        break@outer
                     } catch (e: Exception) {
                         lastError = e
-                        statusLabel = "下载失败，重试中…"
-                        delay(900)
+                        progress = 8f
+                        statusLabel = "切换下载源…"
                     }
                 }
-                if (!success) {
-                    statusLabel = "切换下载源…"
-                    delay(600)
+                if (!installed) {
+                    throw lastError ?: Exception("所有下载源均失败")
                 }
-            }
-
-            if (!success) {
-                statusLabel = "下载失败，请尝试浏览器下载"
+            } catch (e: Exception) {
+                // 免授权直装模式：不再提供 DownloadManager / 浏览器等需授权安装的兑底，直接提示失败并复位
                 Toast.makeText(
                     context,
-                    "进度下载失败（${lastError?.message ?: "未知原因"}），已为你打开浏览器下载，请手动安装。",
+                    "自动下载失败，请检查网络后重试（官方群号 439211347）",
                     Toast.LENGTH_LONG
                 ).show()
-                try {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    context.startActivity(intent)
-                } catch (_: Exception) {}
+                statusLabel = "等待更新…"
+                progress = 0f
                 isUpdating = false
-                onUpdateFinished()
-                onDismiss()
             }
         }
     }
@@ -773,7 +669,7 @@ fun AppUpdateDialog(
 }
 
 // ============================================================
-// 底层辅助：签名对比 / PackageInstaller / FileProvider
+// 底层辅助：签名对比 / PackageInstaller 直装（v1.0.10 追溯 1.0.3，免授权直装）
 // ============================================================
 
 /**
@@ -808,21 +704,6 @@ private fun installViaPackageInstaller(context: Context, apkFile: File): Boolean
         true
     } catch (e: Exception) {
         false
-    }
-}
-
-/** FileProvider + 系统安装器（最通用的兜底方案） */
-private fun installViaFileProvider(context: Context, file: File) {
-    try {
-        val uri = FileProvider.getUriForFile(context, context.packageName + ".fileprovider", file)
-        val intent = Intent(Intent.ACTION_VIEW).apply {
-            setDataAndType(uri, "application/vnd.android.package-archive")
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-        context.startActivity(intent)
-    } catch (e: Exception) {
-        Toast.makeText(context, "无法打开系统安装器，请稍后到文件管理器中手动安装更新包", Toast.LENGTH_LONG).show()
     }
 }
 
