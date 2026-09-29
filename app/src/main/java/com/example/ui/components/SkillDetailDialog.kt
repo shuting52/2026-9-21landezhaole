@@ -90,10 +90,11 @@ fun SkillDetailDialog(
     val isVideo = res.mediaUrl.isNotBlank() &&
         Regex("\\.(mp4|webm|mov|m4v|mkv)(\\?.*)?$", RegexOption.IGNORE_CASE).containsMatchIn(res.mediaUrl)
     // v1.0.12：严格遵循控制台上传形式——file 模式 url 存文件直链 →「下载」；url 模式 →「跳转」
+    // v1.0.14：后缀判断去掉查询参数（?x=1 等），确保带参直链也能正确识别 zip/md 并支持下载
     val isFileMode = res.mode != "url"
     val fileUrl = res.fileUrl.ifBlank { res.url }.ifBlank {
         // 兼容旧数据：控制台早期把 zip/md 技能包直链放在 mediaUrl 字段
-        if (res.mediaUrl.endsWith(".zip", true) || res.mediaUrl.endsWith(".md", true)) res.mediaUrl else ""
+        if (isZipOrMdUrl(res.mediaUrl)) res.mediaUrl else ""
     }
     val jumpUrl = if (isFileMode) "" else res.url.ifBlank { res.fileUrl }
     val canDownload = isFileMode && fileUrl.isNotBlank()
@@ -464,4 +465,10 @@ private fun VideoPreviewBox(
             }
         }
     }
+}
+/** v1.0.14：判断 URL 是否为 zip/md 文件直链（忽略查询参数与大小写），用于 skill 文件下载识别 */
+fun isZipOrMdUrl(url: String): Boolean {
+    if (url.isBlank()) return false
+    val path = url.substringBefore('?').substringBefore('#').trimEnd('/')
+    return path.endsWith(".zip", true) || path.endsWith(".md", true)
 }

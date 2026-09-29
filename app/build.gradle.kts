@@ -35,8 +35,8 @@ android {
     // 与云端 admin-data.json version.code=92 / name=1.0.11 四要素对齐（含 apkUrl 指向真实 1.0.11 安装包）
     // v1.0.12：本体软件更新优化（开屏透明特效/软件icon/技能库下载跳转/分享直达/反馈邮箱）
     // 与云端 admin-data.json version.code=93 / name=1.0.12 四要素对齐（含 apkUrl 指向真实 1.0.12 安装包）
-    versionCode = 94
-    versionName = "1.0.13"
+    versionCode = 95
+    versionName = "1.0.14"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }

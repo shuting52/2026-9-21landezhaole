@@ -4,6 +4,13 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,12 +31,15 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -37,7 +47,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import android.net.Uri
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -253,5 +262,67 @@ fun ResourceCard(
                     .offset(x = (-4).dp, y = (-3).dp)
             )
         }
+
+        // v1.0.14：所有收录站点专属 CSS 动态特效新标签角标（渐变流光 + 呼吸缩放）
+        CssDynamicSiteBadge(
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .offset(x = (-6).dp, y = (-6).dp)
+        )
+    }
+}
+
+/**
+ * v1.0.14：收录站点专属 CSS 动态特效新标签角标
+ * 渐变流光扫过 + 呼吸缩放动画，叠加在每张站点卡片左上角，醒目提示"新收录"
+ */
+@Composable
+private fun CssDynamicSiteBadge(modifier: Modifier = Modifier) {
+    val infinite = rememberInfiniteTransition(label = "site_new_badge")
+    val flow by infinite.animateFloat(
+        initialValue = -1f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1600, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "site_badge_flow"
+    )
+    val breathe by infinite.animateFloat(
+        initialValue = 0.9f,
+        targetValue = 1.1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 750, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "site_badge_breathe"
+    )
+    Box(
+        modifier = modifier
+            .graphicsLayer {
+                scaleX = breathe
+                scaleY = breathe
+            }
+            .clip(RoundedCornerShape(50))
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(
+                        Color(0xFFFF6B9D),
+                        Color(0xFFFFB199),
+                        Color(0xFFFFE08A),
+                        Color(0xFFFF6B9D)
+                    ),
+                    start = Offset(flow * 260f, 0f),
+                    end = Offset(flow * 260f + 190f, 0f)
+                )
+            )
+            .padding(horizontal = 5.dp, vertical = 1.5.dp)
+    ) {
+        Text(
+            text = "NEW",
+            fontSize = 6.5.sp,
+            fontWeight = FontWeight.Black,
+            color = Color.White
+        )
     }
 }

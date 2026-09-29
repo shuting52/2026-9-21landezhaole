@@ -460,8 +460,9 @@ fun MainScreen(
     }
 
         // 3D 旋转方块 + 渐变标题 "懒得找了" + 呼吸环 开屏动画（支持云端自定义）
+        // v1.0.14：开屏界面不再在软件首页呈现（isVisible 固定 false），保留组件兼容后续需求
         SplashScreenOverlay(
-            isVisible = uiState.isSplashVisible,
+            isVisible = false,
             onDismiss = { viewModel.dismissSplash() },
             splash = uiState.cloudSplash,
             splashReady = uiState.isCloudReady

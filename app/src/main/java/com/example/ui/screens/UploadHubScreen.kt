@@ -405,16 +405,17 @@ private fun SkillGridCard(
     val isVideo = res.mediaUrl.isNotBlank() &&
         Regex("\\.(mp4|webm|mov|m4v)(\\?.*)?$", RegexOption.IGNORE_CASE).containsMatchIn(res.mediaUrl)
     // v1.0.12：严格遵循控制台上传形式——file 模式 url 存文件直链 →「下载」；url 模式 →「跳转」
+    // v1.0.14：后缀判断兼容带查询参数的直链（?x=1），确保 zip 技能包能识别并下载
     val isFileMode = res.mode != "url"
     val fileLink = res.fileUrl.ifBlank { res.url }.ifBlank {
         // 兼容旧数据：控制台早期把 zip/md 技能包直链放在 mediaUrl 字段
-        if (res.mediaUrl.endsWith(".zip", true) || res.mediaUrl.endsWith(".md", true)) res.mediaUrl else ""
+        if (isZipOrMdUrl(res.mediaUrl)) res.mediaUrl else ""
     }
     val jumpUrl = if (isFileMode) "" else res.url.ifBlank { res.fileUrl }
     val canDownload = isFileMode && fileLink.isNotBlank()
     val canJump = !isFileMode && jumpUrl.isNotBlank()
-    val isZip = fileLink.endsWith(".zip", ignoreCase = true)
-    val isMd = fileLink.endsWith(".md", ignoreCase = true)
+    val isZip = isZipOrMdUrl(fileLink) && fileLink.substringBefore('?').substringBefore('#').trimEnd('/').endsWith(".zip", true)
+    val isMd = isZipOrMdUrl(fileLink) && !isZip
 
     fun downloadSkill(url: String) {
         try {

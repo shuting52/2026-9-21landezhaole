@@ -74,7 +74,7 @@ data class NavUiState(
     val isFavoritesModalVisible: Boolean = false,
     val isHistoryModalVisible: Boolean = false,
     val activeDetailCard: NavCard? = null,
-    val isSplashVisible: Boolean = true,
+    val isSplashVisible: Boolean = false,
     val isCloudReady: Boolean = false,
     val cloudVersion: VersionDto? = null,
     val cloudSplash: SplashDto? = null,
