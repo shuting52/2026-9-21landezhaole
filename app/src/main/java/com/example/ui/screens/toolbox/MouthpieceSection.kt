@@ -93,12 +93,15 @@ private val CHAT_APPS = listOf(
 )
 
 // v1.7.3：分享到的短视频/社交平台
+// v1.0.12：扩充「视频号」（微信内嵌）/「百家号」（百度内嵌），支持跳转到指定平台评论区
 private val SHORT_VIDEO_APPS = listOf(
     Triple("抖音", "com.ss.android.ugc.aweme", "🎵"),
     Triple("快手", "com.smile.gifmaker", "🎬"),
     Triple("小红书", "com.xingin.xhs", "📕"),
     Triple("哔哩哔哩", "tv.danmaku.bili", "📺"),
-    Triple("微博", "com.sina.weibo", "🌐")
+    Triple("微博", "com.sina.weibo", "🌐"),
+    Triple("视频号", "com.tencent.mm", "📹"),
+    Triple("百家号", "com.baidu.searchbox", "📰")
 )
 
 private val MOUTHPIECE_CATEGORIES = listOf(
@@ -222,7 +225,9 @@ fun MouthpieceSection(modifier: Modifier = Modifier) {
     }
 
     /** 一键导入第三方聊天平台：复制文案到剪贴板 + 自动跳转微信/QQ 等应用，粘贴即用
-     *  v1.7.3：改为弹出聊天软件选择列表后真实跳转 */
+     *  v1.7.3：改为弹出聊天软件选择列表后真实跳转
+     *  v1.0.12：聊天平台（chat）改用系统分享 Intent 直达——选择好友后内容直接插入聊天输入框；
+     *           短视频平台（share）复制文案并跳转目标 App，进入评论区/发布框后长按输入框粘贴即可 */
     fun launchToPlatform(pkg: String?, text: String, isShare: Boolean) {
         try {
             val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -230,17 +235,51 @@ fun MouthpieceSection(modifier: Modifier = Modifier) {
         } catch (_: Exception) {}
         try {
             if (pkg == "sms") {
-                // 短信：直接打开系统短信发送界面
-                val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:"))
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                // 短信：直接打开系统短信发送界面，内容预填到短信输入框（自动插入）
+                val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:")).apply {
+                    putExtra("sms_body", text)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
                 context.startActivity(intent)
-            } else if (pkg != null) {
+                Toast.makeText(context, "✅ 文案已预填到短信输入框！选择联系人发送即可", Toast.LENGTH_LONG).show()
+                return
+            } else if (pkg != null && !isShare) {
+                // v1.0.12：聊天平台用系统分享 Intent 直达目标应用——选中好友后内容直接插入聊天输入框
+                try {
+                    val sendIntent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, text)
+                        putExtra(Intent.EXTRA_SUBJECT, "嘴强嘴替")
+                        `package` = pkg
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    context.startActivity(sendIntent)
+                    Toast.makeText(context, "✅ 已直达${if (pkg == "com.tencent.mm") "微信" else if (pkg == "com.tencent.mobileqq") "QQ" else "聊天软件"}！选择好友后内容将直接插入聊天输入框", Toast.LENGTH_LONG).show()
+                    return
+                } catch (_: Exception) {
+                    // 目标应用未安装/不支持分享接收：回退为启动应用
+                }
                 val launch = context.packageManager.getLaunchIntentForPackage(pkg)
                 if (launch != null) {
                     launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     context.startActivity(launch)
                 } else {
-                    // 应用未安装：跳应用商店
+                    try {
+                        val store = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$pkg"))
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        context.startActivity(store)
+                    } catch (_: Exception) {}
+                    Toast.makeText(context, "未安装该应用，已复制文案，可自行安装后使用", Toast.LENGTH_LONG).show()
+                    return
+                }
+            } else if (pkg != null) {
+                // 短视频/社交平台（share）：复制文案 + 跳转平台，进入评论区/发布框后长按输入框粘贴即可
+                val launch = context.packageManager.getLaunchIntentForPackage(pkg)
+                if (launch != null) {
+                    launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(launch)
+                } else {
                     try {
                         val store = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$pkg"))
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -626,7 +665,10 @@ fun MouthpieceSection(modifier: Modifier = Modifier) {
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
-                            text = "将自动复制文案并跳转到所选平台，进入后长按输入框粘贴即可（${text.length} 字）",
+                            text = if (isShare)
+                                "将自动复制文案并跳转到所选短视频平台，进入评论区/发布框后长按输入框粘贴即可（${text.length} 字）"
+                            else
+                                "将复制文案并直达所选聊天软件，选择好友后内容将直接插入聊天输入框（${text.length} 字）",
                             fontSize = 11.5.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

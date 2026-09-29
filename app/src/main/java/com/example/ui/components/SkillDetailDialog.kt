@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
@@ -73,56 +74,30 @@ import kotlinx.coroutines.launch
 /**
  * Skill 技能详情弹窗（点击技能卡片后，以独立弹窗形式呈现全部内容）：
  * - 可视化视频预览：mediaUrl 视频缓存本地后播放（失败回退预览图/图标）；无视频时显示预览图
- * - 提示词：完整展示 + 一键复制
- * - 复制 / 分享 / 下载：对技能内容一键复制到剪贴板、系统分享面板、文件下载
+ * - 提示词：完整展示（v1.0.12：取消复制功能）
+ * - 操作按钮：严格遵循控制台上传形式——仅「下载」（文件形式下载到本地）/「跳转」（URL 形式）两个按钮
+ *   （v1.0.12：取消复制 / 分享 / icon 图标功能）
  */
 @Composable
 fun SkillDetailDialog(
     res: UploadedResourceEntity,
     onDismiss: () -> Unit,
-    onDownload: (url: String, fileName: String?) -> Unit = { _, _ -> }
+    onDownload: (url: String, fileName: String?) -> Unit = { _, _ -> },
+    onJump: (url: String) -> Unit = {}
 ) {
     val context = LocalContext.current
 
     val isVideo = res.mediaUrl.isNotBlank() &&
         Regex("\\.(mp4|webm|mov|m4v|mkv)(\\?.*)?$", RegexOption.IGNORE_CASE).containsMatchIn(res.mediaUrl)
-    val fileUrl = res.fileUrl.ifBlank { res.url }
-    val hasDownload = res.mode != "url" && fileUrl.isNotBlank()
-
-    fun copyText(label: String, text: String) {
-        val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        cm.setPrimaryClip(ClipData.newPlainText(label, text))
-        Toast.makeText(context, "已复制 $label 到剪贴板", Toast.LENGTH_SHORT).show()
+    // v1.0.12：严格遵循控制台上传形式——file 模式 url 存文件直链 →「下载」；url 模式 →「跳转」
+    val isFileMode = res.mode != "url"
+    val fileUrl = res.fileUrl.ifBlank { res.url }.ifBlank {
+        // 兼容旧数据：控制台早期把 zip/md 技能包直链放在 mediaUrl 字段
+        if (res.mediaUrl.endsWith(".zip", true) || res.mediaUrl.endsWith(".md", true)) res.mediaUrl else ""
     }
-
-    fun shareSkill() {
-        val shareText = buildString {
-            appendLine("【${res.title}】")
-            if (res.desc.isNotBlank()) {
-                appendLine(res.desc)
-            }
-            if (res.prompt.isNotBlank()) {
-                appendLine()
-                appendLine("【提示词】")
-                appendLine(res.prompt)
-            }
-            val url = res.mode.let { if (it == "url") res.url else fileUrl }
-            if (url.isNotBlank()) {
-                appendLine()
-                appendLine(url)
-            }
-        }
-        try {
-            val intent = Intent(Intent.ACTION_SEND).apply {
-                type = "text/plain"
-                putExtra(Intent.EXTRA_SUBJECT, "推荐技能：${res.title}")
-                putExtra(Intent.EXTRA_TEXT, shareText)
-            }
-            context.startActivity(Intent.createChooser(intent, "分享技能到"))
-        } catch (e: Exception) {
-            Toast.makeText(context, "分享失败，请稍后重试", Toast.LENGTH_SHORT).show()
-        }
-    }
+    val jumpUrl = if (isFileMode) "" else res.url.ifBlank { res.fileUrl }
+    val canDownload = isFileMode && fileUrl.isNotBlank()
+    val canJump = !isFileMode && jumpUrl.isNotBlank()
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -269,28 +244,14 @@ fun SkillDetailDialog(
                             Spacer(modifier = Modifier.height(14.dp))
                         }
 
-                        // --- 提示词 ---
+                        // --- 提示词（v1.0.12：取消复制按钮，仅完整展示控制台上传的提示词内容）---
                         if (res.prompt.isNotBlank()) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text(
-                                    text = "✦ 提示词",
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Spacer(modifier = Modifier.weight(1f))
-                                OutlinedButton(
-                                    onClick = { copyText("提示词", res.prompt) },
-                                    shape = RoundedCornerShape(10.dp)
-                                ) {
-                                    Icon(Icons.Filled.ContentCopy, contentDescription = null, modifier = Modifier.size(13.dp))
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text("复制提示词", fontSize = 11.5.sp)
-                                }
-                            }
+                            Text(
+                                text = "✦ 提示词",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Black,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
                             Spacer(modifier = Modifier.height(6.dp))
                             Surface(
                                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
@@ -318,37 +279,12 @@ fun SkillDetailDialog(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // --- 操作按钮 ---
+                        // --- 操作按钮：严格遵循控制台上传形式——仅「下载」（文件形式下载到本地）/「跳转」（URL 形式）两个按钮 ---
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            OutlinedButton(
-                                onClick = {
-                                    val text = buildString {
-                                        appendLine(res.title)
-                                        if (res.desc.isNotBlank()) appendLine(res.desc)
-                                        if (res.prompt.isNotBlank()) { appendLine(); appendLine(res.prompt) }
-                                    }
-                                    copyText("技能内容", text)
-                                },
-                                shape = RoundedCornerShape(10.dp),
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Icon(Icons.Filled.ContentCopy, contentDescription = null, modifier = Modifier.size(14.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("复制", fontSize = 12.sp)
-                            }
-                            OutlinedButton(
-                                onClick = { shareSkill() },
-                                shape = RoundedCornerShape(10.dp),
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Icon(Icons.Filled.Share, contentDescription = null, modifier = Modifier.size(14.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("分享", fontSize = 12.sp)
-                            }
-                            if (hasDownload) {
+                            if (canDownload) {
                                 Button(
                                     onClick = {
                                         val name = res.title + (if (fileUrl.endsWith(".zip", true)) ".zip" else if (fileUrl.endsWith(".apk", true)) ".apk" else if (fileUrl.endsWith(".md", true)) ".md" else "")
@@ -362,6 +298,29 @@ fun SkillDetailDialog(
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text("下载", fontSize = 12.sp)
                                 }
+                            }
+                            if (canJump) {
+                                Button(
+                                    onClick = { onJump(jumpUrl) },
+                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                                    shape = RoundedCornerShape(10.dp),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Icon(Icons.Filled.OpenInNew, contentDescription = null, modifier = Modifier.size(14.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("跳转", fontSize = 12.sp)
+                                }
+                            }
+                            if (!canDownload && !canJump) {
+                                // 控制台未配置文件/URL 时仅展示内容
+                                Text(
+                                    text = "该技能未配置下载文件或跳转链接",
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .padding(vertical = 8.dp)
+                                )
                             }
                         }
                     }

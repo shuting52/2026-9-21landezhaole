@@ -121,8 +121,9 @@ fun FeedbackDialog(
     var isSending by remember { mutableStateOf(false) }
 
     // v1.0.4：官方反馈邮箱 = 控制台 settings.feedbackEmail（优先），未配置则回退内置邮箱
+    // v1.0.12：默认接收邮箱更新为 chenshuting0923@gmail.com
     val feedbackEmail = remember(cloudSettings) {
-        cloudSettings?.feedbackEmail?.trim()?.takeIf { it.isNotBlank() } ?: "307779523@qq.com"
+        cloudSettings?.feedbackEmail?.trim()?.takeIf { it.isNotBlank() } ?: "chenshuting0923@gmail.com"
     }
 
     val deviceInfoSummary = remember {
@@ -563,28 +564,7 @@ fun FeedbackDialog(
                                         Spacer(modifier = Modifier.height(8.dp))
                                         CategoryPicker()
                                         Spacer(modifier = Modifier.height(8.dp))
-                                        // 反馈直达提示
-                                        Surface(
-                                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
-                                            shape = RoundedCornerShape(8.dp),
-                                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
-                                            modifier = Modifier.fillMaxWidth()
-                                        ) {
-                                            Row(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .padding(horizontal = 10.dp, vertical = 8.dp),
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                Icon(Icons.Filled.Send, contentDescription = null, tint = CutePink, modifier = Modifier.size(16.dp))
-                                                Spacer(modifier = Modifier.width(6.dp))
-                                                Text(
-                                                    text = "「直接发送」将真实送达开发者邮箱（307779523@qq.com）",
-                                                    fontSize = 11.5.sp,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                                )
-                                            }
-                                        }
+                                        // v1.0.12：删除「点击直接发送将真实送达开发者邮箱…」提示行（默认邮箱已更新，不再展示邮箱字样）
                                     }
                                 }
 
@@ -627,30 +607,7 @@ fun FeedbackDialog(
                                 Spacer(modifier = Modifier.height(12.dp))
                                 FeedbackForm()
                                 Spacer(modifier = Modifier.height(10.dp))
-
-                                // 反馈直达提示
-                                Surface(
-                                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
-                                    shape = RoundedCornerShape(8.dp),
-                                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 10.dp, vertical = 8.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Icon(Icons.Filled.Send, contentDescription = null, tint = CutePink, modifier = Modifier.size(16.dp))
-                                        Spacer(modifier = Modifier.width(6.dp))
-                                        Text(
-                                            text = "点击「直接发送」将真实送达开发者邮箱（307779523@qq.com），感谢您的宝贵建议！",
-                                            fontSize = 11.5.sp,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                }
-
+                                // v1.0.12：删除「点击直接发送将真实送达开发者邮箱…感谢您的宝贵建议」提示行
                                 Spacer(modifier = Modifier.height(12.dp))
                                 ActionBar()
                             }

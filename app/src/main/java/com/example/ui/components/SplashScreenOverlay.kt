@@ -47,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -144,29 +145,68 @@ fun SplashScreenOverlay(
             CloudSplashContent(splash = sp, onDismiss = onDismiss)
         } else {
         // ================= v1.0.4：CSS 粒子动态特效开屏 =================
+        // v1.0.12：背景改为纯透明（Color.Transparent），粒子特效直接悬浮在 App 界面之上呈现
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(
-                            Color(0xFF14101F),
-                            Color(0xFF0B0B1A)
-                        ),
-                        radius = 1300f
-                    )
-                )
+                .background(Color.Transparent)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
                 ) { onDismiss() }
         ) {
-            // ---- CSS 粒子动态特效层（粒子网络 + 星光 + 流动光晕）----
+            // ---- CSS 粒子动态特效层（粒子网络 + 星光 + 流星光束 + 流动光晕）----
             ParticleSplashCanvas(
                 modifier = Modifier
                     .fillMaxSize()
                     .graphicsLayer { alpha = entryAlpha.value }
             )
+
+            // v1.0.12：全屏 CSS 渐变流光扫屏特效（柔光斜向掠过，背景透明呈现）
+            val beamAngle by rememberInfiniteTransition(label = "beam_angle").animateFloat(
+                initialValue = -1.2f,
+                targetValue = 1.2f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(5200, easing = LinearEasing),
+                    repeatMode = RepeatMode.Restart
+                ),
+                label = "beamAngle"
+            )
+            Canvas(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer { alpha = entryAlpha.value * 0.45f }
+            ) {
+                val w = size.width
+                val h = size.height
+                val t = beamAngle
+                // 三道流光斜扫（位置随相位线性平移，形成连续扫屏光效）
+                for (k in 0 until 3) {
+                    val baseX = (t + k * 0.5f) * w * 1.8f - w * 0.6f
+                    drawLine(
+                        brush = Brush.linearGradient(
+                            colors = listOf(Color.Transparent, Color(0xFF00E5FF).copy(alpha = 0.16f), Color.Transparent),
+                            start = Offset(baseX, 0f),
+                            end = Offset(baseX + w * 0.5f, h)
+                        ),
+                        start = Offset(baseX, 0f),
+                        end = Offset(baseX + w * 0.5f, h),
+                        strokeWidth = w * 0.07f
+                    )
+                }
+                // 一道暖金色柔光斜扫（更宽更淡）
+                val goldX = (t * 1.6f + 0.4f) * w * 1.6f - w * 0.5f
+                drawLine(
+                    brush = Brush.linearGradient(
+                        colors = listOf(Color.Transparent, Color(0xFFFFD54F).copy(alpha = 0.10f), Color.Transparent),
+                        start = Offset(goldX, 0f),
+                        end = Offset(goldX + w * 0.9f, h)
+                    ),
+                    start = Offset(goldX, 0f),
+                    end = Offset(goldX + w * 0.9f, h),
+                    strokeWidth = w * 0.13f
+                )
+            }
 
             // 右上角跳过按钮
             Surface(
@@ -198,8 +238,57 @@ fun SplashScreenOverlay(
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier.size(200.dp)
+                    modifier = Modifier.size(220.dp)
                 ) {
+                    // v1.0.12：外圈超大旋转霓虹光环（sweep 渐变四色旋转，纯透明光效）
+                    val outerSpin by rememberInfiniteTransition(label = "outer_spin").animateFloat(
+                        initialValue = 0f,
+                        targetValue = 360f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(9000, easing = LinearEasing),
+                            repeatMode = RepeatMode.Restart
+                        ),
+                        label = "outerSpin"
+                    )
+                    Box(
+                        modifier = Modifier
+                            .size(208.dp)
+                            .rotate(outerSpin)
+                            .clip(CircleShape)
+                            .border(
+                                width = 2.dp,
+                                brush = Brush.sweepGradient(
+                                    listOf(Color.Transparent, ElectricCyan, Color.Transparent, FlameRed, Color.Transparent, NeonPurple, Color.Transparent)
+                                ),
+                                shape = CircleShape
+                            )
+                    )
+                    // v1.0.12：外圈呼吸弥散光晕（更饱满的多彩呼吸）
+                    val haloPulse3 by rememberInfiniteTransition(label = "halo3").animateFloat(
+                        initialValue = 0.95f,
+                        targetValue = 1.65f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(2300, easing = FastOutSlowInEasing),
+                            repeatMode = RepeatMode.Reverse
+                        ),
+                        label = "haloPulse3"
+                    )
+                    Box(
+                        modifier = Modifier
+                            .size(190.dp)
+                            .scale(haloPulse3)
+                            .clip(CircleShape)
+                            .background(
+                                Brush.radialGradient(
+                                    colors = listOf(
+                                        NeonPurple.copy(alpha = 0.26f),
+                                        SunsetOrange.copy(alpha = 0.10f),
+                                        Color.Transparent
+                                    )
+                                )
+                            )
+                    )
+
                     // 呼吸脉冲光环 2（CSS box-shadow 风格扩散）
                     val haloPulse2 by rememberInfiniteTransition(label = "halo2").animateFloat(
                         initialValue = 0.9f,
@@ -212,14 +301,14 @@ fun SplashScreenOverlay(
                     )
                     Box(
                         modifier = Modifier
-                            .size(170.dp)
+                            .size(160.dp)
                             .scale(haloPulse2)
                             .clip(CircleShape)
                             .background(
                                 Brush.radialGradient(
                                     colors = listOf(
-                                        NeonPurple.copy(alpha = 0.30f),
-                                        SunsetOrange.copy(alpha = 0.10f),
+                                        ElectricCyan.copy(alpha = 0.22f),
+                                        NeonPurple.copy(alpha = 0.12f),
                                         Color.Transparent
                                     )
                                 )
@@ -238,7 +327,7 @@ fun SplashScreenOverlay(
                     )
                     Box(
                         modifier = Modifier
-                            .size(130.dp)
+                            .size(128.dp)
                             .scale(haloPulse1)
                             .clip(CircleShape)
                             .border(
@@ -317,9 +406,10 @@ fun SplashScreenOverlay(
                     ),
                     label = "shimmerOffset"
                 )
+                // v1.0.12：标题流光升级 + 柔和投影（透明背景上依旧清晰醒目）
                 Text(
                     text = "懒得找了",
-                    fontSize = 32.sp,
+                    fontSize = 34.sp,
                     fontWeight = FontWeight.Black,
                     letterSpacing = 2.sp,
                     style = MaterialTheme.typography.headlineLarge.copy(
@@ -328,6 +418,12 @@ fun SplashScreenOverlay(
                             start = Offset(shimmerOffset, 0f),
                             end = Offset(shimmerOffset + 240f, 100f)
                         )
+                    ),
+                    modifier = Modifier.shadow(
+                        elevation = 10.dp,
+                        shape = RoundedCornerShape(14.dp),
+                        ambientColor = NeonPurple.copy(alpha = 0.55f),
+                        spotColor = SunsetOrange.copy(alpha = 0.45f)
                     )
                 )
 
@@ -386,11 +482,15 @@ private data class SplashParticle(
     val phase: Float     // 相位偏移（呼吸/连线用）
 )
 
+// v1.0.12：色板全面扩充——新增金色/翠青/日光黄，粒子色彩更绚丽
 private val SPLASH_COLORS = listOf(
     Color(0xFFFF6B9D),   // 粉
     Color(0xFFFFB199),   // 蜜桃橙
     Color(0xFF00E5FF),   // 电光青
-    Color(0xFF7C4DFF)    // 霓虹紫
+    Color(0xFF7C4DFF),   // 霓虹紫
+    Color(0xFFFFD54F),   // 鎏金
+    Color(0xFF4DD0E1),   // 翠青
+    Color(0xFF69F0AE)    // 荧光绿
 )
 
 /**
@@ -402,9 +502,9 @@ private val SPLASH_COLORS = listOf(
  */
 @Composable
 private fun ParticleSplashCanvas(modifier: Modifier = Modifier) {
-    // 预生成 132 颗粒子（固定随机，尺寸用 dp 值，绘制时转 px）
+    // v1.0.12：粒子数升级 132 → 240 颗，画面更饱满（固定随机，尺寸用 dp 值，绘制时转 px）
     val particles = remember {
-        List(132) { i ->
+        List(240) { i ->
             SplashParticle(
                 x = Random.nextFloat(),
                 y = Random.nextFloat(),
@@ -416,11 +516,11 @@ private fun ParticleSplashCanvas(modifier: Modifier = Modifier) {
             )
         }
     }
-    // 预生成近邻连线对（固定），保证任意时刻画布上都有网络感
+    // v1.0.12：连线对数升级 96 → 150 对，粒子网络更密集（固定），保证任意时刻画布上都有网络感
     val links = remember {
         val pairs = mutableListOf<Pair<Int, Int>>()
         var guard = 0
-        while (pairs.size < 96 && guard < 4000) {
+        while (pairs.size < 150 && guard < 6000) {
             guard++
             val a = Random.nextInt(particles.size)
             val b = Random.nextInt(particles.size)
@@ -511,14 +611,14 @@ private fun ParticleSplashCanvas(modifier: Modifier = Modifier) {
             }
         }
 
-        // ---- 4) 绘制粒子 ----
+        // ---- 4) 绘制粒子（近景大星带四向十字星光，远景小星呼吸闪烁）----
         particles.forEachIndexed { i, p ->
             val px = pts[i * 2] * w
             val py = pts[i * 2 + 1] * h
             val color = SPLASH_COLORS[p.hue]
             val breathe = 0.5f + 0.5f * sin((ta + tb) * 6.283f + p.phase).toFloat()
             if (p.depth == 0) {
-                // 近景大星：光晕 + 高亮
+                // 近景大星：光晕 + 高亮 + 十字星光（v1.0.12 新增）
                 val r = p.size * density * (0.9f + 0.25f * breathe)
                 drawCircle(
                     brush = Brush.radialGradient(
@@ -530,6 +630,19 @@ private fun ParticleSplashCanvas(modifier: Modifier = Modifier) {
                     center = Offset(px, py)
                 )
                 drawCircle(color = color, radius = r, center = Offset(px, py))
+                // 十字星光射线（四向星芒）
+                val rayLen = r * (2.2f + 1.2f * breathe)
+                for (d in 0 until 4) {
+                    val ang = (d * 45f) * (3.14159265f / 180f)
+                    val ex = px + kotlin.math.cos(ang) * rayLen
+                    val ey = py + kotlin.math.sin(ang) * rayLen
+                    drawLine(
+                        color = color.copy(alpha = 0.28f * (0.6f + 0.4f * breathe)),
+                        start = Offset(px, py),
+                        end = Offset(ex, ey),
+                        strokeWidth = 1f * density
+                    )
+                }
             } else {
                 drawCircle(
                     color = color.copy(alpha = 0.22f + 0.25f * breathe),
@@ -537,6 +650,26 @@ private fun ParticleSplashCanvas(modifier: Modifier = Modifier) {
                     center = Offset(px, py)
                 )
             }
+        }
+
+        // ---- 5) v1.0.12：流星光束（数道彩色光点沿斜向快速划过，带拖尾渐变）----
+        for (m in 0 until 4) {
+            val mt = ((ta * 1.1f + m * 0.27f) % 1.0f + 1.0f) % 1.0f
+            val mx = mt * w * 1.25f - w * 0.12f
+            val my = (0.12f + mt * 0.75f) * h
+            val mColor = SPLASH_COLORS[(m * 2 + 1) % SPLASH_COLORS.size]
+            val tail = w * 0.10f
+            drawLine(
+                brush = Brush.linearGradient(
+                    colors = listOf(Color.Transparent, mColor.copy(alpha = 0.65f)),
+                    start = Offset(mx - tail, my),
+                    end = Offset(mx, my)
+                ),
+                start = Offset(mx - tail, my),
+                end = Offset(mx, my),
+                strokeWidth = 1.6f * density
+            )
+            drawCircle(color = mColor.copy(alpha = 0.9f), radius = 1.8f * density, center = Offset(mx, my))
         }
     }
 }

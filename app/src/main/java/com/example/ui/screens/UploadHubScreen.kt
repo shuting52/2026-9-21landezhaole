@@ -110,12 +110,12 @@ fun UploadHubScreen(
 ) {
     val context = LocalContext.current
 
-    // Skill 技能库：点击卡片弹独立详情（视频预览/提示词/复制/分享）
+    // Skill 技能库：点击卡片弹独立详情（视频预览/提示词/下载/跳转）
     var skillDetail by remember { mutableStateOf<UploadedResourceEntity?>(null) }
 
     Box(modifier = modifier.fillMaxSize()) {
         if (gridMode && (resourceType == "software" || resourceType == "skill")) {
-            // ===== 软件/Skill：分类收纳 + 一排排横向滑动（LazyRow）的横屏卡片（v1.0.9） =====
+            // ===== 软件/Skill：分类收纳 + 竖排列表呈现（v1.0.12：取消横屏滑动 LazyRow） =====
             // 自动归类分组（保持云端的顺序，仅分组显示）
             val grouped = remember(resources) {
                 val map = LinkedHashMap<String, MutableList<UploadedResourceEntity>>()
@@ -171,7 +171,10 @@ fun UploadHubScreen(
                         }
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = "↔ 横屏滑动浏览 · 点击分类展开",
+                            text = if (resourceType == "skill")
+                                "⬇ 点击分类展开 · 文件形式可下载到本地 / URL 形式直接跳转"
+                            else
+                                "⬇ 点击分类展开 · 竖排列表呈现 · 自动获取软件图标",
                             fontSize = 11.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -248,37 +251,28 @@ fun UploadHubScreen(
                             }
                         }
                         if (isExpanded) {
-                            // v1.0.9：横屏呈现——每个分类一排横向滑动卡片（LazyRow），不再竖排网格
-                            item(key = "row_$cat") {
-                                LazyRow(
-                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                    contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                                        start = 2.dp, end = 6.dp, top = 2.dp, bottom = 4.dp
-                                    )
-                                ) {
-                                    items(list, key = { it.id }) { res ->
-                                        if (resourceType == "skill") {
-                                            SkillGridCard(
-                                                res = res,
-                                                onClick = { skillDetail = res },
-                                                showDelete = showDelete,
-                                                onDelete = {
-                                                    onDelete(res.id)
-                                                    Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
-                                                }
-                                            )
-                                        } else {
-                                            // 横屏软件卡片（宽 176dp 固定宽、主题渐变描边）
-                                            SoftwareHorizontalCard(
-                                                res = res,
-                                                showDelete = showDelete,
-                                                onDelete = {
-                                                    onDelete(res.id)
-                                                    Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
-                                                }
-                                            )
+                            // v1.0.12：取消横屏滑动——每个分类展开后改为竖排列表呈现（软件卡片自动识别 icon）
+                            items(list, key = { it.id }) { res ->
+                                if (resourceType == "skill") {
+                                    SkillGridCard(
+                                        res = res,
+                                        onClick = { skillDetail = res },
+                                        showDelete = showDelete,
+                                        onDelete = {
+                                            onDelete(res.id)
+                                            Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
                                         }
-                                    }
+                                    )
+                                } else {
+                                    // 软件竖排卡片（全宽，图标在左、信息在右，自动获取软件 icon）
+                                    SoftwareGridCard(
+                                        res = res,
+                                        showDelete = showDelete,
+                                        onDelete = {
+                                            onDelete(res.id)
+                                            Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
+                                        }
+                                    )
                                 }
                             }
                         }
@@ -358,6 +352,15 @@ fun UploadHubScreen(
         SkillDetailDialog(
             res = res,
             onDismiss = { skillDetail = null },
+            onJump = { url ->
+                try {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(intent)
+                } catch (e: Exception) {
+                    Toast.makeText(context, "无法打开跳转链接", Toast.LENGTH_SHORT).show()
+                }
+            },
             onDownload = { url, fileName ->
                 try {
                     val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
@@ -388,8 +391,9 @@ fun UploadHubScreen(
     }
 }
 
-/** Skill 技能包横排网格卡片（v1.0.5：竖排改横排后使用）：
- *  顶部预览区（视频/图片缩略图或渐变占位） + 底部标题与类型标识，点击打开详情弹窗 */
+/** Skill 技能包卡片（v1.0.12：取消横屏滑动，改为竖排全宽卡片；取消 icon 图标功能）：
+ *  顶部预览区（视频/图片缩略图或渐变占位）+ 标题与作者 + 底部操作按钮
+ *  （严格遵循控制台上传形式：文件形式→「下载」到本地，URL 形式→「跳转」，仅这两个按钮） */
 @Composable
 private fun SkillGridCard(
     res: UploadedResourceEntity,
@@ -397,10 +401,55 @@ private fun SkillGridCard(
     showDelete: Boolean = true,
     onDelete: () -> Unit
 ) {
+    val context = LocalContext.current
     val isVideo = res.mediaUrl.isNotBlank() &&
         Regex("\\.(mp4|webm|mov|m4v)(\\?.*)?$", RegexOption.IGNORE_CASE).containsMatchIn(res.mediaUrl)
-    val isZip = res.fileUrl.endsWith(".zip", ignoreCase = true)
-    val isMd = res.fileUrl.endsWith(".md", ignoreCase = true)
+    // v1.0.12：严格遵循控制台上传形式——file 模式 url 存文件直链 →「下载」；url 模式 →「跳转」
+    val isFileMode = res.mode != "url"
+    val fileLink = res.fileUrl.ifBlank { res.url }.ifBlank {
+        // 兼容旧数据：控制台早期把 zip/md 技能包直链放在 mediaUrl 字段
+        if (res.mediaUrl.endsWith(".zip", true) || res.mediaUrl.endsWith(".md", true)) res.mediaUrl else ""
+    }
+    val jumpUrl = if (isFileMode) "" else res.url.ifBlank { res.fileUrl }
+    val canDownload = isFileMode && fileLink.isNotBlank()
+    val canJump = !isFileMode && jumpUrl.isNotBlank()
+    val isZip = fileLink.endsWith(".zip", ignoreCase = true)
+    val isMd = fileLink.endsWith(".md", ignoreCase = true)
+
+    fun downloadSkill(url: String) {
+        try {
+            val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+            val ext = if (isZip) ".zip" else if (isMd) ".md" else ""
+            val safeName = (res.title + ext).replace(" ", "_").replace(Regex("[\\\\/:*?\"<>|]"), "_")
+            val request = DownloadManager.Request(Uri.parse(url))
+                .setTitle("懒得找了 · ${res.title}")
+                .setDescription("正在下载技能包 $safeName")
+                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                .setAllowedOverMetered(true)
+                .setMimeType(if (isZip) "application/zip" else if (isMd) "text/markdown" else "application/octet-stream")
+                .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, safeName)
+            dm.enqueue(request)
+            Toast.makeText(context, "技能包已开始下载到手机「下载」文件夹", Toast.LENGTH_LONG).show()
+        } catch (e: Exception) {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+            } catch (e2: Exception) {
+                Toast.makeText(context, "下载失败，请稍后重试", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun jumpSkill(url: String) {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(context, "无法打开跳转链接", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     Surface(
         shape = RoundedCornerShape(14.dp),
@@ -410,12 +459,12 @@ private fun SkillGridCard(
         modifier = Modifier.fillMaxWidth()
     ) {
         Column {
-            // 预览区：有视频/预览图则展示缩略图，否则渐变占位
+            // 预览区：有视频/预览图则展示缩略图，否则渐变占位（取消 icon 图标功能）
             if (res.previewUrl.isNotBlank()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(64.dp)
+                        .height(72.dp)
                         .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
                     contentAlignment = Alignment.Center
                 ) {
@@ -446,7 +495,7 @@ private fun SkillGridCard(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(64.dp)
+                        .height(72.dp)
                         .background(
                             Brush.linearGradient(
                                 listOf(
@@ -460,11 +509,11 @@ private fun SkillGridCard(
                     Text(if (isVideo) "🎬" else if (isZip) "📦" else if (isMd) "📄" else "🧠", fontSize = 22.sp)
                 }
             }
-            // 标题 + 类型标识
-            Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 7.dp)) {
+            // 标题 + 作者（取消 icon 图标功能，仅展示控制台上传的标题与作者信息）
+            Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp)) {
                 Text(
                     text = res.title,
-                    fontSize = 11.5.sp,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
@@ -493,6 +542,73 @@ private fun SkillGridCard(
                             modifier = Modifier.weight(1f)
                         )
                     }
+                }
+            }
+            // 底部操作按钮：严格遵循控制台上传形式——仅「下载」（文件形式）/「跳转」（URL 形式）两个按钮
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 10.dp, end = 10.dp, bottom = 10.dp)
+            ) {
+                if (canDownload) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color(0xFF22C55E).copy(alpha = 0.12f))
+                            .clickable { downloadSkill(fileLink) }
+                            .padding(horizontal = 10.dp, vertical = 5.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Filled.Download,
+                                contentDescription = null,
+                                tint = Color(0xFF22C55E),
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "下载",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF22C55E)
+                            )
+                        }
+                    }
+                }
+                if (canJump) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f))
+                            .clickable { jumpSkill(jumpUrl) }
+                            .padding(horizontal = 10.dp, vertical = 5.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Filled.OpenInNew,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "跳转",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+                if (showDelete) {
+                    Text(
+                        text = "删除",
+                        fontSize = 9.sp,
+                        color = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
+                        modifier = Modifier.clickable { onDelete() }.padding(4.dp)
+                    )
                 }
             }
         }
@@ -973,7 +1089,11 @@ private fun ResourceFileCard(
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                val displayIcon = res.iconUrl.ifBlank { autoFaviconUrl(res.url.ifBlank { res.fileUrl }) }
+                // v1.0.12：Skill 场景取消 icon 图标功能，统一使用类型文字徽标呈现
+                val displayIcon = if (resourceType == "skill")
+                    ""
+                else
+                    res.iconUrl.ifBlank { autoFaviconUrl(res.url.ifBlank { res.fileUrl }) }
                 if (displayIcon.isNotBlank()) {
                     AsyncImageCompat(
                         url = displayIcon,

@@ -425,7 +425,7 @@ fun MainScreen(
                         } else {
                             UploadHubScreen(
                                 title = "Skill · 技能库",
-                                subtitle = "Skill 技能包横排网格 · 点击卡片查看详情（视频预览 / 下载 / 复制）",
+                                subtitle = "Skill 技能包竖排列表 · 点击卡片查看详情（视频预览 / 下载 / 跳转）",
                                 resourceType = "skill",
                                 resources = uploadedSkills,
                                 onDelete = { id -> viewModel.deleteUploadedResource(id) },
