@@ -33,8 +33,10 @@ android {
     // v1.0.5：更新弹窗固化「手绘CSS + 免授权直装」——永久删除 WebView 弹窗（写死规则7）
     // v1.0.11：修复官方群跳转（source=qrcode→sharecard，网页兜底提前）+ 追溯1.0.3下载（流式PK校验防OOM + jsdmir镜像）
     // 与云端 admin-data.json version.code=92 / name=1.0.11 四要素对齐（含 apkUrl 指向真实 1.0.11 安装包）
-    versionCode = 92
-    versionName = "1.0.11"
+    // v1.0.12：本体软件更新优化（开屏透明特效/软件icon/技能库下载跳转/分享直达/反馈邮箱）
+    // 与云端 admin-data.json version.code=93 / name=1.0.12 四要素对齐（含 apkUrl 指向真实 1.0.12 安装包）
+    versionCode = 93
+    versionName = "1.0.12"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
