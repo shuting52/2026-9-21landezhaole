@@ -149,9 +149,48 @@ fun AppUpdateDialog(
     /** 安装新版本 APK：
      *  1. 签名对比：新旧签名不一致时引导先卸载旧版本再安装
      *  2. 签名一致 → PackageInstaller 系统会话（免授权直装）
-     *  3. 看门狗：25 秒内未收到回调 → 自动回退 FileProvider 打开系统安装器
+     *  3. 看门狗：15 秒内未装成功 → 自动回退 FileProvider 打开系统安装器
      *  4. 全程轮询版本号，装完自动进入完成态（彻底杜绝「卡在安装中」）
      */
+
+    /** v1.0.13：打开系统安装器（FileProvider 方式），并检测/引导「允许安装未知应用」权限 */
+    fun openSystemInstaller(file: File) {
+        // canRequestPackageInstalls 仅 API 26+，minSdk 24 需版本判断
+        val canInstall = if (android.os.Build.VERSION.SDK_INT >= 26) {
+            context.packageManager.canRequestPackageInstalls()
+        } else true
+        if (!canInstall) {
+            // 未开启「允许安装未知应用」：引导到设置页开启后再装（这是绝大多数装不上的根因之一）
+            statusLabel = "需要开启「允许安装未知应用」才能安装更新"
+            Toast.makeText(
+                context,
+                "请在系统设置中开启「允许安装未知应用」权限后再点击重试",
+                Toast.LENGTH_LONG
+            ).show()
+            try {
+                val intent = Intent(
+                    android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                    Uri.parse("package:" + context.packageName)
+                ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+            } catch (e: Exception) {
+            }
+            return
+        }
+        try {
+            val uri = FileProvider.getUriForFile(context, context.packageName + ".fileprovider", file)
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, "application/vnd.android.package-archive")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+            statusLabel = "请在系统安装界面点击「安装」完成更新"
+        } catch (e: Exception) {
+            Toast.makeText(context, "无法打开系统安装器，请到文件管理器中手动安装更新包", Toast.LENGTH_LONG).show()
+        }
+    }
+
     fun installApk(file: File) {
         try {
             val newSig = apkSigningHash(context, file)
@@ -220,28 +259,34 @@ fun AppUpdateDialog(
             } else {
                 // PackageInstaller 不可用 → 直接 FileProvider 打开系统安装器
                 statusLabel = "正在打开系统安装器…"
-                installViaFileProvider(context, file)
+                openSystemInstaller(file)
             }
 
             // ============ 看门狗 + 版本轮询兜底（v1.0.2 核心修复）============
+            // v1.0.13 修复「能下载但装不上」：PackageInstaller 静默安装被国产 ROM 拦截时
+            // 会立刻回传 STATUS_FAILURE（installOutcome=false），旧逻辑因此跳过 FileProvider 兑底
+            // → 用户只能反复点重试，永远装不上。现改为：只要版本未变（安装未生效），
+            // 无论回调是 成功/失败/无回调，一律立即回退系统安装器让用户确认安装。
+            var fallbackOpened = !committed
             coroutineScope.launch {
-                // 阶段一：等待 PackageInstaller 回调或版本变化（足够覆盖系统安装确认页）
+                // 阶段一：15 秒内等待 PackageInstaller 回调或版本变化（静默安装窗口）
                 if (committed) {
-                    val deadline = System.currentTimeMillis() + 60_000L
+                    val deadline = System.currentTimeMillis() + 15_000L
                     while (System.currentTimeMillis() < deadline && installOutcome == null) {
-                        delay(600)
+                        delay(400)
                         if (currentVersionCode() > oldVersionCode) break
                     }
                 }
-                // 阶段二：回调迟迟未到且版本未变 → FileProvider 打开系统安装器兜底（保证一定能装）
-                if (installOutcome == null && currentVersionCode() <= oldVersionCode) {
-                    statusLabel = "自动安装未响应，正在打开系统安装器…"
-                    installViaFileProvider(context, file)
+                // 阶段二：版本未变（安装未生效）→ 无论成功/失败/无回调都回退系统安装器
+                if (!fallbackOpened && currentVersionCode() <= oldVersionCode) {
+                    fallbackOpened = true
+                    statusLabel = "自动安装未完成，已打开系统安装器，请点击「安装」完成更新"
+                    openSystemInstaller(file)
                 }
                 // 阶段三：持续轮询版本号（最长 120s），装完自动进入完成态
-                if (installOutcome == null) {
+                if (installOutcome != true) {
                     val totalWait = System.currentTimeMillis() + 120_000L
-                    while (installOutcome == null && System.currentTimeMillis() < totalWait) {
+                    while (installOutcome != true && System.currentTimeMillis() < totalWait) {
                         delay(1200)
                         if (currentVersionCode() > oldVersionCode) {
                             installOutcome = true
@@ -251,7 +296,7 @@ fun AppUpdateDialog(
                         }
                     }
                     // 长时间未安装成功：将按钮转为「重试」让用户可控
-                    if (installOutcome == null) {
+                    if (installOutcome != true) {
                         installOutcome = false
                         statusLabel = "安装未完成，请点击重试"
                     }
@@ -1002,21 +1047,6 @@ private fun installViaPackageInstaller(context: Context, apkFile: File): Boolean
         true
     } catch (e: Exception) {
         false
-    }
-}
-
-/** FileProvider + 系统安装器（最通用的兜底方案） */
-private fun installViaFileProvider(context: Context, file: File) {
-    try {
-        val uri = FileProvider.getUriForFile(context, context.packageName + ".fileprovider", file)
-        val intent = Intent(Intent.ACTION_VIEW).apply {
-            setDataAndType(uri, "application/vnd.android.package-archive")
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-        context.startActivity(intent)
-    } catch (e: Exception) {
-        Toast.makeText(context, "无法打开系统安装器，请稍后到文件管理器中手动安装更新包", Toast.LENGTH_LONG).show()
     }
 }
 
