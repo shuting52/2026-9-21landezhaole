@@ -322,6 +322,17 @@ fun AppUpdateDialog(
                                     val frac = (downloaded.toFloat() / total.toFloat()).coerceIn(0f, 1f)
                                     onProgress(frac)
                                 }
+                            } else {
+                                // v1.0.11 修复「进度条卡住不动」：部分 CDN 不返回 Content-Length（total<=0）
+                                // 时 onProgress 永不回调，进度条会一直卡在 8%。改为按已下载字节对 60MB 估算
+                                // 缓推进至 85%，下载完成后再由 startRealDownload 置 100%。
+                                val now = System.currentTimeMillis()
+                                if (now - lastEmit > 400) {
+                                    lastEmit = now
+                                    val estTotal = 60L * 1024 * 1024
+                                    val frac = (downloaded.toDouble() / estTotal).coerceIn(0.0, 0.85)
+                                    onProgress(frac.toFloat())
+                                }
                             }
                         }
                         output.flush()
