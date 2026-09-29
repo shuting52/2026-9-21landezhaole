@@ -59,6 +59,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.example.data.local.db.UploadedResourceEntity
 import com.example.data.util.VideoCache
 import com.example.ui.components.SkillDetailDialog
+import com.example.ui.components.isZipOrMdUrl
 
 /** v1.8.7：资源自动归类关键词（用于自动识别软件是做什么的） */
 private val AUTO_CATEGORY_RULES = listOf(
