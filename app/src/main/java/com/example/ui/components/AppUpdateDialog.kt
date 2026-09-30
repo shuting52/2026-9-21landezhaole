@@ -195,12 +195,10 @@ fun AppUpdateDialog(
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
                     context.startActivity(uninstallIntent)
-                    coroutineScope.launch {
-                        statusLabel = "已打开系统卸载页，卸载后请到手机「下载」文件夹安装新版本"
-                        delay(4000)
-                        onUpdateFinished()
-                        onDismiss()
-                    }
+                    // v1.0.13 修复「安装新版本时旧版本软件闪退」：卸载页打开后旧进程即将被系统终止，
+                    // 此时再回调 onUpdateFinished()/onDismiss() 会操作已销毁的 Compose 状态导致崩溃。
+                    // 改为：不再自动回调，仅更新提示文案，由用户手动完成卸载后重新打开新版本即可。
+                    statusLabel = "已打开系统卸载页，卸载后请到手机「下载」文件夹安装新版本"
                 } catch (e: Exception) {
                     Toast.makeText(context, "无法自动打开卸载页，请手动卸载旧版本后再安装", Toast.LENGTH_LONG).show()
                     isSignatureConflict = false

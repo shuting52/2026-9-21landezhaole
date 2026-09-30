@@ -145,11 +145,12 @@ fun SplashScreenOverlay(
             CloudSplashContent(splash = sp, onDismiss = onDismiss)
         } else {
         // ================= v1.0.4：CSS 粒子动态特效开屏 =================
-        // v1.0.12：背景改为纯透明（Color.Transparent），粒子特效直接悬浮在 App 界面之上呈现
+        // v1.0.13：开屏动画采用纯色背景（Color(0xFF0B0B1A) 深色纯色，跟随云端 bgColor 默认值），
+        // 粒子动态特效在纯色背景之上呈现，简洁清爽不花哨
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Transparent)
+                .background(Color(0xFF0B0B1A))
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null

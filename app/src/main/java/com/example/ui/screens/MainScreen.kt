@@ -563,6 +563,10 @@ fun MainScreen(
                 },
                 versionName = "v${cloudVersion.name}",
                 onUpdateFinished = {
+                    // v1.0.13 修复「安装新版本时旧版本软件闪退」：
+                    // 安装成功后 PackageInstaller 会终止旧进程并拉起新版本，
+                    // 此处只需关闭弹窗状态即可，禁止再执行任何 Activity/Context 操作，
+                    // 避免在旧进程被杀的瞬间访问已销毁的组件导致闪退。
                     showCloudUpdateDialog = false
                     updateDialogDismissed = true
                 },
