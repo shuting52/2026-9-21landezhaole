@@ -2,20 +2,9 @@ package com.example.ui.uiverse
 
 object UiverseRepository {
 
+    // v1.0.19 软件主题升级：原有主题风格已全部移除，仅保留「盛世华诞 · 国庆可爱」主题
     val uiKits = listOf(
-        UiKitPreset.STYLE_1_TILT_MAGNETIC,
-        UiKitPreset.STYLE_2_GLASS_LOADER,
-        UiKitPreset.STYLE_3_THICK_BUTTON,
-        UiKitPreset.STYLE_4_BOTTOMBAR_APPBAR,
-        UiKitPreset.STYLE_5_CAPSULE_SETROW,
-        UiKitPreset.DEFAULT_CLASSIC,
-        UiKitPreset.CYBERPUNK_NEON,
-        UiKitPreset.GLASSMORPHISM_AURORA,
-        UiKitPreset.NEUMORPHISM_CLAY,
-        UiKitPreset.NEO_BRUTALISM_POP,
-        UiKitPreset.RETRO_8BIT_ARCADE,
-        UiKitPreset.HOLOGRAPHIC_PRISM,
-        UiKitPreset.LUXURY_OBSIDIAN_GOLD
+        UiKitPreset.DEFAULT_CLASSIC
     )
 
     val items = listOf(

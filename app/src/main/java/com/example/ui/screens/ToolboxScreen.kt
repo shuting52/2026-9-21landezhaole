@@ -35,8 +35,6 @@ import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material3.Icon
@@ -134,9 +132,11 @@ fun ToolboxScreen(
     var activeTool by remember { mutableStateOf<ToolboxTab?>(null) }
     val context = androidx.compose.ui.platform.LocalContext.current
 
+    // v1.0.19 取消展开收纳标签：工具箱直接平铺展示全部工具，无需点击展开/收起
     val expanded = remember {
         mutableStateMapOf<String, Boolean>().apply {
-            ToolCategory.entries.forEach { put(it.id, it.defaultExpanded) }
+            // 全部默认展开（直接平铺）
+            ToolCategory.entries.forEach { put(it.id, true) }
         }
     }
 
@@ -286,7 +286,7 @@ fun ToolboxScreen(
 
 /* ==================== 组件 ==================== */
 
-/** 收纳式分类标题栏 */
+/** v1.0.19：静态分类标题栏（取消展开/收起标签，直接平铺呈现） */
 @Composable
 private fun ToolCategoryHeader(
     category: ToolCategory,
@@ -295,7 +295,6 @@ private fun ToolCategoryHeader(
     onToggle: () -> Unit
 ) {
     Surface(
-        onClick = onToggle,
         shape = RoundedCornerShape(12.dp),
         color = Color.White.copy(alpha = 0.55f),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.28f)),
@@ -319,12 +318,6 @@ private fun ToolCategoryHeader(
                 fontSize = 10.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(end = 6.dp)
-            )
-            Icon(
-                imageVector = if (isExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                contentDescription = if (isExpanded) "收起" else "展开",
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(20.dp)
             )
         }
     }

@@ -156,6 +156,37 @@ fun AppUpdateDialog(
      */
     fun installApk(file: File) {
         try {
+            // v1.0.19 修复「更新弹窗无法安装新版本」：
+            // Android 8+（API 26+）PackageInstaller / 系统安装器需要「安装未知应用」授权。
+            // 未授权时引导用户跳转系统授权页，避免直接安装失败/无反应。
+            if (android.os.Build.VERSION.SDK_INT >= 26 && !context.packageManager.canRequestPackageInstalls()) {
+                isSignatureConflict = false
+                installOutcome = null
+                statusLabel = "需要开启「安装未知应用」权限才能安装新版本"
+                Toast.makeText(
+                    context,
+                    "请允许安装未知应用后重试（已自动跳转设置）",
+                    Toast.LENGTH_LONG
+                ).show()
+                try {
+                    val intent = Intent(
+                        android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                        Uri.parse("package:" + context.packageName)
+                    ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(intent)
+                } catch (e: Exception) {
+                    try {
+                        val intent = Intent(
+                            android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES
+                        ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        context.startActivity(intent)
+                    } catch (e2: Exception) {
+                        Toast.makeText(context, "请到系统设置中开启「安装未知应用」权限", Toast.LENGTH_LONG).show()
+                    }
+                }
+                return
+            }
+
             val newSig = apkSigningHash(context, file)
             val installedSig = try {
                 val installed = context.packageManager.getPackageInfo(
@@ -362,9 +393,18 @@ fun AppUpdateDialog(
                 add(url)
                 Regex("^https?://raw\\.githubusercontent\\.com/([^/]+)/([^/]+)/(?:main|master)/(.+)$")
                     .find(url)?.let { m ->
-                        add("https://cdn.jsdelivr.net/gh/${m.groupValues[1]}/${m.groupValues[2]}@main/${m.groupValues[3]}")
-                        add("https://github.com/${m.groupValues[1]}/${m.groupValues[2]}/raw/main/${m.groupValues[3]}")
-                        add("https://cdn.jsdmir.cn/gh/${m.groupValues[1]}/${m.groupValues[2]}@main/${m.groupValues[3]}")
+                        val owner = m.groupValues[1]
+                        val repo = m.groupValues[2]
+                        val path = m.groupValues[3]
+                        add("https://cdn.jsdelivr.net/gh/$owner/$repo@main/$path")
+                        add("https://testingcf.jsdelivr.net/gh/$owner/$repo@main/$path")
+                        add("https://gcore.jsdelivr.net/gh/$owner/$repo@main/$path")
+                        add("https://github.com/$owner/$repo/raw/main/$path")
+                        add("https://cdn.jsdmir.cn/gh/$owner/$repo@main/$path")
+                        // v1.0.19 增加国内可用加速镜像，提升下载成功率
+                        add("https://ghfast.top/https://raw.githubusercontent.com/$owner/$repo/main/$path")
+                        add("https://ghproxy.net/https://raw.githubusercontent.com/$owner/$repo/main/$path")
+                        add("https://raw.gitmirror.com/$owner/$repo/main/$path")
                     }
             }.distinct()
 
@@ -486,9 +526,9 @@ fun AppUpdateDialog(
         }
     }
 
-    // 强制更新（forceUpdate）时不允许关闭弹窗
+    // 强制更新（forceUpdate）时不允许自行关闭；但下载/安装失败（installOutcome=false）必须允许关闭，避免卡死
     fun closeUpdate() {
-        if (!isUpdating && !forceUpdate) {
+        if (!isUpdating && (!forceUpdate || installOutcome == false)) {
             onDismiss()
         }
     }

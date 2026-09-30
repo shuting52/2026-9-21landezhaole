@@ -94,8 +94,6 @@ import androidx.compose.ui.unit.sp
 import com.example.ui.theme.CuteLemon
 import com.example.ui.theme.CutePeach
 import com.example.ui.theme.CutePink
-import com.example.ui.theme.FlameRed
-import com.example.ui.theme.SunsetOrange
 import com.example.ui.theme.ThemePreset
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -154,13 +152,20 @@ fun SettingsScreen(
             .padding(16.dp)
             .testTag("settings_screen")
     ) {
-        // Header
+        // Header（v1.0.19：图标渐变跟随当前主题色，设置版块与软件主题同步）
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier
                     .size(38.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(Brush.linearGradient(listOf(FlameRed, SunsetOrange))),
+                    .background(
+                        Brush.linearGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.primary,
+                                MaterialTheme.colorScheme.secondary
+                            )
+                        )
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -958,7 +963,14 @@ private fun ContactAuthorDialog(
                     modifier = Modifier
                         .size(34.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Brush.linearGradient(listOf(FlameRed, SunsetOrange))),
+                        .background(
+                            Brush.linearGradient(
+                                listOf(
+                                    MaterialTheme.colorScheme.primary,
+                                    MaterialTheme.colorScheme.secondary
+                                )
+                            )
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -998,7 +1010,7 @@ private fun ContactAuthorDialog(
                                     text = tabTitle,
                                     fontSize = 12.sp,
                                     fontWeight = if (selectedTab == index) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (selectedTab == index) FlameRed else MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = if (selectedTab == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         )
@@ -1197,13 +1209,13 @@ private fun ContactAuthorDialog(
                     },
                     shape = RoundedCornerShape(10.dp)
                 ) {
-                    Icon(Icons.Filled.BugReport, contentDescription = null, modifier = Modifier.size(14.dp), tint = FlameRed)
+                    Icon(Icons.Filled.BugReport, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("软件反馈", fontSize = 12.sp, color = FlameRed)
+                    Text("软件反馈", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
                 }
                 Button(
                     onClick = onDismiss,
-                    colors = ButtonDefaults.buttonColors(containerColor = FlameRed),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Text("关闭")

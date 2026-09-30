@@ -40,7 +40,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -132,15 +131,13 @@ fun UploadHubScreen(
 
     Box(modifier = modifier.fillMaxSize()) {
         if (gridMode && (resourceType == "software" || resourceType == "skill")) {
-            // ===== 软件/Skill：分类收纳 + 竖排列表呈现（v1.0.12：取消横屏滑动 LazyRow） =====
-            // 自动归类分组（保持云端的顺序，仅分组显示）
+            // ===== 软件/Skill：v1.0.19 取消展开收纳标签，直接平铺呈现 =====
+            // 软件版块：保留 .u-tab 推荐/关注/热门筛选，分类分组标题仅作静态分区（不可点、不收纳）
             val grouped = remember(displayResources) {
                 val map = LinkedHashMap<String, MutableList<UploadedResourceEntity>>()
                 displayResources.forEach { map.getOrPut(autoCategorize(it)) { mutableListOf() }.add(it) }
                 map.toList()
             }
-            // v1.0.7：分类收纳——默认收起，点击分类标题才展开
-            val expandedCats = remember(displayResources) { mutableStateMapOf<String, Boolean>() }
             // 主题色渐变（软件卡片专用，v1.0.9 主题升级）
             val themePrimary = MaterialTheme.colorScheme.primary
             val themeSecondary = MaterialTheme.colorScheme.secondary
@@ -197,15 +194,6 @@ fun UploadHubScreen(
                                 }
                             }
                         }
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = if (resourceType == "skill")
-                                "⬇ 点击分类展开 · 文件形式可下载到本地 / URL 形式直接跳转"
-                            else
-                                "⬇ 点击分类展开 · 竖排列表呈现 · 自动获取软件图标",
-                            fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
                     }
                 }
                 if (resources.isEmpty()) {
@@ -234,15 +222,13 @@ fun UploadHubScreen(
                     }
                 } else {
                     grouped.forEach { (cat, list) ->
-                        val isExpanded = expandedCats[cat] == true
-                        // 分类标题行：主题色胶囊样式，可点击展开/收起（收纳式）
+                        // v1.0.19：分类标题静态分区（不再可点击展开/收起）
                         item(key = "cat_$cat") {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(10.dp))
                                     .background(themePrimary.copy(alpha = 0.10f))
-                                    .clickable { expandedCats[cat] = !isExpanded }
                                     .padding(horizontal = 10.dp, vertical = 8.dp)
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -264,44 +250,36 @@ fun UploadHubScreen(
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
-                                        text = if (isExpanded) "收起 ▴" else "展开 ▾ · ${list.size} 款",
+                                        text = "${list.size} 款",
                                         fontSize = 11.sp,
                                         color = themePrimary,
                                         fontWeight = FontWeight.Bold
                                     )
-                                    Spacer(modifier = Modifier.weight(1f))
-                                    Text(
-                                        text = if (isExpanded) "▾" else "▸",
-                                        fontSize = 13.sp,
-                                        color = themePrimary
-                                    )
                                 }
                             }
                         }
-                        if (isExpanded) {
-                            // v1.0.12：取消横屏滑动——每个分类展开后改为竖排列表呈现（软件卡片自动识别 icon）
-                            items(list, key = { it.id }) { res ->
-                                if (resourceType == "skill") {
-                                    SkillGridCard(
-                                        res = res,
-                                        onClick = { skillDetail = res },
-                                        showDelete = showDelete,
-                                        onDelete = {
-                                            onDelete(res.id)
-                                            Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
-                                        }
-                                    )
-                                } else {
-                                    // 软件竖排卡片（全宽，图标在左、信息在右，自动获取软件 icon）
-                                    SoftwareGridCard(
-                                        res = res,
-                                        showDelete = showDelete,
-                                        onDelete = {
-                                            onDelete(res.id)
-                                            Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
-                                        }
-                                    )
-                                }
+                        // 全部平铺显示（不展开/收起）
+                        items(list, key = { it.id }) { res ->
+                            if (resourceType == "skill") {
+                                SkillGridCard(
+                                    res = res,
+                                    onClick = { skillDetail = res },
+                                    showDelete = showDelete,
+                                    onDelete = {
+                                        onDelete(res.id)
+                                        Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
+                                    }
+                                )
+                            } else {
+                                // 软件竖排卡片（全宽，图标在左、信息在右，自动获取软件 icon）
+                                SoftwareGridCard(
+                                    res = res,
+                                    showDelete = showDelete,
+                                    onDelete = {
+                                        onDelete(res.id)
+                                        Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
+                                    }
+                                )
                             }
                         }
                     }

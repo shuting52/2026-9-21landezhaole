@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.sp
 // ============================================================
 
 /** Neo-Brutalism 调色板（对应 CSS 变量） */
+/** Neo-Brutalism 调色板（对应 CSS 变量） */
 val V15Ink = Color(0xFF26303C)      // --ink  深蓝灰（边框 / 主文字）
 val V15C1 = Color(0xFFFFB020)       // --c1   活力橙（主阴影 / 选中态）
 val V15C2 = Color(0xFFFF5E8A)       // --c2   草莓粉（次色 / 粉徽标）
@@ -146,13 +147,17 @@ fun UListRow(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
-    // CSS nth-child 配色：第 2 行粉色，第 3 行橙（主色），其余蓝色
+    // v1.0.19 设置版块主题同步：图标块/文字/分隔线跟随当前主题色（MaterialTheme），
+    // 不再使用固定 V15 色板，切换主题后设置页同步换肤。
+    val themePrimary = MaterialTheme.colorScheme.primary
+    val themeSecondary = MaterialTheme.colorScheme.secondary
+    val themeOnSurface = MaterialTheme.colorScheme.onSurface
+    // CSS nth-child 配色：第 2 行次色，第 3 行主色，其余主色
     val iconBg = when (rowIndex) {
-        1 -> V15C2
-        2 -> V15C1
-        else -> V15Bg
+        1 -> themeSecondary
+        else -> themePrimary
     }
-    val iconFg = if (rowIndex == 2) V15Ink else Color.White
+    val iconFg = Color.White
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
 
@@ -165,7 +170,7 @@ fun UListRow(
                 indication = null,
                 onClick = onClick
             )
-            .background(if (pressed) Color(0xFFFFF4E4) else Color.Transparent)
+            .background(if (pressed) themePrimary.copy(alpha = 0.08f) else Color.Transparent)
             .padding(horizontal = 16.dp, vertical = 13.dp)
     ) {
         // 图标方块
@@ -206,7 +211,7 @@ fun UListRow(
                 text = title,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Black,
-                color = V15Ink,
+                color = themeOnSurface,
                 maxLines = 1
             )
             if (subtitle.isNotBlank()) {

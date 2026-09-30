@@ -108,15 +108,15 @@ enum class UiKitPreset(
         textColor = Color(0xFF26303C)
     ),
     DEFAULT_CLASSIC(
-        id = "default_classic",
-        displayName = "默认经典",
+        id = "national_day_cute",
+        displayName = "盛世华诞 · 国庆可爱",
         author = "官方团队",
-        desc = "系统原生纯净经典红金高定风格，极简优雅温润",
-        primaryColor = Color(0xFFD32F2F),
+        desc = "v1.0.19 软件主题升级：以国庆节为核心主体的可爱风格，中国红 + 金星金 + 动态CSS流光效果",
+        primaryColor = Color(0xFFE60012),
         secondaryColor = Color(0xFFFFD700),
-        backgroundColor = Color(0xFFFFEBEE),
-        surfaceColor = Color(0xFFFFFFFF),
-        textColor = Color(0xFF212121)
+        backgroundColor = Color(0xFFFFF6EF),
+        surfaceColor = Color(0xD9FFFFFF),
+        textColor = Color(0xFF4A1E22)
     ),
     CYBERPUNK_NEON(
         id = "cyberpunk_neon",

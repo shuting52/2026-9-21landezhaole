@@ -41,8 +41,11 @@ android {
     // 与云端 admin-data.json version.code=97 / name=1.0.16 四要素对齐（含 apkUrl 指向真实 1.0.16 安装包）
     // v1.0.17：修复设置版块空容器 + 角标单一化呈现
     // 与云端 admin-data.json version.code=98 / name=1.0.17 四要素对齐（含 apkUrl 指向真实 1.0.17 安装包）
-    versionCode = 98
-    versionName = "1.0.17"
+    // v1.0.18 全面洗牌：角标修复（遵循原动态设计、不遮挡站点内容）；更新弹窗安装修复
+    // （REQUEST_INSTALL_PACKAGES + 授权引导 + 多镜像下载源 + 失败可关闭）；工具箱/软件版块取消展开收纳；
+    // 设置版块主题与软件主题同步；软件主题升级为「国庆节为核心·可爱风格·最新CSS动态效果」，原有主题风格全部移除
+    versionCode = 99
+    versionName = "1.0.18"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }

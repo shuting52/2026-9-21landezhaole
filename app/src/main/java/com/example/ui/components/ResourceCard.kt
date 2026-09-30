@@ -28,8 +28,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -243,20 +245,35 @@ fun ResourceCard(
             }
         }
 
-        // v1.0.16 角标自动识别技术：每个站点只有一个角标
-        // 识别到公司时：公司名显示在右上角角标位置（CSS 品牌色，Box 样式）
-        // 未识别到公司时：保留原 RibbonBadge（NEW/HOT 等）
-        // v1.0.18 角标用实际分类名：云端 admin-data 可设置每个卡片 badge 字段（默认显示云端配置）
+        // v1.0.19 角标修复：遵循原 RibbonBadge 动态设计，且不遮挡站点内容。
+        // 角标统一骑跨在卡片右上角边框（向上偏移，主体在卡片外），不再压住收藏按钮/标题/描述；
+        // 公司角标同样呈现动态流光扫过 + 呼吸缩放 + 摇摆。
         val company = detectCompanyBadge(card)
         if (company != null) {
-            // 检测到公司：公司名占满角标位置（不叠加）
+            // 检测到公司：动态流光胶囊角标（不叠加、不遮挡内容）
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(top = 4.dp, end = 4.dp)
+                    .offset(x = 8.dp, y = (-9).dp)
+                    .graphicsLayer {
+                        val breathe = badgeBreathe()
+                        scaleX = breathe
+                        scaleY = breathe
+                        rotationZ = badgeWobble()
+                    }
                     .clip(RoundedCornerShape(6.dp))
-                    .background(company.color.copy(alpha = 0.92f))
-                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(
+                                company.color,
+                                company.color.copy(alpha = 0.72f),
+                                company.color
+                            ),
+                            start = Offset(badgeFlow() * 120f, 0f),
+                            end = Offset(badgeFlow() * 120f + 80f, 0f)
+                        )
+                    )
+                    .padding(horizontal = 6.dp, vertical = 3.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     // 品牌色圆点
@@ -277,14 +294,63 @@ fun ResourceCard(
                 }
             }
         } else if (!card.badge.isNullOrBlank()) {
-            // 未识别到公司：保留原 RibbonBadge
+            // 未识别到公司：保留原 RibbonBadge（动态，骑跨右上角不遮挡）
             RibbonBadge(
                 text = card.badge,
                 badgeType = card.badgeType,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .offset(x = (-4).dp, y = (-3).dp)
+                    .offset(x = 10.dp, y = (-8).dp)
             )
         }
     }
+}
+
+// ============================================================
+// v1.0.19 角标动态特效（沿用原 RibbonBadge 的 CSS keyframes 动态设计）
+// 流光扫过 + 呼吸缩放 + 摇摆，所有角标统一动态呈现，不遮挡站点内容
+// ============================================================
+@Composable
+private fun badgeFlow(): Float {
+    val transition = androidx.compose.animation.core.rememberInfiniteTransition(label = "company_badge_flow")
+    val flow by transition.animateFloat(
+        initialValue = -1f,
+        targetValue = 1f,
+        animationSpec = androidx.compose.animation.core.infiniteRepeatable(
+            animation = androidx.compose.animation.core.tween(1600, easing = androidx.compose.animation.core.LinearEasing),
+            repeatMode = androidx.compose.animation.core.RepeatMode.Restart
+        ),
+        label = "company_badge_flow_v"
+    )
+    return flow
+}
+
+@Composable
+private fun badgeBreathe(): Float {
+    val transition = androidx.compose.animation.core.rememberInfiniteTransition(label = "company_badge_breathe")
+    val s by transition.animateFloat(
+        initialValue = 0.92f,
+        targetValue = 1.08f,
+        animationSpec = androidx.compose.animation.core.infiniteRepeatable(
+            animation = androidx.compose.animation.core.tween(750, easing = androidx.compose.animation.core.FastOutSlowInEasing),
+            repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
+        ),
+        label = "company_badge_breathe_v"
+    )
+    return s
+}
+
+@Composable
+private fun badgeWobble(): Float {
+    val transition = androidx.compose.animation.core.rememberInfiniteTransition(label = "company_badge_wobble")
+    val w by transition.animateFloat(
+        initialValue = -4f,
+        targetValue = 4f,
+        animationSpec = androidx.compose.animation.core.infiniteRepeatable(
+            animation = androidx.compose.animation.core.tween(900, easing = androidx.compose.animation.core.LinearEasing),
+            repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
+        ),
+        label = "company_badge_wobble_v"
+    )
+    return w
 }

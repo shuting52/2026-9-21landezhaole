@@ -13,6 +13,9 @@
         android:maxSdkVersion="28" />
     <!-- 分身助手：查询全部已安装应用清单（受限制权限，仅用于扫描应用列表） -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+    <!-- v1.0.19 修复「更新弹窗无法安装新版本」：声明安装未知应用权限，
+         PackageInstaller 直装/系统安装器才能正常拉起安装确认页（Android 8+ 必需） -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <queries>
         <intent>

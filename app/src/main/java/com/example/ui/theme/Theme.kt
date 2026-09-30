@@ -37,94 +37,24 @@ data class ThemePreset(
 )
 
 object ThemePresetsRepository {
-    // v1.0.7 清爽浅红主题（新默认）：干净浅红主色 + 近白底色 + 暖光粒子氛围
+    // v1.0.19 软件主题全新升级：以「国庆节」为核心主体设计的可爱风格主题（默认）。
+    // 中国红主色 + 金星金辅色 + 暖米底色 + 半透玻璃卡片，氛围动态暖光（烟花/星星光斑）。
+    // 原有主题风格（清爽浅红/可爱卡通/炽热烈焰/赛博霓虹/极光琉璃/黑曜臻金）已全部移除。
     val defaultTheme = ThemePreset(
-        id = "fresh_light_red",
-        name = "清爽浅红 (默认)",
-        style = "light_red",
-        categoryName = "清爽",
-        primaryColor = LightRedMain,
-        secondaryColor = LightRedAccent,
-        bgColor = Color(0xFFFFF8F7),
-        surfaceColor = Color(0xFFFFFFFF),
-        textColor = Color(0xFF3D2B2E),
+        id = "national_day_cute",
+        name = "盛世华诞 · 国庆可爱 (默认)",
+        style = "national_day",
+        categoryName = "国庆",
+        primaryColor = Color(0xFFE60012),
+        secondaryColor = Color(0xFFFFD700),
+        bgColor = Color(0xFFFFF6EF),
+        surfaceColor = Color(0xD9FFFFFF),
+        textColor = Color(0xFF4A1E22),
         atmosphereEffect = AtmosphereEffect.FIREFLIES
-    )
-
-    // 旧「可爱卡通」保留为可选主题
-    val cuteTheme = ThemePreset(
-        id = "cute_cartoon",
-        name = "可爱卡通",
-        style = "cute",
-        categoryName = "可爱",
-        primaryColor = CutePink,
-        secondaryColor = CutePeach,
-        bgColor = CuteCream,
-        surfaceColor = CuteWhite,
-        textColor = CuteChoco,
-        atmosphereEffect = AtmosphereEffect.FIREFLIES
-    )
-
-    // 老默认「炽热烈焰」保留为可选主题
-    val flameTheme = ThemePreset(
-        id = "flame_glow",
-        name = "炽热烈焰",
-        style = "flame",
-        categoryName = "经典",
-        primaryColor = FlameRed,
-        secondaryColor = SunsetOrange,
-        bgColor = Color(0xFFF8FAFC),
-        surfaceColor = Color(0xFFFFFFFF),
-        textColor = Color(0xFF0F172A),
-        atmosphereEffect = AtmosphereEffect.NONE
-    )
-
-    val cyberpunkTheme = ThemePreset(
-        id = "cyberpunk_neon",
-        name = "赛博霓虹",
-        style = "cyberpunk",
-        categoryName = "未来",
-        primaryColor = Color(0xFF00F0FF),
-        secondaryColor = Color(0xFFFF0055),
-        bgColor = Color(0xFF0D0E15),
-        surfaceColor = Color(0xFF16192B),
-        textColor = Color(0xFFF1F5F9),
-        atmosphereEffect = AtmosphereEffect.STARS
-    )
-
-    val auroraTheme = ThemePreset(
-        id = "aurora_glass",
-        name = "极光琉璃",
-        style = "aurora",
-        categoryName = "自然",
-        primaryColor = Color(0xFF10B981),
-        secondaryColor = Color(0xFF6366F1),
-        bgColor = Color(0xFF064E3B),
-        surfaceColor = Color(0xFF065F46),
-        textColor = Color(0xFFECFDF5),
-        atmosphereEffect = AtmosphereEffect.AURORA
-    )
-
-    val obsidianTheme = ThemePreset(
-        id = "obsidian_gold",
-        name = "黑曜臻金",
-        style = "obsidian",
-        categoryName = "奢华",
-        primaryColor = Color(0xFFD4AF37),
-        secondaryColor = AmberGold,
-        bgColor = Color(0xFF121212),
-        surfaceColor = Color(0xFF1E1E1E),
-        textColor = Color(0xFFFDFBF7),
-        atmosphereEffect = AtmosphereEffect.NONE
     )
 
     val allThemes: List<ThemePreset> = listOf(
-        defaultTheme,
-        cuteTheme,
-        flameTheme,
-        cyberpunkTheme,
-        auroraTheme,
-        obsidianTheme
+        defaultTheme
     )
 }
 
