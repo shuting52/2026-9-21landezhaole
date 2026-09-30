@@ -313,21 +313,22 @@ fun SettingsScreen(
                 else -> "检查更新"
             },
             onClick = {
-                if (isCheckingUpdate) return@onClick
-                if (onCheckUpdate != null) {
-                    coroutineScope.launch {
-                        isCheckingUpdate = true
-                        val (hasNew, ver) = onCheckUpdate()
-                        isCheckingUpdate = false
-                        if (hasNew) {
-                            activeDialogType = "update"
-                        } else {
-                            // 无新版本：独立弹窗反馈「已是最新版本」
-                            showLatestVersionDialog = true
+                if (!isCheckingUpdate) {
+                    if (onCheckUpdate != null) {
+                        coroutineScope.launch {
+                            isCheckingUpdate = true
+                            val (hasNew, ver) = onCheckUpdate()
+                            isCheckingUpdate = false
+                            if (hasNew) {
+                                activeDialogType = "update"
+                            } else {
+                                // 无新版本：独立弹窗反馈「已是最新版本」
+                                showLatestVersionDialog = true
+                            }
                         }
+                    } else {
+                        activeDialogType = "update"
                     }
-                } else {
-                    activeDialogType = "update"
                 }
             }
         )
