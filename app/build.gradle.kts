@@ -44,8 +44,10 @@ android {
     // v1.0.18 全面洗牌：角标修复（遵循原动态设计、不遮挡站点内容）；更新弹窗安装修复
     // （REQUEST_INSTALL_PACKAGES + 授权引导 + 多镜像下载源 + 失败可关闭）；工具箱/软件版块取消展开收纳；
     // 设置版块主题与软件主题同步；软件主题升级为「国庆节为核心·可爱风格·最新CSS动态效果」，原有主题风格全部移除
-    versionCode = 99
-    versionName = "1.0.18"
+    // v1.0.19 自检修复：更新弹窗改为「点击立即更新后才下载安装」——移除自动下载，
+    // 点击按钮后优先使用官方直链（landezhao-v1.0.19）下载，失败自动切换多镜像，再免授权直装
+    versionCode = 100
+    versionName = "1.0.19"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }

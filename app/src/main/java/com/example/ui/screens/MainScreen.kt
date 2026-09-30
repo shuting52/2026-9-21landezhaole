@@ -586,10 +586,9 @@ fun MainScreen(
                     cancelText = "稍后再说"
                 ),
                 apkUrl = cloudVersion.apkUrl.ifBlank { null },
-                // 强制执行更新：弹窗出现后不可自行关闭，必须用户点「立即更新」
+                // v1.0.19 自检修复：不再自动下载——用户点击「立即更新」按钮后才开始下载并安装新版本
                 forceUpdate = true,
-                // v1.7.6 回归：弹窗出现后自动下载并免授权直装新版本（无需任何「允许未知应用」权限）
-                autoDownload = true
+                autoDownload = false
             )
         }
 
