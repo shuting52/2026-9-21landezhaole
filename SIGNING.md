@@ -7,6 +7,32 @@
 
 ---
 
+## 签名方案：V1 + V2 + V3 三重签名（v1.0.13 起）
+
+本体 APK 采用 **V1 + V2 + V3** 三重签名方案（`app/build.gradle.kts` signingConfigs.release 中显式配置）：
+
+| 签名方案 | 说明 | 适用系统 |
+|---|---|---|
+| V1 (JAR Signature) | 传统 jar 签名 | Android 7.0 (API 24) 以下 |
+| V2 (APK Signature Scheme v2) | 整包快速校验 | Android 7.0+ |
+| V3 (APK Signature Scheme v3) | 支持密钥轮换 | Android 9.0+ |
+
+```kotlin
+signingConfigs {
+    create("release") {
+        ...
+        enableV1Signing = true
+        enableV2Signing = true
+        enableV3Signing = true
+        enableV4Signing = false  // V4 仅 adb 增量安装需要，普通分发关闭
+    }
+}
+```
+
+> 三重签名保证：低版本系统设备（Android 7.0 以下）也能正常安装（V1），主流设备走快速校验（V2/V3），覆盖安装/升级完全兼容。
+
+---
+
 ## 一、本地构建（推荐首次设置）
 
 ### 1. 生成永久 keystore（**只生成一次，保管好**）

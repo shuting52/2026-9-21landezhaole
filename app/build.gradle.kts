@@ -62,6 +62,13 @@ android {
       storePassword = if (useDebugFallback) "android" else (System.getenv("STORE_PASSWORD") ?: "lzdz2026!secure")
       keyAlias = if (useDebugFallback) "androiddebugkey" else (System.getenv("KEY_ALIAS") ?: "upload")
       keyPassword = if (useDebugFallback) "android" else (System.getenv("KEY_PASSWORD") ?: "lzdz2026!secure")
+      // v1.0.13：签名方案 V1 + V2 + V3 三重签名（兼容 Android 7.0 及以下设备 V1，主流设备 V2/V3）
+      // V1 = JAR 签名（Android 7.0 以下）；V2 = APK Signature Scheme v2（Android 7.0+）；
+      // V3 = APK Signature Scheme v3（Android 9.0+，支持密钥轮换）
+      enableV1Signing = true
+      enableV2Signing = true
+      enableV3Signing = true
+      enableV4Signing = false
     }
     create("debugConfig") {
       storeFile = file("${rootDir}/debug.keystore")
