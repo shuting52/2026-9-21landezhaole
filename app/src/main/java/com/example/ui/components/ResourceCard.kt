@@ -4,6 +4,13 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -250,16 +257,19 @@ fun ResourceCard(
         // 公司角标同样呈现动态流光扫过 + 呼吸缩放 + 摇摆。
         val company = detectCompanyBadge(card)
         if (company != null) {
+            // 动画值在 Composable 上下文计算（graphicsLayer/Brush 参数均为非 Composable 上下文）
+            val flowOffset = badgeFlow()
+            val breathe = badgeBreathe()
+            val wobble = badgeWobble()
             // 检测到公司：动态流光胶囊角标（不叠加、不遮挡内容）
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .offset(x = 8.dp, y = (-9).dp)
                     .graphicsLayer {
-                        val breathe = badgeBreathe()
                         scaleX = breathe
                         scaleY = breathe
-                        rotationZ = badgeWobble()
+                        rotationZ = wobble
                     }
                     .clip(RoundedCornerShape(6.dp))
                     .background(
@@ -269,8 +279,8 @@ fun ResourceCard(
                                 company.color.copy(alpha = 0.72f),
                                 company.color
                             ),
-                            start = Offset(badgeFlow() * 120f, 0f),
-                            end = Offset(badgeFlow() * 120f + 80f, 0f)
+                            start = Offset(flowOffset * 120f, 0f),
+                            end = Offset(flowOffset * 120f + 80f, 0f)
                         )
                     )
                     .padding(horizontal = 6.dp, vertical = 3.dp)
@@ -312,13 +322,13 @@ fun ResourceCard(
 // ============================================================
 @Composable
 private fun badgeFlow(): Float {
-    val transition = androidx.compose.animation.core.rememberInfiniteTransition(label = "company_badge_flow")
+    val transition = rememberInfiniteTransition(label = "company_badge_flow")
     val flow by transition.animateFloat(
         initialValue = -1f,
         targetValue = 1f,
-        animationSpec = androidx.compose.animation.core.infiniteRepeatable(
-            animation = androidx.compose.animation.core.tween(1600, easing = androidx.compose.animation.core.LinearEasing),
-            repeatMode = androidx.compose.animation.core.RepeatMode.Restart
+        animationSpec = infiniteRepeatable(
+            animation = tween(1600, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
         ),
         label = "company_badge_flow_v"
     )
@@ -327,13 +337,13 @@ private fun badgeFlow(): Float {
 
 @Composable
 private fun badgeBreathe(): Float {
-    val transition = androidx.compose.animation.core.rememberInfiniteTransition(label = "company_badge_breathe")
+    val transition = rememberInfiniteTransition(label = "company_badge_breathe")
     val s by transition.animateFloat(
         initialValue = 0.92f,
         targetValue = 1.08f,
-        animationSpec = androidx.compose.animation.core.infiniteRepeatable(
-            animation = androidx.compose.animation.core.tween(750, easing = androidx.compose.animation.core.FastOutSlowInEasing),
-            repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
+        animationSpec = infiniteRepeatable(
+            animation = tween(750, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
         ),
         label = "company_badge_breathe_v"
     )
@@ -342,13 +352,13 @@ private fun badgeBreathe(): Float {
 
 @Composable
 private fun badgeWobble(): Float {
-    val transition = androidx.compose.animation.core.rememberInfiniteTransition(label = "company_badge_wobble")
+    val transition = rememberInfiniteTransition(label = "company_badge_wobble")
     val w by transition.animateFloat(
         initialValue = -4f,
         targetValue = 4f,
-        animationSpec = androidx.compose.animation.core.infiniteRepeatable(
-            animation = androidx.compose.animation.core.tween(900, easing = androidx.compose.animation.core.LinearEasing),
-            repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
+        animationSpec = infiniteRepeatable(
+            animation = tween(900, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
         ),
         label = "company_badge_wobble_v"
     )
