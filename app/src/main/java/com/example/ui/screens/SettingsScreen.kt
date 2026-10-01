@@ -622,8 +622,8 @@ fun SettingsScreen(
                 update = cloudUpdate,
                 apkUrl = cloudVersion?.apkUrl?.ifBlank { null },
                 forceUpdate = cloudVersion?.force == true,
-                // 检查更新进入弹窗后同样自动下载并免授权直装
-                autoDownload = true
+                // v1.0.16：点击「立即更新」后才开始下载安装（不自动下载）
+                autoDownload = false
             )
         }
         "official_website" -> {
