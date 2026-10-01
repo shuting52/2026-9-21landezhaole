@@ -46,8 +46,9 @@ android {
     // 设置版块主题与软件主题同步；软件主题升级为「国庆节为核心·可爱风格·最新CSS动态效果」，原有主题风格全部移除
     // v1.1.1 正式版：更新弹窗恢复自动下载（弹窗出现即下载安装），免「未知应用」授权也能安装
     // 首页角标一致性 + 取消软件/工具箱/Skill 删除分类 + 国庆主题全 UI 组件
-    versionCode = 102
-    versionName = "1.1.2"
+    // v1.1.3 主题升级：新增「霓虹地图·荧光绿」主题预设（深色地图底+荧光绿+白字+星空氛围）并设为默认
+    versionCode = 103
+    versionName = "1.1.3"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
