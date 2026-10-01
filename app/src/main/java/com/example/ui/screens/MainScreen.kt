@@ -319,8 +319,14 @@ fun MainScreen(
                             }
                         }
                         itemsIndexed(filteredCards, key = { index, card -> "${card.id}_${card.url}_$index" }) { _, card ->
+                            // v1.0.18 角标优化：NEW 角标改用实际名字（所属分类名）代替
+                            val realBadge = card.copy(
+                                badge = if (card.badge.isNullOrBlank() || card.badge == "NEW")
+                                    uiState.categories.firstOrNull { it.id == card.categoryId }?.name ?: card.badge
+                                else card.badge
+                            )
                             ResourceCard(
-                                card = card,
+                                card = realBadge,
                                 isFavorite = favUrls.contains(card.url),
                                 onCardClick = { viewModel.openCard(context, it) },
                                 onFavoriteToggle = { viewModel.toggleFavorite(it, context) },
@@ -369,7 +375,9 @@ fun MainScreen(
                         onDelete = { id -> viewModel.deleteUploadedResource(id) },
                         modifier = Modifier.padding(paddingValues),
                         showDelete = false,
-                        // v1.0.4：软件自动分类/自动icon + 一排三个横排网格呈现
+                        // v1.0.4：软件自动分类/自动icon + 一排三个横排网格呈现；
+                        // v1.0.18 增加 .u-tab 推荐/关注/热门筛选（关注=收藏）
+                        favoriteUrls = favUrls
                         gridMode = true
                     )
                 }
@@ -1569,8 +1577,12 @@ private fun LuckyDrawSheetContent(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.weight(1f))
-                    if (!card.badge.isNullOrBlank()) {
-                        RibbonBadge(text = card.badge, badgeType = card.badgeType)
+                    // v1.0.18 角标优化：NEW 角标改用实际名字（所属分类名）代替
+                    val drawBadgeText = if (card.badge.isNullOrBlank() || card.badge == "NEW")
+                        categories.firstOrNull { it.id == card.categoryId }?.name ?: card.badge
+                    else card.badge
+                    if (!drawBadgeText.isNullOrBlank()) {
+                        RibbonBadge(text = drawBadgeText, badgeType = card.badgeType)
                     }
                 }
 
@@ -1938,3 +1950,4 @@ private fun DynamicNewBadge(modifier: Modifier = Modifier) {
         )
     }
 }
+
