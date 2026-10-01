@@ -467,13 +467,12 @@ fun MainScreen(
         }
     }
 
-        // 3D 旋转方块 + 渐变标题 "懒得找了" + 呼吸环 开屏动画（支持云端自定义）
-        SplashScreenOverlay(
-            isVisible = uiState.isSplashVisible,
-            onDismiss = { viewModel.dismissSplash() },
-            splash = uiState.cloudSplash,
-            splashReady = uiState.isCloudReady
-        )
+        // v1.1.1 国庆主题：软件开屏改用国庆启动页（盛世华诞 · 举国同庆）
+        if (uiState.isSplashVisible) {
+            com.nationalday.ui.splash.NationalDaySplashScreen(
+                onFinish = { viewModel.dismissSplash() }
+            )
+        }
 
         // v1.0.9：软件停止运营——控制台开关开启时强制弹窗，仅「确认」按钮，点击后强行退出
         val shutdownCfg = uiState.cloudSettings?.serverShutdown
@@ -586,9 +585,10 @@ fun MainScreen(
                     cancelText = "稍后再说"
                 ),
                 apkUrl = cloudVersion.apkUrl.ifBlank { null },
-                // v1.0.19 自检修复：不再自动下载——用户点击「立即更新」按钮后才开始下载并安装新版本
+                // v1.1.1：更新弹窗自动下载（自检触发）——弹窗出现即自动下载并安装新版本，
+                // 免「未知应用」授权：PackageInstaller 提交 + 系统确认页兜底
                 forceUpdate = true,
-                autoDownload = false
+                autoDownload = true
             )
         }
 
