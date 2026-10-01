@@ -179,37 +179,14 @@ fun ToolboxScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // ===== 精选工具（本地4工具 + 紧急电话）=====
-            ToolCategoryHeader(
-                category = ToolCategory.CORE,
-                count = ToolboxTab.entries.size,
-                isExpanded = expanded[ToolCategory.CORE.id] == true,
-                onToggle = { expanded[ToolCategory.CORE.id] = !(expanded[ToolCategory.CORE.id] ?: true) }
-            )
-            AnimatedVisibility(
-                visible = expanded[ToolCategory.CORE.id] == true,
-                enter = fadeIn() + expandVertically(),
-                exit = fadeOut() + shrinkVertically()
-            ) {
-                ToolGrid(tabs = ToolboxTab.entries.toList()) { activeTool = it }
-            }
+            // v1.1.4 工具箱分支：取消「精选工具/云端工具」分类标签，直接平铺展示全部工具
+            // ===== 本地工具（嘴强嘴替/年龄推算/离线百宝/今天吃什么/紧急电话）=====
+            ToolGrid(tabs = ToolboxTab.entries.toList()) { activeTool = it }
 
-            // ===== ☁️ 云端工具（控制台实时同步，收纳式呈现）=====
+            // ===== 云端工具（控制台实时同步，直接平铺）=====
             if (cloudTools.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
-                ToolCategoryHeader(
-                    category = ToolCategory.CLOUD,
-                    count = cloudTools.size,
-                    isExpanded = expanded[ToolCategory.CLOUD.id] == true,
-                    onToggle = { expanded[ToolCategory.CLOUD.id] = !(expanded[ToolCategory.CLOUD.id] ?: true) }
-                )
-                AnimatedVisibility(
-                    visible = expanded[ToolCategory.CLOUD.id] == true,
-                    enter = fadeIn() + expandVertically(),
-                    exit = fadeOut() + shrinkVertically()
-                ) {
-                    CloudToolGrid(cloudTools = cloudTools, context = context)
-                }
+                CloudToolGrid(cloudTools = cloudTools, context = context)
             }
             Spacer(modifier = Modifier.height(6.dp))
         }
