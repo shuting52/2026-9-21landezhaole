@@ -377,7 +377,7 @@ fun MainScreen(
                         showDelete = false,
                         // v1.0.4：软件自动分类/自动icon + 一排三个横排网格呈现；
                         // v1.0.18 增加 .u-tab 推荐/关注/热门筛选（关注=收藏）
-                        favoriteUrls = favUrls
+                        favoriteUrls = favUrls,
                         gridMode = true
                     )
                 }
