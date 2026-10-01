@@ -585,10 +585,10 @@ fun MainScreen(
                     cancelText = "稍后再说"
                 ),
                 apkUrl = cloudVersion.apkUrl.ifBlank { null },
-                // v1.1.1：更新弹窗自动下载（自检触发）——弹窗出现即自动下载并安装新版本，
-                // 免「未知应用」授权：PackageInstaller 提交 + 系统确认页兜底
+                // v1.0.16：改为点击「立即更新」后才开始下载安装（不自动下载），
+                // 下载完成直接用系统安装器安装，绝不卡在安装中
                 forceUpdate = true,
-                autoDownload = true
+                autoDownload = false
             )
         }
 
