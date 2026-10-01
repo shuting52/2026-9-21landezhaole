@@ -59,6 +59,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.example.data.local.db.UploadedResourceEntity
 import com.example.data.util.VideoCache
 import com.example.ui.components.SkillDetailDialog
+import com.example.ui.components.UTabRow
 
 /** v1.8.7：资源自动归类关键词（用于自动识别软件是做什么的） */
 private val AUTO_CATEGORY_RULES = listOf(
@@ -106,24 +107,40 @@ fun UploadHubScreen(
     onDelete: (id: String) -> Unit,
     modifier: Modifier = Modifier,
     showDelete: Boolean = true,
-    gridMode: Boolean = false
+    gridMode: Boolean = false,
+    // v1.0.18 软件版块 .u-tab 推荐/关注/热门：favoriteUrls 用于「关注」筛选
+    favoriteUrls: Set<String> = emptySet()
 ) {
     val context = LocalContext.current
 
     // Skill 技能库：点击卡片弹独立详情（视频预览/提示词/下载/跳转）
     var skillDetail by remember { mutableStateOf<UploadedResourceEntity?>(null) }
 
+    // v1.0.18 软件版块 .u-tab：0=推荐（全部）/ 1=关注（收藏）/ 2=热门（badge 含 热门/推荐/精选/官方）
+    var softTabIndex by remember { mutableStateOf(0) }
+    val softTabList = listOf("推荐", "关注", "热门")
+    val displayResources = remember(softTabIndex, resources, favoriteUrls) {
+        when (softTabIndex) {
+            1 -> resources.filter { it.url in favoriteUrls || it.id in favoriteUrls }
+            2 -> resources.filter {
+                val b = it.badge + it.desc + it.title
+                b.contains("热门") || b.contains("推荐") || b.contains("精选") || b.contains("官方")
+            }
+            else -> resources
+        }
+    }
+
     Box(modifier = modifier.fillMaxSize()) {
         if (gridMode && (resourceType == "software" || resourceType == "skill")) {
             // ===== 软件/Skill：分类收纳 + 竖排列表呈现（v1.0.12：取消横屏滑动 LazyRow） =====
             // 自动归类分组（保持云端的顺序，仅分组显示）
-            val grouped = remember(resources) {
+            val grouped = remember(displayResources) {
                 val map = LinkedHashMap<String, MutableList<UploadedResourceEntity>>()
-                resources.forEach { map.getOrPut(autoCategorize(it)) { mutableListOf() }.add(it) }
+                displayResources.forEach { map.getOrPut(autoCategorize(it)) { mutableListOf() }.add(it) }
                 map.toList()
             }
             // v1.0.7：分类收纳——默认收起，点击分类标题才展开
-            val expandedCats = remember(resources) { mutableStateMapOf<String, Boolean>() }
+            val expandedCats = remember(displayResources) { mutableStateMapOf<String, Boolean>() }
             // 主题色渐变（软件卡片专用，v1.0.9 主题升级）
             val themePrimary = MaterialTheme.colorScheme.primary
             val themeSecondary = MaterialTheme.colorScheme.secondary
@@ -133,6 +150,17 @@ fun UploadHubScreen(
                     .padding(horizontal = 12.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                // v1.0.18 软件版块 .u-tab：推荐 / 关注 / 热门（仅 software 显示）
+                if (resourceType == "software") {
+                    item {
+                        UTabRow(
+                            tabs = softTabList,
+                            selectedIndex = softTabIndex,
+                            onSelect = { softTabIndex = it },
+                            modifier = Modifier.padding(bottom = 6.dp)
+                        )
+                    }
+                }
                 item {
                     Column(modifier = Modifier.padding(bottom = 6.dp)) {
                         // v1.0.9 主题横幅：主题色渐变 + 圆点装饰，软件版块主题感立现
@@ -161,7 +189,7 @@ fun UploadHubScreen(
                                         color = Color.White
                                     )
                                     Text(
-                                        text = subtitle + (if (resources.isNotEmpty()) "　·　共 ${resources.size} 款" else ""),
+                                        text = subtitle + (if (displayResources.isNotEmpty()) "　·　共 ${displayResources.size} 款" else ""),
                                         fontSize = 11.sp,
                                         color = Color.White.copy(alpha = 0.9f),
                                         maxLines = 2
