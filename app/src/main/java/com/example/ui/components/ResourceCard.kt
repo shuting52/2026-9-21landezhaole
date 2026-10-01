@@ -64,9 +64,14 @@ fun ResourceCard(
     onCardClick: (NavCard) -> Unit,
     onFavoriteToggle: (NavCard) -> Unit,
     onCardLongClick: ((NavCard) -> Unit)? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    // v1.1.4 主题分支：组件级主题定制（componentThemes）真正生效
+    componentThemes: Map<String, String> = emptyMap()
 ) {
     val uiverse = LocalUiverseState.current
+
+    // v1.1.4：若用户在主题切换中定制了「站点卡片」组件，则覆盖默认 cardStyle
+    val cardCompStyle = ComponentThemeResolver.resolve(componentThemes, "card_item")
 
     val cardShape = when (uiverse.cardStyle) {
         CardStylePreset.CYBERPUNK -> RoundedCornerShape(topStart = 0.dp, topEnd = 14.dp, bottomEnd = 0.dp, bottomStart = 14.dp)
@@ -78,7 +83,7 @@ fun ResourceCard(
         CardStylePreset.LUXURY_GOLD -> RoundedCornerShape(12.dp)
         CardStylePreset.CUSTOM -> RoundedCornerShape(uiverse.customStyle?.cornerRadius ?: 10.dp)
         else -> RoundedCornerShape(10.dp)
-    }
+    }.let { if (cardCompStyle != null) RoundedCornerShape(cardCompStyle.cornerRadius) else it }
 
     val cardElevation = when (uiverse.cardStyle) {
         CardStylePreset.CYBERPUNK -> 4.dp
@@ -111,7 +116,7 @@ fun ResourceCard(
         CardStylePreset.LUXURY_GOLD -> Color(0xFFD4AF37)
         CardStylePreset.CUSTOM -> uiverse.customStyle?.textColor ?: MaterialTheme.colorScheme.onSurface
         else -> MaterialTheme.colorScheme.onSurface
-    }
+    }.let { if (compText != null) compText else it }
 
     val descColor = when (uiverse.cardStyle) {
         CardStylePreset.CYBERPUNK -> Color(0xFF94A3B8)
@@ -119,6 +124,10 @@ fun ResourceCard(
         CardStylePreset.CUSTOM -> (uiverse.customStyle?.textColor ?: MaterialTheme.colorScheme.onSurfaceVariant).copy(alpha = 0.75f)
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
+
+    // v1.1.4 主题分支：组件定制覆盖（卡片背景/文字色由 componentThemes 决定时优先）
+    val compBg = cardCompStyle?.backgroundColor
+    val compText = cardCompStyle?.textColor
 
     val cardBgModifier: Modifier = when (uiverse.cardStyle) {
         CardStylePreset.CYBERPUNK -> Modifier.background(Color(0xFF0F101A))
@@ -141,7 +150,7 @@ fun ResourceCard(
             }
         }
         else -> Modifier.background(MaterialTheme.colorScheme.surface)
-    }
+    }.let { if (compBg != null) it.then(Modifier.background(compBg)) else it }
 
     val cardBorderModifier: Modifier = when (uiverse.cardStyle) {
         CardStylePreset.CYBERPUNK -> Modifier.border(1.5.dp, Color(0xFF00F0FF), cardShape)

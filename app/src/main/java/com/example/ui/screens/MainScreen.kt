@@ -273,7 +273,8 @@ fun MainScreen(
                                 cloudMarquee = uiState.cloudMarquee,
                                 cloudIpMonitor = uiState.cloudIpMonitor,
                                 cloudAppName = uiState.cloudSettings?.appName?.ifBlank { "懒得找了" } ?: "懒得找了",
-                                cloudLogo = uiState.cloudSettings?.logoUrl.orEmpty()
+                                cloudLogo = uiState.cloudSettings?.logoUrl.orEmpty(),
+                                componentThemes = uiState.activeUiverseState.componentThemes
                             )
                         }
 
@@ -288,7 +289,8 @@ fun MainScreen(
                         item(span = { GridItemSpan(3) }) {
                             SearchSection(
                                 query = uiState.searchQuery,
-                                onQueryChange = { viewModel.updateSearchQuery(it) }
+                                onQueryChange = { viewModel.updateSearchQuery(it) },
+                                componentThemes = uiState.activeUiverseState.componentThemes
                             )
                         }
 
@@ -330,7 +332,9 @@ fun MainScreen(
                                 isFavorite = favUrls.contains(card.url),
                                 onCardClick = { viewModel.openCard(context, it) },
                                 onFavoriteToggle = { viewModel.toggleFavorite(it, context) },
-                                onCardLongClick = { viewModel.showDetail(it) }
+                                onCardLongClick = { viewModel.showDetail(it) },
+                                // v1.1.4 主题分支：组件级定制真正生效
+                                componentThemes = uiState.activeUiverseState.componentThemes
                             )
                         }
 
@@ -842,28 +846,33 @@ private fun HeaderBrandSection(
     cloudMarquee: com.example.data.remote.MarqueeDto? = null,
     cloudIpMonitor: com.example.data.remote.IpMonitorDto? = null,
     cloudAppName: String = "懒得找了",
-    cloudLogo: String = ""
+    cloudLogo: String = "",
+    // v1.1.4 主题分支：组件级定制（home_header）
+    componentThemes: Map<String, String> = emptyMap()
 ) {
     val primaryColor = MaterialTheme.colorScheme.primary
     val secondaryColor = MaterialTheme.colorScheme.secondary
+    // v1.1.4：组件定制覆盖（home_header）
+    val headerComp = com.example.ui.components.ComponentThemeResolver.resolve(componentThemes, "home_header")
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(elevation = 2.dp, shape = RoundedCornerShape(14.dp))
-            .clip(RoundedCornerShape(14.dp))
+            .shadow(elevation = 2.dp, shape = RoundedCornerShape(headerComp?.cornerRadius ?: 14.dp))
+            .clip(RoundedCornerShape(headerComp?.cornerRadius ?: 14.dp))
             .background(
                 brush = Brush.horizontalGradient(
                     listOf(
-                        MaterialTheme.colorScheme.surface,
-                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        headerComp?.backgroundColor ?: MaterialTheme.colorScheme.surface,
+                        headerComp?.backgroundColor?.copy(alpha = 0.5f)
+                            ?: MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                     )
                 )
             )
             .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
-                shape = RoundedCornerShape(14.dp)
+                width = (headerComp?.borderWidth ?: 1.dp),
+                color = headerComp?.borderColor ?: MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
+                shape = RoundedCornerShape(headerComp?.cornerRadius ?: 14.dp)
             )
             .padding(horizontal = 14.dp, vertical = 10.dp)
     ) {
@@ -1168,24 +1177,28 @@ fun DynamicOnlineCountWidget(
 @Composable
 private fun SearchSection(
     query: String,
-    onQueryChange: (String) -> Unit
+    onQueryChange: (String) -> Unit,
+    // v1.1.4 主题分支：组件级定制（search_box）
+    componentThemes: Map<String, String> = emptyMap()
 ) {
     val uiverse = LocalUiverseState.current
     val primaryColor = MaterialTheme.colorScheme.primary
+    // v1.1.4：组件定制覆盖（search_box）
+    val searchComp = com.example.ui.components.ComponentThemeResolver.resolve(componentThemes, "search_box")
     val inputShape = when (uiverse.inputStyle) {
         InputStylePreset.CYBER_TERMINAL -> RoundedCornerShape(topStart = 0.dp, topEnd = 12.dp, bottomEnd = 0.dp, bottomStart = 12.dp)
         InputStylePreset.GLASS_INSET -> RoundedCornerShape(16.dp)
         InputStylePreset.NEO_BRUTALIST_BOX -> RoundedCornerShape(6.dp)
         InputStylePreset.CUSTOM -> RoundedCornerShape(uiverse.customStyle?.cornerRadius ?: 12.dp)
         else -> RoundedCornerShape(12.dp)
-    }
+    }.let { if (searchComp != null) RoundedCornerShape(searchComp.cornerRadius) else it }
     val containerColor = when (uiverse.inputStyle) {
         InputStylePreset.CYBER_TERMINAL -> Color(0xFF0F101A)
         InputStylePreset.GLASS_INSET -> Color(0x33FFFFFF)
         InputStylePreset.NEO_BRUTALIST_BOX -> Color.White
         InputStylePreset.CUSTOM -> uiverse.customStyle?.backgroundColor ?: MaterialTheme.colorScheme.surface
         else -> MaterialTheme.colorScheme.surface
-    }
+    }.let { if (searchComp?.backgroundColor != null) searchComp.backgroundColor else it }
     val focusedBorderColor = when (uiverse.inputStyle) {
         InputStylePreset.CYBER_TERMINAL -> Color(0xFF00F0FF)
         InputStylePreset.NEO_BRUTALIST_BOX -> Color.Black
