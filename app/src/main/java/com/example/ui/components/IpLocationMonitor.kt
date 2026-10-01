@@ -179,6 +179,9 @@ private fun fetchIpInfoRobust(configUrl: String = ""): String? {
 
 /**
  * 请求单个 IP 定位数据源，解析为「IP · 省 市 区 · 运营商 · 经纬度」高精度中文字符串。
+ * v1.1.4 兼容两种返回格式：
+ *   - JSON 源（ip.useragentinfo.com / ipinfo.io / ip-api.com 等）
+ *   - 纯文本源（https://myip.ipip.net/ 返回「当前 IP：x.x.x.x  来自于：中国 北京 北京  阿里云」）
  */
 private fun fetchIpInfo(url: String): String? {
     return try {
@@ -194,40 +197,71 @@ private fun fetchIpInfo(url: String): String? {
         client.newCall(request).execute().use { resp ->
             if (!resp.isSuccessful) return null
             val body = resp.body?.string() ?: return null
-            val obj = JSONObject(body)
-            // 通用字段：ip / query
-            val ip = obj.optString("query").ifBlank { obj.optString("ip") }
-            // 地区字段（兼容各源命名）
-            val city = obj.optString("city").ifBlank { obj.optString("city_name") }
-            val region = obj.optString("regionName").ifBlank { obj.optString("province") }
-            val country = obj.optString("country").ifBlank { obj.optString("country_name") }
-            val district = obj.optString("district")
-            // 运营商（ipinfo: org / 百du: isp）
-            val isp = obj.optString("org").ifBlank { obj.optString("isp") }
-            // 经纬度（ipinfo: loc="lat,lon" / ip-api: lat+lon）
-            val loc = obj.optString("loc")
-            val lat = obj.optString("lat")
-            val lon = obj.optString("lon")
-            val coord = when {
-                loc.isNotBlank() && loc.contains(",") -> {
-                    val parts = loc.split(",")
-                    if (parts.size >= 2) "${parts[0].trim()},${parts[1].trim()}" else ""
-                }
-                lat.isNotBlank() && lon.isNotBlank() -> "$lat,$lon"
-                else -> ""
+            // 先尝试 JSON 解析（ip.useragentinfo / ipinfo / ip-api 等 JSON 源）
+            val jsonResult = try {
+                val obj = JSONObject(body)
+                parseIpJson(obj)
+            } catch (e: Exception) {
+                null
             }
-            // 组装定位文本（含经纬度时更精准）
-            val locParts = listOf(country, region, city, district)
-                .filter { it.isNotBlank() && it != "N/A" && it != "--" && it != "0" }
-                .distinct()
-            val base = if (ip.isNotBlank()) "$ip · ${locParts.joinToString(" ")}" else if (locParts.isNotEmpty()) locParts.joinToString(" ") else return null
-            val extra = listOf(
-                isp.takeIf { it.isNotBlank() && it != "N/A" }?.substringBefore(" "),
-                coord.takeIf { it.isNotBlank() }
-            ).filterNotNull()
-            return if (extra.isNotEmpty()) "$base（${extra.joinToString(" · ")}）" else base
+            if (jsonResult != null) return jsonResult
+            // JSON 解析失败：按纯文本源解析（myip.ipip.net 格式：当前 IP：39.107.229.147  来自于：中国 北京 北京  阿里云）
+            parseIpPlainText(body)
         }
     } catch (e: Exception) {
         null
     }
+}
+
+/** 解析 JSON 格式的 IP 定位数据（ip.useragentinfo / ipinfo / ip-api） */
+private fun parseIpJson(obj: JSONObject): String? {
+    // 通用字段：ip / query
+    val ip = obj.optString("query").ifBlank { obj.optString("ip") }
+    // 地区字段（兼容各源命名）
+    val city = obj.optString("city").ifBlank { obj.optString("city_name") }
+    val region = obj.optString("regionName").ifBlank { obj.optString("province") }
+    val country = obj.optString("country").ifBlank { obj.optString("country_name") }
+    val district = obj.optString("district")
+    // 运营商（ipinfo: org / 百度: isp）
+    val isp = obj.optString("org").ifBlank { obj.optString("isp") }
+    // 经纬度（ipinfo: loc="lat,lon" / ip-api: lat+lon）
+    val loc = obj.optString("loc")
+    val lat = obj.optString("lat")
+    val lon = obj.optString("lon")
+    val coord = when {
+        loc.isNotBlank() && loc.contains(",") -> {
+            val parts = loc.split(",")
+            if (parts.size >= 2) "${parts[0].trim()},${parts[1].trim()}" else ""
+        }
+        lat.isNotBlank() && lon.isNotBlank() -> "$lat,$lon"
+        else -> ""
+    }
+    // 组装定位文本（含经纬度时更精准）
+    val locParts = listOf(country, region, city, district)
+        .filter { it.isNotBlank() && it != "N/A" && it != "--" && it != "0" }
+        .distinct()
+    val base = if (ip.isNotBlank()) "$ip · ${locParts.joinToString(" ")}" else if (locParts.isNotEmpty()) locParts.joinToString(" ") else return null
+    val extra = listOf(
+        isp.takeIf { it.isNotBlank() && it != "N/A" }?.substringBefore(" "),
+        coord.takeIf { it.isNotBlank() }
+    ).filterNotNull()
+    return if (extra.isNotEmpty()) "$base（${extra.joinToString(" · ")}）" else base
+}
+
+/**
+ * 解析纯文本格式的 IP 定位数据（myip.ipip.net）：
+ * 「当前 IP：39.107.229.147  来自于：中国 北京 北京  阿里云」
+ */
+private fun parseIpPlainText(body: String): String? {
+    val text = body.trim()
+    if (text.isBlank()) return null
+    // 提取 IP 地址
+    val ipRegex = Regex("(?<!\\d)\\d{1,3}(?:\\.\\d{1,3}){3}(?!\\d)")
+    val ip = ipRegex.find(text)?.value ?: return null
+    // 提取「来自于：」之后的地区/运营商文本
+    val location = text.substringAfter("来自于：", "").trim().ifBlank {
+        text.substringAfter("来自于:", "").trim()
+    }
+    val locationClean = location.replace(Regex("\\s+"), " ").trim()
+    return if (locationClean.isNotBlank()) "$ip · $locationClean" else ip
 }

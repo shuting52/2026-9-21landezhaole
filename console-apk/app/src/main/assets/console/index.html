@@ -754,7 +754,7 @@ function collectAllForms(){
       };
       S.admin.ipMonitor = {
         enabled: $("fIpEnabled").value === "true",
-        url: $("fIpUrl").value.trim() || "https://ip.useragentinfo.com/json"
+        url: $("fIpUrl").value.trim() || "https://myip.ipip.net/"
       };
     }
     // ---- 开屏页 ----
@@ -2083,9 +2083,9 @@ function renderSettings(){
       <option value="false" ${(S.admin.ipMonitor||{}).enabled?"":"selected"}>? 关闭（首页不显示定位）</option>
       <option value="true" ${(S.admin.ipMonitor||{}).enabled?"selected":""}>✅ 开启（首页置顶显示定位 IP）</option>
     </select>
-    <label>IP 定位数据源 URL（返回 JSON 含 ip/city/region；仅用于定位，UI 不显示网站字样）</label>
-    <input id="fIpUrl" value="${esc((S.admin.ipMonitor||{}).url||"https://ip.useragentinfo.com/json")}" placeholder="https://ip.useragentinfo.com/json">
-    <div class="hint">默认高精度中文源 https://ip.useragentinfo.com/json（含省市区）；备选 https://ipinfo.io/json 或 https://ip-api.com/json/?lang=zh-CN</div>
+    <label>IP 定位数据源 URL（返回 JSON 或纯文本；仅用于定位，UI 不显示网站字样）</label>
+    <input id="fIpUrl" value="${esc((S.admin.ipMonitor||{}).url||"https://myip.ipip.net/")}" placeholder="https://myip.ipip.net/">
+    <div class="hint">默认源 https://myip.ipip.net/（纯文本高精度中文源，显示 IP + 省市区 + 运营商）；备选 JSON 源 https://ip.useragentinfo.com/json 或 https://ipinfo.io/json</div>
     <div class="divider"></div>
     <h3>📮 联系作者与反馈</h3>
     <div class="two-col">
@@ -2250,10 +2250,10 @@ function saveSettings(){
     defaultText: $("fMqDefault").value.trim(),
     segments: S.admin.marquee.segments || []
   };
-  // IP 定位监控（默认高精度中文源 https://ip.useragentinfo.com/json；本体端会多源投票取最精准结果）
+  // IP 定位监控（默认源 https://myip.ipip.net/ 纯文本中文源；本体端会多源投票取最精准结果）
   S.admin.ipMonitor = {
     enabled: $("fIpEnabled").value === "true",
-    url: $("fIpUrl").value.trim() || "https://ip.useragentinfo.com/json"
+    url: $("fIpUrl").value.trim() || "https://myip.ipip.net/"
   };
   toast("设置已保存，点击「应用并实时同步」推送到本体","ok");
   logChange("更新设置版块（品牌/联系/公告/主题/IP定位/加固）");
