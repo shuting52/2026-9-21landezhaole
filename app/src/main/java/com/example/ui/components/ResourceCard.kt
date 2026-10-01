@@ -243,24 +243,47 @@ fun ResourceCard(
             }
         }
 
-        // Ribbon Badge positioned at top right
-        if (!card.badge.isNullOrBlank()) {
+        // v1.0.16 角标自动识别技术：每个站点只有一个角标
+        // 识别到公司时：公司名显示在右上角角标位置（CSS 品牌色，Box 样式）
+        // 未识别到公司时：保留原 RibbonBadge（NEW/HOT 等）
+        // v1.0.18 角标用实际分类名：云端 admin-data 可设置每个卡片 badge 字段（默认显示云端配置）
+        val company = detectCompanyBadge(card)
+        if (company != null) {
+            // 检测到公司：公司名占满角标位置（不叠加）
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 4.dp, end = 4.dp)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(company.color.copy(alpha = 0.92f))
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // 品牌色圆点
+                    Box(
+                        modifier = Modifier
+                            .size(5.dp)
+                            .clip(RoundedCornerShape(50))
+                            .background(Color.White.copy(alpha = 0.95f))
+                    )
+                    Spacer(modifier = Modifier.width(3.dp))
+                    Text(
+                        text = company.name,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Black,
+                        color = Color.White,
+                        maxLines = 1
+                    )
+                }
+            }
+        } else if (!card.badge.isNullOrBlank()) {
+            // 未识别到公司：保留原 RibbonBadge
             RibbonBadge(
                 text = card.badge,
                 badgeType = card.badgeType,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .offset(x = (-4).dp, y = (-3).dp)
-            )
-        }
-        // v1.0.15 角标自动识别技术：识别站点所属公司/品牌，显示在右上角角标下方
-        val company = detectCompanyBadge(card)
-        if (company != null) {
-            CompanyBadgeChip(
-                card = card,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .offset(x = (-4).dp, y = if (card.badge.isNullOrBlank()) (-3).dp else 20.dp)
             )
         }
     }
