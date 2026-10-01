@@ -1,18 +1,17 @@
 {
   "version": {
-    "code": 94,
-    "name": "1.0.13",
+    "code": 95,
+    "name": "1.0.14",
     "changelog": [
-      "✨ v1.0.13 版本恢复与修复",
-      "1. 版本恢复至 1.0.13，删除 1.0.14~1.0.17 全部历史版本",
-      "2. 修复更新弹窗安装新版本时旧版本软件闪退问题（更新链路更稳定）",
-      "3. 开屏动画改为纯色背景，简洁清爽",
-      "4. 保留完整设置、软件库、Skill 技能库（下载/跳转）、工具箱分享直达等全部功能",
+      "✨ v1.0.14 新版本发布～",
+      "✅ 基于 v1.0.13 修复包升级（V1+V2+V3 三重签名，安装更稳）",
+      "✅ 保留完整设置、软件库、Skill 技能库、工具箱等功能",
+      "? 修复更新链路，点击更新即可下载安装最新版",
       "? 欢迎体验，祝使用愉快！"
     ],
-    "force": true,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.0.13-1790775756.apk",
-    "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.0.13-1790775756.apk"
+    "force": false,
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.0.14-1790813025.apk",
+    "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.0.14-1790813025.apk"
   },
   "home": {
     "categories": [
