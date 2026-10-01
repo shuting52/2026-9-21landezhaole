@@ -215,54 +215,29 @@ fun AppUpdateDialog(
             oldVersionCode = currentVersionCode()
             installOutcome = null
 
-            // 优先 PackageInstaller 系统会话（Android 12+ 需 MUTABLE 回调，见 installViaPackageInstaller）
-            val committed = installViaPackageInstaller(context, file)
-            if (committed) {
-                statusLabel = "正在安装…"
-            } else {
-                // PackageInstaller 不可用 → 直接 FileProvider 打开系统安装器
-                statusLabel = "正在打开系统安装器…"
-                installViaFileProvider(context, file)
-            }
+            // ============ v1.0.16 重写：直接打开系统安装器（最可靠，绝不卡在安装中）============
+            // 问题根因：PackageInstaller 静默安装优先，国产 ROM 常拦截且回调丢失，
+            // 界面永远停在「正在安装…」（用户截图所见）。修复：下载完成后直接用 FileProvider
+            // 打开系统安装器，由用户点击「安装」完成更新 —— Android 最标准、最可靠的路径。
+            statusLabel = "下载完成，正在打开系统安装器…"
+            installViaFileProvider(context, file)
 
-            // ============ 看门狗 + 版本轮询兜底（v1.0.2 核心修复）============
+            // 后台轮询版本号收尾：用户点「安装」成功后，弹窗自动进入完成态
             coroutineScope.launch {
-                // 阶段一：等待 PackageInstaller 回调或版本变化（足够覆盖系统安装确认页）
-                if (committed) {
-                    val deadline = System.currentTimeMillis() + 60_000L
-                    while (System.currentTimeMillis() < deadline && installOutcome == null) {
-                        delay(600)
-                        if (currentVersionCode() > oldVersionCode) break
-                    }
+                val totalWait = System.currentTimeMillis() + 180_000L
+                while (currentVersionCode() <= oldVersionCode && System.currentTimeMillis() < totalWait) {
+                    delay(1500)
                 }
-                // 阶段二：回调迟迟未到且版本未变 → FileProvider 打开系统安装器兜底（保证一定能装）
-                if (installOutcome == null && currentVersionCode() <= oldVersionCode) {
-                    statusLabel = "自动安装未响应，正在打开系统安装器…"
-                    installViaFileProvider(context, file)
-                }
-                // 阶段三：持续轮询版本号（最长 120s），装完自动进入完成态
-                if (installOutcome == null) {
-                    val totalWait = System.currentTimeMillis() + 120_000L
-                    while (installOutcome == null && System.currentTimeMillis() < totalWait) {
-                        delay(1200)
-                        if (currentVersionCode() > oldVersionCode) {
-                            installOutcome = true
-                            progress = 100f
-                            statusLabel = "安装完成"
-                            return@launch
-                        }
-                    }
-                    // 长时间未安装成功：将按钮转为「重试」让用户可控
-                    if (installOutcome == null) {
-                        installOutcome = false
-                        statusLabel = "安装未完成，请点击重试"
-                    }
+                if (currentVersionCode() > oldVersionCode) {
+                    installOutcome = true
+                    progress = 100f
+                    statusLabel = "安装完成"
                 }
             }
         } catch (e: Exception) {
             installOutcome = false
-            statusLabel = "安装未能自动完成，请重新点击更新再试"
-            Toast.makeText(context, "安装未能自动完成，请重新点击更新再试", Toast.LENGTH_LONG).show()
+            statusLabel = "打开安装界面失败，请稍后重试"
+            Toast.makeText(context, "打开安装界面失败，请稍后重试", Toast.LENGTH_LONG).show()
         }
     }
 
