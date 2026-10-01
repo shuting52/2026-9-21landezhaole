@@ -39,8 +39,10 @@ android {
     // 与云端 admin-data.json version.code=94 / name=1.0.13 四要素对齐（含 apkUrl 指向真实 1.0.13 安装包）
     // v1.0.16：设置版块完整恢复（主题切换/联系作者/软件反馈等全功能）+ 角标自动识别技术 + 更新弹窗最新动态CSS特效
     // 与云端 admin-data.json version.code=97 / name=1.0.16 四要素对齐（含 apkUrl 指向真实 1.0.16 安装包）
-    versionCode = 97
-    versionName = "1.0.16"
+    // v1.0.17：修复设置版块空容器 + 角标单一化呈现
+    // 与云端 admin-data.json version.code=98 / name=1.0.17 四要素对齐（含 apkUrl 指向真实 1.0.17 安装包）
+    versionCode = 98
+    versionName = "1.0.17"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
