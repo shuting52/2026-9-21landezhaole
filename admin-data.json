@@ -1,16 +1,19 @@
 {
   "version": {
-    "code": 98,
-    "name": "1.0.17",
+    "code": 99,
+    "name": "1.0.18",
     "changelog": [
-      "✨ v1.0.17 紧急修复版",
-      "✅ 修复设置版块空容器问题——主题切换 / 联系作者 / 软件反馈等全部功能恢复正常",
-      "✅ 角标自动识别技术升级——每个站点卡片只有一个角标，识别到公司时公司名占满右上角位置",
-      "? 推荐所有用户升级"
+      "✨ v1.0.18 全面洗牌来啦～",
+      "? 角标修复：遵循原动态设计，不遮挡站点内容",
+      "? 更新弹窗安装修复：授权引导 + 多镜像下载源",
+      "? 工具箱/软件版块取消展开收纳，直接平铺",
+      "? 设置版块主题与软件主题同步",
+      "? 软件主题升级：国庆节为核心可爱风格，原有主题风格全部移除",
+      "? 新版本实时同步，退出软件重进即可完成更新"
     ],
     "force": true,
-    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.0.17-1790829469.apk",
-    "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.0.17-1790829469.apk"
+    "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.0.18-1790835592.apk",
+    "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.0.18-1790835592.apk"
   },
   "home": {
     "categories": [
