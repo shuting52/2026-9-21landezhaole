@@ -3,14 +3,16 @@
     "code": 103,
     "name": "1.1.3",
     "changelog": [
-      "✨ v1.1.3 主题升级来啦～",
-      "🎨 新增「霓虹地图 · 荧光绿」主题：深色地图底 + 荧光绿地标 + 白色文字 + 星空氛围",
-      "🎨 新主题已设为默认，原「国庆可爱」主题仍可在设置里切换",
+      "【21:34】更新欢迎弹窗：欢迎语嗨～欢迎回家！愿你在这里发现更多宝藏！，比例compact",
+      "【21:32】更新欢迎弹窗：欢迎语嗨～欢迎回家！愿你在这里发现更多宝藏！，比例compact",
+      "✨ v1.1.3 主题升级版来啦～",
+      "🎨 软件主题全新升级：「霓虹地图 · 荧光绿」——深色地图底 + 荧光绿地标 + 白色文字 + 星空氛围",
+      "🎨 默认主题已切换为霓虹地图，设置里仍可选原国庆可爱主题",
       "更多细节优化，等你来发现～"
     ],
     "force": false,
     "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.1.3-1790859386.apk",
-    "apkUrlRaw": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.1.3-1790859386.apk"
+    "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.1.3-1790859386.apk"
   },
   "home": {
     "categories": [
@@ -23104,7 +23106,7 @@
     "bgColor": "#0b0b1a"
   },
   "welcome": {
-    "enabled": true,
+    "enabled": false,
     "title": "",
     "welcomeText": "嗨～欢迎回家！愿你在这里发现更多宝藏！",
     "content": "为期一周不断迭代优化的新版本终于上线啦～\n新应用可能存在小Bug，欢迎宝贝们及时反馈\n收录站资源丰富，很多资源都可以白嫖哦\n发现Bug请第一时间反馈，我会尽快处理",
@@ -23115,6 +23117,8 @@
   "updateDialog": {
     "title": "懒得找了 v1.1.3 主题升级版已上线",
     "changelog": [
+      "【21:34】更新欢迎弹窗：欢迎语嗨～欢迎回家！愿你在这里发现更多宝藏！，比例compact",
+      "【21:32】更新欢迎弹窗：欢迎语嗨～欢迎回家！愿你在这里发现更多宝藏！，比例compact",
       "✨ v1.1.3 主题升级版来啦～",
       "🎨 软件主题全新升级：「霓虹地图 · 荧光绿」——深色地图底 + 荧光绿地标 + 白色文字 + 星空氛围",
       "🎨 默认主题已切换为霓虹地图，设置里仍可选原国庆可爱主题",
