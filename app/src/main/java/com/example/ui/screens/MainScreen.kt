@@ -319,14 +319,9 @@ fun MainScreen(
                             }
                         }
                         itemsIndexed(filteredCards, key = { index, card -> "${card.id}_${card.url}_$index" }) { _, card ->
-                            // v1.0.18 角标优化：NEW 角标改用实际名字（所属分类名）代替
-                            val realBadge = card.copy(
-                                badge = if (card.badge.isNullOrBlank() || card.badge == "NEW")
-                                    uiState.categories.firstOrNull { it.id == card.categoryId }?.name ?: card.badge
-                                else card.badge
-                            )
+                            // v1.1.2 角标统一规范：恢复之前的动态标签角标（NEW/HOT 等），不再显示分类名
                             ResourceCard(
-                                card = realBadge,
+                                card = card,
                                 isFavorite = favUrls.contains(card.url),
                                 onCardClick = { viewModel.openCard(context, it) },
                                 onFavoriteToggle = { viewModel.toggleFavorite(it, context) },
@@ -1576,12 +1571,9 @@ private fun LuckyDrawSheetContent(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.weight(1f))
-                    // v1.0.18 角标优化：NEW 角标改用实际名字（所属分类名）代替
-                    val drawBadgeText = if (card.badge.isNullOrBlank() || card.badge == "NEW")
-                        categories.firstOrNull { it.id == card.categoryId }?.name ?: card.badge
-                    else card.badge
-                    if (!drawBadgeText.isNullOrBlank()) {
-                        RibbonBadge(text = drawBadgeText, badgeType = card.badgeType)
+                    // v1.1.2 角标统一规范：恢复之前的动态标签角标（NEW/HOT 等）
+                    if (!card.badge.isNullOrBlank()) {
+                        RibbonBadge(text = card.badge, badgeType = card.badgeType)
                     }
                 }
 

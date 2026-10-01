@@ -43,3 +43,17 @@ val BadgeGold2 = Color(0xFFFFD200)
 val BadgeBlue1 = Color(0xFF2193B0)
 val BadgeBlue2 = Color(0xFF6DD5ED)
 
+// ============================================================
+// 国庆卡通主题色板（v1.1.2 主题升级核心色板）
+// 中国红 + 金星金 + 喜庆橙 + 灯笼红 + 暖米底 + 半透玻璃卡
+// ============================================================
+val NationalRed = Color(0xFFE60012)        // 中国红（主色）
+val NationalGold = Color(0xFFFFD700)       // 金星金（辅色）
+val NationalOrange = Color(0xFFFF8C1A)     // 国庆橙（点缀/按钮强调）
+val LanternRed = Color(0xFFD91E36)         // 灯笼红（强调渐变）
+val CreamBg = Color(0xFFFFF6EF)            // 暖米底（背景）
+val GlassSurface = Color(0xD9FFFFFF)       // 半透玻璃（卡片表面）
+val ChocoText = Color(0xFF4A1E22)          // 可可棕（文字）
+val NationalGreen = Color(0xFF2E7D32)      // 橄榄绿（点缀，五角星/军绿）
+val NationalStarGold = Color(0xFFFFE9A8)   // 星光金（浅金点缀）
+

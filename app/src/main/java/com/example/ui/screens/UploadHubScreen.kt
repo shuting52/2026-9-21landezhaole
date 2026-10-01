@@ -60,27 +60,6 @@ import com.example.data.util.VideoCache
 import com.example.ui.components.SkillDetailDialog
 import com.example.ui.components.UTabRow
 
-/** v1.8.7：资源自动归类关键词（用于自动识别软件是做什么的） */
-private val AUTO_CATEGORY_RULES = listOf(
-    "影视/视频" to listOf("视频", "影视", "短剧", "剧场", "电影", "剧集", "播放器", "TV", "movie", "video", "播放"),
-    "阅读/小说" to listOf("小说", "阅读", "漫画", "电子书", "book", "read", "novel"),
-    "音乐/听歌" to listOf("音乐", "听歌", "歌词", "music", "song", "音频"),
-    "游戏/娱乐" to listOf("游戏", "steam", "game", "娱乐", "play"),
-    "工具/效率" to listOf("工具", "助手", "清理", "卸载", "压缩", "转换", "下载", "tool", "utils", "效率"),
-    "学习/办公" to listOf("学习", "办公", "笔记", "文档", "pdf", "office", "课程", "学"),
-    "AI/智能" to listOf("AI", "ai", "智能", "GPT", "大模型", "对话", "写作", "绘画"),
-    "系统/装机" to listOf("系统", "装机", "激活", "驱动", "系统优化", "windows", "win")
-)
-
-/** v1.8.7：自动识别软件类型归类 */
-private fun autoCategorize(res: UploadedResourceEntity): String {
-    val text = (res.title + " " + res.desc + " " + res.tags + " " + res.url).lowercase()
-    for ((cat, keywords) in AUTO_CATEGORY_RULES) {
-        if (keywords.any { text.contains(it, ignoreCase = true) }) return cat
-    }
-    return "其他资源"
-}
-
 /** v1.8.7：自动识别站点/软件 icon（Google favicon 服务，url 为空或失败时回退文字徽标） */
 private fun autoFaviconUrl(url: String): String {
     return try {
@@ -131,13 +110,8 @@ fun UploadHubScreen(
 
     Box(modifier = modifier.fillMaxSize()) {
         if (gridMode && (resourceType == "software" || resourceType == "skill")) {
-            // ===== 软件/Skill：v1.0.19 取消展开收纳标签，直接平铺呈现 =====
-            // 软件版块：保留 .u-tab 推荐/关注/热门筛选，分类分组标题仅作静态分区（不可点、不收纳）
-            val grouped = remember(displayResources) {
-                val map = LinkedHashMap<String, MutableList<UploadedResourceEntity>>()
-                displayResources.forEach { map.getOrPut(autoCategorize(it)) { mutableListOf() }.add(it) }
-                map.toList()
-            }
+            // ===== 软件/Skill：v1.1.2 删除分类标签，直接平铺展示全部资源 =====
+            // 软件版块：保留 .u-tab 推荐/关注/热门筛选
             // 主题色渐变（软件卡片专用，v1.0.9 主题升级）
             val themePrimary = MaterialTheme.colorScheme.primary
             val themeSecondary = MaterialTheme.colorScheme.secondary
@@ -221,66 +195,28 @@ fun UploadHubScreen(
                         }
                     }
                 } else {
-                    grouped.forEach { (cat, list) ->
-                        // v1.0.19：分类标题静态分区（不再可点击展开/收起）
-                        item(key = "cat_$cat") {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(themePrimary.copy(alpha = 0.10f))
-                                    .padding(horizontal = 10.dp, vertical = 8.dp)
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    // 主题色小图标块
-                                    Box(
-                                        modifier = Modifier
-                                            .size(22.dp)
-                                            .background(themePrimary, RoundedCornerShape(7.dp)),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(cat.firstOrNull()?.toString() ?: "📁", fontSize = 11.sp, color = Color.White)
-                                    }
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = cat,
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Black,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = "${list.size} 款",
-                                        fontSize = 11.sp,
-                                        color = themePrimary,
-                                        fontWeight = FontWeight.Bold
-                                    )
+                    // v1.1.2：删除分类标签，全部资源直接平铺展示
+                    items(displayResources, key = { it.id }) { res ->
+                        if (resourceType == "skill") {
+                            SkillGridCard(
+                                res = res,
+                                onClick = { skillDetail = res },
+                                showDelete = showDelete,
+                                onDelete = {
+                                    onDelete(res.id)
+                                    Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
                                 }
-                            }
-                        }
-                        // 全部平铺显示（不展开/收起）
-                        items(list, key = { it.id }) { res ->
-                            if (resourceType == "skill") {
-                                SkillGridCard(
-                                    res = res,
-                                    onClick = { skillDetail = res },
-                                    showDelete = showDelete,
-                                    onDelete = {
-                                        onDelete(res.id)
-                                        Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
-                                    }
-                                )
-                            } else {
-                                // 软件竖排卡片（全宽，图标在左、信息在右，自动获取软件 icon）
-                                SoftwareGridCard(
-                                    res = res,
-                                    showDelete = showDelete,
-                                    onDelete = {
-                                        onDelete(res.id)
-                                        Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
-                                    }
-                                )
-                            }
+                            )
+                        } else {
+                            // 软件竖排卡片（全宽，图标在左、信息在右，自动获取软件 icon）
+                            SoftwareGridCard(
+                                res = res,
+                                showDelete = showDelete,
+                                onDelete = {
+                                    onDelete(res.id)
+                                    Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
+                                }
+                            )
                         }
                     }
                 }

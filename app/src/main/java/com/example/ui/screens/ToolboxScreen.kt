@@ -6,11 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -44,7 +39,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -110,18 +104,6 @@ enum class ToolboxTab(
     )
 }
 
-/** 工具箱合集分类 */
-enum class ToolCategory(
-    val id: String,
-    val displayName: String,
-    val icon: String,
-    val defaultExpanded: Boolean = false
-) {
-    // v1.0.7：分类默认收起（收纳形式呈现），点击标题栏才展开
-    CLOUD("cloud", "云端工具", "☁️", false),
-    CORE("core", "精选工具", "✨", false)
-}
-
 @Composable
 fun ToolboxScreen(
     modifier: Modifier = Modifier,
@@ -131,14 +113,6 @@ fun ToolboxScreen(
     // 弹窗交互：点击工具弹出独立交互框
     var activeTool by remember { mutableStateOf<ToolboxTab?>(null) }
     val context = androidx.compose.ui.platform.LocalContext.current
-
-    // v1.0.19 取消展开收纳标签：工具箱直接平铺展示全部工具，无需点击展开/收起
-    val expanded = remember {
-        mutableStateMapOf<String, Boolean>().apply {
-            // 全部默认展开（直接平铺）
-            ToolCategory.entries.forEach { put(it.id, true) }
-        }
-    }
 
     Box(modifier = modifier.fillMaxSize()) {
         Column(
@@ -179,37 +153,14 @@ fun ToolboxScreen(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // ===== 精选工具（本地4工具 + 紧急电话）=====
-            ToolCategoryHeader(
-                category = ToolCategory.CORE,
-                count = ToolboxTab.entries.size,
-                isExpanded = expanded[ToolCategory.CORE.id] == true,
-                onToggle = { expanded[ToolCategory.CORE.id] = !(expanded[ToolCategory.CORE.id] ?: true) }
-            )
-            AnimatedVisibility(
-                visible = expanded[ToolCategory.CORE.id] == true,
-                enter = fadeIn() + expandVertically(),
-                exit = fadeOut() + shrinkVertically()
-            ) {
-                ToolGrid(tabs = ToolboxTab.entries.toList()) { activeTool = it }
-            }
+            // v1.1.2：删除分类标签（精选工具/云端工具标题栏），直接平铺展示全部工具
+            // ===== 本地精选工具（本地4工具 + 紧急电话）=====
+            ToolGrid(tabs = ToolboxTab.entries.toList()) { activeTool = it }
 
-            // ===== ☁️ 云端工具（控制台实时同步，收纳式呈现）=====
+            // ===== ☁️ 云端工具（控制台实时同步）=====
             if (cloudTools.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
-                ToolCategoryHeader(
-                    category = ToolCategory.CLOUD,
-                    count = cloudTools.size,
-                    isExpanded = expanded[ToolCategory.CLOUD.id] == true,
-                    onToggle = { expanded[ToolCategory.CLOUD.id] = !(expanded[ToolCategory.CLOUD.id] ?: true) }
-                )
-                AnimatedVisibility(
-                    visible = expanded[ToolCategory.CLOUD.id] == true,
-                    enter = fadeIn() + expandVertically(),
-                    exit = fadeOut() + shrinkVertically()
-                ) {
-                    CloudToolGrid(cloudTools = cloudTools, context = context)
-                }
+                CloudToolGrid(cloudTools = cloudTools, context = context)
             }
             Spacer(modifier = Modifier.height(6.dp))
         }
@@ -285,43 +236,6 @@ fun ToolboxScreen(
 }
 
 /* ==================== 组件 ==================== */
-
-/** v1.0.19：静态分类标题栏（取消展开/收起标签，直接平铺呈现） */
-@Composable
-private fun ToolCategoryHeader(
-    category: ToolCategory,
-    count: Int,
-    isExpanded: Boolean,
-    onToggle: () -> Unit
-) {
-    Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = Color.White.copy(alpha = 0.55f),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.28f)),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 11.dp)
-        ) {
-            Text(text = category.icon, fontSize = 16.sp)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = category.displayName,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.weight(1f)
-            )
-            Text(
-                text = "$count 个工具",
-                fontSize = 10.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(end = 6.dp)
-            )
-        }
-    }
-}
 
 /** 本地工具两列网格 */
 @Composable
