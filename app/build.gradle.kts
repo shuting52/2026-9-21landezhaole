@@ -37,8 +37,10 @@ android {
     // 与云端 admin-data.json version.code=93 / name=1.0.12 四要素对齐（含 apkUrl 指向真实 1.0.12 安装包）
     // v1.0.13：回退版本基线（保留更新弹窗），修复更新弹窗安装新版本时旧版本闪退 + 开屏纯色背景
     // 与云端 admin-data.json version.code=94 / name=1.0.13 四要素对齐（含 apkUrl 指向真实 1.0.13 安装包）
-    versionCode = 96
-    versionName = "1.0.15"
+    // v1.0.16：设置版块完整恢复（主题切换/联系作者/软件反馈等全功能）+ 角标自动识别技术 + 更新弹窗最新动态CSS特效
+    // 与云端 admin-data.json version.code=97 / name=1.0.16 四要素对齐（含 apkUrl 指向真实 1.0.16 安装包）
+    versionCode = 97
+    versionName = "1.0.16"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
