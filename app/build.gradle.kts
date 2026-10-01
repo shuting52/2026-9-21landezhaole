@@ -47,8 +47,9 @@ android {
     // v1.1.1 正式版：更新弹窗恢复自动下载（弹窗出现即下载安装），免「未知应用」授权也能安装
     // 首页角标一致性 + 取消软件/工具箱/Skill 删除分类 + 国庆主题全 UI 组件
     // v1.1.2 主题升级：国庆卡通主题（全 UI 组件/文字/图标统一）+ 角标统一动态标签 + 删除软件库/Skill/工具箱分类标签
-    versionCode = 102
-    versionName = "1.1.2"
+    // v1.1.3 角标统一：删除公司品牌胶囊角标，全部卡片统一使用绿色动态标签角标（NEW 荧光绿渐变流光+呼吸+摇摆）
+    versionCode = 103
+    versionName = "1.1.3"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
