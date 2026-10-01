@@ -51,6 +51,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import com.example.ui.components.AppRatingDialog
 import com.example.ui.components.AppUpdateDialog
+import com.example.ui.components.UBadge
+import com.example.ui.components.UBadgeVariant
+import com.example.ui.components.UListContainer
+import com.example.ui.components.UListRow
 import com.example.ui.components.OfficialWebsiteDialog
 import com.example.ui.components.ShareSoftwareDialog
 import androidx.compose.material3.AlertDialog
@@ -185,48 +189,47 @@ fun SettingsScreen(
 
         Spacer(modifier = Modifier.height(18.dp))
 
-        // Section 1: Appearance & Community
-        Card(
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            shape = RoundedCornerShape(14.dp),
-            border = CardDefaults.outlinedCardBorder()
-        ) {
-            Column(modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp)) {
+        // 分组 1：常用设置（.u-list 列表，v1.0.18）
+        Text(
+            text = "常用设置",
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Black,
+            color = Color(0xFF7A8CA0),
+            modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
+        )
+        UListContainer(modifier = Modifier.widthIn(max = 300.dp)) {
                 // Theme Switcher
-                SettingsClickableItem(
+                UListRow(
                     title = "主题切换",
-                    icon = Icons.Filled.Palette,
-                    iconColor = currentTheme.primaryColor,
+                    iconText = "🎨",
+                    rowIndex = 0,
                     onClick = onOpenThemeSwitcher
                 )
 
-                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
 
                 // Contact Author (联系作者)
-                SettingsClickableItem(
+                UListRow(
                     title = "联系作者",
-                    icon = Icons.Filled.SupportAgent,
-                    iconColor = FlameRed,
+                    iconText = "👤",
+                    rowIndex = 1,
                     onClick = { activeDialogType = "contact_author" }
                 )
 
-                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
 
                 // 软件反馈
-                SettingsClickableItem(
+                UListRow(
                     title = "软件反馈",
-                    icon = Icons.Filled.BugReport,
-                    iconColor = SunsetOrange,
+                    iconText = "🐛",
+                    rowIndex = 2,
                     onClick = { activeDialogType = "feedback_bug" }
                 )
 
-                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
 
                 // 官方交流群 (链接/群号由云端控制台配置)
-                SettingsClickableItem(
+                UListRow(
                     title = "官方交流群",
-                    icon = Icons.Filled.Group,
-                    iconColor = Color(0xFF1976D2),
+                    iconText = "👥",
+                    rowIndex = 0,
                     onClick = {
                         openQqGroup(
                             context,
@@ -236,13 +239,12 @@ fun SettingsScreen(
                     }
                 )
 
-                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
 
                 // 官方网站 (链接由云端控制台配置)
-                SettingsClickableItem(
+                UListRow(
                     title = "官方网站",
-                    icon = Icons.Filled.Language,
-                    iconColor = Color(0xFF00897B),
+                    iconText = "🌐",
+                    rowIndex = 1,
                     onClick = {
                         val site = cloudSettings?.officialWebsite?.trim()
                         if (!site.isNullOrBlank()) {
@@ -260,23 +262,21 @@ fun SettingsScreen(
                     }
                 )
 
-                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
 
                 // 应用评分 (Uiverse 5星好评)
-                SettingsClickableItem(
+                UListRow(
                     title = "应用评分",
-                    icon = Icons.Filled.Star,
-                    iconColor = Color(0xFFFFC73A),
+                    iconText = "⭐",
+                    rowIndex = 2,
                     onClick = { activeDialogType = "rating" }
                 )
 
-                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
 
                 // 分享软件 (分享到微信、QQ及其他第三方平台)
-                SettingsClickableItem(
+                UListRow(
                     title = "分享软件",
-                    icon = Icons.Filled.Share,
-                    iconColor = Color(0xFF2E7D32),
+                    iconText = "📤",
+                    rowIndex = 0,
                     onClick = { activeDialogType = "share_software" }
                 )
             }
@@ -284,13 +284,15 @@ fun SettingsScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Section 2: Policies and About Us
-        Card(
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            shape = RoundedCornerShape(14.dp),
-            border = CardDefaults.outlinedCardBorder()
-        ) {
-            Column(modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp)) {
+        // 分组 2：更新与版本（.u-list 列表，v1.0.18）
+        Text(
+            text = "更新与版本",
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Black,
+            color = Color(0xFF7A8CA0),
+            modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
+        )
+        UListContainer(modifier = Modifier.widthIn(max = 300.dp)) {
                 // 独立动态警告标识：检测到有新版本时，以醒目呼吸横幅告知用户「有新版本请立即更新」
                 if (hasNewCloudVersion) {
                     val alertBlink by rememberInfiniteTransition(label = "update_alert_blink")
@@ -485,39 +487,45 @@ fun SettingsScreen(
                     }
                 }
 
-                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+        Spacer(modifier = Modifier.height(16.dp))
 
-                SettingsClickableItem(
+        // 分组 3：协议与关于（.u-list 列表，v1.0.18）
+        Text(
+            text = "协议与关于",
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Black,
+            color = Color(0xFF7A8CA0),
+            modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
+        )
+        UListContainer(modifier = Modifier.widthIn(max = 300.dp)) {
+                UListRow(
                     title = "关于我们",
-                    icon = Icons.Filled.Info,
-                    iconColor = SunsetOrange,
+                    iconText = "ℹ️",
+                    rowIndex = 0,
                     onClick = { activeDialogType = "about" }
                 )
 
-                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
 
-                SettingsClickableItem(
+                UListRow(
                     title = "用户协议",
-                    icon = Icons.Filled.Policy,
-                    iconColor = Color(0xFF1976D2),
+                    iconText = "📜",
+                    rowIndex = 1,
                     onClick = { activeDialogType = "terms" }
                 )
 
-                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
 
-                SettingsClickableItem(
+                UListRow(
                     title = "隐私政策",
-                    icon = Icons.Filled.Lock,
-                    iconColor = Color(0xFF388E3C),
+                    iconText = "🔒",
+                    rowIndex = 2,
                     onClick = { activeDialogType = "privacy" }
                 )
 
-                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
 
-                SettingsClickableItem(
+                UListRow(
                     title = "儿童隐私政策",
-                    icon = Icons.Filled.ChildCare,
-                    iconColor = Color(0xFFE91E63),
+                    iconText = "🧒",
+                    rowIndex = 0,
                     onClick = { activeDialogType = "child_privacy" }
                 )
             }
@@ -533,7 +541,7 @@ fun SettingsScreen(
     if (showLatestVersionDialog) {
         AlertDialog(
             onDismissRequest = { showLatestVersionDialog = false },
-            title = { Text("检查更新", fontWeight = FontWeight.Black) },
+            title = { UBadge(text = "检查更新", variant = UBadgeVariant.DEFAULT) },
             text = {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -607,7 +615,7 @@ fun SettingsScreen(
         "about" -> {
             AlertDialog(
                 onDismissRequest = { activeDialogType = null },
-                title = { Text("关于「懒得找了」", fontWeight = FontWeight.Black) },
+                title = { UBadge(text = "关于我们", variant = UBadgeVariant.BLUE) },
                 text = {
                     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                         // v1.0.1：全新动态 CSS 品牌标签（渐变流光 + 呼吸动画）
@@ -636,7 +644,7 @@ fun SettingsScreen(
         "terms" -> {
             AlertDialog(
                 onDismissRequest = { activeDialogType = null },
-                title = { Text("用户服务协议", fontWeight = FontWeight.Black) },
+                title = { UBadge(text = "用户协议", variant = UBadgeVariant.DEFAULT) },
                 text = {
                     Column(
                         modifier = Modifier
@@ -673,7 +681,7 @@ fun SettingsScreen(
         "privacy" -> {
             AlertDialog(
                 onDismissRequest = { activeDialogType = null },
-                title = { Text("隐私政策与数据保护准则", fontWeight = FontWeight.Black) },
+                title = { UBadge(text = "隐私政策", variant = UBadgeVariant.PINK) },
                 text = {
                     Column(
                         modifier = Modifier
@@ -710,7 +718,7 @@ fun SettingsScreen(
         "child_privacy" -> {
             AlertDialog(
                 onDismissRequest = { activeDialogType = null },
-                title = { Text("儿童及未成年人隐私守护政策", fontWeight = FontWeight.Black) },
+                title = { UBadge(text = "儿童隐私", variant = UBadgeVariant.BLUE) },
                 text = {
                     Column(
                         modifier = Modifier
@@ -1301,3 +1309,4 @@ private fun DynamicCssBrandTag() {
         }
     }
 }
+
