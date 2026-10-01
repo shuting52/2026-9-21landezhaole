@@ -37,12 +37,11 @@ data class ThemePreset(
 )
 
 object ThemePresetsRepository {
-    // v1.0.19 软件主题全新升级：以「国庆节」为核心主体设计的可爱风格主题（默认）。
+    // v1.0.19 软件主题：以「国庆节」为核心主体的可爱风格主题（保留可选）。
     // 中国红主色 + 金星金辅色 + 暖米底色 + 半透玻璃卡片，氛围动态暖光（烟花/星星光斑）。
-    // 原有主题风格（清爽浅红/可爱卡通/炽热烈焰/赛博霓虹/极光琉璃/黑曜臻金）已全部移除。
-    val defaultTheme = ThemePreset(
+    val nationalDayTheme = ThemePreset(
         id = "national_day_cute",
-        name = "盛世华诞 · 国庆可爱 (默认)",
+        name = "盛世华诞 · 国庆可爱",
         style = "national_day",
         categoryName = "国庆",
         primaryColor = Color(0xFFE60012),
@@ -53,8 +52,26 @@ object ThemePresetsRepository {
         atmosphereEffect = AtmosphereEffect.FIREFLIES
     )
 
+    // v1.1.3 新增「霓虹地图 · 荧光绿」主题（默认）：深色地图底 + 荧光绿地标(#00C080) + 白字，
+    // 氛围星空光点，呼应「地图+城市地标」Uiverse 组件配色。
+    val mapNeonTheme = ThemePreset(
+        id = "map_neon_green",
+        name = "霓虹地图 · 荧光绿 (默认)",
+        style = "map_neon",
+        categoryName = "地图",
+        primaryColor = Color(0xFF00C080),
+        secondaryColor = Color(0xFF00E5A0),
+        bgColor = Color(0xFF0B1D16),
+        surfaceColor = Color(0xD90F1B17),
+        textColor = Color(0xFFFFFFFF),
+        atmosphereEffect = AtmosphereEffect.STARS
+    )
+
+    val defaultTheme = mapNeonTheme
+
     val allThemes: List<ThemePreset> = listOf(
-        defaultTheme
+        defaultTheme,
+        nationalDayTheme
     )
 }
 
