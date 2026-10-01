@@ -148,45 +148,16 @@ fun AppUpdateDialog(
         }
     }
 
-    /** 安装新版本 APK：
+    /** 安装新版本 APK（v1.1.1 免授权安装）：
      *  1. 签名对比：新旧签名不一致时引导先卸载旧版本再安装
-     *  2. 签名一致 → PackageInstaller 系统会话（免授权直装）
-     *  3. 看门狗：25 秒内未收到回调 → 自动回退 FileProvider 打开系统安装器
+     *  2. 签名一致 → PackageInstaller 系统会话：无需预先开启「安装未知应用」授权，
+     *     系统确认页（PENDING_USER_ACTION）由 UpdateInstallReceiver 自动拉起，
+     *     用户在系统界面点「安装」即完成升级
+     *  3. 看门狗：25 秒内未装成功 → 自动回退 FileProvider 打开系统安装器
      *  4. 全程轮询版本号，装完自动进入完成态（彻底杜绝「卡在安装中」）
      */
     fun installApk(file: File) {
         try {
-            // v1.0.19 修复「更新弹窗无法安装新版本」：
-            // Android 8+（API 26+）PackageInstaller / 系统安装器需要「安装未知应用」授权。
-            // 未授权时引导用户跳转系统授权页，避免直接安装失败/无反应。
-            if (android.os.Build.VERSION.SDK_INT >= 26 && !context.packageManager.canRequestPackageInstalls()) {
-                isSignatureConflict = false
-                installOutcome = null
-                statusLabel = "需要开启「安装未知应用」权限才能安装新版本"
-                Toast.makeText(
-                    context,
-                    "请允许安装未知应用后重试（已自动跳转设置）",
-                    Toast.LENGTH_LONG
-                ).show()
-                try {
-                    val intent = Intent(
-                        android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-                        Uri.parse("package:" + context.packageName)
-                    ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    context.startActivity(intent)
-                } catch (e: Exception) {
-                    try {
-                        val intent = Intent(
-                            android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES
-                        ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        context.startActivity(intent)
-                    } catch (e2: Exception) {
-                        Toast.makeText(context, "请到系统设置中开启「安装未知应用」权限", Toast.LENGTH_LONG).show()
-                    }
-                }
-                return
-            }
-
             val newSig = apkSigningHash(context, file)
             val installedSig = try {
                 val installed = context.packageManager.getPackageInfo(
