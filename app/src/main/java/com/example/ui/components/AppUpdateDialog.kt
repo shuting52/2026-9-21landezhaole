@@ -4,12 +4,14 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -529,6 +531,36 @@ fun AppUpdateDialog(
                 ),
             contentAlignment = Alignment.Center
         ) {
+            // v1.0.15 最新动态 CSS 特效：弹窗弹性入场（参考 GitHub 开源弹窗库 NiftyDialogEffects / Dialog Effects）
+            // 缩放 + 旋转 + 淡入 + 弹性回弹，进入时丝滑流畅
+            var entered by remember { mutableStateOf(false) }
+            val entryScale = remember { Animatable(0.6f) }
+            val entryRotate = remember { Animatable(-6f) }
+            val entryAlpha = remember { Animatable(0f) }
+            LaunchedEffect(Unit) {
+                if (!entered) {
+                    entered = true
+                    launch {
+                        entryScale.animateTo(
+                            targetValue = 1.08f,
+                            animationSpec = tween(320, easing = FastOutSlowInEasing)
+                        )
+                        entryScale.animateTo(
+                            targetValue = 1f,
+                            animationSpec = spring(
+                                dampingRatio = 0.55f,
+                                stiffness = 900f
+                            )
+                        )
+                    }
+                    launch {
+                        entryRotate.animateTo(0f, tween(380, easing = FastOutSlowInEasing))
+                    }
+                    launch {
+                        entryAlpha.animateTo(1f, tween(260))
+                    }
+                }
+            }
             CssUpdateCard(
                 versionName = versionName,
                 logs = FIXED_UPDATE_LOGS,
@@ -541,7 +573,10 @@ fun AppUpdateDialog(
                 onOpenGroup = { openOfficialGroup() },
                 btnText = btnText,
                 btnEnabled = !isUpdating || installOutcome != null,
-                onBtnClick = btnAction
+                onBtnClick = btnAction,
+                entryScale = entryScale.value,
+                entryRotate = entryRotate.value,
+                entryAlpha = entryAlpha.value
             )
         }
     }
@@ -563,7 +598,11 @@ private fun CssUpdateCard(
     onOpenGroup: () -> Unit,
     btnText: String,
     btnEnabled: Boolean,
-    onBtnClick: () -> Unit
+    onBtnClick: () -> Unit,
+    // v1.0.15：弹性入场动画参数（缩放/旋转/淡入）
+    entryScale: Float = 1f,
+    entryRotate: Float = 0f,
+    entryAlpha: Float = 1f
 ) {
     val infinite = rememberInfiniteTransition(label = "css_update_card")
 
@@ -623,6 +662,12 @@ private fun CssUpdateCard(
             .widthIn(min = 288.dp, max = 326.dp)
             .fillMaxWidth()
             .padding(horizontal = 22.dp)
+            .graphicsLayer {
+                scaleX = entryScale
+                scaleY = entryScale
+                rotationZ = entryRotate
+                alpha = entryAlpha
+            }
             .shadow(
                 elevation = 18.dp,
                 shape = RoundedCornerShape(26.dp),
@@ -633,6 +678,27 @@ private fun CssUpdateCard(
             .background(Color.White)
             .testTag("css_update_card")
     ) {
+        // v1.0.15 最新动态 CSS 特效：卡片外围流动霓虹光晕描边（类似 box-shadow 呼吸扩散）
+        val glowPulse by infinite.animateFloat(
+            initialValue = 0.55f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(1800, easing = FastOutSlowInEasing),
+                repeatMode = RepeatMode.Reverse
+            ),
+            label = "glow_pulse"
+        )
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .graphicsLayer { alpha = entryAlpha }
+                .shadow(
+                    elevation = 14.dp * glowPulse,
+                    shape = RoundedCornerShape(26.dp),
+                    ambientColor = CSS_LEMON.copy(alpha = 0.4f * glowPulse),
+                    spotColor = CSS_PINK.copy(alpha = 0.5f * glowPulse)
+                )
+        )
         Column(modifier = Modifier.fillMaxWidth()) {
             // ---------- 顶部渐变流光横幅 ----------
             Box(

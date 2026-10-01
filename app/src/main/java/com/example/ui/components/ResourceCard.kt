@@ -253,5 +253,15 @@ fun ResourceCard(
                     .offset(x = (-4).dp, y = (-3).dp)
             )
         }
+        // v1.0.15 角标自动识别技术：识别站点所属公司/品牌，显示在右上角角标下方
+        val company = detectCompanyBadge(card)
+        if (company != null) {
+            CompanyBadgeChip(
+                card = card,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .offset(x = (-4).dp, y = if (card.badge.isNullOrBlank()) (-3).dp else 20.dp)
+            )
+        }
     }
 }

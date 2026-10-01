@@ -198,7 +198,7 @@ fun SettingsScreen(
             color = Color(0xFF7A8CA0),
             modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
         )
-        UListContainer(modifier = Modifier.widthIn(max = 300.dp)) {
+        UListContainer(modifier = Modifier.fillMaxWidth()) {
                 // Theme Switcher
                 UListRow(
                     title = "主题切换",
@@ -292,7 +292,7 @@ fun SettingsScreen(
             color = Color(0xFF7A8CA0),
             modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
         )
-        UListContainer(modifier = Modifier.widthIn(max = 300.dp)) {
+        UListContainer(modifier = Modifier.fillMaxWidth()) {
                 // 独立动态警告标识：检测到有新版本时，以醒目呼吸横幅告知用户「有新版本请立即更新」
                 if (hasNewCloudVersion) {
                     val alertBlink by rememberInfiniteTransition(label = "update_alert_blink")
@@ -497,7 +497,7 @@ fun SettingsScreen(
             color = Color(0xFF7A8CA0),
             modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
         )
-        UListContainer(modifier = Modifier.widthIn(max = 300.dp)) {
+        UListContainer(modifier = Modifier.fillMaxWidth()) {
                 UListRow(
                     title = "关于我们",
                     iconText = "ℹ️",
