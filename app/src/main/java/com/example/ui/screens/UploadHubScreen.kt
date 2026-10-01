@@ -105,7 +105,7 @@ fun UploadHubScreen(
     resources: List<UploadedResourceEntity>,
     onDelete: (id: String) -> Unit,
     modifier: Modifier = Modifier,
-    showDelete: Boolean = true,
+    showDelete: Boolean = false,
     gridMode: Boolean = false,
     // v1.0.18 软件版块 .u-tab 推荐/关注/热门：favoriteUrls 用于「关注」筛选
     favoriteUrls: Set<String> = emptySet()
@@ -404,7 +404,7 @@ fun UploadHubScreen(
 private fun SkillGridCard(
     res: UploadedResourceEntity,
     onClick: () -> Unit,
-    showDelete: Boolean = true,
+    showDelete: Boolean = false,
     onDelete: () -> Unit
 ) {
     val context = LocalContext.current
@@ -625,7 +625,7 @@ private fun SkillGridCard(
 @Composable
 private fun SoftwareGridCard(
     res: UploadedResourceEntity,
-    showDelete: Boolean = true,
+    showDelete: Boolean = false,
     onDelete: () -> Unit
 ) {
     val context = LocalContext.current
@@ -819,7 +819,7 @@ private fun SoftwareGridCard(
 @Composable
 private fun SoftwareHorizontalCard(
     res: UploadedResourceEntity,
-    showDelete: Boolean = true,
+    showDelete: Boolean = false,
     onDelete: () -> Unit
 ) {
     val context = LocalContext.current
@@ -998,7 +998,7 @@ private fun SoftwareHorizontalCard(
 private fun ResourceFileCard(
     res: UploadedResourceEntity,
     resourceType: String = "software",
-    showDelete: Boolean = true,
+    showDelete: Boolean = false,
     onClickOverride: (() -> Unit)? = null,
     onDelete: () -> Unit
 ) {
