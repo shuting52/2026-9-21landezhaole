@@ -212,10 +212,12 @@ fun SettingsScreen(
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
             ) {
                 Column(modifier = Modifier.fillMaxWidth()) {
-                // Theme Switcher
+                // v1.1.6 需求 4：主题切换由控制台「主题工具箱」管理（组件级自定义代码），
+                // 本入口保留为查看/微调（打开组件定制面板）
                 UiverseSettingsRow(
     icon = "🎨",
-    title = "主题切换",
+    title = "主题与外观",
+    subtitle = "由控制台主题工具箱管理，此处可微调",
     onClick = onOpenThemeSwitcher,
     trailing = { UiverseChevron() }
 )
