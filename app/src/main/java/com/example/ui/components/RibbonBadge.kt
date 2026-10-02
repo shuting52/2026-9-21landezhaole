@@ -164,15 +164,12 @@ fun RibbonBadge(
         label = "wobble"
     )
 
-    val baseGradientColors = when (badgeType) {
-        BadgeType.ROSE -> listOf(BadgeRose1, BadgeRose2)
-        BadgeType.NEW -> listOf(Color(0xFF00C853), Color(0xFF00E676), Color(0xFF00B0FF)) // Neon emerald to vivid cyan
-        BadgeType.GOLD -> listOf(BadgeGold1, BadgeGold2)
-        BadgeType.BLUE -> listOf(BadgeBlue1, BadgeBlue2)
-    }
+    // v1.1.6：角标统一为绿色小胶囊（所有类型同一绿色渐变，全圆角胶囊）
+    val baseGradientColors = listOf(Color(0xFF16C172), Color(0xFF00E676), Color(0xFF0FBD6A))
 
     val baseBrush = Brush.linearGradient(baseGradientColors)
-    val badgeShape = RoundedCornerShape(topStart = 3.dp, topEnd = 3.dp, bottomStart = 5.dp, bottomEnd = 5.dp)
+    // 全圆角胶囊形状（v1.1.6 统一化）
+    val badgeShape = RoundedCornerShape(50)
 
     Box(
         modifier = modifier
