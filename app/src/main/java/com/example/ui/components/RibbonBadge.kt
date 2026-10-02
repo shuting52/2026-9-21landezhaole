@@ -91,7 +91,11 @@ fun RibbonBadge(
     badgeType: BadgeType = BadgeType.ROSE,
     modifier: Modifier = Modifier
 ) {
-    val displayText = sanitizeBadgeText(text)
+    val displayText = sanitizeBadgeText(text).let {
+        // v1.1.11：非标准角标（GitHub/OpenAI/腾讯出品 等描述性文字）统一显示为「HOT」，
+        // 只有 NEW / HOT 标准角标保留原文，简洁统一呈现
+        if (it.equals("NEW", true) || it.equals("HOT", true)) it else "HOT"
+    }
     val isNewOrHot = badgeType == BadgeType.NEW || badgeType == BadgeType.ROSE || badgeType == BadgeType.GOLD
     val isNew = badgeType == BadgeType.NEW || text.contains("NEW", ignoreCase = true) || text.contains("新", ignoreCase = true)
 
