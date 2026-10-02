@@ -193,8 +193,9 @@ fun GlobalWindBackground(
                 }
             }
             uiverse.patternStyle == PatternStylePreset.HEXAGON_MESH || uiverse.activeKit == UiKitPreset.GLASSMORPHISM_AURORA -> {
+                // v1.1.11：透明磨砂改胶囊——白色底 + 柔和半透明胶囊（非深色磨砂玻璃）
                 Canvas(modifier = Modifier.fillMaxSize()) {
-                    drawRect(Color(0xFF0F172A))
+                    drawRect(Color(0xFFFFFFFF))
                     // 极光渐变胶囊体
                     drawCapsule(
                         center = Offset(size.width * (0.35f + windShift * 0.1f), size.height * 0.28f),
@@ -202,7 +203,7 @@ fun GlobalWindBackground(
                         thickness = 160.dp.toPx(),
                         angleDegrees = -25f,
                         brush = Brush.linearGradient(
-                            listOf(Color(0xFF6366F1).copy(alpha = 0.32f), Color.Transparent)
+                            listOf(Color(0xFF6366F1).copy(alpha = 0.14f), Color.Transparent)
                         )
                     )
                     drawCapsule(
@@ -211,7 +212,7 @@ fun GlobalWindBackground(
                         thickness = 140.dp.toPx(),
                         angleDegrees = 20f,
                         brush = Brush.linearGradient(
-                            listOf(Color(0xFFEC4899).copy(alpha = 0.26f), Color.Transparent)
+                            listOf(Color(0xFFEC4899).copy(alpha = 0.10f), Color.Transparent)
                         )
                     )
                 }
