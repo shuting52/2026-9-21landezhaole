@@ -23098,7 +23098,7 @@
       "expectedSha": "b9a618e311024bf29b6f24a95eb9a0f69700e07b9b11e007ae2db6c55abf1603"
     },
     "serverShutdown": {
-      "enabled": false,
+      "enabled": true,
       "notice": ""
     }
   },
