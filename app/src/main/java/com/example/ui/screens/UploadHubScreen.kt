@@ -88,22 +88,22 @@ private fun autoCategorize(res: UploadedResourceEntity): String {
  *  3. 国内可访问的第三方 favicon 服务（icon.horse / favicon.im / f.icoji），Google 服务国内不可用已弃用
  */
 private fun autoFaviconUrl(url: String): String {
-    return try {
-        val host = java.net.URI(if (url.startsWith("http")) url else "https://$url").host ?: return ""
-        // 站点自身 favicon（最可靠，优先）
-        val self = "https://$host/favicon.ico"
-        // 国内/全球可访问的 favicon 聚合服务（按顺序回退）
-        val mirrors = listOf(
-            "https://icon.horse/icon/$host",
-            "https://favicon.im/$host?size=64",
-            "https://f.icoji.com/icon/$host",
-            "https://www.google.com/s2/favicons?domain=$host&sz=64"
-        )
-        // 返回站点自身 + 聚合服务串（调用方会逐个尝试/兜底）
-        listOf(self) + mirrors
+    val host = try {
+        java.net.URI(if (url.startsWith("http")) url else "https://$url").host
     } catch (e: Exception) {
-        ""
-    }.joinToString("|@|")
+        null
+    } ?: return ""
+    // 站点自身 favicon（最可靠，优先）
+    val self = "https://$host/favicon.ico"
+    // 国内/全球可访问的 favicon 聚合服务（按顺序回退）
+    val mirrors = listOf(
+        "https://icon.horse/icon/$host",
+        "https://favicon.im/$host?size=64",
+        "https://f.icoji.com/icon/$host",
+        "https://www.google.com/s2/favicons?domain=$host&sz=64"
+    )
+    // 返回站点自身 + 聚合服务串（调用方会逐个尝试/兜底）
+    return (listOf(self) + mirrors).joinToString("|@|")
 }
 
 /** v1.1.7：从多源字符串中取第一个可用 icon 地址（“|@|” 分隔） */
