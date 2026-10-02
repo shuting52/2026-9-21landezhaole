@@ -58,6 +58,21 @@ import com.example.ui.components.UListContainer
 import com.example.ui.components.UListRow
 import com.example.ui.components.UiverseSettingsRow
 import com.example.ui.components.UiverseChevron
+import com.example.ui.components.QuadrantCardGrid
+import com.example.ui.components.QuadrantCardItem
+import com.example.ui.components.QuadrantPosition
+import com.example.ui.components.DrawContactAuthorIcon
+import com.example.ui.components.DrawOfficialWebsiteGroupIcon
+import com.example.ui.components.DrawSoftwareFeedbackIcon
+import com.example.ui.components.DrawOfficialChatGroupIcon
+import com.example.ui.components.DrawAppRatingIcon
+import com.example.ui.components.DrawShareAppIcon
+import com.example.ui.components.DrawCheckUpdateIcon
+import com.example.ui.components.DrawThemeAppearanceIcon
+import com.example.ui.components.DrawAboutUsIcon
+import com.example.ui.components.DrawUserTermsIcon
+import com.example.ui.components.DrawPrivacyPolicyIcon
+import com.example.ui.components.DrawChildPrivacyIcon
 import com.example.ui.components.OfficialWebsiteDialog
 import com.example.ui.components.ShareSoftwareDialog
 import androidx.compose.material3.AlertDialog
@@ -158,408 +173,293 @@ fun SettingsScreen(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier
-                    .size(38.dp)
-                    .clip(RoundedCornerShape(10.dp))
+                    .size(42.dp)
+                    .clip(RoundedCornerShape(12.dp))
                     .background(
                         Brush.linearGradient(
                             listOf(
-                                MaterialTheme.colorScheme.primary,
-                                MaterialTheme.colorScheme.secondary
+                                Color(0xFFDE2910),
+                                Color(0xFFFFD700)
                             )
                         )
-                    ),
+                    )
+                    .border(1.dp, Color(0xFFFFD700), RoundedCornerShape(12.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Filled.Settings,
                     contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(22.dp)
+                    tint = Color(0xFFFFFAF0),
+                    modifier = Modifier.size(24.dp)
                 )
             }
             Spacer(modifier = Modifier.width(12.dp))
             Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "盛世华诞 · 华夏锦囊",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Black,
+                            fontSize = 18.sp
+                        ),
+                        color = Color(0xFFDE2910)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Color(0xFFDE2910))
+                            .border(0.6.dp, Color(0xFFFFD700), RoundedCornerShape(4.dp))
+                            .padding(horizontal = 4.dp, vertical = 1.dp)
+                    ) {
+                        Text("国潮", color = Color(0xFFFFD700), fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
                 Text(
-                    text = "系统与服务设置",
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Black,
-                        fontSize = 18.sp
-                    ),
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = "官方社群 · 主题外观 · 协议条款与关于",
+                    text = "官方结缘社群 · 国潮主题外观 · 协议条款与关于",
                     style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.5.sp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = Color(0xFF7A4A45)
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(18.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // 分组 1：常用设置（.u-list 列表，v1.0.18）
+        // 1. 官方社群矩阵（联系作者、官网群、软件反馈、官方群聊）
         Text(
-            text = "常用设置",
+            text = "🌐 官方社群矩阵",
             fontSize = 12.sp,
             fontWeight = FontWeight.Black,
-            color = Color(0xFF7A8CA0),
+            color = Color(0xFFDE2910),
             modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
         )
-        Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp),
-                color = MaterialTheme.colorScheme.surface,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
-            ) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                // v1.1.6 需求 4：主题切换由控制台「主题工具箱」管理（组件级自定义代码），
-                // 本入口保留为查看/微调（打开组件定制面板）
-                UiverseSettingsRow(
-    icon = "🎨",
-    title = "主题与外观",
-    subtitle = "由控制台主题工具箱管理，此处可微调",
-    onClick = onOpenThemeSwitcher,
-    trailing = { UiverseChevron() }
-)
-
-
-                // Contact Author (联系作者)
-                UiverseSettingsRow(
-    icon = "👤",
-    title = "联系作者",
-    onClick = { activeDialogType = "contact_author" },
-    trailing = { UiverseChevron() }
-)
-
-
-                // 软件反馈
-                UiverseSettingsRow(
-    icon = "🐛",
-    title = "软件反馈",
-    onClick = { activeDialogType = "feedback_bug" },
-    trailing = { UiverseChevron() }
-)
-
-
-                // 官方交流群 (链接/群号由云端控制台配置)
-                UiverseSettingsRow(
-                    icon = "👥",
-                    title = "官方交流群",
+        QuadrantCardGrid(
+            items = listOf(
+                QuadrantCardItem(
+                    title = "联系作者",
+                    position = QuadrantPosition.TOP_LEFT,
+                    defaultBgColor = Color(0xFFFFFCFC),
+                    activeBgColor = Color(0xFFCC39A4),
+                    defaultIconColor = Color(0xFFFF1717),
+                    spotShadowColor = Color(0x700AE96E),
+                    iconDrawer = { color -> DrawContactAuthorIcon(color) },
+                    onClick = { activeDialogType = "contact_author" }
+                ),
+                QuadrantCardItem(
+                    title = "官网群",
+                    position = QuadrantPosition.TOP_RIGHT,
+                    defaultBgColor = Color.White,
+                    activeBgColor = Color(0xFFFF9811),
+                    defaultIconColor = Color(0xFFF34500),
+                    spotShadowColor = Color(0x60F35C05),
+                    iconDrawer = { color -> DrawOfficialWebsiteGroupIcon(color) },
+                    onClick = {
+                        val site = cloudSettings?.officialWebsite?.trim()
+                        if (!site.isNullOrBlank()) {
+                            try {
+                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(site)).apply {
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                })
+                            } catch (_: Exception) {
+                                Toast.makeText(context, "无法打开链接: $site", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            activeDialogType = "official_website"
+                        }
+                    }
+                ),
+                QuadrantCardItem(
+                    title = "软件反馈",
+                    position = QuadrantPosition.BOTTOM_LEFT,
+                    defaultBgColor = Color.White,
+                    activeBgColor = Color(0xFFFC0202),
+                    defaultIconColor = Color(0xFF24292E),
+                    spotShadowColor = Color(0x60FF4F09),
+                    iconDrawer = { color -> DrawSoftwareFeedbackIcon(color) },
+                    onClick = { activeDialogType = "feedback_bug" }
+                ),
+                QuadrantCardItem(
+                    title = "官方群聊",
+                    position = QuadrantPosition.BOTTOM_RIGHT,
+                    defaultBgColor = Color.White,
+                    activeBgColor = Color(0xFF750000),
+                    defaultIconColor = Color(0xFF8C9EFF),
+                    spotShadowColor = Color(0x60FD2626),
+                    iconDrawer = { color -> DrawOfficialChatGroupIcon(color) },
                     onClick = {
                         openQqGroup(
                             context,
                             groupUrl = cloudSettings?.qqGroupUrl?.ifBlank { OFFICIAL_QQ_GROUP_URL } ?: OFFICIAL_QQ_GROUP_URL,
                             groupUin = cloudSettings?.qqGroupUin?.ifBlank { "439211347" } ?: "439211347"
                         )
-                    },
-                    trailing = { UiverseChevron() }
+                    }
                 )
+            )
+        )
 
+        Spacer(modifier = Modifier.height(14.dp))
 
-                // 官方网站 (链接由云端控制台配置)
-                UiverseSettingsRow(
-                    icon = "🌐",
-                    title = "官方网站",
-                    onClick = {
-                        val site = cloudSettings?.officialWebsite?.trim()
-                        if (!site.isNullOrBlank()) {
-                            try {
-                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(site)).apply {
-                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                }
-                                context.startActivity(intent)
-                            } catch (e: Exception) {
-                                Toast.makeText(context, "无法打开链接: $site", Toast.LENGTH_SHORT).show()
-                            }
-                        } else {
-                            activeDialogType = "official_website"
-                        }
-                    },
-                    trailing = { UiverseChevron() }
-                )
-
-
-                // 应用评分 (Uiverse 5星好评)
-                UiverseSettingsRow(
-    icon = "⭐",
-    title = "应用评分",
-    onClick = { activeDialogType = "rating" },
-    trailing = { UiverseChevron() }
-)
-
-
-                // 分享软件 (分享到微信、QQ及其他第三方平台)
-                UiverseSettingsRow(
-    icon = "📤",
-    title = "分享软件",
-    onClick = { activeDialogType = "share_software" },
-    trailing = { UiverseChevron() }
-)
-            }
-            }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // 分组 2：更新与版本（.u-list 列表，v1.0.18）
+        // 2. 常用功能与版本更新（应用评分、分享软件、检查更新、主题外观）
         Text(
-            text = "更新与版本",
+            text = "✨ 锦囊与更新",
             fontSize = 12.sp,
             fontWeight = FontWeight.Black,
-            color = Color(0xFF7A8CA0),
+            color = Color(0xFFDE2910),
             modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
         )
-        Surface(
-                modifier = Modifier.fillMaxWidth(),
+        // 独立动态警告标识：检测到有新版本时，以醒目呼吸横幅告知用户
+        if (hasNewCloudVersion) {
+            Surface(
+                onClick = { activeDialogType = "update" },
+                color = Color(0xFFFDE8E8),
+                border = BorderStroke(1.5.dp, Color(0xFFE53935).copy(alpha = 0.45f)),
                 shape = RoundedCornerShape(14.dp),
-                color = MaterialTheme.colorScheme.surface,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 10.dp)
             ) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                // 独立动态警告标识：检测到有新版本时，以醒目呼吸横幅告知用户「有新版本请立即更新」
-                if (hasNewCloudVersion) {
-                    val alertBlink by rememberInfiniteTransition(label = "update_alert_blink")
-                        .animateFloat(
-                            initialValue = 0.55f,
-                            targetValue = 1f,
-                            animationSpec = infiniteRepeatable(
-                                animation = tween(550, easing = androidx.compose.animation.core.LinearEasing),
-                                repeatMode = RepeatMode.Reverse
-                            ),
-                            label = "updateAlertBlink"
-                        )
-                    val alertSlide by rememberInfiniteTransition(label = "update_alert_slide")
-                        .animateFloat(
-                            initialValue = 0.97f,
-                            targetValue = 1f,
-                            animationSpec = infiniteRepeatable(
-                                animation = tween(900, easing = androidx.compose.animation.core.FastOutSlowInEasing),
-                                repeatMode = RepeatMode.Reverse
-                            ),
-                            label = "updateAlertSlide"
-                        )
-                    Surface(
-                        onClick = { activeDialogType = "update" },
-                        color = Color(0xFFFDE8E8),
-                        border = BorderStroke(1.5.dp, Color(0xFFE53935).copy(alpha = 0.45f)),
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp)
-                            .graphicsLayer { alpha = alertBlink; scaleX = alertSlide }
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(26.dp)
-                                    .clip(CircleShape)
-                                    .background(Brush.linearGradient(listOf(Color(0xFFE53935), Color(0xFFFF7043))))
-                                ,
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.CloudDownload,
-                                    contentDescription = null,
-                                    tint = Color.White,
-                                    modifier = Modifier.size(15.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = "⚠️ 有新版本请立即更新",
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = Color(0xFFE53935)
-                                )
-                                Text(
-                                    text = "发现新版本 v${cloudVersion?.name ?: ""}，点击立即更新！",
-                                    fontSize = 10.5.sp,
-                                    color = Color(0xFFE53935).copy(alpha = 0.75f)
-                                )
-                            }
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-                                contentDescription = null,
-                                tint = Color(0xFFE53935),
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                    }
+                Row(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.CloudDownload,
+                        contentDescription = null,
+                        tint = Color(0xFFE53935),
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        text = "发现新版本 v${cloudVersion?.name ?: ""}，点击立即更新！",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFE53935),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                        contentDescription = null,
+                        tint = Color(0xFFE53935),
+                        modifier = Modifier.size(14.dp)
+                    )
                 }
-                // 检查更新（云端自动检测，有新版本时展示提示并一键直达更新下载）
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                if (isCheckingUpdate) return@clickable
-                                if (onCheckUpdate != null) {
-                                    coroutineScope.launch {
-                                        isCheckingUpdate = true
-                                        val (hasNew, ver) = onCheckUpdate()
-                                        isCheckingUpdate = false
-                                        if (hasNew) {
-                                            activeDialogType = "update"
-                                        } else {
-                                            // 无新版本：独立弹窗反馈「已是最新版本」
-                                            showLatestVersionDialog = true
-                                        }
-                                    }
-                                } else {
-                                    activeDialogType = "update"
-                                }
-                            }
-                            .padding(horizontal = 14.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // 检查中显示云端获取 Logo 动画，否则显示常规图标
-                        if (isCheckingUpdate) {
-                            val infinite = rememberInfiniteTransition(label = "check_update_loading")
-                            val angle by infinite.animateFloat(
-                                initialValue = 0f,
-                                targetValue = 360f,
-                                animationSpec = infiniteRepeatable(
-                                    animation = tween(1200, easing = LinearEasing),
-                                    repeatMode = RepeatMode.Restart
-                                ),
-                                label = "check_angle"
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .size(26.dp)
-                                    .graphicsLayer { rotationZ = angle }
-                                    .clip(CircleShape)
-                                    .background(
-                                        Brush.linearGradient(listOf(Color(0xFF6366F1), Color(0xFF22C55E)))
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.CloudDownload,
-                                    contentDescription = "正在获取",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(15.dp)
-                                )
-                            }
-                        } else {
-                            Icon(
-                                imageVector = Icons.Filled.RocketLaunch,
-                                contentDescription = null,
-                                // v1.7.3：有新版本用红色图标标识（提醒更新）
-                                tint = if (hasNewCloudVersion) Color(0xFFE53935) else Color(0xFF6C63FF),
-                                modifier = Modifier.size(22.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(14.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = when {
-                                    isCheckingUpdate -> "正在获取中..."
-                                    hasNewCloudVersion -> "发现新版本 v${cloudVersion?.name ?: ""}"
-                                    else -> "检查更新"
-                                },
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp
-                            )
-                            if (isCheckingUpdate) {
-                                // 可视化进度条读取状态
-                                Spacer(modifier = Modifier.height(6.dp))
-                                LinearProgressIndicator(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(4.dp)
-                                        .clip(RoundedCornerShape(2.dp)),
-                                    color = Color(0xFF6366F1),
-                                    trackColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "正在获取云端最新状态…",
-                                    fontSize = 10.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            } else {
-                                Spacer(modifier = Modifier.height(2.dp))
-                                // v1.7.3：无新版本显示「已是最新版本」；有新版本由上方独立动态警告横幅提示
-                                if (hasNewCloudVersion) {
-                                    Text(
-                                        text = "点击进入更新",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFFE53935)
-                                    )
-                                } else {
-                                    Text(
-                                        text = "已是最新版本",
-                                        fontSize = 11.sp,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                            modifier = Modifier.size(14.dp)
-                        )
-                    }
-                }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // 分组 3：协议与关于（.u-list 列表，v1.0.18）
-        Text(
-            text = "协议与关于",
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Black,
-            color = Color(0xFF7A8CA0),
-            modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
-        )
-        Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp),
-                color = MaterialTheme.colorScheme.surface,
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
-            ) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                UiverseSettingsRow(
-    icon = "ℹ️",
-    title = "关于我们",
-    onClick = { activeDialogType = "about" },
-    trailing = { UiverseChevron() }
-)
-
-
-                UiverseSettingsRow(
-    icon = "📜",
-    title = "用户协议",
-    onClick = { activeDialogType = "terms" },
-    trailing = { UiverseChevron() }
-)
-
-
-                UiverseSettingsRow(
-    icon = "🔒",
-    title = "隐私政策",
-    onClick = { activeDialogType = "privacy" },
-    trailing = { UiverseChevron() }
-)
-
-
-                UiverseSettingsRow(
-    icon = "🧒",
-    title = "儿童隐私政策",
-    onClick = { activeDialogType = "child_privacy" },
-    trailing = { UiverseChevron() }
-)
-            }
             }
         }
-            }
+        QuadrantCardGrid(
+            items = listOf(
+                QuadrantCardItem(
+                    title = "应用评分",
+                    position = QuadrantPosition.TOP_LEFT,
+                    defaultBgColor = Color.White,
+                    activeBgColor = Color(0xFFF59E0B),
+                    defaultIconColor = Color(0xFFD97706),
+                    spotShadowColor = Color(0x60F59E0B),
+                    iconDrawer = { color -> DrawAppRatingIcon(color) },
+                    onClick = { activeDialogType = "rating" }
+                ),
+                QuadrantCardItem(
+                    title = "分享软件",
+                    position = QuadrantPosition.TOP_RIGHT,
+                    defaultBgColor = Color.White,
+                    activeBgColor = Color(0xFF10B981),
+                    defaultIconColor = Color(0xFF059669),
+                    spotShadowColor = Color(0x6010B981),
+                    iconDrawer = { color -> DrawShareAppIcon(color) },
+                    onClick = { activeDialogType = "share_software" }
+                ),
+                QuadrantCardItem(
+                    title = if (isCheckingUpdate) "获取中…" else if (hasNewCloudVersion) "有新版更新" else "检查更新",
+                    position = QuadrantPosition.BOTTOM_LEFT,
+                    defaultBgColor = if (hasNewCloudVersion) Color(0xFFFFF1F1) else Color.White,
+                    activeBgColor = Color(0xFF3B82F6),
+                    defaultIconColor = if (hasNewCloudVersion) Color(0xFFE53935) else Color(0xFF2563EB),
+                    spotShadowColor = Color(0x603B82F6),
+                    iconDrawer = { color -> DrawCheckUpdateIcon(color) },
+                    onClick = {
+                        if (isCheckingUpdate) return@QuadrantCardItem
+                        if (onCheckUpdate != null) {
+                            coroutineScope.launch {
+                                isCheckingUpdate = true
+                                val (hasNew, ver) = onCheckUpdate()
+                                isCheckingUpdate = false
+                                if (hasNew) {
+                                    activeDialogType = "update"
+                                } else {
+                                    showLatestVersionDialog = true
+                                }
+                            }
+                        } else {
+                            activeDialogType = "update"
+                        }
+                    }
+                ),
+                QuadrantCardItem(
+                    title = "主题外观",
+                    position = QuadrantPosition.BOTTOM_RIGHT,
+                    defaultBgColor = Color.White,
+                    activeBgColor = Color(0xFF8B5CF6),
+                    defaultIconColor = Color(0xFF7C3AED),
+                    spotShadowColor = Color(0x608B5CF6),
+                    iconDrawer = { color -> DrawThemeAppearanceIcon(color) },
+                    onClick = onOpenThemeSwitcher
+                )
+            )
+        )
+
+        Spacer(modifier = Modifier.height(18.dp))
+
+        // 3. 协议与关于（关于我们、用户协议、隐私政策、儿童隐私政策）
+        Text(
+            text = "📜 协议与关于",
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Black,
+            color = Color(0xFFDE2910),
+            modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
+        )
+        QuadrantCardGrid(
+            items = listOf(
+                QuadrantCardItem(
+                    title = "关于我们",
+                    position = QuadrantPosition.TOP_LEFT,
+                    defaultBgColor = Color.White,
+                    activeBgColor = Color(0xFFDE2910),
+                    defaultIconColor = Color(0xFFB91C1C),
+                    spotShadowColor = Color(0x60DE2910),
+                    iconDrawer = { color -> DrawAboutUsIcon(color) },
+                    onClick = { activeDialogType = "about" }
+                ),
+                QuadrantCardItem(
+                    title = "用户协议",
+                    position = QuadrantPosition.TOP_RIGHT,
+                    defaultBgColor = Color.White,
+                    activeBgColor = Color(0xFF0D9488),
+                    defaultIconColor = Color(0xFF0F766E),
+                    spotShadowColor = Color(0x600D9488),
+                    iconDrawer = { color -> DrawUserTermsIcon(color) },
+                    onClick = { activeDialogType = "terms" }
+                ),
+                QuadrantCardItem(
+                    title = "隐私政策",
+                    position = QuadrantPosition.BOTTOM_LEFT,
+                    defaultBgColor = Color.White,
+                    activeBgColor = Color(0xFF4F46E5),
+                    defaultIconColor = Color(0xFF4338CA),
+                    spotShadowColor = Color(0x604F46E5),
+                    iconDrawer = { color -> DrawPrivacyPolicyIcon(color) },
+                    onClick = { activeDialogType = "privacy" }
+                ),
+                QuadrantCardItem(
+                    title = "儿童隐私政策",
+                    position = QuadrantPosition.BOTTOM_RIGHT,
+                    defaultBgColor = Color.White,
+                    activeBgColor = Color(0xFFEA580C),
+                    defaultIconColor = Color(0xFFC2410C),
+                    spotShadowColor = Color(0x60EA580C),
+                    iconDrawer = { color -> DrawChildPrivacyIcon(color) },
+                    onClick = { activeDialogType = "child_privacy" }
+                )
+            )
+        )
 
         Spacer(modifier = Modifier.height(26.dp))
 
@@ -571,7 +471,17 @@ fun SettingsScreen(
     if (showLatestVersionDialog) {
         AlertDialog(
             onDismissRequest = { showLatestVersionDialog = false },
-            title = { UBadge(text = "检查更新", variant = UBadgeVariant.DEFAULT) },
+            title = {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "检查更新",
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                }
+            },
             text = {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -645,7 +555,17 @@ fun SettingsScreen(
         "about" -> {
             AlertDialog(
                 onDismissRequest = { activeDialogType = null },
-                title = { UBadge(text = "关于我们", variant = UBadgeVariant.BLUE) },
+                title = {
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "关于我们",
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
+                },
                 text = {
                     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                         // v1.0.1：全新动态 CSS 品牌标签（渐变流光 + 呼吸动画）
@@ -674,7 +594,17 @@ fun SettingsScreen(
         "terms" -> {
             AlertDialog(
                 onDismissRequest = { activeDialogType = null },
-                title = { UBadge(text = "用户协议", variant = UBadgeVariant.DEFAULT) },
+                title = {
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "用户协议",
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
+                },
                 text = {
                     Column(
                         modifier = Modifier
@@ -711,7 +641,17 @@ fun SettingsScreen(
         "privacy" -> {
             AlertDialog(
                 onDismissRequest = { activeDialogType = null },
-                title = { UBadge(text = "隐私政策", variant = UBadgeVariant.PINK) },
+                title = {
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "隐私政策",
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
+                },
                 text = {
                     Column(
                         modifier = Modifier
@@ -748,7 +688,17 @@ fun SettingsScreen(
         "child_privacy" -> {
             AlertDialog(
                 onDismissRequest = { activeDialogType = null },
-                title = { UBadge(text = "儿童隐私", variant = UBadgeVariant.BLUE) },
+                title = {
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "儿童隐私政策",
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
+                },
                 text = {
                     Column(
                         modifier = Modifier
