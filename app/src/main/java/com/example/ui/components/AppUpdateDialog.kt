@@ -987,7 +987,7 @@ private fun CssGradientButton(
     val btnComp = com.example.ui.components.ComponentThemeResolver.resolve(
         com.example.ui.components.LocalComponentThemes.current, "button"
     )
-    val btnShape = RoundedCornerShape(btnComp?.cornerRadius ?: 50)
+    val btnShape = RoundedCornerShape(btnComp?.cornerRadius ?: 50.dp)
     val btnBg: Brush = if (btnComp?.backgroundColor != null) {
         Brush.linearGradient(
             colors = listOf(btnComp.backgroundColor, btnComp.backgroundColor.copy(alpha = 0.88f)),
