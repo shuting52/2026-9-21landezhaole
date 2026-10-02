@@ -278,11 +278,11 @@ fun MainScreen(
                             )
                         }
 
-                        // 1.5. 国庆盛世华诞跑马灯公告
+                        // 跑马灯公告（v1.1.11：移除国庆横幅文案，改为中性公告）
                         item(span = { GridItemSpan(3) }) {
                             com.nationalday.ui.common.NationalDayNoticeTicker(
                                 notice = uiState.cloudMarquee?.defaultText?.takeIf { it.isNotBlank() }
-                                    ?: "🎉 热烈庆祝盛世华诞！全站已收录超1000+精选华夏宝藏资源，免授权直享！"
+                                    ?: "欢迎使用懒得找了～海量白嫖资源等你探索，遇到问题请到官方群反馈！"
                             )
                         }
 
