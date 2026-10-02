@@ -262,64 +262,7 @@ fun ResourceCard(
             }
         }
 
-        // v1.1.7 角标统一化修复：公司角标与 RibbonBadge 统一为绿色小胶囊（全圆角），
-        // 不再使用各品牌自身颜色，保证全站角标一致（动态流光 + 呼吸 + 摇摆，骑跨右上角不遮挡）。
-        val company = detectCompanyBadge(card)
-        if (company != null) {
-            // 动画值在 Composable 上下文计算（graphicsLayer/Brush 参数均为非 Composable 上下文）
-            val flowOffset = badgeFlow()
-            val breathe = badgeBreathe()
-            val wobble = badgeWobble()
-            // 国庆潮流国潮风：公司角标为华夏朱红与鎏金渐变小胶囊
-            val redGoldBadge = listOf(Color(0xFFDE2910), Color(0xFFFF3D00), Color(0xFFFF8C00))
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .offset(x = 8.dp, y = (-9).dp)
-                    .graphicsLayer {
-                        scaleX = breathe
-                        scaleY = breathe
-                        rotationZ = wobble
-                    }
-                    .clip(RoundedCornerShape(50))
-                    .background(
-                        Brush.linearGradient(
-                            colors = redGoldBadge,
-                            start = Offset(flowOffset * 120f, 0f),
-                            end = Offset(flowOffset * 120f + 80f, 0f)
-                        )
-                    )
-                    .border(0.9.dp, Color(0xFFFFD700).copy(alpha = 0.85f), RoundedCornerShape(50))
-                    .padding(horizontal = 7.dp, vertical = 3.dp)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    // 白点（替代原品牌色圆点）
-                    Box(
-                        modifier = Modifier
-                            .size(5.dp)
-                            .clip(RoundedCornerShape(50))
-                            .background(Color.White.copy(alpha = 0.95f))
-                    )
-                    Spacer(modifier = Modifier.width(3.dp))
-                    Text(
-                        text = company.name,
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Black,
-                        color = Color.White,
-                        maxLines = 1
-                    )
-                }
-            }
-        } else if (!card.badge.isNullOrBlank()) {
-            // 未识别到公司：保留原 RibbonBadge（动态，骑跨右上角不遮挡）
-            RibbonBadge(
-                text = card.badge,
-                badgeType = card.badgeType,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .offset(x = 10.dp, y = (-8).dp)
-            )
-        }
+        // v1.1.12：删除所有角标功能（用户要求）——不再渲染公司角标 / RibbonBadge
     }
 }
 
