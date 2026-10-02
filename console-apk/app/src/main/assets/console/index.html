@@ -2886,6 +2886,9 @@ function saveThemeKit(){
 function renderToolbox(){
   if(!S.admin) return;
   const tools = S.admin.tools || [];
+  // v1.1.10 修复：组件预览模板改为全局变量（tkPreview/tkLivePreview 全局函数才能访问，
+  // 之前是 renderToolbox 局部 const → 全局函数引用报 ReferenceError → 预览图无效果）
+  let tkPreviewTpl = {};
   // v1.1.6 需求 4：主题工具箱（控制台自定义本体所有组件的 CSS/HTML 代码）
   const tk = S.admin.themeKit || {};
   const compDefs = [
@@ -2909,10 +2912,10 @@ function renderToolbox(){
       code:"// ResourceCard.kt（真实本体代码）\nval cardCompStyle = ComponentThemeResolver.resolve(componentThemes, \"card_item\")\nval cardShape = RoundedCornerShape(50.dp) // 胶囊化\n// 公司角标：华夏朱红+鎏金渐变\nval redGoldBadge = listOf(Color(0xFFDE2910), Color(0xFFFF3D00), Color(0xFFFF8C00))",
       tutorial:"控制首页/软件/工具箱卡片：background 卡片背景、border-radius 圆角（胶囊 50px）、border 描边。示例：\nbackground: rgba(255,255,255,0.85);\nborder-radius: 24px;\nborder: 2px solid #e60012;",
       preview:"<div style=\"display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:24px;background:#fff\"><div style=\"width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#DE2910,#FF8C00);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px\">AI</div><div style=\"flex:1\"><div style=\"font-weight:800;font-size:12px;color:#26303c\">AI 大模型导航 <span style=\"background:linear-gradient(90deg,#DE2910,#FF8C00);border-radius:10px;padding:1px 6px;color:#fff;font-size:9px;border:1px solid #FFD700\">NEW</span></div><div style=\"font-size:10px;color:#64748b;margin-top:2px\">顶尖 AI 对话 · 智能助手 · 深度推理</div></div></div>" },
-    { id:"button", name:"按钮 Button", hint:"通用按钮样式",
-      code:"// AppUpdateDialog.kt 更新按钮（真实本体代码）\nBox(modifier = Modifier\n  .clip(RoundedCornerShape(10.dp))\n  .background(themePrimary.copy(alpha=0.12f))\n  .padding(horizontal=8.dp, vertical=3.dp))\n// 立即更新按钮：渐变脉冲（CSS_PINK→CSS_LEMON）",
-      tutorial:"控制按钮：background 按钮底色、border-radius 圆角、color 文字。示例：\nbackground: #e60012;\nborder-radius: 20px;\ncolor: #ffffff;",
-      preview:"<div style=\"text-align:center;padding:10px\"><div style=\"display:inline-block;padding:10px 26px;border-radius:50px;background:linear-gradient(135deg,#FF6B9D,#FFE08A);color:#fff;font-weight:800;font-size:13px\">立即更新</div><div style=\"display:inline-block;padding:8px 20px;border-radius:50px;background:#eee;color:#888;font-size:12px;margin-left:8px\">稍后再说</div></div>" },
+    { id:"button", name:"按钮 Button", hint:"通用按钮样式（默认=Uiverse lucky-mouse-99 蜜桃橙）",
+      code:"// AppUpdateDialog.kt 更新按钮（真实本体代码，v1.1.11 消费 button 主题）\nval btnComp = ComponentThemeResolver.resolve(LocalComponentThemes.current, \"button\")\nval btnShape = RoundedCornerShape(btnComp?.cornerRadius ?: 50)\nBox(\n  modifier = Modifier.clip(btnShape)\n    .background(btnComp?.backgroundColor ?: Brush.linearGradient(listOf(CSS_PINK, CSS_PEACH)))\n    .border(btnComp?.borderWidth ?: 0.dp, btnComp?.borderColor ?: Color.Transparent, btnShape)\n    .clickable(...)\n    .padding(horizontal = 26.dp, vertical = 10.dp))\n// 默认示例：Uiverse lucky-mouse-99（#FEC195 蜜桃橙 + 8px 圆角 + hover 渐变 wind 动画）",
+      tutorial:"控制按钮：background 按钮底色（Uiverse lucky-mouse-99 示例）\nbackground: #FEC195;\nborder-radius: 8px;\nborder: 1px solid #FEC195;\ncolor: #181818;\n/* hover 渐变 wind 动画： */\nbutton:hover { background: linear-gradient(85deg,#FEC195,#fcc196,#fabd92,#fac097,#fac39c); animation: wind 2s ease-in-out infinite; }",
+      preview:"<div style=\"text-align:center;padding:12px\"><div style=\"display:inline-block;padding:15px 45px;border-radius:8px;background:#FEC195;color:#181818;font-weight:500;font-size:15px;filter:drop-shadow(2px 2px 3px rgba(0,0,0,.2));border:1px solid #FEC195\">Button</div><div style=\"font-size:10px;color:#94a3b8;margin-top:8px\">Uiverse · MuhammadHasann/lucky-mouse-99 · hover 时蜜桃渐变 + 树叶摇摆</div></div>" },
     { id:"dialog", name:"弹窗 Dialog", hint:"更新/欢迎/详情弹窗",
       code:"// AppUpdateDialog.kt（真实本体代码）\nval dialogComp = ComponentThemeResolver.resolve(LocalComponentThemes.current, \"dialog\")\nBox(\n  modifier = Modifier\n    .clip(RoundedCornerShape(if (dialogComp != null) dialogComp.cornerRadius else 26.dp))\n    .background(dialogComp?.backgroundColor ?: Color.White)\n    .border(if (dialogComp != null) dialogComp.borderWidth else 0.dp,\n      dialogComp?.borderColor ?: Color.Transparent, shape))\n// 顶部渐变流光横幅 + 粒子漂浮 + 圆点列表呼吸动画",
       tutorial:"控制更新/欢迎/详情弹窗：background 弹窗底色、border-radius 圆角、border 描边。示例：\nbackground: #fffaf5;\nborder-radius: 28px;\nborder: 2px solid #ffd700;",
@@ -2931,9 +2934,10 @@ function renderToolbox(){
       preview:"<div style=\"height:90px;border-radius:14px;background:linear-gradient(160deg,#fff6ef,#ffe4e6);display:flex;align-items:center;justify-content:center;color:#7A4A45;font-size:11px\">全局背景 · 胶囊流光预览</div>" }
   ];
 
-  // v1.1.10：组件预览模板（高保真模拟本体各组件布局，上方 CSS 实时覆盖生效）
-  const tkPreviewTpl = {};
+  // v1.1.10：组件预览模板填充（高保真模拟本体各组件布局）
   compDefs.forEach(c => { tkPreviewTpl[c.id] = { title: c.name, html: c.preview || "" }; });
+  // 暴露到 window 供全局函数 tkPreview / tkLivePreview 读取
+  window.tkPreviewTpl = tkPreviewTpl;
   let html = `<div class="card" style="border:1.5px solid #16a34a;background:linear-gradient(135deg,#052e1618,#064e3b12)">
     <div class="action-banner" style="margin-bottom:4px">
       <b>🎨 主题工具箱（组件级自定义 → 本体实时生效）</b>
@@ -2973,7 +2977,9 @@ function tkPreview(id){
   const css = (($("tk_"+id)||{}).value) || "";
   const el = $("tk_preview_"+id);
   if(!el) return;
-  const P = tkPreviewTpl[id] || { title:id, html:`<div style="padding:12px;border-radius:12px;background:rgba(120,140,255,.12);color:#26303c;font-size:13px">示例内容</div>` };
+  // v1.1.11 修复：读取全局预览模板（window.tkPreviewTpl），此前局部变量导致 ReferenceError 无效果
+  const T = (typeof window !== "undefined" && window.tkPreviewTpl) || {};
+  const P = T[id] || { title:id, html:`<div style="padding:12px;border-radius:12px;background:rgba(120,140,255,.12);color:#26303c;font-size:13px">示例内容</div>` };
   // v1.1.10：使用高保真本体组件布局预览模板，上方 CSS 实时覆盖生效，所见即所得
   el.innerHTML = `<div style="font-weight:800;color:#0f172a;margin-bottom:6px">🔍 本体「${esc(P.title)}」布局预览（上方 CSS 已实时应用）</div>
     <div style="background:#eef2f7;border:1.5px solid #e2e8f0;border-radius:14px;padding:14px">
@@ -2985,7 +2991,8 @@ function tkPreview(id){
 function tkLivePreview(id, css){
   const el = $("tk_preview_"+id);
   if(!el || el.style.display === "none") return;
-  const P = tkPreviewTpl[id] || { title:id, html:`<div style="padding:12px;border-radius:12px;background:rgba(120,140,255,.12);color:#26303c;font-size:13px">示例内容</div>` };
+  const T = (typeof window !== "undefined" && window.tkPreviewTpl) || {};
+  const P = T[id] || { title:id, html:`<div style="padding:12px;border-radius:12px;background:rgba(120,140,255,.12);color:#26303c;font-size:13px">示例内容</div>` };
   el.innerHTML = `<div style="font-weight:800;color:#0f172a;margin-bottom:6px">🔍 本体「${esc(P.title)}」实时预览（无需保存即可查看）</div>
     <div style="background:#eef2f7;border:1.5px solid #e2e8f0;border-radius:14px;padding:14px">
       <div class="tk-preview-box" style="${css}">${P.html}</div>
