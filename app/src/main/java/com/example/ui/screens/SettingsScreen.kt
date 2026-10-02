@@ -56,6 +56,8 @@ import com.example.ui.components.UBadge
 import com.example.ui.components.UBadgeVariant
 import com.example.ui.components.UListContainer
 import com.example.ui.components.UListRow
+import com.example.ui.components.UiverseSettingsRow
+import com.example.ui.components.UiverseChevron
 import com.example.ui.components.OfficialWebsiteDialog
 import com.example.ui.components.ShareSoftwareDialog
 import androidx.compose.material3.AlertDialog
@@ -211,54 +213,55 @@ fun SettingsScreen(
             ) {
                 Column(modifier = Modifier.fillMaxWidth()) {
                 // Theme Switcher
-                UListRow(
-                    title = "主题切换",
-                    iconText = "🎨",
-                    rowIndex = 0,
-                    onClick = onOpenThemeSwitcher
-                )
+                UiverseSettingsRow(
+    icon = "🎨",
+    title = "主题切换",
+    onClick = onOpenThemeSwitcher,
+    trailing = { UiverseChevron() }
+)
 
 
                 // Contact Author (联系作者)
-                UListRow(
-                    title = "联系作者",
-                    iconText = "👤",
-                    rowIndex = 1,
-                    onClick = { activeDialogType = "contact_author" }
-                )
+                UiverseSettingsRow(
+    icon = "👤",
+    title = "联系作者",
+    onClick = { activeDialogType = "contact_author" },
+    trailing = { UiverseChevron() }
+)
 
 
                 // 软件反馈
-                UListRow(
-                    title = "软件反馈",
-                    iconText = "🐛",
-                    rowIndex = 2,
-                    onClick = { activeDialogType = "feedback_bug" }
-                )
+                UiverseSettingsRow(
+    icon = "🐛",
+    title = "软件反馈",
+    onClick = { activeDialogType = "feedback_bug" },
+    trailing = { UiverseChevron() }
+)
 
 
                 // 官方交流群 (链接/群号由云端控制台配置)
-                UListRow(
-                    title = "官方交流群",
-                    iconText = "👥",
-                    rowIndex = 0,
-                    onClick = {
+                UiverseSettingsRow(
+    icon = "👥",
+    title = "官方交流群",
+    onClick = {
                         openQqGroup(
                             context,
                             groupUrl = cloudSettings?.qqGroupUrl?.ifBlank { OFFICIAL_QQ_GROUP_URL } ?: OFFICIAL_QQ_GROUP_URL,
-                            groupUin = cloudSettings?.qqGroupUin?.ifBlank { "439211347" } ?: "439211347"
-                        )
+                            groupUin = cloudSettings?.qqGroupUin?.ifBlank { "439211347" } ?: "439211347",
+    trailing = { UiverseChevron() }
+)
                     }
                 )
 
 
                 // 官方网站 (链接由云端控制台配置)
-                UListRow(
-                    title = "官方网站",
-                    iconText = "🌐",
-                    rowIndex = 1,
-                    onClick = {
-                        val site = cloudSettings?.officialWebsite?.trim()
+                UiverseSettingsRow(
+    icon = "🌐",
+    title = "官方网站",
+    onClick = {
+                        val site = cloudSettings?.officialWebsite?.trim(,
+    trailing = { UiverseChevron() }
+)
                         if (!site.isNullOrBlank()) {
                             try {
                                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(site)).apply {
@@ -276,21 +279,21 @@ fun SettingsScreen(
 
 
                 // 应用评分 (Uiverse 5星好评)
-                UListRow(
-                    title = "应用评分",
-                    iconText = "⭐",
-                    rowIndex = 2,
-                    onClick = { activeDialogType = "rating" }
-                )
+                UiverseSettingsRow(
+    icon = "⭐",
+    title = "应用评分",
+    onClick = { activeDialogType = "rating" },
+    trailing = { UiverseChevron() }
+)
 
 
                 // 分享软件 (分享到微信、QQ及其他第三方平台)
-                UListRow(
-                    title = "分享软件",
-                    iconText = "📤",
-                    rowIndex = 0,
-                    onClick = { activeDialogType = "share_software" }
-                )
+                UiverseSettingsRow(
+    icon = "📤",
+    title = "分享软件",
+    onClick = { activeDialogType = "share_software" },
+    trailing = { UiverseChevron() }
+)
             }
             }
 
@@ -522,36 +525,36 @@ fun SettingsScreen(
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
             ) {
                 Column(modifier = Modifier.fillMaxWidth()) {
-                UListRow(
-                    title = "关于我们",
-                    iconText = "ℹ️",
-                    rowIndex = 0,
-                    onClick = { activeDialogType = "about" }
-                )
+                UiverseSettingsRow(
+    icon = "ℹ️",
+    title = "关于我们",
+    onClick = { activeDialogType = "about" },
+    trailing = { UiverseChevron() }
+)
 
 
-                UListRow(
-                    title = "用户协议",
-                    iconText = "📜",
-                    rowIndex = 1,
-                    onClick = { activeDialogType = "terms" }
-                )
+                UiverseSettingsRow(
+    icon = "📜",
+    title = "用户协议",
+    onClick = { activeDialogType = "terms" },
+    trailing = { UiverseChevron() }
+)
 
 
-                UListRow(
-                    title = "隐私政策",
-                    iconText = "🔒",
-                    rowIndex = 2,
-                    onClick = { activeDialogType = "privacy" }
-                )
+                UiverseSettingsRow(
+    icon = "🔒",
+    title = "隐私政策",
+    onClick = { activeDialogType = "privacy" },
+    trailing = { UiverseChevron() }
+)
 
 
-                UListRow(
-                    title = "儿童隐私政策",
-                    iconText = "🧒",
-                    rowIndex = 0,
-                    onClick = { activeDialogType = "child_privacy" }
-                )
+                UiverseSettingsRow(
+    icon = "🧒",
+    title = "儿童隐私政策",
+    onClick = { activeDialogType = "child_privacy" },
+    trailing = { UiverseChevron() }
+)
             }
             }
         }

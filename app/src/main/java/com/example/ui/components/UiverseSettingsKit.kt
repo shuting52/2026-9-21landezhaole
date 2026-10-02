@@ -1,0 +1,113 @@
+package com.example.ui.components
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
+// ============================================================
+// v1.1.4 设置页分支：Uiverse 新拟态/霓虹风格设置行组件
+// 依据用户提供的 UiverseSettingsRow 规范实现：
+//   白色卡片 + 琥珀橙硬阴影 + 深蓝墨描边 + 圆角 + 图标/标题/尾部插槽
+// ============================================================
+
+/** Uiverse 墨色（深蓝灰描边/文字） */
+val UiverseInk = Color(0xFF1E2A38)
+
+/** Uiverse 琥珀橙（主阴影/强调色） */
+val UiverseAmber = Color(0xFFFFB020)
+
+/** Uiverse 天蓝（图标底色） */
+val UiverseBlue = Color(0xFF4D96FF)
+
+/** Uiverse 草莓粉（次强调色） */
+val UiversePink = Color(0xFFFF5E8A)
+
+/** Uiverse 背景（浅蓝灰） */
+val UiverseBg = Color(0xFFF0F4FA)
+
+/**
+ * neoShadow：白色卡片 + 右下偏移硬阴影 + 粗描边（Neo-Brutalism / Uiverse 风格）。
+ * 对应 CSS：`box-shadow:.35em .35em 0 var(--amber); border:3.5px solid var(--ink)`
+ */
+fun Modifier.neoShadow(
+    offsetX: Dp = 3.5.dp,
+    offsetY: Dp = 3.5.dp,
+    shadowColor: Color = UiverseAmber,
+    borderColor: Color = UiverseInk,
+    borderWidth: Dp = 3.5.dp,
+    shape: RoundedCornerShape = RoundedCornerShape(14.dp),
+    backgroundColor: Color = Color.White
+): Modifier = this
+    .shadow(
+        elevation = 6.dp,
+        shape = shape,
+        ambientColor = shadowColor.copy(alpha = 0.85f),
+        spotColor = shadowColor
+    )
+    .background(backgroundColor, shape)
+    .border(borderWidth, borderColor, shape)
+
+/**
+ * 设置页行：图标 + 标题 + 尾部插槽（箭头/开关/徽标）。
+ * 采用用户指定的 Uiverse 风格：白底 + 3.5dp 深蓝墨描边 + 3.5dp 琥珀硬阴影 + 圆角。
+ */
+@Composable
+fun UiverseSettingsRow(
+    icon: String,
+    title: String,
+    subtitle: String = "",
+    trailing: @Composable () -> Unit = {},
+    onClick: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .neoShadow(
+                offsetX = 3.5.dp,
+                offsetY = 3.5.dp,
+                shadowColor = UiverseAmber,
+                borderColor = UiverseInk,
+                borderWidth = 3.5.dp,
+                shape = RoundedCornerShape(14.dp),
+                backgroundColor = Color.White
+            )
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(icon, fontSize = 20.sp)
+        Spacer(modifier = Modifier.width(12.dp))
+        androidx.compose.foundation.layout.Column(modifier = Modifier.weight(1f)) {
+            Text(title, fontWeight = FontWeight.Bold, color = UiverseInk, fontSize = 14.sp)
+            if (subtitle.isNotBlank()) {
+                Text(
+                    text = subtitle,
+                    fontSize = 11.sp,
+                    color = UiverseInk.copy(alpha = 0.55f)
+                )
+            }
+        }
+        trailing()
+    }
+}
+
+/** 设置行尾部箭头（›） */
+@Composable
+fun UiverseChevron() {
+    Text("›", fontSize = 16.sp, fontWeight = FontWeight.Black, color = UiverseInk.copy(alpha = 0.5f))
+}

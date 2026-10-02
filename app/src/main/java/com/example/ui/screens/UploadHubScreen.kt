@@ -220,6 +220,19 @@ fun UploadHubScreen(
                             }
                         }
                     }
+                } else if (resourceType == "skill") {
+                    // v1.1.4 软件/Skill 分支：Skill 技能库取消分类标签（不再显示 其他资源/AI/智能 等），直接平铺
+                    items(displayResources, key = { it.id }) { res ->
+                        SkillGridCard(
+                            res = res,
+                            onClick = { skillDetail = res },
+                            showDelete = showDelete,
+                            onDelete = {
+                                onDelete(res.id)
+                                Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                    }
                 } else {
                     grouped.forEach { (cat, list) ->
                         // v1.0.19：分类标题静态分区（不再可点击展开/收起）
@@ -641,7 +654,7 @@ private fun SoftwareGridCard(
         isApk -> "APK"
         isZip -> "ZIP"
         isMd -> "MD"
-        else -> "直达"
+        else -> "网页"
     }
     val badgeColor = when {
         isApk -> Color(0xFF22C55E)
@@ -791,7 +804,7 @@ private fun SoftwareGridCard(
                             )
                             Spacer(modifier = Modifier.width(3.dp))
                             Text(
-                                text = if (canInstall) "安装" else "直达",
+                                text = if (canInstall) "安装" else "打开",
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = if (canInstall) Color(0xFF22C55E) else MaterialTheme.colorScheme.primary
@@ -835,7 +848,7 @@ private fun SoftwareHorizontalCard(
         isApk -> "APK"
         isZip -> "ZIP"
         isMd -> "MD"
-        else -> "直达"
+        else -> "网页"
     }
     val badgeColor = when {
         isApk -> Color(0xFF22C55E)
@@ -953,7 +966,7 @@ private fun SoftwareHorizontalCard(
                         .padding(horizontal = 6.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        text = if (canInstall) "安装" else "直达",
+                        text = if (canInstall) "安装" else "打开",
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
                         color = themePrimary
@@ -1031,7 +1044,7 @@ private fun ResourceFileCard(
     val actionText = when {
         canInstall && resourceType == "skill" -> "下载"
         canInstall -> "安装"
-        else -> "直达"
+        else -> "网页"
     }
 
     fun downloadToLocal(url: String, fileName: String?) {
