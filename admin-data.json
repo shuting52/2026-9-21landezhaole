@@ -1,17 +1,18 @@
 {
  "version": {
-  "code": 113,
-  "name": "1.1.13",
+  "code": 114,
+  "name": "1.1.14",
   "changelog": [
-   "🔗 控制台与本体数据源统一对接 landezhaole10-02",
-   "🧰 工具箱新增「本机·云端对接」分区：云端连接状态/检查更新/重放开屏动画/主题切换/IP定位监控/官方交流群",
-   "✨ 开屏改用新版粒子动画，底部导航缩小，Skill Tab 新拟态 radio-inputs 样式",
-   "🗑️ 删除软件库页头横幅与首页跑马灯，移除「网页」徽标文字",
-   "🛠️ 大量细节优化，等你来发现～"
+   "? 主题切换回归经典皮肤，删除全局代码/组件定制，保留自定义背景",
+   "? 修复自定义视频背景被放大裁切的问题",
+   "? 工具箱改名：最强嘴替/年龄算术/离线百宝/今天吃什么/紧急电话",
+   "? 紧急电话删除地区选择，新增反诈/国安/法院/妇儿等救命电话",
+   "? Skill 排版改横屏自适应宽度",
+   "? 恢复首页公告栏跑马灯"
   ],
   "force": false,
-  "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.1.13-1790968221.apk",
-  "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.1.13-1790968221.apk"
+  "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.1.14-1790971395.apk",
+  "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.1.14-1790971395.apk"
  },
  "home": {
   "categories": [
