@@ -152,7 +152,7 @@ fun ToolboxScreen(
             Surface(
                 color = Color.White.copy(alpha = 0.50f),
                 border = BorderStroke(1.dp, Color.White.copy(alpha = 0.65f)),
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedCornerShape(28.dp), // v1.1.7 胶囊化
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -201,7 +201,7 @@ fun ToolboxScreen(
                     modifier = Modifier
                         .fillMaxWidth(0.96f)
                         .fillMaxHeight(0.92f)
-                        .clip(RoundedCornerShape(20.dp)),
+                        .clip(RoundedCornerShape(28.dp)), // v1.1.7 胶囊化
                     color = MaterialTheme.colorScheme.background,
                     tonalElevation = 6.dp
                 ) {
@@ -272,7 +272,7 @@ private fun ToolCategoryHeader(
     onToggle: () -> Unit
 ) {
     Surface(
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(24.dp), // v1.1.7 胶囊化
         color = Color.White.copy(alpha = 0.55f),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.28f)),
         modifier = Modifier.fillMaxWidth()
@@ -323,7 +323,7 @@ private fun ToolGrid(tabs: List<ToolboxTab>, onTabClick: (ToolboxTab) -> Unit) {
 private fun ToolCell(tab: ToolboxTab, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(24.dp), // v1.1.7 胶囊化
         color = Color.White.copy(alpha = 0.6f),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
         modifier = modifier.fillMaxWidth()
@@ -405,7 +405,7 @@ private fun CloudToolCell(
                 Toast.makeText(context, "该云端工具未配置跳转链接", Toast.LENGTH_SHORT).show()
             }
         },
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(24.dp), // v1.1.7 胶囊化
         color = Color.White.copy(alpha = 0.6f),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
         modifier = modifier.fillMaxWidth()

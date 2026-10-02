@@ -49,8 +49,10 @@ android {
     // v1.1.3 主题升级：新增「霓虹地图·荧光绿」主题预设（深色地图底+荧光绿+白字+星空氛围）并设为默认
     // v1.1.4：角标统一绿色 + 主题组件定制生效 + 软件/Skill/工具箱分类清理 + 设置页 Uiverse 风格
     // 与云端 admin-data.json version.code=104 / name=1.1.4 四要素对齐（含 apkUrl 指向真实 1.1.4 安装包）
-    versionCode = 106
-    versionName = "1.1.6"
+    // v1.1.7 自检修复：角标全站统一绿色小胶囊（公司角标也改绿）；软件版块分类标签彻底移除 + 多源 icon 识别；
+    // 工具箱/设置页/导航整体胶囊化 UI；主题切换由控制台「主题工具箱」统一管理（themeKit 9 组件自定义代码）
+    versionCode = 107
+    versionName = "1.1.7"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }

@@ -63,7 +63,8 @@ val V15Divider = Color(0xFFE6EEF5)  // 分隔线
 @Composable
 fun ULayoutCard(
     modifier: Modifier = Modifier,
-    cornerRadius: Int = 16,
+    // v1.1.7 整体胶囊化：默认圆角增大到 28dp（胶囊感）
+    cornerRadius: Int = 28,
     borderWidth: Int = 4,
     shadowColor: Color = V15C1,
     borderColor: Color = V15Ink,

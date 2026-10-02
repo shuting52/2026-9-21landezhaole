@@ -262,16 +262,16 @@ fun ResourceCard(
             }
         }
 
-        // v1.0.19 角标修复：遵循原 RibbonBadge 动态设计，且不遮挡站点内容。
-        // 角标统一骑跨在卡片右上角边框（向上偏移，主体在卡片外），不再压住收藏按钮/标题/描述；
-        // 公司角标同样呈现动态流光扫过 + 呼吸缩放 + 摇摆。
+        // v1.1.7 角标统一化修复：公司角标与 RibbonBadge 统一为绿色小胶囊（全圆角），
+        // 不再使用各品牌自身颜色，保证全站角标一致（动态流光 + 呼吸 + 摇摆，骑跨右上角不遮挡）。
         val company = detectCompanyBadge(card)
         if (company != null) {
             // 动画值在 Composable 上下文计算（graphicsLayer/Brush 参数均为非 Composable 上下文）
             val flowOffset = badgeFlow()
             val breathe = badgeBreathe()
             val wobble = badgeWobble()
-            // 检测到公司：动态流光胶囊角标（不叠加、不遮挡内容）
+            // 统一绿色小胶囊（全圆角，与 RibbonBadge 同色系）
+            val greenBadge = listOf(Color(0xFF16C172), Color(0xFF00E676), Color(0xFF0FBD6A))
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
@@ -281,22 +281,18 @@ fun ResourceCard(
                         scaleY = breathe
                         rotationZ = wobble
                     }
-                    .clip(RoundedCornerShape(6.dp))
+                    .clip(RoundedCornerShape(50))
                     .background(
                         Brush.linearGradient(
-                            colors = listOf(
-                                company.color,
-                                company.color.copy(alpha = 0.72f),
-                                company.color
-                            ),
+                            colors = greenBadge,
                             start = Offset(flowOffset * 120f, 0f),
                             end = Offset(flowOffset * 120f + 80f, 0f)
                         )
                     )
-                    .padding(horizontal = 6.dp, vertical = 3.dp)
+                    .padding(horizontal = 7.dp, vertical = 3.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // 品牌色圆点
+                    // 白点（替代原品牌色圆点）
                     Box(
                         modifier = Modifier
                             .size(5.dp)

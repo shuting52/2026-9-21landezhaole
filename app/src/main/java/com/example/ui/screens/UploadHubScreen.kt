@@ -81,15 +81,33 @@ private fun autoCategorize(res: UploadedResourceEntity): String {
     return "其他资源"
 }
 
-/** v1.8.7：自动识别站点/软件 icon（Google favicon 服务，url 为空或失败时回退文字徽标） */
+/** v1.1.7 修复「软件版块图标不识别」：
+ *  多源自动识别软件 icon——
+ *  1. 云端已配置 iconUrl 优先（res.iconUrl 由调用方处理）
+ *  2. 这里返回站点自身 favicon（/favicon.ico，最可靠）
+ *  3. 国内可访问的第三方 favicon 服务（icon.horse / favicon.im / f.icoji），Google 服务国内不可用已弃用
+ */
 private fun autoFaviconUrl(url: String): String {
     return try {
         val host = java.net.URI(if (url.startsWith("http")) url else "https://$url").host ?: return ""
-        "https://www.google.com/s2/favicons?domain=$host&sz=64"
+        // 站点自身 favicon（最可靠，优先）
+        val self = "https://$host/favicon.ico"
+        // 国内/全球可访问的 favicon 聚合服务（按顺序回退）
+        val mirrors = listOf(
+            "https://icon.horse/icon/$host",
+            "https://favicon.im/$host?size=64",
+            "https://f.icoji.com/icon/$host",
+            "https://www.google.com/s2/favicons?domain=$host&sz=64"
+        )
+        // 返回站点自身 + 聚合服务串（调用方会逐个尝试/兜底）
+        listOf(self) + mirrors
     } catch (e: Exception) {
         ""
-    }
+    }.joinToString("|@|")
 }
+
+/** v1.1.7：从多源字符串中取第一个可用 icon 地址（“|@|” 分隔） */
+private fun firstIconUrl(multi: String): String = multi.split("|@|").firstOrNull()?.takeIf { it.isNotBlank() } ?: ""
 
 /**
  * 资源展示页（软件 / Skill）v1.8.7：
@@ -613,7 +631,8 @@ private fun SoftwareGridCard(
     }
 
     // v1.8.7：自动识别 icon（优先云端 iconUrl，其次 Google favicon 服务）
-    val displayIcon = res.iconUrl.ifBlank { autoFaviconUrl(res.url.ifBlank { res.fileUrl }) }
+    // v1.1.7：多源 favicon（站点自身 icon + 国内聚合服务），提升识别成功率
+    val displayIcon = res.iconUrl.ifBlank { firstIconUrl(autoFaviconUrl(res.url.ifBlank { res.fileUrl })) }
 
     fun downloadToLocal(url: String, fileName: String?) {
         try {
@@ -806,8 +825,8 @@ private fun SoftwareHorizontalCard(
         else -> MaterialTheme.colorScheme.primary
     }
 
-    // 自动识别 icon（优先云端 iconUrl，其次 Google favicon 服务）
-    val displayIcon = res.iconUrl.ifBlank { autoFaviconUrl(res.url.ifBlank { res.fileUrl }) }
+    // v1.1.7：多源 favicon，提升识别成功率
+    val displayIcon = res.iconUrl.ifBlank { firstIconUrl(autoFaviconUrl(res.url.ifBlank { res.fileUrl })) }
     // v1.0.9 主题：卡片描边用主题主色渐变（清爽浅红系）
     val themePrimary = MaterialTheme.colorScheme.primary
     val themeSecondary = MaterialTheme.colorScheme.secondary
@@ -1061,7 +1080,7 @@ private fun ResourceFileCard(
                 val displayIcon = if (resourceType == "skill")
                     ""
                 else
-                    res.iconUrl.ifBlank { autoFaviconUrl(res.url.ifBlank { res.fileUrl }) }
+                    res.iconUrl.ifBlank { firstIconUrl(autoFaviconUrl(res.url.ifBlank { res.fileUrl })) }
                 if (displayIcon.isNotBlank()) {
                     AsyncImageCompat(
                         url = displayIcon,
