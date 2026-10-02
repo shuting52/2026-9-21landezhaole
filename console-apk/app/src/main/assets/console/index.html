@@ -2844,10 +2844,57 @@ function renderApk(){
 // ==========================================
 // 9. 工具箱（v1.8.7 控制台增删云端工具，点应用后本体工具箱页实时同步）
 // ==========================================
+
+// v1.1.6 需求 4：保存主题工具箱代码到 admin-data.json（themeKit 字段）
+function saveThemeKit(){
+  if(!S.admin){ toast("请先连接并加载数据","err"); return; }
+  const tk = S.admin.themeKit || {};
+  const ids = ["appBar","bottomBar","splash","statusBar","card","button","dialog","search","global"];
+  ids.forEach(id => {
+    const el = $("tk_"+id);
+    tk[id] = { css: el ? el.value : (tk[id]&&tk[id].css||"") };
+  });
+  S.admin.themeKit = tk;
+  S.dirty = true;
+  toast("主题代码已保存，点「应用」即可同步到本体","ok");
+  logChange("更新主题工具箱组件样式");
+}
 function renderToolbox(){
   if(!S.admin) return;
   const tools = S.admin.tools || [];
-  let html = `<div class="card">
+  // v1.1.6 需求 4：主题工具箱（控制台自定义本体所有组件的 CSS/HTML 代码）
+  const tk = S.admin.themeKit || {};
+  const compDefs = [
+    { id:"appBar", name:"顶部栏 TopAppBar", hint:"u-appbar 顶栏：颜色/描边/标题样式" },
+    { id:"bottomBar", name:"底部导航 NavigationBar", hint:"u-bottombar 底栏：胶囊容器/按钮/选中态" },
+    { id:"splash", name:"开屏页 Splash", hint:"开屏动画：背景/Logo/跳过按钮" },
+    { id:"statusBar", name:"状态栏 StatusBar", hint:"系统状态栏：颜色/文字" },
+    { id:"card", name:"首页卡片 ResourceCard", hint:"卡片：圆角胶囊/阴影/图标" },
+    { id:"button", name:"按钮 Button", hint:"通用按钮样式" },
+    { id:"dialog", name:"弹窗 Dialog", hint:"更新/欢迎/详情弹窗" },
+    { id:"search", name:"搜索框 Search", hint:"首页搜索框样式" },
+    { id:"global", name:"全局 Global CSS", hint:"整个软件的全局 CSS 变量/背景" }
+  ];
+  let html = `<div class="card" style="border:1.5px solid #16a34a;background:linear-gradient(135deg,#052e1618,#064e3b12)">
+    <div class="action-banner" style="margin-bottom:4px">
+      <b>🎨 主题工具箱（组件级自定义 → 本体实时生效）</b>
+      <span class="hint">为本体软件的每个 UI 组件填写自定义 CSS/HTML 代码，点「应用」后本体数秒内生效，开屏/顶栏/底栏/卡片/弹窗等全部组件均可任意更改。留空 = 使用默认样式。</span>
+    </div>
+    <div class="row" style="margin:8px 0 4px">
+      <button class="btn-pri grow" onclick="saveThemeKit()">💾 保存主题代码</button>
+      <button class="btn-ok" onclick="applyToDevice()">✅ 应用并同步本体</button>
+    </div>`;
+  compDefs.forEach(c => {
+    html += `<div style="margin-top:8px">
+      <div class="item-sub" style="display:flex;align-items:center;gap:6px">
+        <span class="chip">${c.name}</span>
+        <span class="hint">${c.hint}</span>
+      </div>
+      <textarea id="tk_${c.id}" class="mono" style="width:100%;min-height:56px;margin-top:4px" placeholder="${c.name}的自定义 CSS/HTML 代码…">${esc((tk[c.id]||{}).css||"")}</textarea>
+    </div>`;
+  });
+  html += `</div>`;
+  html += `<div class="card">
     <div class="action-banner">
       <b>🧰 工具箱管理（云端工具）</b>
       <span class="hint">这里管理的工具会实时同步到本体软件「工具箱」页顶部展示：工具名称/描述/图标/跳转链接。可增可删，点「应用」后本体数秒内生效；刷新本体即可看到新增工具。</span>
