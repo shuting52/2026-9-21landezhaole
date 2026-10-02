@@ -53,8 +53,8 @@ android {
     // 云端 themeKit id 统一映射 + LocalComponentThemes 全局提供，控制台「应用」后本体数秒内实时变更
     // v1.1.7 自检修复：角标全站统一绿色小胶囊（公司角标也改绿）；软件版块分类标签彻底移除 + 多源 icon 识别；
     // 工具箱/设置页/导航整体胶囊化 UI；主题切换由控制台「主题工具箱」统一管理（themeKit 9 组件自定义代码）
-    versionCode = 111
-    versionName = "1.1.11"
+    versionCode = 112
+    versionName = "1.1.12"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
