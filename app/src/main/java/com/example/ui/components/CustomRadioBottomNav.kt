@@ -89,27 +89,28 @@ fun CustomRadioBottomNav(
         else -> Modifier
     }
 
-    Surface(
-        color = surfaceBg,
-        tonalElevation = 6.dp,
-        shadowElevation = 12.dp,
+    // v1.1.6 需求 3：底部导航改为「白色大胶囊容器 + 圆形按钮」
+    // 对应 CSS：background:#fff; border-radius:50px; box-shadow 立体投影;
+    // 每个 tab 为圆形按钮，选中态主题色实心圆填充 + 白色图标，未选中浅灰圆。
+    val pillShape = RoundedCornerShape(50)
+    Box(
         modifier = modifier
             .fillMaxWidth()
-            .then(topBorderModifier)
+            .padding(WindowInsets.navigationBars.asPaddingValues())
+            .padding(horizontal = 14.dp, vertical = 8.dp)
             .testTag("custom_radio_bottom_nav")
     ) {
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(WindowInsets.navigationBars.asPaddingValues())
-                .padding(top = 10.dp, bottom = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .clip(pillShape)
+                .background(Color.White)
+                .shadow(elevation = 8.dp, shape = pillShape, clip = false)
+                .border(2.dp, Color(0xFFE6EEF5), pillShape)
+                .padding(horizontal = 6.dp, vertical = 6.dp)
         ) {
-            // Container imitating .custom-radio-group
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -129,7 +130,7 @@ fun CustomRadioBottomNav(
                 }
             }
         }
-    }
+        }
 }
 
 private data class TabItem(
@@ -149,44 +150,18 @@ private fun RadioNavItem(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 
-    // Multi-stop gradients matching the CSS specification
-    // Unchecked: #ffffff 33%, #414751 58%, #837b52, #c5baa1, #c3adaa
-    val uncheckedGradient = Brush.verticalGradient(
-        0.0f to Color(0xFFFFFFFF),
-        0.33f to Color(0xFFFFFFFF),
-        0.58f to Color(0xFF414751),
-        0.75f to Color(0xFF837B52),
-        0.88f to Color(0xFFC5BAA1),
-        1.0f to Color(0xFFC3ADAA)
-    )
+    // v1.1.6 需求 3：胶囊导航中的圆形按钮
+    // 选中：主题色实心圆 + 白色图标 + 轻微放大 + 底部小圆点指示
+    // 未选中：浅灰圆 + 灰色图标
+    val circleSize = if (isSelected) 46.dp else 40.dp
+    val iconSize = if (isSelected) 22.dp else 19.dp
+    val circleColor = if (isSelected) MaterialTheme.colorScheme.primary else Color(0xFFE9EEF4)
 
-    // Checked: #ffffff 33%, #414751 58%, #827a7b, #c0b6ac, #c3adaa
-    val checkedGradient = Brush.verticalGradient(
-        0.0f to Color(0xFFFFFFFF),
-        0.33f to Color(0xFFFFFFFF),
-        0.58f to Color(0xFF414751),
-        0.75f to Color(0xFF827A7B),
-        0.88f to Color(0xFFC0B6AC),
-        1.0f to Color(0xFFC3ADAA)
+    val scale by animateFloatAsState(
+        targetValue = if (isSelected) 1.0f else 0.94f,
+        animationSpec = tween(220),
+        label = "circleScale"
     )
-
-    val labelOpacity by animateFloatAsState(
-        targetValue = if (isSelected) 1f else 0.65f,
-        animationSpec = tween(300),
-        label = "labelOpacity"
-    )
-
-    val barHeight by animateDpAsState(
-        targetValue = if (isSelected) 10.dp else 8.dp,
-        animationSpec = tween(300),
-        label = "barHeight"
-    )
-
-    val shape = when {
-        isFirst -> RoundedCornerShape(topStart = 6.dp, bottomStart = 6.dp)
-        isLast -> RoundedCornerShape(topEnd = 6.dp, bottomEnd = 6.dp)
-        else -> RoundedCornerShape(0.dp)
-    }
 
     Column(
         modifier = modifier
@@ -195,51 +170,44 @@ private fun RadioNavItem(
                 indication = null,
                 onClick = onClick
             )
-            .padding(horizontal = 1.dp),
+            .padding(vertical = 2.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Metallic Bar (.radio-input)
+        // 圆形按钮（图标在圆内）
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(barHeight)
-                .shadow(
-                    elevation = if (isSelected) 4.dp else 2.dp,
-                    shape = shape,
-                    clip = false
-                )
-                .clip(shape)
-                .background(if (isSelected) checkedGradient else uncheckedGradient)
+                .size(circleSize)
+                .graphicsLayer { scaleX = scale; scaleY = scale }
+                .clip(CircleShape)
+                .background(circleColor)
                 .border(
-                    width = 0.8.dp,
-                    color = if (isSelected) Color(0xFF847A62) else Color(0xFFAFA490).copy(alpha = 0.6f),
-                    shape = shape
-                )
-        )
-
-        Spacer(modifier = Modifier.height(5.dp))
-
-        // Icon + Label with opacity transition (.radio-input + span)
-        Column(
-            modifier = Modifier
-                .alpha(labelOpacity)
-                .padding(bottom = 2.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                    width = if (isSelected) 2.dp else 1.dp,
+                    color = if (isSelected) Color.White.copy(alpha = 0.85f) else Color.Transparent,
+                    shape = CircleShape
+                ),
+            contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = tabItem.icon,
                 contentDescription = tabItem.title,
-                tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(18.dp)
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = tabItem.title,
-                fontSize = 11.sp,
-                fontWeight = if (isSelected) FontWeight.ExtraBold else FontWeight.Medium,
-                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                maxLines = 1
+                tint = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(iconSize)
             )
         }
+        Spacer(modifier = Modifier.height(3.dp))
+        Text(
+            text = tabItem.title,
+            fontSize = 10.sp,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1
+        )
+        // 选中态底部小圆点
+        Box(
+            modifier = Modifier
+                .size(if (isSelected) 5.dp else 0.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primary)
+        )
     }
 }
