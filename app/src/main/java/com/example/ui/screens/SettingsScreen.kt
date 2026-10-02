@@ -241,27 +241,25 @@ fun SettingsScreen(
 
                 // 官方交流群 (链接/群号由云端控制台配置)
                 UiverseSettingsRow(
-    icon = "👥",
-    title = "官方交流群",
-    onClick = {
+                    icon = "👥",
+                    title = "官方交流群",
+                    onClick = {
                         openQqGroup(
                             context,
                             groupUrl = cloudSettings?.qqGroupUrl?.ifBlank { OFFICIAL_QQ_GROUP_URL } ?: OFFICIAL_QQ_GROUP_URL,
-                            groupUin = cloudSettings?.qqGroupUin?.ifBlank { "439211347" } ?: "439211347",
-    trailing = { UiverseChevron() }
-)
-                    }
+                            groupUin = cloudSettings?.qqGroupUin?.ifBlank { "439211347" } ?: "439211347"
+                        )
+                    },
+                    trailing = { UiverseChevron() }
                 )
 
 
                 // 官方网站 (链接由云端控制台配置)
                 UiverseSettingsRow(
-    icon = "🌐",
-    title = "官方网站",
-    onClick = {
-                        val site = cloudSettings?.officialWebsite?.trim(,
-    trailing = { UiverseChevron() }
-)
+                    icon = "🌐",
+                    title = "官方网站",
+                    onClick = {
+                        val site = cloudSettings?.officialWebsite?.trim()
                         if (!site.isNullOrBlank()) {
                             try {
                                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(site)).apply {
@@ -274,7 +272,8 @@ fun SettingsScreen(
                         } else {
                             activeDialogType = "official_website"
                         }
-                    }
+                    },
+                    trailing = { UiverseChevron() }
                 )
 
 

@@ -116,7 +116,7 @@ fun ResourceCard(
         CardStylePreset.LUXURY_GOLD -> Color(0xFFD4AF37)
         CardStylePreset.CUSTOM -> uiverse.customStyle?.textColor ?: MaterialTheme.colorScheme.onSurface
         else -> MaterialTheme.colorScheme.onSurface
-    }.let { if (compText != null) compText else it }
+    }.let { if (cardCompStyle?.textColor != null) cardCompStyle.textColor else it }
 
     val descColor = when (uiverse.cardStyle) {
         CardStylePreset.CYBERPUNK -> Color(0xFF94A3B8)
