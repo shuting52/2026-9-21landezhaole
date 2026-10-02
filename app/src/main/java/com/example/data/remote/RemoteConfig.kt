@@ -24,7 +24,9 @@ data class AdminData(
     val console: ConsoleDto? = null,
     val ipMonitor: IpMonitorDto? = null,
     // v1.8.7：控制台可增删的「云端工具箱工具」
-    val tools: List<ToolDto> = emptyList()
+    val tools: List<ToolDto> = emptyList(),
+    // v1.1.6：控制台「主题工具箱」（兼容顶层放置）
+    val themeKit: Map<String, Any?> = emptyMap()
 )
 
 /** 云端工具箱扩展工具（控制台增删，实时同步到本体工具箱页） */
@@ -150,7 +152,9 @@ data class SettingsDto(
     // 内置歌手海报（控制台可上传替换）
     val celebrityPosters: List<CelebrityPosterDto> = emptyList(),
     // UI 组件级主题（每个组件独立代码定制）
-    val componentThemes: Map<String, String> = emptyMap()
+    val componentThemes: Map<String, String> = emptyMap(),
+    // v1.1.6 控制台「主题工具箱」：Map<组件id, {css, html}>（appBar/bottomBar/splash/card/...）
+    val themeKit: Map<String, Any?> = emptyMap()
 )
 
 /** 安全加固配置：开启后运行时校验自身签名，防止二次打包篡改 */
