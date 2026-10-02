@@ -54,16 +54,18 @@ object ThemePresetsRepository {
 
     // v1.1.3 新增「霓虹地图 · 荧光绿」主题（默认）：深色地图底 + 荧光绿地标(#00C080) + 白字，
     // 氛围星空光点，呼应「地图+城市地标」Uiverse 组件配色。
+    // v1.1.11：默认主题改为「简约白」——本体软件背景采用白色，
+    // 透明磨砂玻璃改为不透明白色胶囊质感（用户需求：白色背景 + 胶囊形式）
     val mapNeonTheme = ThemePreset(
         id = "map_neon_green",
-        name = "霓虹地图 · 荧光绿 (默认)",
+        name = "简约白 · 清爽绿 (默认)",
         style = "map_neon",
-        categoryName = "地图",
+        categoryName = "简约",
         primaryColor = Color(0xFF00C080),
         secondaryColor = Color(0xFF00E5A0),
-        bgColor = Color(0xFF0B1D16),
-        surfaceColor = Color(0xD90F1B17),
-        textColor = Color(0xFFFFFFFF),
+        bgColor = Color(0xFFFFFFFF),
+        surfaceColor = Color(0xFFFFFFFF),
+        textColor = Color(0xFF1E293B),
         atmosphereEffect = AtmosphereEffect.STARS
     )
 
