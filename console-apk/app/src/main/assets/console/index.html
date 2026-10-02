@@ -744,7 +744,9 @@ function collectAllForms(){
         serverShutdown: {
           enabled: $("fShutdownEnabled").value === "true",
           notice: ($("fShutdownNotice") ? $("fShutdownNotice").value : "") || ""
-        }
+        },
+        // v1.1.10：保留主题工具箱（避免 collectAllForms 重建 settings 时丢 themeKit）
+        themeKit: (S.admin.settings && S.admin.settings.themeKit) || S.admin.themeKit || {}
       };
       S.admin.marquee = {
         enabled: $("fMqEnabled").value === "true",
@@ -2874,6 +2876,9 @@ function saveThemeKit(){
     tk[id] = { css: el ? el.value : (tk[id]&&tk[id].css||"") };
   });
   S.admin.themeKit = tk;
+  // v1.1.10：同时写入 settings.themeKit（本体优先读取 settings.themeKit，非空才能生效）
+  S.admin.settings = S.admin.settings || {};
+  S.admin.settings.themeKit = tk;
   S.dirty = true;
   toast("主题代码已保存，点「应用」即可同步到本体","ok");
   logChange("更新主题工具箱组件样式");
