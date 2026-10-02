@@ -100,6 +100,8 @@ class NavViewModel(
 
     // 云端全局主题代码是否已应用（避免每 5 秒轮询重复覆盖用户手动修改的主题）
     private var appliedCloudTheme = false
+    // v1.1.6：控制台「主题工具箱」组件级代码是否已应用
+    private var appliedCloudThemeKit = false
 
     val favorites: StateFlow<List<UserItemRecord>> = repository.favorites
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -203,6 +205,18 @@ class NavViewModel(
             try {
                 applyUiverseCustomCss(cloudCss, data.settings?.customThemeHtml ?: "")
                 appliedCloudTheme = true
+            } catch (e: Exception) {
+                // 主题代码解析失败不影响主流程
+            }
+        }
+        // v1.1.6 需求 4：控制台「主题工具箱」组件级自定义代码 → 本体逐组件应用
+        // 支持组件：appBar 顶栏 / bottomBar 底栏 / splash 开屏 / statusBar 状态栏 /
+        // card 卡片 / button 按钮 / dialog 弹窗 / search 搜索框 / global 全局
+        val cloudThemeKit = data.settings?.themeKit ?: data.themeKit
+        if (cloudThemeKit != null && !appliedCloudThemeKit) {
+            try {
+                applyCloudThemeKit(cloudThemeKit)
+                appliedCloudThemeKit = true
             } catch (e: Exception) {
                 // 主题代码解析失败不影响主流程
             }
@@ -542,6 +556,30 @@ class NavViewModel(
         _uiState.value = _uiState.value.copy(
             activeUiverseState = current.copy(componentThemes = newMap)
         )
+    }
+
+    /**
+     * v1.1.6 需求 4：应用控制台「主题工具箱」的组件级自定义代码。
+     * themeKit: Map<组件id, {css, html}> —— 每个组件的自定义 CSS/HTML。
+     * 解析后写入 componentThemes（组件级）与全局 customThemeCss。
+     */
+    fun applyCloudThemeKit(themeKit: Map<String, Any?>) {
+        val globalCss = (themeKit["global"] as? Map<*, *>)?.get("css") as? String ?: ""
+        if (globalCss.isNotBlank()) {
+            try {
+                applyUiverseCustomCss(globalCss, "")
+            } catch (e: Exception) { }
+        }
+        // 逐组件应用（组件 id 映射到本体 componentThemes）
+        val compMap = mapOf(
+            "appBar" to "appBar", "bottomBar" to "bottomBar", "splash" to "splash",
+            "statusBar" to "statusBar", "card" to "card", "button" to "button",
+            "dialog" to "dialog", "search" to "search"
+        )
+        compMap.forEach { (cloudId, compId) ->
+            val css = (themeKit[cloudId] as? Map<*, *>)?.get("css") as? String ?: ""
+            if (css.isNotBlank()) applyComponentTheme(compId, css)
+        }
     }
 
     fun uploadResource(type: String, title: String, desc: String, url: String, author: String, tags: String) {
