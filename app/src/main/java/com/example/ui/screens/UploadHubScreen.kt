@@ -236,38 +236,55 @@ fun UploadHubScreen(
                 } else {
                     grouped.forEach { (cat, list) ->
                         // v1.0.19：分类标题静态分区（不再可点击展开/收起）
+                        // v1.1.5：改为胶囊（pill）样式——主题色填充全圆角胶囊 + 白色文字 + 圆形图标块
                         item(key = "cat_$cat") {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(themePrimary.copy(alpha = 0.10f))
-                                    .padding(horizontal = 10.dp, vertical = 8.dp)
+                                    .clip(RoundedCornerShape(50))
+                                    .background(
+                                        Brush.horizontalGradient(
+                                            listOf(
+                                                themePrimary.copy(alpha = 0.92f),
+                                                themeSecondary.copy(alpha = 0.75f)
+                                            )
+                                        )
+                                    )
+                                    .padding(horizontal = 14.dp, vertical = 10.dp)
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    // 主题色小图标块
+                                    // 圆形图标块
                                     Box(
                                         modifier = Modifier
-                                            .size(22.dp)
-                                            .background(themePrimary, RoundedCornerShape(7.dp)),
+                                            .size(26.dp)
+                                            .clip(CircleShape)
+                                            .background(Color.White.copy(alpha = 0.22f)),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Text(cat.firstOrNull()?.toString() ?: "📁", fontSize = 11.sp, color = Color.White)
+                                        Text(cat.firstOrNull()?.toString() ?: "📁", fontSize = 12.sp, color = Color.White)
                                     }
-                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Spacer(modifier = Modifier.width(10.dp))
                                     Text(
                                         text = cat,
                                         fontSize = 14.sp,
                                         fontWeight = FontWeight.Black,
-                                        color = MaterialTheme.colorScheme.onSurface
+                                        color = Color.White
                                     )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = "${list.size} 款",
-                                        fontSize = 11.sp,
-                                        color = themePrimary,
-                                        fontWeight = FontWeight.Bold
-                                    )
+                                    Spacer(modifier = Modifier.weight(1f))
+                                    // 数量胶囊
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(50))
+                                            .background(Color.White.copy(alpha = 0.25f))
+                                            .padding(horizontal = 10.dp, vertical = 3.dp)
+                                    ) {
+                                        Text(
+                                            text = "${list.size} 款",
+                                            fontSize = 11.sp,
+                                            color = Color.White,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
                                 }
                             }
                         }
