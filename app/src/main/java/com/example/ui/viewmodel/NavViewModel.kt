@@ -218,7 +218,11 @@ class NavViewModel(
         // 支持组件：appBar 顶栏 / bottomBar 底栏 / splash 开屏 / statusBar 状态栏 /
         // card 卡片 / button 按钮 / dialog 弹窗 / search 搜索框 / global 全局 / settingsPage 设置页
         // v1.1.10 修复：签名变化即重新应用，控制台「应用」后本体 5 秒内实时生效
-        val cloudThemeKit = data.settings?.themeKit ?: data.themeKit
+        // v1.1.10 修复「控制台改主题本体无变化」根因 2：
+        // 云端 settings.themeKit 可能为空 {}（非 null），?: 会被空 {} 截断导致顶层真实 themeKit 被忽略。
+        // 改为：取非空的那份（settings.themeKit 优先，空则回退顶层 themeKit，再空则回退 null）
+        val cloudThemeKit = (data.settings?.themeKit?.takeIf { it.isNotEmpty() })
+            ?: (data.themeKit?.takeIf { it.isNotEmpty() })
         val kitSig = cloudThemeKit?.toString()?.hashCode()?.toString() ?: ""
         if (kitSig != appliedCloudThemeKitSignature) {
             appliedCloudThemeKitSignature = kitSig
