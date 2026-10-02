@@ -35,6 +35,8 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.unit.dp
 import com.example.ui.theme.LocalUiverseState
+import com.example.ui.components.ComponentThemeResolver
+import com.example.ui.components.LocalComponentThemes
 import com.example.ui.uiverse.PatternStylePreset
 import com.example.ui.uiverse.UiKitPreset
 
@@ -109,7 +111,9 @@ fun GlobalWindBackground(
     )
 
     val activePrimary = themePrimaryColor ?: Color(0xFF00C080)
-    val activeBg = themeBgColor ?: Color(0xFF0B1D16)
+    // v1.1.10：控制台「主题工具箱」global 组件可覆盖全局背景色（优先级：控制台 > 主题预设 > 默认）
+    val globalComp = ComponentThemeResolver.resolve(LocalComponentThemes.current, "global")
+    val activeBg = globalComp?.backgroundColor ?: (themeBgColor ?: Color(0xFF0B1D16))
 
     Box(modifier = modifier.fillMaxSize()) {
         // ========== 1. 底层动态全屏画布：渲染多层悬浮流动胶囊与微光粒子群 ==========
