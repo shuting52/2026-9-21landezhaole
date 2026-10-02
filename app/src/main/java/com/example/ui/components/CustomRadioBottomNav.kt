@@ -52,6 +52,8 @@ import com.example.ui.theme.FlameRed
 import com.example.ui.theme.LocalUiverseState
 import com.example.ui.uiverse.CardStylePreset
 import com.example.ui.viewmodel.AppBottomTab
+import com.example.ui.components.ComponentThemeResolver
+import com.example.ui.components.LocalComponentThemes
 
 /**
  * Custom metallic tactile radio bar inspired by Uiverse.io by Cksunandh
@@ -92,7 +94,9 @@ fun CustomRadioBottomNav(
     }
 
     // 国庆潮流国潮风：底部导航为「羊脂温润白玉大胶囊 + 鎏金赤红边框 + 华夏红高光圆形按钮」
-    val pillShape = RoundedCornerShape(50)
+    // v1.1.10：控制台「主题工具箱」bottomBar 组件可覆盖（背景/圆角/描边），控制台应用后实时生效
+    val bottomBarComp = ComponentThemeResolver.resolve(LocalComponentThemes.current, "bottomBar")
+    val pillShape = RoundedCornerShape(bottomBarComp?.cornerRadius ?: 50)
     val goldBorderBrush = Brush.horizontalGradient(
         listOf(
             Color(0xFFFFD700).copy(alpha = 0.65f),
@@ -112,9 +116,13 @@ fun CustomRadioBottomNav(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(pillShape)
-                .background(Color(0xFFFFFDF9))
+                .background(bottomBarComp?.backgroundColor ?: Color(0xFFFFFDF9))
                 .shadow(elevation = 10.dp, shape = pillShape, clip = false)
-                .border(1.8.dp, goldBorderBrush, pillShape)
+                .border(
+                    width = if (bottomBarComp != null) (bottomBarComp.borderWidth.takeIf { it > 0.dp } ?: 1.8.dp) else 1.8.dp,
+                    brush = bottomBarComp?.borderColor?.let { androidx.compose.ui.graphics.SolidColor(it) } ?: goldBorderBrush,
+                    shape = pillShape
+                )
                 .padding(horizontal = 6.dp, vertical = 6.dp)
         ) {
             Row(
