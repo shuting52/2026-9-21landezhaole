@@ -3,6 +3,7 @@
     "code": 107,
     "name": "1.1.7",
     "changelog": [
+      "【14:58】更新主题工具箱组件样式",
       "✨ v1.1.4 全面升级来啦～",
       "✅ 角标统一绿色呈现：站点角标采用统一荧光绿，动态流光+呼吸特效",
       "✅ 主题切换组件定制真正生效：卡片/头部/搜索框可独立定制样式",
@@ -23118,6 +23119,7 @@
   "updateDialog": {
     "title": "懒得找了 v1.1.4 已上线",
     "changelog": [
+      "【14:58】更新主题工具箱组件样式",
       "✨ v1.1.4 全面升级来啦～",
       "✅ 角标统一绿色呈现：站点角标采用统一荧光绿，动态流光+呼吸特效",
       "✅ 主题切换组件定制真正生效：卡片/头部/搜索框可独立定制样式",
@@ -23146,5 +23148,34 @@
     "enabled": false,
     "url": "https://myip.ipip.net/"
   },
-  "tools": []
+  "tools": [],
+  "themeKit": {
+    "appBar": {
+      "css": ""
+    },
+    "bottomBar": {
+      "css": "@Composable\nfun UiverseBottomBar(\n    selectedIndex: Int,\n    onSelectIndex: (Int) -> Unit\n) {\n    val items = listOf(\"⌂\" to \"首页\", \"▦\" to \"组件\", \"♥\" to \"收藏\", \"☰\" to \"我的\")\n\n    Row(\n        modifier = Modifier\n            .fillMaxWidth()\n            .neoShadow(\n                offsetX = 4.dp,\n                offsetY = 4.dp,\n                shadowColor = UiverseBlue,\n                borderColor = UiverseInk,\n                borderWidth = 3.5.dp,\n                shape = RoundedCornerShape(20.dp),\n                backgroundColor = Color.White\n            )\n            .clip(RoundedCornerShape(20.dp))\n    ) {\n        items.forEachIndexed { index, pair ->\n            val isSelected = selectedIndex == index\n            Column(\n                modifier = Modifier\n                    .weight(1f)\n                    .background(if (isSelected) UiverseBlue else Color.White)\n                    .clickable { onSelectIndex(index) }\n                    .padding(vertical = 10.dp),\n                horizontalAlignment = Alignment.CenterHorizontally\n            ) {\n                Text(\n                    text = pair.first,\n                    fontSize = 20.sp,\n                    color = if (isSelected) Color.White else UiverseTextMuted\n                )\n                Text(\n                    text = pair.second,\n                    fontSize = 11.sp,\n                    fontWeight = FontWeight.Bold,\n                    color = if (isSelected) Color.White else UiverseTextMuted\n                )\n                if (isSelected) {\n                    Spacer(modifier = Modifier.height(3.dp))\n                    Box(\n                        modifier = Modifier\n                            .width(20.dp)\n                            .height(3.dp)\n                            .background(UiversePink, RoundedCornerShape(2.dp))\n                    )\n                }\n            }\n        }\n    }\n}"
+    },
+    "splash": {
+      "css": ""
+    },
+    "statusBar": {
+      "css": ""
+    },
+    "card": {
+      "css": ""
+    },
+    "button": {
+      "css": ""
+    },
+    "dialog": {
+      "css": ""
+    },
+    "search": {
+      "css": ""
+    },
+    "global": {
+      "css": ""
+    }
+  }
 }
