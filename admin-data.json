@@ -3,6 +3,8 @@
     "code": 107,
     "name": "1.1.7",
     "changelog": [
+      "【14:59】更新主题工具箱组件样式",
+      "【14:58】更新主题工具箱组件样式",
       "【14:58】更新主题工具箱组件样式",
       "✨ v1.1.4 全面升级来啦～",
       "✅ 角标统一绿色呈现：站点角标采用统一荧光绿，动态流光+呼吸特效",
@@ -23119,6 +23121,8 @@
   "updateDialog": {
     "title": "懒得找了 v1.1.4 已上线",
     "changelog": [
+      "【14:59】更新主题工具箱组件样式",
+      "【14:58】更新主题工具箱组件样式",
       "【14:58】更新主题工具箱组件样式",
       "✨ v1.1.4 全面升级来啦～",
       "✅ 角标统一绿色呈现：站点角标采用统一荧光绿，动态流光+呼吸特效",
@@ -23157,7 +23161,7 @@
       "css": "@Composable\nfun UiverseBottomBar(\n    selectedIndex: Int,\n    onSelectIndex: (Int) -> Unit\n) {\n    val items = listOf(\"⌂\" to \"首页\", \"▦\" to \"组件\", \"♥\" to \"收藏\", \"☰\" to \"我的\")\n\n    Row(\n        modifier = Modifier\n            .fillMaxWidth()\n            .neoShadow(\n                offsetX = 4.dp,\n                offsetY = 4.dp,\n                shadowColor = UiverseBlue,\n                borderColor = UiverseInk,\n                borderWidth = 3.5.dp,\n                shape = RoundedCornerShape(20.dp),\n                backgroundColor = Color.White\n            )\n            .clip(RoundedCornerShape(20.dp))\n    ) {\n        items.forEachIndexed { index, pair ->\n            val isSelected = selectedIndex == index\n            Column(\n                modifier = Modifier\n                    .weight(1f)\n                    .background(if (isSelected) UiverseBlue else Color.White)\n                    .clickable { onSelectIndex(index) }\n                    .padding(vertical = 10.dp),\n                horizontalAlignment = Alignment.CenterHorizontally\n            ) {\n                Text(\n                    text = pair.first,\n                    fontSize = 20.sp,\n                    color = if (isSelected) Color.White else UiverseTextMuted\n                )\n                Text(\n                    text = pair.second,\n                    fontSize = 11.sp,\n                    fontWeight = FontWeight.Bold,\n                    color = if (isSelected) Color.White else UiverseTextMuted\n                )\n                if (isSelected) {\n                    Spacer(modifier = Modifier.height(3.dp))\n                    Box(\n                        modifier = Modifier\n                            .width(20.dp)\n                            .height(3.dp)\n                            .background(UiversePink, RoundedCornerShape(2.dp))\n                    )\n                }\n            }\n        }\n    }\n}"
     },
     "splash": {
-      "css": ""
+      "css": "/* From Uiverse.io by GreyD097 */ \n.button-box {\n  position: relative;\n  width: 12rem;\n  height: 5rem;\n  display: flex;\n}\n.button-box .button {\n  width: 3.2rem;\n  height: 3.2rem;\n  position: absolute;\n  left: 50%;\n  top: 50%;\n  cursor: pointer;\n  border: 3px solid #311703;\n  border-radius: 5px;\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  transition: 0.3s;\n  opacity: 0.85;\n  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.4);\n}\n.button-box .button .icon {\n  width: 24px;\n  height: 24px;\n  opacity: 0.7;\n  transition: 0.25s;\n}\n.button-box .button:nth-child(4) {\n  transform: translate(-50%, -50%) rotate(90deg);\n  z-index: 30;\n  background: #ff7f50;\n}\n.button-box .button:nth-child(5) {\n  transform: translate(-50%, -50%) rotate(-115deg);\n  z-index: 40;\n  background: #ffd700;\n}\n.button-box .button:nth-child(6) {\n  transform: translate(-50%, -50%) rotate(-45deg);\n  z-index: 50;\n  background: #019b98;\n}\n.button-box .button:nth-child(6) .icon {\n  animation: active 2.2s linear infinite;\n}\n.button-box .touch {\n  position: relative;\n  z-index: 60;\n  height: 100%;\n  flex: 1;\n  cursor: pointer;\n}\n.button-box .touch.left:hover ~ .button:nth-child(4) {\n  opacity: 1;\n  transform: translate(-170%, -50%) rotate(-90deg) scale(1.05);\n}\n.button-box .touch.left:hover ~ .button:nth-child(4) .icon {\n  width: 25px;\n  opacity: 0.9;\n}\n.button-box .touch.left:active ~ .button:nth-child(4) {\n  transform: translate(-170%, -50%) rotate(-90deg) scale(0.9);\n}\n.button-box .touch.right:hover ~ .button:nth-child(5) {\n  opacity: 1;\n  transform: translate(70%, -50%) rotate(90deg) scale(1.05);\n}\n.button-box .touch.right:hover ~ .button:nth-child(5) .icon {\n  width: 25px;\n  opacity: 0.9;\n}\n.button-box .touch.right:active ~ .button:nth-child(5) {\n  transform: translate(70%, -50%) rotate(90deg) scale(0.9);\n}\n.button-box .touch.middle:hover ~ .button:nth-child(6) {\n  opacity: 1;\n  transform: translate(-50%, -50%) rotate(0deg) scale(1.05);\n}\n.button-box .touch.middle:hover ~ .button:nth-child(6) .icon {\n  width: 25px;\n  opacity: 0.9;\n}\n.button-box .touch.middle:active ~ .button:nth-child(6) {\n  transform: translate(-50%, -50%) rotate(0deg) scale(0.9);\n}\n.button-box:hover .button:nth-child(4) {\n  transform: translate(-170%, -50%) rotate(-90deg);\n}\n.button-box:hover .button:nth-child(5) {\n  transform: translate(70%, -50%) rotate(90deg);\n}\n.button-box:hover .button:nth-child(6) {\n  transform: translate(-50%, -50%) rotate(0deg);\n}\n.button-box:hover .button:nth-child(6) .icon {\n  animation: active 4s linear infinite;\n}\n@keyframes active {\n  to {\n    transform: rotate(360deg);\n  }\n}"
     },
     "statusBar": {
       "css": ""
