@@ -63,6 +63,13 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.ui.screens.toolbox.AgeCalculatorSection
+import com.example.ui.components.UiverseAmber
+import com.example.ui.components.UiverseBlue
+import com.example.ui.components.UiverseInk
+import com.example.ui.components.UiversePink
+import com.example.ui.components.UiverseTextMuted
+import com.example.ui.components.UiverseTrack
+import com.example.ui.components.neoShadow
 import com.example.ui.screens.toolbox.EmergencyPhoneSection
 import com.example.ui.screens.toolbox.FoodPickerScreenView
 import com.example.ui.screens.toolbox.MouthpieceSection
@@ -313,64 +320,57 @@ private fun ToolCategoryHeader(
     }
 }
 
-/** 本地工具两列网格 */
+/** v1.1.12：工具箱列表重写为 UiverseListGroup 样式（白底 + 琥珀硬阴影 + 墨色描边 3.5dp + 圆角 16dp + 分隔线） */
 @Composable
 private fun ToolGrid(tabs: List<ToolboxTab>, onTabClick: (ToolboxTab) -> Unit) {
+    val colors = listOf(UiverseBlue, UiversePink, UiverseAmber, UiverseBlue, UiversePink)
     Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.padding(top = 8.dp)
-    ) {
-        tabs.chunked(2).forEach { rowTabs ->
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                rowTabs.forEach { tab ->
-                    ToolCell(tab = tab, onClick = { onTabClick(tab) }, modifier = Modifier.weight(1f))
-                }
-                if (rowTabs.size == 1) Spacer(modifier = Modifier.weight(1f))
-            }
-        }
-    }
-}
-
-/** 本地工具小卡片 */
-@Composable
-private fun ToolCell(tab: ToolboxTab, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Surface(
-        onClick = onClick,
-        shape = RoundedCornerShape(24.dp), // 胶囊化
-        color = Color(0xFFFFFDF9).copy(alpha = 0.92f),
-        border = BorderStroke(1.2.dp, Color(0xFFFFD700).copy(alpha = 0.60f)),
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 12.dp)
-        ) {
-            Icon(
-                imageVector = tab.icon,
-                contentDescription = null,
-                tint = Color(0xFFDE2910),
-                modifier = Modifier.size(20.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp)
+            .neoShadow(
+                offsetX = 4.dp,
+                offsetY = 4.dp,
+                shadowColor = UiverseAmber,
+                borderColor = UiverseInk,
+                borderWidth = 3.5.dp,
+                shape = RoundedCornerShape(16.dp),
+                backgroundColor = Color.White
             )
-            Spacer(modifier = Modifier.width(8.dp))
-            Column(modifier = Modifier.weight(1f)) {
+    ) {
+        tabs.forEachIndexed { index, tab ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onTabClick(tab) }
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(38.dp)
+                        .background(colors[index % colors.size], RoundedCornerShape(10.dp))
+                        .border(2.dp, UiverseInk, RoundedCornerShape(10.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = tab.icon,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = tab.shortLabel,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 13.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = UiverseInk,
+                    modifier = Modifier.weight(1f)
                 )
-                if (tab.desc.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(1.dp))
-                    Text(
-                        text = tab.desc,
-                        fontSize = 9.5.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                Text(tab.desc.substringBefore("·").trim(), color = UiverseTextMuted, fontSize = 12.sp, maxLines = 1)
+            }
+            if (index < tabs.size - 1) {
+                HorizontalDivider(color = UiverseTrack, thickness = 2.dp)
             }
         }
     }
