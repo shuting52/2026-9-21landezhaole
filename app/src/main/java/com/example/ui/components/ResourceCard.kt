@@ -176,7 +176,7 @@ fun ResourceCard(
             val bWidth = custom?.borderWidth ?: 1.dp
             Modifier.border(bWidth, bColor, cardShape)
         }
-        else -> Modifier.border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), cardShape)
+        else -> Modifier.border(1.2.dp, Color(0xFFFFD700).copy(alpha = 0.50f), cardShape)
     }
 
     Box(
@@ -270,8 +270,8 @@ fun ResourceCard(
             val flowOffset = badgeFlow()
             val breathe = badgeBreathe()
             val wobble = badgeWobble()
-            // 统一绿色小胶囊（全圆角，与 RibbonBadge 同色系）
-            val greenBadge = listOf(Color(0xFF16C172), Color(0xFF00E676), Color(0xFF0FBD6A))
+            // 国庆潮流国潮风：公司角标为华夏朱红与鎏金渐变小胶囊
+            val redGoldBadge = listOf(Color(0xFFDE2910), Color(0xFFFF3D00), Color(0xFFFF8C00))
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
@@ -284,11 +284,12 @@ fun ResourceCard(
                     .clip(RoundedCornerShape(50))
                     .background(
                         Brush.linearGradient(
-                            colors = greenBadge,
+                            colors = redGoldBadge,
                             start = Offset(flowOffset * 120f, 0f),
                             end = Offset(flowOffset * 120f + 80f, 0f)
                         )
                     )
+                    .border(0.9.dp, Color(0xFFFFD700).copy(alpha = 0.85f), RoundedCornerShape(50))
                     .padding(horizontal = 7.dp, vertical = 3.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
