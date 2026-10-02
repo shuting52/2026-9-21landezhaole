@@ -278,6 +278,14 @@ fun MainScreen(
                             )
                         }
 
+                        // 1.5. 国庆盛世华诞跑马灯公告
+                        item(span = { GridItemSpan(3) }) {
+                            com.nationalday.ui.common.NationalDayNoticeTicker(
+                                notice = uiState.cloudMarquee?.defaultText?.takeIf { it.isNotBlank() }
+                                    ?: "🎉 热烈庆祝盛世华诞！全站已收录超1000+精选华夏宝藏资源，免授权直享！"
+                            )
+                        }
+
                         // 2. 随心抽按钮 (分类标签已按要求从主页移除，仅在随心抽弹窗内部保留)
                         item(span = { GridItemSpan(3) }) {
                             SaharaWaveButton(
@@ -306,16 +314,16 @@ fun MainScreen(
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Box(
                                         modifier = Modifier
-                                            .size(6.dp)
+                                            .size(7.dp)
                                             .clip(CircleShape)
-                                            .background(MaterialTheme.colorScheme.primary)
+                                            .background(Color(0xFFDE2910))
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        text = if (uiState.searchQuery.isNotBlank()) "搜素结果 (${filteredCards.size})" else "收录资源 (${filteredCards.size})",
+                                        text = if (uiState.searchQuery.isNotBlank()) "🔍 华夏宝库搜索 (${filteredCards.size})" else "🎋 华夏国潮宝库 (${filteredCards.size})",
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        color = Color(0xFF2C0E11)
                                     )
                                 }
                             }
@@ -855,28 +863,69 @@ private fun HeaderBrandSection(
     // v1.1.4：组件定制覆盖（home_header）
     val headerComp = com.example.ui.components.ComponentThemeResolver.resolve(componentThemes, "home_header")
 
+    val headerShape = RoundedCornerShape(headerComp?.cornerRadius ?: 28.dp)
+    val headerBorderBrush = Brush.horizontalGradient(
+        listOf(
+            Color(0xFFFFD700).copy(alpha = 0.75f),
+            Color(0xFFDE2910).copy(alpha = 0.50f),
+            Color(0xFFFFD700).copy(alpha = 0.75f)
+        )
+    )
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(elevation = 2.dp, shape = RoundedCornerShape(headerComp?.cornerRadius ?: 14.dp))
-            .clip(RoundedCornerShape(headerComp?.cornerRadius ?: 14.dp))
+            .shadow(elevation = 4.dp, shape = headerShape)
+            .clip(headerShape)
             .background(
                 brush = Brush.horizontalGradient(
                     listOf(
-                        headerComp?.backgroundColor ?: MaterialTheme.colorScheme.surface,
-                        headerComp?.backgroundColor?.copy(alpha = 0.5f)
-                            ?: MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        Color(0xFFFFFDF9),
+                        Color(0xFFFFF7F0)
                     )
                 )
             )
             .border(
-                width = (headerComp?.borderWidth ?: 1.dp),
-                color = headerComp?.borderColor ?: MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
-                shape = RoundedCornerShape(headerComp?.cornerRadius ?: 14.dp)
+                width = 1.6.dp,
+                brush = headerBorderBrush,
+                shape = headerShape
             )
             .padding(horizontal = 14.dp, vertical = 10.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
+            // 国潮国庆节日顶部横幅标
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 6.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(50))
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(Color(0xFFDE2910), Color(0xFFFF4500))
+                            )
+                        )
+                        .border(0.8.dp, Color(0xFFFFD700), RoundedCornerShape(50))
+                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = "🇨🇳 盛世华诞 · 举国同庆 · 华夏宝库",
+                        color = Color(0xFFFFFAF0),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = "福运连绵 🌸",
+                    fontSize = 10.5.sp,
+                    color = Color(0xFFDE2910),
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -1062,6 +1111,15 @@ fun AnimatedBrandTitle(
             style = TextStyle(brush = gradientBrush),
             letterSpacing = 0.5.sp
         )
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(4.dp))
+                .background(Color(0xFFDE2910))
+                .border(0.6.dp, Color(0xFFFFD700), RoundedCornerShape(4.dp))
+                .padding(horizontal = 4.dp, vertical = 1.dp)
+        ) {
+            Text("国潮", color = Color(0xFFFFD700), fontSize = 9.sp, fontWeight = FontWeight.ExtraBold)
+        }
         Text(
             text = "✨",
             fontSize = 12.sp,
@@ -1127,17 +1185,17 @@ fun DynamicOnlineCountWidget(
             .clickable {
                 Toast.makeText(
                     context,
-                    "🟢 当前实时在线 $onlineCount 人 · 网络畅通 · 数据秒级同步",
+                    "🇨🇳 盛世华诞 · 当前 ${onlineCount} 人在线同欢 · 华夏宝库全开",
                     Toast.LENGTH_SHORT
                 ).show()
             }
             .padding(vertical = 1.dp)
     ) {
         Text(
-            text = "已收录 $totalResourceCount+ 精选资源",
+            text = "收录 $totalResourceCount+ 华夏宝藏",
             fontSize = 10.5.sp,
             fontWeight = FontWeight.Bold,
-            color = primaryColor
+            color = Color(0xFFDE2910)
         )
         Text(
             text = "·",
@@ -1148,10 +1206,10 @@ fun DynamicOnlineCountWidget(
             modifier = Modifier
                 .size(6.dp)
                 .clip(CircleShape)
-                .background(Color(0xFF00C853).copy(alpha = dotAlpha))
+                .background(Color(0xFFDE2910).copy(alpha = dotAlpha))
         )
         Text(
-            text = "${NumberFormat.getNumberInstance(Locale.CHINA).format(onlineCount)}人在线",
+            text = "${NumberFormat.getNumberInstance(Locale.CHINA).format(onlineCount)}人同欢",
             fontSize = 10.5.sp,
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1189,8 +1247,8 @@ private fun SearchSection(
         InputStylePreset.CYBER_TERMINAL -> RoundedCornerShape(topStart = 0.dp, topEnd = 12.dp, bottomEnd = 0.dp, bottomStart = 12.dp)
         InputStylePreset.GLASS_INSET -> RoundedCornerShape(16.dp)
         InputStylePreset.NEO_BRUTALIST_BOX -> RoundedCornerShape(6.dp)
-        InputStylePreset.CUSTOM -> RoundedCornerShape(uiverse.customStyle?.cornerRadius ?: 12.dp)
-        else -> RoundedCornerShape(12.dp)
+        InputStylePreset.CUSTOM -> RoundedCornerShape(uiverse.customStyle?.cornerRadius ?: 28.dp)
+        else -> RoundedCornerShape(28.dp)
     }.let { if (searchComp != null) RoundedCornerShape(searchComp.cornerRadius) else it }
     val containerColor = when (uiverse.inputStyle) {
         InputStylePreset.CYBER_TERMINAL -> Color(0xFF0F101A)
@@ -1202,24 +1260,24 @@ private fun SearchSection(
     val focusedBorderColor = when (uiverse.inputStyle) {
         InputStylePreset.CYBER_TERMINAL -> Color(0xFF00F0FF)
         InputStylePreset.NEO_BRUTALIST_BOX -> Color.Black
-        InputStylePreset.CUSTOM -> uiverse.customStyle?.borderColor?.takeIf { it != Color.Transparent } ?: primaryColor
-        else -> primaryColor
+        InputStylePreset.CUSTOM -> uiverse.customStyle?.borderColor?.takeIf { it != Color.Transparent } ?: Color(0xFFFFD700)
+        else -> Color(0xFFFFD700)
     }
     val unfocusedBorderColor = when (uiverse.inputStyle) {
         InputStylePreset.CYBER_TERMINAL -> Color(0xFF00F0FF).copy(alpha = 0.4f)
         InputStylePreset.NEO_BRUTALIST_BOX -> Color.Black
         InputStylePreset.GLASS_INSET -> Color(0x66FFFFFF)
-        else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+        else -> Color(0x55DE2910)
     }
 
     OutlinedTextField(
         value = query,
         onValueChange = onQueryChange,
         placeholder = {
-            Text("搜索站内收录资源、影视、工具、AI...", fontSize = 13.5.sp, maxLines = 1)
+            Text("🇨🇳 探索全网精选资源、国潮AI、实用工具、影视...", fontSize = 13.sp, maxLines = 1)
         },
         leadingIcon = {
-            Icon(Icons.Filled.Search, contentDescription = "搜索", tint = focusedBorderColor)
+            Icon(Icons.Filled.Search, contentDescription = "搜索", tint = Color(0xFFDE2910))
         },
         trailingIcon = {
             if (query.isNotEmpty()) {
