@@ -14,8 +14,9 @@ android {
         // v1.0.8：更新弹窗全新重写——最新动态 CSS 手绘弹窗（手绘双层描边/流动渐变/涂鸦粒子/对话气泡）
         // v1.0.9：设置版块新增「软件停止运营」开关（本体强制弹窗并退出）+ 强化型安全加密加固说明
         // v1.0.13：控制台 APK 自更新安装错误修复（PendingIntent FLAG_MUTABLE + API33 getParcelableExtra 双参）
-        versionCode = 39
-        versionName = "1.0.14"
+        // v1.0.15：控制台工具箱新增「主题工具箱」（9 组件自定义代码 → 本体所有组件实时生效）
+        versionCode = 40
+        versionName = "1.0.15"
     }
 
     signingConfigs {
