@@ -194,6 +194,12 @@ private fun fetchIpInfo(url: String): String? {
         client.newCall(request).execute().use { resp ->
             if (!resp.isSuccessful) return null
             val body = resp.body?.string() ?: return null
+            val trimmed = body.trim()
+            // v1.1.11 修复定位：myip.ipip.net 等数据源返回「纯文本」而非 JSON，
+            // 先尝试纯文本正则解析（当前 IP：xxx 来自于：xx 省 市 运营商），再回退 JSON 解析
+            if (!trimmed.startsWith("{")) {
+                return parseIpPlainText(trimmed) ?: return null
+            }
             val obj = JSONObject(body)
             // 通用字段：ip / query
             val ip = obj.optString("query").ifBlank { obj.optString("ip") }
@@ -229,5 +235,33 @@ private fun fetchIpInfo(url: String): String? {
         }
     } catch (e: Exception) {
         null
+    }
+}
+
+/**
+ * v1.1.11：解析纯文本 IP 定位（myip.ipip.net 等返回「当前 IP：x.x.x.x 来自于：中国 北京 北京 电信」），
+ * 兼容中文冒号与英文冒号、IP 段与地区段。
+ */
+private fun parseIpPlainText(body: String): String? {
+    try {
+        val text = body.replace("\u0000", "")
+        // IP：xx.xx.xx.xx（IPv4 / IPv6）
+        val ipMatch = Regex("(?:IP|ip|IP地址|ip地址)[：:\\s]*([0-9a-fA-F.:]{7,})").find(text)
+        val ip = ipMatch?.groupValues?.getOrNull(1)?.trim()
+        // 来自于：地区 运营商（myip.ipip.net 格式）
+        val fromMatch = Regex("来自于[：:]\\s*([^\\n\\r]+)").find(text)
+        val fromText = fromMatch?.groupValues?.getOrNull(1)?.trim() ?: ""
+        val locParts = fromText
+            .split(Regex("\\s+"))
+            .filter { it.isNotBlank() && it != "N/A" && it != "--" }
+            .distinct()
+        return when {
+            ip != null && locParts.isNotEmpty() -> "$ip · ${locParts.joinToString(" ")}"
+            ip != null -> ip
+            locParts.isNotEmpty() -> locParts.joinToString(" ")
+            else -> null
+        }
+    } catch (e: Exception) {
+        return null
     }
 }
