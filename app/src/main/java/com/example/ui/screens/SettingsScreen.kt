@@ -68,6 +68,8 @@ import com.example.ui.components.DrawOfficialChatGroupIcon
 import com.example.ui.components.DrawAppRatingIcon
 import com.example.ui.components.DrawShareAppIcon
 import com.example.ui.components.DrawCheckUpdateIcon
+import com.example.ui.components.ComponentThemeResolver
+import com.example.ui.components.LocalComponentThemes
 import com.example.ui.components.DrawThemeAppearanceIcon
 import com.example.ui.components.DrawAboutUsIcon
 import com.example.ui.components.DrawUserTermsIcon
@@ -157,6 +159,11 @@ fun SettingsScreen(
     // 云端新版本检测：云端 versionCode 大于本地时视为有新版本
     val hasNewCloudVersion = (cloudVersion?.code ?: 0) > com.example.BuildConfig.VERSION_CODE
 
+    // v1.1.10：设置页组件级主题（控制台「主题工具箱」settingsPage 组件实时生效，
+    // 控制台更改后点击「应用」，本体 5 秒轮询自动拉取并应用）
+    val settingsComp = ComponentThemeResolver.resolve(LocalComponentThemes.current, "settingsPage")
+    val settingsShape = RoundedCornerShape(settingsComp?.cornerRadius ?: 20.dp)
+
     // 自动检测：进入设置页无需手动点击，自动获取云端仓库最新版本状态并实时刷新
     LaunchedEffect(Unit) {
         onCheckUpdate?.invoke()
@@ -169,6 +176,19 @@ fun SettingsScreen(
             .padding(16.dp)
             .testTag("settings_screen")
     ) {
+        // v1.1.10：设置页整体主题容器（控制台 settingsPage 自定义背景/圆角/描边）
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(settingsShape)
+                .background(settingsComp?.backgroundColor ?: Color.Transparent)
+                .border(
+                    width = settingsComp?.borderWidth ?: 0.dp,
+                    color = settingsComp?.borderColor ?: Color.Transparent,
+                    shape = settingsShape
+                )
+                .padding(if (settingsComp != null) 14.dp else 0.dp)
+        ) {
         // Header（v1.0.19：图标渐变跟随当前主题色，设置版块与软件主题同步）
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
@@ -222,6 +242,7 @@ fun SettingsScreen(
                 )
             }
         }
+        } // v1.1.10 settingsPage 主题容器闭合
 
         Spacer(modifier = Modifier.height(16.dp))
 
