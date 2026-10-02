@@ -71,7 +71,16 @@ fun ULayoutCard(
     onClick: (() -> Unit)? = null,
     content: @Composable () -> Unit
 ) {
-    val shape = RoundedCornerShape(cornerRadius.dp)
+    // v1.1.8 控制台主题工具箱同步修复：设置页容器/行实时消费主题代码（card 组件级 + global 全局）
+    val themes = LocalComponentThemes.current
+    val compStyle = ComponentThemeResolver.resolve(themes, "card") ?: ComponentThemeResolver.resolve(themes, "global")
+    // 主题自定义圆角生效时覆盖默认胶囊圆角
+    val shape = if (compStyle != null) {
+        RoundedCornerShape(compStyle.cornerRadius)
+    } else {
+        RoundedCornerShape(cornerRadius.dp)
+    }
+    val bgColor = compStyle?.backgroundColor ?: MaterialTheme.colorScheme.surface
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
     val scale = if (pressed) 0.97f else 1f
@@ -92,8 +101,8 @@ fun ULayoutCard(
                 .matchParentSize()
                 .graphicsLayer { scaleX = scale; scaleY = scale }
                 .clip(shape)
-                .background(MaterialTheme.colorScheme.surface)
-                .border(borderWidth.dp, borderColor, shape)
+                .background(bgColor)
+                .border(borderWidth.dp, compStyle?.borderColor ?: borderColor, shape)
                 .then(
                     if (onClick != null) {
                         Modifier.clickable(

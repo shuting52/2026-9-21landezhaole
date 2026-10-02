@@ -7,11 +7,14 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.ViewModelProvider
 import com.example.data.local.db.AppDatabase
 import com.example.data.repository.NavRepository
+import com.example.ui.components.LocalComponentThemes
 import com.example.ui.screens.MainScreen
 import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.viewmodel.NavViewModel
@@ -33,16 +36,21 @@ class MainActivity : ComponentActivity() {
         val viewModel = ViewModelProvider(this, factory)[NavViewModel::class.java]
 
         setContent {
-            val uiState = viewModel.uiState.collectAsState()
-            MyApplicationTheme(
-                themePreset = uiState.value.currentTheme,
-                uiverseState = uiState.value.activeUiverseState
-            ) {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+            val uiState = viewModel.uiState.collectAsState().value
+            // v1.1.8 控制台主题工具箱同步修复：
+            // 把云端 themeKit 解析出的组件主题表通过 CompositionLocal 提供给全部 UI 组件实时消费
+            val compThemes = uiState.activeUiverseState.componentThemes
+            CompositionLocalProvider(LocalComponentThemes provides compThemes) {
+                MyApplicationTheme(
+                    themePreset = uiState.currentTheme,
+                    uiverseState = uiState.activeUiverseState
                 ) {
-                    MainScreen(viewModel = viewModel)
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        MainScreen(viewModel = viewModel)
+                    }
                 }
             }
         }

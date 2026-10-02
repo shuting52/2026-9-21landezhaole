@@ -643,6 +643,8 @@ private fun CssUpdateCard(
         }
     }
 
+    // v1.1.8 控制台主题工具箱同步修复：更新弹窗实时消费 dialog 组件主题（背景/圆角/描边）
+    val dialogComp = ComponentThemeResolver.resolve(LocalComponentThemes.current, "dialog")
     Box(
         modifier = Modifier
             .widthIn(min = 288.dp, max = 326.dp)
@@ -656,12 +658,17 @@ private fun CssUpdateCard(
             }
             .shadow(
                 elevation = 18.dp,
-                shape = RoundedCornerShape(26.dp),
+                shape = RoundedCornerShape(if (dialogComp != null) dialogComp.cornerRadius else 26.dp),
                 ambientColor = CSS_PINK.copy(alpha = 0.35f),
                 spotColor = CSS_PEACH.copy(alpha = 0.3f)
             )
-            .clip(RoundedCornerShape(26.dp))
-            .background(Color.White)
+            .clip(RoundedCornerShape(if (dialogComp != null) dialogComp.cornerRadius else 26.dp))
+            .background(dialogComp?.backgroundColor ?: Color.White)
+            .border(
+                width = if (dialogComp != null) dialogComp.borderWidth else 0.dp,
+                color = dialogComp?.borderColor ?: Color.Transparent,
+                shape = RoundedCornerShape(if (dialogComp != null) dialogComp.cornerRadius else 26.dp)
+            )
             .testTag("css_update_card")
     ) {
         // v1.0.15 最新动态 CSS 特效：卡片外围流动霓虹光晕描边（类似 box-shadow 呼吸扩散）

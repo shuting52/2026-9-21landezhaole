@@ -562,6 +562,8 @@ class NavViewModel(
      * v1.1.6 需求 4：应用控制台「主题工具箱」的组件级自定义代码。
      * themeKit: Map<组件id, {css, html}> —— 每个组件的自定义 CSS/HTML。
      * 解析后写入 componentThemes（组件级）与全局 customThemeCss。
+     * v1.1.8 同步修复：云端组件 id 与本体消费端 id 统一映射（含别名），
+     * 确保 appBar/顶栏、card/卡片、search/搜索框等全部组件都能实时生效。
      */
     fun applyCloudThemeKit(themeKit: Map<String, Any?>) {
         val globalCss = (themeKit["global"] as? Map<*, *>)?.get("css") as? String ?: ""
@@ -570,15 +572,23 @@ class NavViewModel(
                 applyUiverseCustomCss(globalCss, "")
             } catch (e: Exception) { }
         }
-        // 逐组件应用（组件 id 映射到本体 componentThemes）
-        val compMap = mapOf(
-            "appBar" to "appBar", "bottomBar" to "bottomBar", "splash" to "splash",
-            "statusBar" to "statusBar", "card" to "card", "button" to "button",
-            "dialog" to "dialog", "search" to "search"
+        // 逐组件应用：云端 id → 本体消费端 id（一个云端组件可写多个消费端别名，保证全部组件生效）
+        val compMap = listOf(
+            "appBar" to listOf("appBar", "home_header", "top_bar"),
+            "bottomBar" to listOf("bottomBar", "bottom_nav"),
+            "splash" to listOf("splash", "splash_screen"),
+            "statusBar" to listOf("statusBar", "status_bar"),
+            "card" to listOf("card", "card_item", "software_card"),
+            "button" to listOf("button", "btn"),
+            "dialog" to listOf("dialog", "update_dialog", "welcome_dialog"),
+            "search" to listOf("search", "search_box"),
+            "settingsPage" to listOf("settingsPage", "settings_page", "setrow")
         )
-        compMap.forEach { (cloudId, compId) ->
+        compMap.forEach { (cloudId, compIds) ->
             val css = (themeKit[cloudId] as? Map<*, *>)?.get("css") as? String ?: ""
-            if (css.isNotBlank()) applyComponentTheme(compId, css)
+            if (css.isNotBlank()) {
+                compIds.forEach { applyComponentTheme(it, css) }
+            }
         }
     }
 

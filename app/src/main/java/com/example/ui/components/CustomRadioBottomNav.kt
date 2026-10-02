@@ -49,8 +49,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.theme.FlameRed
-import com.example.ui.theme.LocalUiverseState
-import com.example.ui.uiverse.CardStylePreset
 import com.example.ui.viewmodel.AppBottomTab
 
 /**
@@ -65,7 +63,12 @@ fun CustomRadioBottomNav(
     onTabSelected: (AppBottomTab) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val uiverse = LocalUiverseState.current
+    // v1.1.8 控制台主题工具箱同步修复：底部导航实时消费 bottomBar 组件主题（背景/圆角/描边）
+    val compStyle = ComponentThemeResolver.resolve(LocalComponentThemes.current, "bottomBar")
+        ?: ComponentThemeResolver.resolve(LocalComponentThemes.current, "global")
+    val navShape = if (compStyle != null) RoundedCornerShape(compStyle.cornerRadius) else RoundedCornerShape(50)
+    val navBg = compStyle?.backgroundColor ?: Color.White
+    val navBorder = compStyle?.borderColor ?: Color(0xFFE6EEF5)
     val tabs = listOf(
         TabItem(AppBottomTab.HOME, "首页", Icons.Filled.Home),
         TabItem(AppBottomTab.SOFTWARE, "软件", Icons.Filled.Extension),
@@ -74,27 +77,9 @@ fun CustomRadioBottomNav(
         TabItem(AppBottomTab.SETTINGS, "设置", Icons.Filled.Settings)
     )
 
-    val surfaceBg = when (uiverse.cardStyle) {
-        CardStylePreset.CYBERPUNK -> Color(0xFF0A0C14)
-        CardStylePreset.NEO_BRUTALISM -> Color.White
-        CardStylePreset.GLASSMORPHISM -> Color(0xEEFFFFFF)
-        CardStylePreset.RETRO_PIXEL -> Color(0xFF16213E)
-        CardStylePreset.LUXURY_GOLD -> Color(0xFF141414)
-        CardStylePreset.CUSTOM -> uiverse.customStyle?.backgroundColor ?: MaterialTheme.colorScheme.surface
-        else -> MaterialTheme.colorScheme.surface
-    }
-
-    val topBorderModifier = when (uiverse.cardStyle) {
-        CardStylePreset.CYBERPUNK -> Modifier.border(1.dp, Color(0xFF00F0FF).copy(alpha = 0.5f))
-        CardStylePreset.NEO_BRUTALISM -> Modifier.border(2.5.dp, Color.Black)
-        CardStylePreset.LUXURY_GOLD -> Modifier.border(1.dp, Color(0xFFD4AF37).copy(alpha = 0.5f))
-        else -> Modifier
-    }
-
     // v1.1.6 需求 3：底部导航改为「白色大胶囊容器 + 圆形按钮」
     // 对应 CSS：background:#fff; border-radius:50px; box-shadow 立体投影;
     // 每个 tab 为圆形按钮，选中态主题色实心圆填充 + 白色图标，未选中浅灰圆。
-    val pillShape = RoundedCornerShape(50)
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -105,10 +90,10 @@ fun CustomRadioBottomNav(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(pillShape)
-                .background(Color.White)
-                .shadow(elevation = 8.dp, shape = pillShape, clip = false)
-                .border(2.dp, Color(0xFFE6EEF5), pillShape)
+                .clip(navShape)
+                .background(navBg)
+                .shadow(elevation = 8.dp, shape = navShape, clip = false)
+                .border(2.dp, navBorder, navShape)
                 .padding(horizontal = 6.dp, vertical = 6.dp)
         ) {
             Row(

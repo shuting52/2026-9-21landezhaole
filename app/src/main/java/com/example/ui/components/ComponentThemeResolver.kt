@@ -1,5 +1,8 @@
 package com.example.ui.components
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -23,6 +26,13 @@ data class ResolvedComponentStyle(
     val shadowColor: Color? = null,
     val shadowElevation: Dp = 0.dp
 )
+
+/**
+ * v1.1.8 控制台主题工具箱同步修复：
+ * 全局组件主题表（组件 id -> CSS），由 NavViewModel 从云端 themeKit 解析后写入，
+ * 通过 CompositionLocal 提供给所有 UI 组件实时消费——控制台「应用」后本体数秒内生效。
+ */
+val LocalComponentThemes = staticCompositionLocalOf<Map<String, String>> { emptyMap() }
 
 object ComponentThemeResolver {
 

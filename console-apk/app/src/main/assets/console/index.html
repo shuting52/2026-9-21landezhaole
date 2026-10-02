@@ -2514,27 +2514,36 @@ function renderUpdate(){
 
 /** 预览本体更新弹窗：复用控制台 upd-* 手绘 CSS 弹窗，模拟本体 Cartoon 弹窗样式 */
 function testPreviewUpdateDialog(){
+  // v1.1.8 修复：预览只针对「本体更新弹窗」样式（AppUpdateDialog 白卡片 + 圆点列表 + 立即更新按钮），
+  // 不再套用控制台自身弹窗容器。customCss 会自动应用到预览卡片，所见即所得。
   const v = S.admin && S.admin.version || {};
   const u = S.admin && S.admin.updateDialog || {};
   const title = u.title || "懒得找了 发现新版本";
   const logs = (v.changelog && v.changelog.length ? v.changelog : (u.changelog || [])).slice(0, 5);
   const force = v.force === true;
-  consoleUpdateDlg(`<div class="upd-stars"><i></i><i></i><i></i><i></i><i></i></div>
-    <div class="upd-wave"></div>
-    <div class="upd-shine"></div>
-    <div style="position:relative;z-index:2">
-      <div class="upd-cat">😺</div>
-      <div class="upd-bubble">叮咚～发现新版本！</div>
-      <div class="upd-title">${esc(title)}</div>
-      <div class="upd-sub">当前 <b style="color:#ffd93d">v${esc(String(v.name || "1.0.4"))}</b>${force ? "<br>⚠️ 强制更新：不可关闭，必须更新才可继续使用" : "<br>非强制更新"}</div>
-      <div class="code-box" style="text-align:left;font-size:11px;max-height:130px;overflow:auto">${logs.map(x=>esc(x)).join("<br>")}</div>
-      <button class="upd-btn" onclick="testAutoInstall()">立即更新 · 自动下载安装</button>
-      <button class="upd-btn gray" onclick="closeConsoleUpdateDlg()">${force ? "更新中不可关闭" : "稍后再说"}</button>
-    </div>`);
-  toast("已弹出本体更新弹窗预览（与 CartoonUpdateDialog 同风格）","ok");
+  const customCss = u.customCss || "";
+  const mask = $("updDlgMask");
+  const body = $("updDlgBody");
+  if(mask) mask.classList.add("show");
+  if(body){
+    body.innerHTML = `<div class="tk-preview-box" style="${esc(customCss)}">
+      <div style="background:#fff;border-radius:26px;max-width:320px;margin:0 auto;padding:20px;box-shadow:0 18px 40px rgba(255,94,138,.35)">
+        <div style="text-align:center;font-weight:900;font-size:16px;color:#26303c">${esc(title)}</div>
+        <div style="text-align:center;font-size:11px;color:#64748b;margin:6px 0">当前 v${esc(String(v.name||"1.0"))}${force ? " · ⚠️ 强制更新" : " · 非强制"}</div>
+        <div style="background:#fff7ed;border-radius:14px;padding:10px 14px;margin:10px 0;max-height:130px;overflow:auto">
+          ${logs.map(x=>`<div style="display:flex;align-items:flex-start;gap:6px;font-size:11px;color:#475569;padding:2px 0"><span style="color:#f59e0b">●</span><span>${esc(x)}</span></div>`).join("")}
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="upd-btn" onclick="testAutoInstall()">立即更新 · 下载安装</button>
+          <button class="upd-btn gray" onclick="closeConsoleUpdateDlg()">${force ? "更新中不可关闭" : "稍后再说"}</button>
+        </div>
+        <div style="text-align:center;font-size:10px;color:#94a3b8;margin-top:8px">本体弹窗预览 · AppUpdateDialog 风格（customCss 已应用）</div>
+      </div>
+    </div>`;
+  }
+  toast("已弹出本体更新弹窗预览（AppUpdateDialog 风格，非控制台弹窗）","ok");
 }
 
-/** 弹窗内点击立即更新 → 模拟自动下载安装流程 */
 function testAutoInstall(){
   const v = S.admin && S.admin.version || {};
   const url = v.apkUrl || "";
@@ -2865,15 +2874,33 @@ function renderToolbox(){
   // v1.1.6 需求 4：主题工具箱（控制台自定义本体所有组件的 CSS/HTML 代码）
   const tk = S.admin.themeKit || {};
   const compDefs = [
-    { id:"appBar", name:"顶部栏 TopAppBar", hint:"u-appbar 顶栏：颜色/描边/标题样式" },
-    { id:"bottomBar", name:"底部导航 NavigationBar", hint:"u-bottombar 底栏：胶囊容器/按钮/选中态" },
-    { id:"splash", name:"开屏页 Splash", hint:"开屏动画：背景/Logo/跳过按钮" },
-    { id:"statusBar", name:"状态栏 StatusBar", hint:"系统状态栏：颜色/文字" },
-    { id:"card", name:"首页卡片 ResourceCard", hint:"卡片：圆角胶囊/阴影/图标" },
-    { id:"button", name:"按钮 Button", hint:"通用按钮样式" },
-    { id:"dialog", name:"弹窗 Dialog", hint:"更新/欢迎/详情弹窗" },
-    { id:"search", name:"搜索框 Search", hint:"首页搜索框样式" },
-    { id:"global", name:"全局 Global CSS", hint:"整个软件的全局 CSS 变量/背景" }
+    { id:"appBar", name:"顶部栏 TopAppBar", hint:"u-appbar 顶栏：颜色/描边/标题样式",
+      code:"Box(modifier = Modifier\n  .shadow(2.dp, RoundedCornerShape(14.dp))\n  .clip(RoundedCornerShape(14.dp))\n  .background(Brush.horizontalGradient(listOf(\n    MaterialTheme.colorScheme.surface,\n    MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.5f)\n  )))\n  .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha=0.4f)))",
+      tutorial:"控制顶栏容器：background 背景色/渐变、border-radius 圆角、border 描边。示例：\nbackground: linear-gradient(135deg,#fff,#f3e8ff);\nborder-radius: 20px;\nborder: 2px solid #8b5cf6;" },
+    { id:"bottomBar", name:"底部导航 NavigationBar", hint:"u-bottombar 底栏：胶囊容器/按钮/选中态",
+      code:"Box(modifier = Modifier\n  .fillMaxWidth()\n  .clip(RoundedCornerShape(50))\n  .background(Color.White)\n  .shadow(8.dp, RoundedCornerShape(50), clip=false)\n  .border(2.dp, Color(0xFFE6EEF5), RoundedCornerShape(50)))",
+      tutorial:"控制底部导航胶囊容器：background 背景、border-radius 胶囊圆角、border 描边。示例：\nbackground: rgba(255,255,255,0.9);\nborder-radius: 50px;\nborder: 2px solid #0ea5e9;" },
+    { id:"splash", name:"开屏页 Splash", hint:"开屏动画：背景/Logo/跳过按钮",
+      code:"SplashScreenOverlay(\n  isVisible = ...,\n  splash = uiState.cloudSplash,\n  ...) // 开屏容器背景/倒计时跳过按钮",
+      tutorial:"控制开屏页：background 开屏背景、color 文字、按钮样式。示例：\nbackground: linear-gradient(135deg,#e60012,#ffd700);\ncolor: #ffffff;" },
+    { id:"statusBar", name:"状态栏 StatusBar", hint:"系统状态栏：颜色/文字",
+      code:"// MainActivity: enableEdgeToEdge()\n// 状态栏颜色由主题色方案控制（MaterialTheme.colorScheme）",
+      tutorial:"控制状态栏：仅支持 background 颜色（浅色背景需深色文字，深色背景需浅色文字）。示例：\nbackground: #ffffff;" },
+    { id:"card", name:"首页卡片 ResourceCard", hint:"卡片：圆角胶囊/阴影/图标",
+      code:"val cardShape = RoundedCornerShape(50.dp) // v1.1.6 胶囊化\nSurface(shape=cardShape,\n  color=MaterialTheme.colorScheme.surface.copy(alpha=0.9f))",
+      tutorial:"控制首页/软件/工具箱卡片：background 卡片背景、border-radius 圆角（胶囊 50px）、border 描边、box-shadow 阴影。示例：\nbackground: rgba(255,255,255,0.85);\nborder-radius: 24px;\nborder: 2px solid #e60012;" },
+    { id:"button", name:"按钮 Button", hint:"通用按钮样式",
+      code:"Box(modifier=Modifier\n  .clip(RoundedCornerShape(10.dp))\n  .background(themePrimary.copy(alpha=0.12f))\n  .padding(horizontal=8.dp, vertical=3.dp))",
+      tutorial:"控制按钮：background 按钮底色、border-radius 圆角、color 文字。示例：\nbackground: #e60012;\nborder-radius: 20px;\ncolor: #ffffff;" },
+    { id:"dialog", name:"弹窗 Dialog", hint:"更新/欢迎/详情弹窗",
+      code:"Box(modifier=Modifier\n  .clip(RoundedCornerShape(26.dp))\n  .background(Color.White)\n  .shadow(18.dp, RoundedCornerShape(26.dp)))",
+      tutorial:"控制更新/欢迎/详情弹窗：background 弹窗底色、border-radius 圆角、border 描边。示例：\nbackground: #fffaf5;\nborder-radius: 28px;\nborder: 2px solid #ffd700;" },
+    { id:"search", name:"搜索框 Search", hint:"首页搜索框样式",
+      code:"// MainScreen 搜索框\nTextField(\n  shape = RoundedCornerShape(50),\n  colors = TextFieldDefaults.colors(\n    focusedContainerColor = ...))",
+      tutorial:"控制首页搜索框：background 输入框底色、border-radius 胶囊圆角、color 文字。示例：\nbackground: #f3f4f6;\nborder-radius: 50px;" },
+    { id:"global", name:"全局 Global CSS", hint:"整个软件的全局 CSS 变量/背景",
+      code:"// MyApplicationTheme: lightColorScheme(\n//   primary=themePreset.primaryColor,\n//   background=themePreset.bgColor, ...)\n// GlobalWindBackground: 全局渐变背景",
+      tutorial:"控制整个软件全局：background 全局背景渐变、color 全局文字、所有组件的默认变量。示例：\nbackground: linear-gradient(160deg,#fff6ef,#ffe4e6);\ncolor: #4a1e22;" }
   ];
   let html = `<div class="card" style="border:1.5px solid #16a34a;background:linear-gradient(135deg,#052e1618,#064e3b12)">
     <div class="action-banner" style="margin-bottom:4px">
@@ -2885,14 +2912,53 @@ function renderToolbox(){
       <button class="btn-ok" onclick="applyToDevice()">✅ 应用并同步本体</button>
     </div>`;
   compDefs.forEach(c => {
-    html += `<div style="margin-top:8px">
-      <div class="item-sub" style="display:flex;align-items:center;gap:6px">
+    html += `<div style="margin-top:8px;border:1px dashed #34d39933;border-radius:12px;padding:8px">
+      <div class="item-sub" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
         <span class="chip">${c.name}</span>
         <span class="hint">${c.hint}</span>
+        <span style="flex:1"></span>
+        <button class="btn-mini" onclick="tkToggleCode('${c.id}')">📄 查看本体代码</button>
+        <button class="btn-mini" onclick="tkPreview('${c.id}')">👀 预览效果</button>
       </div>
-      <textarea id="tk_${c.id}" class="mono" style="width:100%;min-height:56px;margin-top:4px" placeholder="${c.name}的自定义 CSS/HTML 代码…">${esc((tk[c.id]||{}).css||"")}</textarea>
+      <textarea id="tk_${c.id}" class="mono" style="width:100%;min-height:56px;margin-top:4px" placeholder="${c.name}的自定义 CSS/HTML 代码…" oninput="tkLivePreview('${c.id}', this.value)">${esc((tk[c.id]||{}).css||"")}</textarea>
+      <div id="tk_code_${c.id}" style="display:none;margin-top:6px;background:#0b1220;border-radius:10px;padding:10px">
+        <b style="color:#7dd3fc;font-size:12px">🧩 本体「${c.name}」当前布局代码（Kotlin/Compose）</b>
+        <pre class="mono" style="margin:6px 0;color:#a5f3fc;font-size:11px;white-space:pre-wrap">${esc(c.code)}</pre>
+        <b style="color:#fcd34d;font-size:12px">📖 自定义教程</b>
+        <div class="hint" style="margin-top:4px;color:#94a3b8">${esc(c.tutorial)}</div>
+      </div>
+      <div id="tk_preview_${c.id}" style="display:none;margin-top:6px"></div>
     </div>`;
   });
+
+
+// ============ v1.1.8 主题工具箱增强：本体代码查看 / 效果预览 / 实时预览 ============
+function tkToggleCode(id){
+  const el = $("tk_code_"+id);
+  if(el) el.style.display = el.style.display === "none" ? "block" : "none";
+}
+function tkPreview(id){
+  const css = (($("tk_"+id)||{}).value) || "";
+  const el = $("tk_preview_"+id);
+  if(!el) return;
+  el.innerHTML = `<div style="font-weight:800;color:#0f172a;margin-bottom:6px">🔍 组件「${id}」效果预览（应用上方 CSS）</div>
+    <div style="background:#ffffff;border:1.5px solid #e2e8f0;border-radius:14px;padding:14px">
+      <div class="tk-preview-box" style="${css}">
+        <div style="padding:12px 16px;border-radius:12px;background:rgba(120,140,255,0.12);color:#26303c;font-size:13px">示例内容 · 已应用你的自定义样式</div>
+      </div>
+    </div>`;
+  el.style.display = "block";
+}
+function tkLivePreview(id, css){
+  const el = $("tk_preview_"+id);
+  if(!el || el.style.display === "none") return;
+  el.innerHTML = `<div style="font-weight:800;color:#0f172a;margin-bottom:6px">🔍 组件「${id}」实时预览</div>
+    <div style="background:#ffffff;border:1.5px solid #e2e8f0;border-radius:14px;padding:14px">
+      <div class="tk-preview-box" style="${css}">
+        <div style="padding:12px 16px;border-radius:12px;background:rgba(120,140,255,0.12);color:#26303c;font-size:13px">示例内容 · 实时应用 CSS（无需保存即可预览）</div>
+      </div>
+    </div>`;
+}
   html += `</div>`;
   html += `<div class="card">
     <div class="action-banner">
