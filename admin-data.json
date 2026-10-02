@@ -1,18 +1,19 @@
 {
  "version": {
-  "code": 108,
-  "name": "1.1.8",
+  "code": 109,
+  "name": "1.1.9",
   "changelog": [
-   "✨ v1.1.8 全新版本来啦～",
-   "✅ 主题工具箱全量生效：设置页/底栏/顶栏/卡片/搜索/弹窗组件级主题统一映射",
-   "✅ 组件主题由控制台「主题工具箱」实时下发，告别写死样式",
-   "✅ 国庆盛世华诞跑马灯公告持续在线",
-   "✅ 更新弹窗修复：立即更新 → 下载最新 APK → 直接安装",
+   "🏮 华夏宝库红金版来啦～",
+   "✅ 盛世华诞·国潮红金主题：全站红金配色 + 国潮元素",
+   "✅ 工具箱国风升级：妙语连珠/华夏时令/传世锦囊/锦鲤摇签/安康守护",
+   "✅ 角标华夏朱红+鎏金渐变小胶囊",
+   "✅ 底部导航白玉大胶囊+鎏金赤红边框",
+   "✅ 华夏宝库搜索 + 在线同欢人数显示",
    "? 更多细节优化，等你来发现～"
   ],
   "force": false,
-  "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.1.8-1790938654.apk",
-  "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.1.8-1790938654.apk"
+  "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/apk/landezhao-v1.1.9-1790939990.apk",
+  "apkUrlRaw": "https://github.com/shuting52/2026-9-21landezhaole/raw/main/dist/apk/landezhao-v1.1.9-1790939990.apk"
  },
  "home": {
   "categories": [
@@ -23142,7 +23143,7 @@
  "console": {
   "version": "1.0.16",
   "code": 41,
-  "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v1.0.16-1790938654.apk"
+  "apkUrl": "https://raw.githubusercontent.com/shuting52/2026-9-21landezhaole/main/dist/console/console-apk-v1.0.16-1790939990.apk"
  },
  "ipMonitor": {
   "enabled": true,
