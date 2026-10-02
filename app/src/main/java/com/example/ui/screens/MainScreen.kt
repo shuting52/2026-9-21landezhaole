@@ -149,7 +149,6 @@ import com.example.ui.components.CuteWelcomeDialog
 import com.example.ui.components.GlobalWindBackground
 import com.example.ui.components.HideAndSeekLoader
 import com.example.ui.components.ResourceCard
-import com.example.ui.components.RibbonBadge
 import com.example.ui.components.SaharaWaveButton
 import com.example.ui.components.SiteBrandIcon
 import com.example.ui.components.SiteDetailDialog
@@ -320,7 +319,7 @@ fun MainScreen(
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Text(
-                                        text = if (uiState.searchQuery.isNotBlank()) "🔍 华夏宝库搜索 (${filteredCards.size})" else "🎋 华夏国潮宝库 (${filteredCards.size})",
+                                        text = if (uiState.searchQuery.isNotBlank()) "🔍 搜索结果 (${filteredCards.size})" else "🎯 资源宝库 (${filteredCards.size})",
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFF2C0E11)
@@ -893,39 +892,7 @@ private fun HeaderBrandSection(
             .padding(horizontal = 14.dp, vertical = 10.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            // 国潮国庆节日顶部横幅标
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 6.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(50))
-                        .background(
-                            Brush.horizontalGradient(
-                                listOf(Color(0xFFDE2910), Color(0xFFFF4500))
-                            )
-                        )
-                        .border(0.8.dp, Color(0xFFFFD700), RoundedCornerShape(50))
-                        .padding(horizontal = 8.dp, vertical = 2.dp)
-                ) {
-                    Text(
-                        text = "🇨🇳 盛世华诞 · 举国同庆 · 华夏宝库",
-                        color = Color(0xFFFFFAF0),
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = "福运连绵 🌸",
-                    fontSize = 10.5.sp,
-                    color = Color(0xFFDE2910),
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
+            // v1.1.12：删除「盛世华诞」顶部横幅标（用户要求）
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -1118,7 +1085,7 @@ fun AnimatedBrandTitle(
                 .border(0.6.dp, Color(0xFFFFD700), RoundedCornerShape(4.dp))
                 .padding(horizontal = 4.dp, vertical = 1.dp)
         ) {
-            Text("国潮", color = Color(0xFFFFD700), fontSize = 9.sp, fontWeight = FontWeight.ExtraBold)
+            Text("精选", color = Color(0xFFFFD700), fontSize = 9.sp, fontWeight = FontWeight.ExtraBold)
         }
         Text(
             text = "✨",
@@ -1185,7 +1152,7 @@ fun DynamicOnlineCountWidget(
             .clickable {
                 Toast.makeText(
                     context,
-                    "🇨🇳 盛世华诞 · 当前 ${onlineCount} 人在线同欢 · 华夏宝库全开",
+                    "当前 ${onlineCount} 人在线 · 数据秒级同步",
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -1274,7 +1241,7 @@ private fun SearchSection(
         value = query,
         onValueChange = onQueryChange,
         placeholder = {
-            Text("🇨🇳 探索全网精选资源、国潮AI、实用工具、影视...", fontSize = 13.sp, maxLines = 1)
+            Text("🔍 探索全网精选资源、AI、实用工具、影视...", fontSize = 13.sp, maxLines = 1)
         },
         leadingIcon = {
             Icon(Icons.Filled.Search, contentDescription = "搜索", tint = Color(0xFFDE2910))
@@ -1647,13 +1614,7 @@ private fun LuckyDrawSheetContent(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.weight(1f))
-                    // v1.0.18 角标优化：NEW 角标改用实际名字（所属分类名）代替
-                    val drawBadgeText = if (card.badge.isNullOrBlank() || card.badge == "NEW")
-                        categories.firstOrNull { it.id == card.categoryId }?.name ?: card.badge
-                    else card.badge
-                    if (!drawBadgeText.isNullOrBlank()) {
-                        RibbonBadge(text = drawBadgeText, badgeType = card.badgeType)
-                    }
+                    // v1.1.12：删除所有角标功能（用户要求）
                 }
 
                 // 所属分类标签显示 (点击也可直接打开独立分类站点弹窗)
