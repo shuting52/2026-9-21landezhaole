@@ -81,8 +81,9 @@ fun ResourceCard(
         CardStylePreset.RETRO_PIXEL -> RoundedCornerShape(2.dp)
         CardStylePreset.HOLOGRAPHIC -> RoundedCornerShape(14.dp)
         CardStylePreset.LUXURY_GOLD -> RoundedCornerShape(12.dp)
-        CardStylePreset.CUSTOM -> RoundedCornerShape(uiverse.customStyle?.cornerRadius ?: 10.dp)
-        else -> RoundedCornerShape(10.dp)
+        CardStylePreset.CUSTOM -> RoundedCornerShape(uiverse.customStyle?.cornerRadius ?: 50)
+        // v1.1.6 需求 3：整个 UI 主题胶囊化——默认卡片改为大圆角胶囊
+        else -> RoundedCornerShape(50)
     }.let { if (cardCompStyle != null) RoundedCornerShape(cardCompStyle.cornerRadius) else it }
 
     val cardElevation = when (uiverse.cardStyle) {
