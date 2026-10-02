@@ -164,11 +164,11 @@ fun RibbonBadge(
         label = "wobble"
     )
 
-    // v1.1.6：角标统一为绿色小胶囊（所有类型同一绿色渐变，全圆角胶囊）
-    val baseGradientColors = listOf(Color(0xFF16C172), Color(0xFF00E676), Color(0xFF0FBD6A))
+    // 国庆潮流国潮风：角标升级为盛世朱红与鎏金渐变小胶囊
+    val baseGradientColors = listOf(Color(0xFFDE2910), Color(0xFFFF3D00), Color(0xFFFF8C00))
 
     val baseBrush = Brush.linearGradient(baseGradientColors)
-    // 全圆角胶囊形状（v1.1.6 统一化）
+    // 全圆角胶囊形状（统一化）
     val badgeShape = RoundedCornerShape(50)
 
     Box(
@@ -183,8 +183,8 @@ fun RibbonBadge(
             )
             .clip(badgeShape)
             .border(
-                width = 0.7.dp,
-                color = Color.White.copy(alpha = if (isNew) 0.85f else 0.55f),
+                width = 0.9.dp,
+                color = Color(0xFFFFD700).copy(alpha = if (isNew) 0.95f else 0.70f),
                 shape = badgeShape
             )
             .height(17.dp)
