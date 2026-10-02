@@ -234,84 +234,16 @@ fun UploadHubScreen(
                         )
                     }
                 } else {
-                    grouped.forEach { (cat, list) ->
-                        // v1.0.19：分类标题静态分区（不再可点击展开/收起）
-                        // v1.1.5：改为胶囊（pill）样式——主题色填充全圆角胶囊 + 白色文字 + 圆形图标块
-                        item(key = "cat_$cat") {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(50))
-                                    .background(
-                                        Brush.horizontalGradient(
-                                            listOf(
-                                                themePrimary.copy(alpha = 0.92f),
-                                                themeSecondary.copy(alpha = 0.75f)
-                                            )
-                                        )
-                                    )
-                                    .padding(horizontal = 14.dp, vertical = 10.dp)
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    // 圆形图标块
-                                    Box(
-                                        modifier = Modifier
-                                            .size(26.dp)
-                                            .clip(CircleShape)
-                                            .background(Color.White.copy(alpha = 0.22f)),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(cat.firstOrNull()?.toString() ?: "📁", fontSize = 12.sp, color = Color.White)
-                                    }
-                                    Spacer(modifier = Modifier.width(10.dp))
-                                    Text(
-                                        text = cat,
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Black,
-                                        color = Color.White
-                                    )
-                                    Spacer(modifier = Modifier.weight(1f))
-                                    // 数量胶囊
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(50))
-                                            .background(Color.White.copy(alpha = 0.25f))
-                                            .padding(horizontal = 10.dp, vertical = 3.dp)
-                                    ) {
-                                        Text(
-                                            text = "${list.size} 款",
-                                            fontSize = 11.sp,
-                                            color = Color.White,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    }
-                                }
+                    // v1.1.6 需求 2：软件版块去掉分类标签，直接平铺全部软件（自动识别 icon）
+                    items(displayResources, key = { it.id }) { res ->
+                        SoftwareGridCard(
+                            res = res,
+                            showDelete = showDelete,
+                            onDelete = {
+                                onDelete(res.id)
+                                Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
                             }
-                        }
-                        // 全部平铺显示（不展开/收起）
-                        items(list, key = { it.id }) { res ->
-                            if (resourceType == "skill") {
-                                SkillGridCard(
-                                    res = res,
-                                    onClick = { skillDetail = res },
-                                    showDelete = showDelete,
-                                    onDelete = {
-                                        onDelete(res.id)
-                                        Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
-                                    }
-                                )
-                            } else {
-                                // 软件竖排卡片（全宽，图标在左、信息在右，自动获取软件 icon）
-                                SoftwareGridCard(
-                                    res = res,
-                                    showDelete = showDelete,
-                                    onDelete = {
-                                        onDelete(res.id)
-                                        Toast.makeText(context, "已删除（云端同步）", Toast.LENGTH_SHORT).show()
-                                    }
-                                )
-                            }
-                        }
+                        )
                     }
                 }
             }
