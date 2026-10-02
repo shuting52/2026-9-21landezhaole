@@ -98,10 +98,11 @@ class NavViewModel(
     private val _uiState = MutableStateFlow(NavUiState())
     val uiState: StateFlow<NavUiState> = _uiState
 
-    // 云端全局主题代码是否已应用（避免每 5 秒轮询重复覆盖用户手动修改的主题）
-    private var appliedCloudTheme = false
-    // v1.1.6：控制台「主题工具箱」组件级代码是否已应用
-    private var appliedCloudThemeKit = false
+    // 云端全局主题代码签名（v1.1.10：改为内容签名对比——控制台「应用」后内容变化立即重新生效，
+    // 内容未变时不重复应用，避免每 5 秒轮询重复覆盖用户手动修改的主题）
+    private var appliedCloudThemeSignature: String? = null
+    // v1.1.6：控制台「主题工具箱」组件级代码签名（同样按内容变化触发）
+    private var appliedCloudThemeKitSignature: String? = null
 
     val favorites: StateFlow<List<UserItemRecord>> = repository.favorites
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -199,26 +200,34 @@ class NavViewModel(
         )
         // 控制台软件/Skill 增删改 → 本体实时同步（删除：云端已移除的条目从本地库同步删除）
         syncCloudResources(data)
-        // 云端全局主题自定义代码（控制台「设置-主题切换」配置）：首次加载自动应用全局
+        // 云端全局主题自定义代码（控制台「设置-主题切换」配置）：内容签名变化时自动重新应用
+        // v1.1.10 修复「控制台改主题本体无变化」：不再用一次性标志，改为签名对比
         val cloudCss = data.settings?.customThemeCss?.ifBlank { null }
-        if (cloudCss != null && !appliedCloudTheme) {
-            try {
-                applyUiverseCustomCss(cloudCss, data.settings?.customThemeHtml ?: "")
-                appliedCloudTheme = true
-            } catch (e: Exception) {
-                // 主题代码解析失败不影响主流程
+        val cssSig = cloudCss?.hashCode()?.toString() ?: ""
+        if (cssSig != appliedCloudThemeSignature) {
+            appliedCloudThemeSignature = cssSig
+            if (cloudCss != null) {
+                try {
+                    applyUiverseCustomCss(cloudCss, data.settings?.customThemeHtml ?: "")
+                } catch (e: Exception) {
+                    // 主题代码解析失败不影响主流程
+                }
             }
         }
         // v1.1.6 需求 4：控制台「主题工具箱」组件级自定义代码 → 本体逐组件应用
         // 支持组件：appBar 顶栏 / bottomBar 底栏 / splash 开屏 / statusBar 状态栏 /
-        // card 卡片 / button 按钮 / dialog 弹窗 / search 搜索框 / global 全局
+        // card 卡片 / button 按钮 / dialog 弹窗 / search 搜索框 / global 全局 / settingsPage 设置页
+        // v1.1.10 修复：签名变化即重新应用，控制台「应用」后本体 5 秒内实时生效
         val cloudThemeKit = data.settings?.themeKit ?: data.themeKit
-        if (cloudThemeKit != null && !appliedCloudThemeKit) {
-            try {
-                applyCloudThemeKit(cloudThemeKit)
-                appliedCloudThemeKit = true
-            } catch (e: Exception) {
-                // 主题代码解析失败不影响主流程
+        val kitSig = cloudThemeKit?.toString()?.hashCode()?.toString() ?: ""
+        if (kitSig != appliedCloudThemeKitSignature) {
+            appliedCloudThemeKitSignature = kitSig
+            if (cloudThemeKit != null) {
+                try {
+                    applyCloudThemeKit(cloudThemeKit)
+                } catch (e: Exception) {
+                    // 主题代码解析失败不影响主流程
+                }
             }
         }
         val hasNewVersion = (data.version?.code ?: 0) > com.example.BuildConfig.VERSION_CODE
