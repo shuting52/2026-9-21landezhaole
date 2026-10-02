@@ -68,6 +68,8 @@ import android.webkit.WebViewClient
 import android.widget.VideoView
 import coil.compose.AsyncImage
 import com.example.data.remote.SplashDto
+import com.example.ui.components.ComponentThemeResolver
+import com.example.ui.components.LocalComponentThemes
 import com.example.ui.theme.ElectricCyan
 import com.example.ui.theme.FlameRed
 import com.example.ui.theme.NeonPurple
@@ -100,6 +102,9 @@ fun SplashScreenOverlay(
         // v1.0.4：默认 5 秒；云端控制台配置了展示时长则严格跟随后台设定
         mutableIntStateOf((splash?.durationSeconds ?: 5).coerceIn(1, 15))
     }
+
+    // v1.1.10：控制台「主题工具箱」splash 组件主题（背景色可覆盖，控制台应用后实时生效）
+    val splashComp = ComponentThemeResolver.resolve(LocalComponentThemes.current, "splash")
 
     val entryScale = remember { Animatable(0.7f) }
     val entryAlpha = remember { Animatable(0f) }
@@ -147,10 +152,11 @@ fun SplashScreenOverlay(
         // ================= v1.0.4：CSS 粒子动态特效开屏 =================
         // v1.0.13：开屏动画采用纯色背景（Color(0xFF0B0B1A) 深色纯色，跟随云端 bgColor 默认值），
         // 粒子动态特效在纯色背景之上呈现，简洁清爽不花哨
+        // v1.1.10：控制台 splash 主题可覆盖背景色
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFF0B0B1A))
+                .background(splashComp?.backgroundColor ?: Color(0xFF0B0B1A))
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
