@@ -70,6 +70,7 @@ import coil.compose.AsyncImage
 import com.example.data.remote.SplashDto
 import com.example.ui.components.ComponentThemeResolver
 import com.example.ui.components.LocalComponentThemes
+import com.example.ui.components.UiverseDotsLoader
 import com.example.ui.theme.ElectricCyan
 import com.example.ui.theme.FlameRed
 import com.example.ui.theme.NeonPurple
@@ -400,6 +401,13 @@ fun SplashScreenOverlay(
                         }
                     }
                 }
+
+                // v1.1.12：开屏动画增加 UiverseDotsLoader 彩色弹跳圆点（草莓粉/琥珀/天蓝，2.5dp 墨色描边）
+                UiverseDotsLoader(
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .graphicsLayer { alpha = entryAlpha.value }
+                )
 
                 Spacer(modifier = Modifier.height(14.dp))
 
