@@ -13,6 +13,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -79,34 +80,34 @@ enum class ToolboxTab(
     val desc: String
 ) {
     MOUTHPIECE(
-        title = "嘴强嘴替",
-        shortLabel = "嘴强嘴替",
+        title = "妙语连珠 · 国风嘴替",
+        shortLabel = "妙语嘴替",
         icon = Icons.Filled.Chat,
         desc = "神级回怼生成器 · 专治杠精职场催婚 · 优雅不带脏字"
     ),
     AGE_CALC(
-        title = "年龄推算",
-        shortLabel = "年龄推算",
+        title = "华夏时令 · 年龄生肖",
+        shortLabel = "时令生肖",
         icon = Icons.Filled.DateRange,
         desc = "精准年月日时分秒 · 生肖天干地支 · 人生进度条"
     ),
     OFFLINE_TREASURE(
-        title = "离线百宝",
-        shortLabel = "离线百宝",
+        title = "传世锦囊 · 离线百宝",
+        shortLabel = "离线锦囊",
         icon = Icons.Filled.Lightbulb,
         desc = "LED滚动弹幕 · 电子功德木鱼 · 随机做决定器 · SOS爆闪"
     ),
     FOOD_PICKER(
-        title = "今天吃什么？",
-        shortLabel = "今天吃什么",
+        title = "锦鲤摇签 · 今天吃什么",
+        shortLabel = "锦鲤摇签",
         icon = Icons.Filled.Restaurant,
-        desc = "随机色子 · 各大菜系 · 配料调味料 · 制作教程"
+        desc = "随机摇签 · 各大菜系 · 配料调味料 · 华夏美食宝库"
     ),
     EMERGENCY_PHONE(
-        title = "紧急电话",
-        shortLabel = "紧急电话",
+        title = "安康守护 · 华夏应急热线",
+        shortLabel = "安康热线",
         icon = Icons.Filled.Call,
-        desc = "全域服务电话分类 · 一键快捷呼出 · 覆盖全国地区选择"
+        desc = "全域公职服务 · 一键快捷呼出 · 覆盖全国地区守护平安"
     )
 }
 
@@ -148,30 +149,42 @@ fun ToolboxScreen(
                 .padding(horizontal = 16.dp, vertical = 10.dp)
                 .testTag("toolbox_screen")
         ) {
-            // 顶部标题区
+            // 顶部标题区（国潮红金盛世风格）
             Surface(
-                color = Color.White.copy(alpha = 0.50f),
-                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.65f)),
-                shape = RoundedCornerShape(28.dp), // v1.1.7 胶囊化
+                color = Color(0xFFFFFDF9).copy(alpha = 0.88f),
+                border = BorderStroke(1.5.dp, Color(0xFFFFD700).copy(alpha = 0.70f)),
+                shape = RoundedCornerShape(28.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
-                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column {
-                        Text(
-                            text = "🧰 工具箱",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Black,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "🏮 懒得找了百宝箱",
+                                fontSize = 17.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color(0xFFDE2910)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(Color(0xFFDE2910))
+                                    .border(0.6.dp, Color(0xFFFFD700), RoundedCornerShape(4.dp))
+                                    .padding(horizontal = 4.dp, vertical = 1.dp)
+                            ) {
+                                Text("国庆特辑", color = Color(0xFFFFD700), fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "精选工具 · 本地纯离线运算 · 云端工具实时同步",
-                            fontSize = 11.5.sp,
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                            text = "传世锦囊 · 华夏时令 · 离线神兵 · 纯净实用",
+                            fontSize = 11.sp,
+                            color = Color(0xFF7A4A45)
                         )
                     }
                 }
@@ -323,9 +336,9 @@ private fun ToolGrid(tabs: List<ToolboxTab>, onTabClick: (ToolboxTab) -> Unit) {
 private fun ToolCell(tab: ToolboxTab, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(24.dp), // v1.1.7 胶囊化
-        color = Color.White.copy(alpha = 0.6f),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
+        shape = RoundedCornerShape(24.dp), // 胶囊化
+        color = Color(0xFFFFFDF9).copy(alpha = 0.92f),
+        border = BorderStroke(1.2.dp, Color(0xFFFFD700).copy(alpha = 0.60f)),
         modifier = modifier.fillMaxWidth()
     ) {
         Row(
@@ -335,7 +348,7 @@ private fun ToolCell(tab: ToolboxTab, onClick: () -> Unit, modifier: Modifier = 
             Icon(
                 imageVector = tab.icon,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
+                tint = Color(0xFFDE2910),
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
