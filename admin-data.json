@@ -23100,8 +23100,8 @@
     }
   },
   "splash": {
-    "type": "default",
-    "customHtml": "",
+    "type": "html",
+    "customHtml": "/* From Uiverse.io by mi-series */ \n.button {\n  width: 150px;\n  padding: 0;\n  border: none;\n  transform: rotate(5deg);\n  transform-origin: center;\n  font-family: \"Gochi Hand\", cursive;\n  text-decoration: none;\n  font-size: 15px;\n  cursor: pointer;\n  padding-bottom: 3px;\n  border-radius: 5px;\n  box-shadow: 0 2px 0 #494a4b;\n  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);\n  background-color: #5cdb95;\n}\n\n.button span {\n  background: #f1f5f8;\n  display: block;\n  padding: 0.5rem 1rem;\n  border-radius: 5px;\n  border: 2px solid #494a4b;\n}\n\n.button:active {\n  transform: translateY(5px);\n  padding-bottom: 0px;\n  outline: 0;\n}",
     "mediaUrl": "",
     "durationSeconds": 3,
     "bgColor": "#0b0b1a"
