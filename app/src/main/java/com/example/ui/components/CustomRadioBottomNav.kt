@@ -49,6 +49,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.theme.FlameRed
+import com.example.ui.theme.LocalUiverseState
+import com.example.ui.uiverse.CardStylePreset
 import com.example.ui.viewmodel.AppBottomTab
 
 /**
@@ -63,12 +65,7 @@ fun CustomRadioBottomNav(
     onTabSelected: (AppBottomTab) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // v1.1.8 控制台主题工具箱同步修复：底部导航实时消费 bottomBar 组件主题（背景/圆角/描边）
-    val compStyle = ComponentThemeResolver.resolve(LocalComponentThemes.current, "bottomBar")
-        ?: ComponentThemeResolver.resolve(LocalComponentThemes.current, "global")
-    val navShape = if (compStyle != null) RoundedCornerShape(compStyle.cornerRadius) else RoundedCornerShape(50)
-    val navBg = compStyle?.backgroundColor ?: Color.White
-    val navBorder = compStyle?.borderColor ?: Color(0xFFE6EEF5)
+    val uiverse = LocalUiverseState.current
     val tabs = listOf(
         TabItem(AppBottomTab.HOME, "首页", Icons.Filled.Home),
         TabItem(AppBottomTab.SOFTWARE, "软件", Icons.Filled.Extension),
@@ -77,9 +74,33 @@ fun CustomRadioBottomNav(
         TabItem(AppBottomTab.SETTINGS, "设置", Icons.Filled.Settings)
     )
 
-    // v1.1.6 需求 3：底部导航改为「白色大胶囊容器 + 圆形按钮」
-    // 对应 CSS：background:#fff; border-radius:50px; box-shadow 立体投影;
-    // 每个 tab 为圆形按钮，选中态主题色实心圆填充 + 白色图标，未选中浅灰圆。
+    val surfaceBg = when (uiverse.cardStyle) {
+        CardStylePreset.CYBERPUNK -> Color(0xFF0A0C14)
+        CardStylePreset.NEO_BRUTALISM -> Color.White
+        CardStylePreset.GLASSMORPHISM -> Color(0xEEFFFFFF)
+        CardStylePreset.RETRO_PIXEL -> Color(0xFF16213E)
+        CardStylePreset.LUXURY_GOLD -> Color(0xFF141414)
+        CardStylePreset.CUSTOM -> uiverse.customStyle?.backgroundColor ?: MaterialTheme.colorScheme.surface
+        else -> MaterialTheme.colorScheme.surface
+    }
+
+    val topBorderModifier = when (uiverse.cardStyle) {
+        CardStylePreset.CYBERPUNK -> Modifier.border(1.dp, Color(0xFF00F0FF).copy(alpha = 0.5f))
+        CardStylePreset.NEO_BRUTALISM -> Modifier.border(2.5.dp, Color.Black)
+        CardStylePreset.LUXURY_GOLD -> Modifier.border(1.dp, Color(0xFFD4AF37).copy(alpha = 0.5f))
+        else -> Modifier
+    }
+
+    // 国庆潮流国潮风：底部导航为「羊脂温润白玉大胶囊 + 鎏金赤红边框 + 华夏红高光圆形按钮」
+    val pillShape = RoundedCornerShape(50)
+    val goldBorderBrush = Brush.horizontalGradient(
+        listOf(
+            Color(0xFFFFD700).copy(alpha = 0.65f),
+            Color(0xFFDE2910).copy(alpha = 0.45f),
+            Color(0xFFFFD700).copy(alpha = 0.65f)
+        )
+    )
+
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -90,10 +111,10 @@ fun CustomRadioBottomNav(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(navShape)
-                .background(navBg)
-                .shadow(elevation = 8.dp, shape = navShape, clip = false)
-                .border(2.dp, navBorder, navShape)
+                .clip(pillShape)
+                .background(Color(0xFFFFFDF9))
+                .shadow(elevation = 10.dp, shape = pillShape, clip = false)
+                .border(1.8.dp, goldBorderBrush, pillShape)
                 .padding(horizontal = 6.dp, vertical = 6.dp)
         ) {
             Row(
@@ -142,7 +163,9 @@ private fun RadioNavItem(
     // 未选中：浅灰圆 + 灰色图标
     val circleSize = if (isSelected) 46.dp else 40.dp
     val iconSize = if (isSelected) 22.dp else 19.dp
-    val circleColor = if (isSelected) MaterialTheme.colorScheme.primary else Color(0xFFE9EEF4)
+    val activeRedGradient = Brush.linearGradient(
+        listOf(Color(0xFFDE2910), Color(0xFFFF4D36))
+    )
 
     val scale by animateFloatAsState(
         targetValue = if (isSelected) 1.0f else 0.94f,
@@ -160,16 +183,22 @@ private fun RadioNavItem(
             .padding(vertical = 2.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 圆形按钮（图标在圆内）
+        // 圆形按钮（国潮红金质感）
         Box(
             modifier = Modifier
                 .size(circleSize)
                 .graphicsLayer { scaleX = scale; scaleY = scale }
                 .clip(CircleShape)
-                .background(circleColor)
+                .then(
+                    if (isSelected) {
+                        Modifier.background(brush = activeRedGradient)
+                    } else {
+                        Modifier.background(Color(0xFFF9EFE9))
+                    }
+                )
                 .border(
                     width = if (isSelected) 2.dp else 1.dp,
-                    color = if (isSelected) Color.White.copy(alpha = 0.85f) else Color.Transparent,
+                    color = if (isSelected) Color(0xFFFFD700) else Color(0x22DE2910),
                     shape = CircleShape
                 ),
             contentAlignment = Alignment.Center
@@ -177,7 +206,7 @@ private fun RadioNavItem(
             Icon(
                 imageVector = tabItem.icon,
                 contentDescription = tabItem.title,
-                tint = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = if (isSelected) Color(0xFFFFFAF0) else Color(0xFF7A4A45),
                 modifier = Modifier.size(iconSize)
             )
         }
@@ -186,15 +215,15 @@ private fun RadioNavItem(
             text = tabItem.title,
             fontSize = 10.sp,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            color = if (isSelected) Color(0xFFDE2910) else Color(0xFF8A5A55),
             maxLines = 1
         )
-        // 选中态底部小圆点
+        // 选中态底部小金点
         Box(
             modifier = Modifier
                 .size(if (isSelected) 5.dp else 0.dp)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primary)
+                .background(Color(0xFFFFD700))
         )
     }
 }
