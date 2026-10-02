@@ -291,7 +291,7 @@ fun FoodPickerScreenView(modifier: Modifier = Modifier) {
                         Spacer(modifier = Modifier.width(10.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "今天吃什么？· v1.7.8 升级版",
+                                text = "今天吃什么？",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Black,
                                 color = MaterialTheme.colorScheme.onSurface

@@ -94,8 +94,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -191,7 +189,6 @@ fun MainScreen(
     var showCloudUpdateDialog by remember { mutableStateOf(false) }
     var updateDialogDismissed by remember { mutableStateOf(false) }
     var welcomeDialogDismissed by remember { mutableStateOf(false) }
-    // v1.0.9：软件停止运营强制弹窗（控制台开关控制）
     var showShutdownDialog by remember { mutableStateOf(false) }
 
     // 启动时恢复自定义背景（跨重启持久）
@@ -277,13 +274,7 @@ fun MainScreen(
                             )
                         }
 
-                        // 跑马灯公告（v1.1.11：移除国庆横幅文案，改为中性公告）
-                        item(span = { GridItemSpan(3) }) {
-                            com.nationalday.ui.common.NationalDayNoticeTicker(
-                                notice = uiState.cloudMarquee?.defaultText?.takeIf { it.isNotBlank() }
-                                    ?: "欢迎使用懒得找了～海量白嫖资源等你探索，遇到问题请到官方群反馈！"
-                            )
-                        }
+                        // v1.1.12：删除首页跑马灯（用户要求，截图5）——不再显示跑马灯公告及「华诞特辑」标签
 
                         // 2. 随心抽按钮 (分类标签已按要求从主页移除，仅在随心抽弹窗内部保留)
                         item(span = { GridItemSpan(3) }) {
@@ -399,41 +390,28 @@ fun MainScreen(
                             .fillMaxSize()
                             .padding(paddingValues)
                     ) {
-                        // Sub-function Switcher Header
-                        Surface(
-                            color = MaterialTheme.colorScheme.surface,
-                            tonalElevation = 2.dp,
-                            modifier = Modifier.fillMaxWidth()
+                        // v1.1.12：Skill 顶部 Tab 重写为 Uiverse「radio-inputs」样式（用户指定）：
+                        // 绿色容器 + 白色选中胶囊 + 底部两侧半圆缺口（尺寸已按移动端适配）
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth(0.9f)
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(Color(0xFF70C489))
+                                .padding(horizontal = 14.dp, top = 12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(2.dp)
                         ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 14.dp, vertical = 6.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                FilterChip(
-                                    selected = skillSubTabIndex == 0,
-                                    onClick = { skillSubTabIndex = 0 },
-                                    label = { Text("提示词区", fontWeight = FontWeight.Bold, fontSize = 11.5.sp) },
-                                    modifier = Modifier.weight(1f)
-                                )
-                                FilterChip(
-                                    selected = skillSubTabIndex == 1,
-                                    onClick = { skillSubTabIndex = 1 },
-                                    label = {
-                                        // v1.0.7：Skill 技能库带 CSS 动态特效新标签角标（流光呼吸「NEW」）
-                                        Box(contentAlignment = Alignment.Center) {
-                                            Text("Skill 技能库", fontWeight = FontWeight.Bold, fontSize = 11.5.sp)
-                                            DynamicNewBadge(
-                                                modifier = Modifier
-                                                    .align(Alignment.TopEnd)
-                                                    .offset(x = 22.dp, y = (-10).dp)
-                                            )
-                                        }
-                                    },
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
+                            RadioInputTab(
+                                text = "提示词",
+                                selected = skillSubTabIndex == 0,
+                                onClick = { skillSubTabIndex = 0 },
+                                modifier = Modifier.weight(1f)
+                            )
+                            RadioInputTab(
+                                text = "SKill",
+                                selected = skillSubTabIndex == 1,
+                                onClick = { skillSubTabIndex = 1 },
+                                modifier = Modifier.weight(1f)
+                            )
                         }
 
                         if (skillSubTabIndex == 0) {
@@ -478,10 +456,13 @@ fun MainScreen(
         }
     }
 
-        // v1.1.1 国庆主题：软件开屏改用国庆启动页（盛世华诞 · 举国同庆）
+        // v1.1.12 修复：开屏改用新版粒子动画 SplashScreenOverlay（云端 splash 配置驱动，控制台可实时同步）
         if (uiState.isSplashVisible) {
-            com.nationalday.ui.splash.NationalDaySplashScreen(
-                onFinish = { viewModel.dismissSplash() }
+            SplashScreenOverlay(
+                isVisible = true,
+                onDismiss = { viewModel.dismissSplash() },
+                splash = uiState.cloudSplash,
+                splashReady = uiState.isCloudReady
             )
         }
 
@@ -1979,6 +1960,62 @@ private fun DynamicNewBadge(modifier: Modifier = Modifier) {
             fontWeight = FontWeight.Black,
             color = Color.White
         )
+    }
+}
+
+/**
+ * v1.1.12：Uiverse「radio-inputs」样式 Tab（用户指定，尺寸已按移动端适配）
+ * - 绿色容器 #70C489，选中项白色 #E8E8E8 加粗胶囊（顶部圆角）
+ * - 未选中透明底 + 白色文字；选中项底部两侧 10dp 半圆缺口（还原 CSS ::before/::after）
+ */
+@Composable
+private fun RadioInputTab(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    // 外层无裁剪（半圆装饰允许略微溢出容器）
+    Box(
+        modifier = modifier
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        // 背景层：选中态白色顶部圆角胶囊
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp))
+                .background(if (selected) Color(0xFFE8E8E8) else Color.Transparent)
+        )
+        // 文字（垂直内边距撑出胶囊高度）
+        Text(
+            text = text,
+            fontSize = 14.sp,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+            color = if (selected) Color(0xFF1D1D29) else Color.White,
+            maxLines = 1,
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
+        // 选中态底部两侧半圆缺口（还原 CSS ::before/::after 镂空效果）
+        if (selected) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .offset(x = (-10).dp)
+                    .size(10.dp)
+                    .clip(RoundedCornerShape(bottomEnd = 10.dp))
+                    .background(Color(0xFF70C489))
+            )
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .offset(x = 10.dp)
+                    .size(10.dp)
+                    .clip(RoundedCornerShape(bottomStart = 10.dp))
+                    .background(Color(0xFF70C489))
+            )
+        }
     }
 }
 

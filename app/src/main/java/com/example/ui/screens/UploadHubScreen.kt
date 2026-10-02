@@ -176,44 +176,7 @@ fun UploadHubScreen(
                         )
                     }
                 }
-                item {
-                    Column(modifier = Modifier.padding(bottom = 6.dp)) {
-                        // v1.0.9 主题横幅：主题色渐变 + 圆点装饰，软件版块主题感立现
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(14.dp))
-                                .background(
-                                    Brush.horizontalGradient(
-                                        listOf(
-                                            themePrimary.copy(alpha = 0.85f),
-                                            themeSecondary.copy(alpha = 0.7f)
-                                        )
-                                    )
-                                )
-                                .padding(horizontal = 14.dp, vertical = 12.dp)
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("📦", fontSize = 18.sp)
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = title,
-                                        fontSize = 19.sp,
-                                        fontWeight = FontWeight.Black,
-                                        color = Color.White
-                                    )
-                                    Text(
-                                        text = subtitle + (if (displayResources.isNotEmpty()) "　·　共 ${displayResources.size} 款" else ""),
-                                        fontSize = 11.sp,
-                                        color = Color.White.copy(alpha = 0.9f),
-                                        maxLines = 2
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
+                // v1.1.12：删除软件库/Skill 页头横幅（用户要求，截图1）——不再显示标题/副标题/共X款横幅
                 if (resources.isEmpty()) {
                     item {
                         Box(
@@ -617,12 +580,7 @@ private fun SoftwareGridCard(
     val isMd = url.endsWith(".md", ignoreCase = true)
     val canInstall = isApk || isZip || isMd
 
-    val badgeText = when {
-        isApk -> "APK"
-        isZip -> "ZIP"
-        isMd -> "MD"
-        else -> "网页"
-    }
+    val badgeText = ""
     val badgeColor = when {
         isApk -> Color(0xFF22C55E)
         isZip -> Color(0xFF6366F1)
@@ -812,12 +770,7 @@ private fun SoftwareHorizontalCard(
     val isMd = url.endsWith(".md", ignoreCase = true)
     val canInstall = isApk || isZip || isMd
 
-    val badgeText = when {
-        isApk -> "APK"
-        isZip -> "ZIP"
-        isMd -> "MD"
-        else -> "网页"
-    }
+    val badgeText = ""
     val badgeColor = when {
         isApk -> Color(0xFF22C55E)
         isZip -> Color(0xFF6366F1)
@@ -993,12 +946,7 @@ private fun ResourceFileCard(
     val isMd = url.endsWith(".md", ignoreCase = true)
     val canInstall = isApk || isZip || isMd
 
-    val badgeText = when {
-        isApk -> "APK"
-        isZip -> "ZIP"
-        isMd -> "MD"
-        else -> "链接"
-    }
+    val badgeText = ""
     val badgeColor = when {
         isApk -> Color(0xFF22C55E)
         isZip -> Color(0xFF6366F1)
@@ -1012,7 +960,7 @@ private fun ResourceFileCard(
     val actionText = when {
         canInstall && resourceType == "skill" -> "下载"
         canInstall -> "安装"
-        else -> "网页"
+        else -> ""
     }
 
     fun downloadToLocal(url: String, fileName: String?) {

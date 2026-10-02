@@ -217,23 +217,13 @@ fun SettingsScreen(
             Column {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "盛世华诞 · 华夏锦囊",
+                        text = "设置",
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Black,
                             fontSize = 18.sp
                         ),
                         color = Color(0xFFDE2910)
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(Color(0xFFDE2910))
-                            .border(0.6.dp, Color(0xFFFFD700), RoundedCornerShape(4.dp))
-                            .padding(horizontal = 4.dp, vertical = 1.dp)
-                    ) {
-                        Text("国潮", color = Color(0xFFFFD700), fontSize = 8.5.sp, fontWeight = FontWeight.Bold)
-                    }
                 }
                 Text(
                     text = "官方结缘社群 · 国潮主题外观 · 协议条款与关于",
