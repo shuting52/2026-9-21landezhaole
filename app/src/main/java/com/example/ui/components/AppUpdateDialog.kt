@@ -982,6 +982,25 @@ private fun CssGradientButton(
     enabled: Boolean,
     scale: Float
 ) {
+    // v1.1.11：按钮消费控制台「主题工具箱」button 组件主题（
+    // 默认示例为 Uiverse lucky-mouse-99 蜜桃橙风格：background #FEC195 / 圆角 8px / hover 渐变）
+    val btnComp = com.example.ui.components.ComponentThemeResolver.resolve(
+        com.example.ui.components.LocalComponentThemes.current, "button"
+    )
+    val btnShape = RoundedCornerShape(btnComp?.cornerRadius ?: 50)
+    val btnBg: Brush = if (btnComp?.backgroundColor != null) {
+        Brush.linearGradient(
+            colors = listOf(btnComp.backgroundColor, btnComp.backgroundColor.copy(alpha = 0.88f)),
+            start = Offset(0f, 0f),
+            end = Offset(800f, 800f)
+        )
+    } else {
+        Brush.linearGradient(
+            colors = listOf(CSS_PINK, CSS_PEACH),
+            start = Offset(0f, 0f),
+            end = Offset(800f, 800f)
+        )
+    }
     Box(
         modifier = Modifier
             .graphicsLayer {
@@ -989,13 +1008,12 @@ private fun CssGradientButton(
                 scaleY = scale
             }
             .testTag("css_update_btn")
-            .clip(RoundedCornerShape(50))
-            .background(
-                Brush.linearGradient(
-                    colors = listOf(CSS_PINK, CSS_PEACH),
-                    start = Offset(0f, 0f),
-                    end = Offset(800f, 800f)
-                )
+            .clip(btnShape)
+            .background(btnBg)
+            .border(
+                width = btnComp?.borderWidth ?: 0.dp,
+                color = btnComp?.borderColor ?: Color.Transparent,
+                shape = btnShape
             )
             .clickable(enabled = enabled, onClick = onClick)
             .padding(horizontal = 26.dp, vertical = 10.dp)
@@ -1004,7 +1022,7 @@ private fun CssGradientButton(
             text = text,
             fontSize = 13.5.sp,
             fontWeight = FontWeight.Bold,
-            color = if (enabled) Color.White else Color.White.copy(alpha = 0.7f)
+            color = if (enabled) (btnComp?.textColor ?: Color.White) else Color.White.copy(alpha = 0.7f)
         )
     }
 }
