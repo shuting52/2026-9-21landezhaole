@@ -65,6 +65,10 @@ import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
 import com.example.data.local.db.UploadedResourceEntity
 import com.example.data.util.VideoCache
+import com.example.ui.components.UiverseAmber
+import com.example.ui.components.UiverseInk
+import com.example.ui.components.UiverseTextMuted
+import com.example.ui.components.neoShadow
 import com.example.ui.theme.FlameRed
 import com.example.ui.theme.JadeGreen
 import com.example.ui.theme.SunsetOrange
@@ -113,34 +117,37 @@ fun PromptHubSubView(
             Pair("video", "视频提示词 (${videoList.size})")
         )
         val typeIndex = typeTabs.indexOfFirst { it.first == selectedType }.coerceAtLeast(0)
-        LazyRow(
+        // v1.1.12：Skill 顶部 Tab 重写为 UiverseTabBar 样式（白底 + 琥珀选中 + 墨色描边 3dp + 圆角 14dp）
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = PaddingValues(end = 4.dp)
-        ) {
-            item {
-                // 当前分类指示（左右切换时高亮跟随）
-                Text(
-                    text = typeTabs[typeIndex].second,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(start = 2.dp, end = 4.dp)
+                .neoShadow(
+                    offsetX = 3.dp,
+                    offsetY = 3.dp,
+                    shadowColor = UiverseAmber,
+                    borderColor = UiverseInk,
+                    borderWidth = 3.dp,
+                    shape = RoundedCornerShape(14.dp),
+                    backgroundColor = Color.White
                 )
-            }
+                .clip(RoundedCornerShape(14.dp))
+        ) {
             typeTabs.forEach { (type, label) ->
-                item {
-                    FilterChip(
-                        selected = selectedType == type,
-                        onClick = { selectedType = type },
-                        label = { Text(if (type == null) "全部" else label.substringBefore(" ("), fontSize = 12.sp, maxLines = 1) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            containerColor = Color.White.copy(alpha = 0.45f),
-                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f)
-                        ),
-                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.65f))
+                val isSelected = selectedType == type
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(if (isSelected) UiverseAmber else Color.Transparent)
+                        .clickable { selectedType = type }
+                        .padding(vertical = 11.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = if (type == null) "全部" else label.substringBefore(" ("),
+                        fontWeight = FontWeight.ExtraBold,
+                        color = if (isSelected) UiverseInk else UiverseTextMuted,
+                        fontSize = 13.sp,
+                        maxLines = 1
                     )
                 }
             }
