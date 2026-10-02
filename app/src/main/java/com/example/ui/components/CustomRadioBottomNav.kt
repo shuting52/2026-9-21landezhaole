@@ -96,7 +96,7 @@ fun CustomRadioBottomNav(
     // 国庆潮流国潮风：底部导航为「羊脂温润白玉大胶囊 + 鎏金赤红边框 + 华夏红高光圆形按钮」
     // v1.1.10：控制台「主题工具箱」bottomBar 组件可覆盖（背景/圆角/描边），控制台应用后实时生效
     val bottomBarComp = ComponentThemeResolver.resolve(LocalComponentThemes.current, "bottomBar")
-    val pillShape = RoundedCornerShape(bottomBarComp?.cornerRadius ?: 50)
+    val pillShape = RoundedCornerShape(bottomBarComp?.cornerRadius ?: 50.dp)
     val goldBorderBrush = Brush.horizontalGradient(
         listOf(
             Color(0xFFFFD700).copy(alpha = 0.65f),
